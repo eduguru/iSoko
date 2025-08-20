@@ -1,0 +1,584 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		840698D02E4BA1F8006D0518 /* PhoneNumberKit in Frameworks */ = {isa = PBXBuildFile; productRef = 840698CF2E4BA1F8006D0518 /* PhoneNumberKit */; };
+		846DBC302E279F25006BB2D8 /* NetworkingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC2F2E279F25006BB2D8 /* NetworkingKit */; };
+		846DBC332E27A2AD006BB2D8 /* UtilsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC322E27A2AD006BB2D8 /* UtilsKit */; };
+		846DBC362E27A2C2006BB2D8 /* RouterKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC352E27A2C2006BB2D8 /* RouterKit */; };
+		846DBC392E27A2D5006BB2D8 /* StorageKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC382E27A2D5006BB2D8 /* StorageKit */; };
+		846DBC3C2E27A4AC006BB2D8 /* WalkthroughKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC3B2E27A4AC006BB2D8 /* WalkthroughKit */; };
+		846DBC3F2E27A6A9006BB2D8 /* DesignSystemKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846DBC3E2E27A6A9006BB2D8 /* DesignSystemKit */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		84FAC6992E20EFD200147A92 /* iSoko.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iSoko.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		84FAC6AB2E20EFD300147A92 /* Exceptions for "iSoko" folder in "iSoko" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 84FAC6982E20EFD200147A92 /* iSoko */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		84FAC69B2E20EFD200147A92 /* iSoko */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				84FAC6AB2E20EFD300147A92 /* Exceptions for "iSoko" folder in "iSoko" target */,
+			);
+			path = iSoko;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		84FAC6962E20EFD200147A92 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				840698D02E4BA1F8006D0518 /* PhoneNumberKit in Frameworks */,
+				846DBC302E279F25006BB2D8 /* NetworkingKit in Frameworks */,
+				846DBC362E27A2C2006BB2D8 /* RouterKit in Frameworks */,
+				846DBC332E27A2AD006BB2D8 /* UtilsKit in Frameworks */,
+				846DBC392E27A2D5006BB2D8 /* StorageKit in Frameworks */,
+				846DBC3F2E27A6A9006BB2D8 /* DesignSystemKit in Frameworks */,
+				846DBC3C2E27A4AC006BB2D8 /* WalkthroughKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		84FAC6902E20EFD200147A92 = {
+			isa = PBXGroup;
+			children = (
+				84FAC69B2E20EFD200147A92 /* iSoko */,
+				84FAC69A2E20EFD200147A92 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		84FAC69A2E20EFD200147A92 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84FAC6992E20EFD200147A92 /* iSoko.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		84FAC6982E20EFD200147A92 /* iSoko */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84FAC6AC2E20EFD300147A92 /* Build configuration list for PBXNativeTarget "iSoko" */;
+			buildPhases = (
+				84FAC6952E20EFD200147A92 /* Sources */,
+				84FAC6962E20EFD200147A92 /* Frameworks */,
+				84FAC6972E20EFD200147A92 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				84FAC69B2E20EFD200147A92 /* iSoko */,
+			);
+			name = iSoko;
+			packageProductDependencies = (
+				846DBC2F2E279F25006BB2D8 /* NetworkingKit */,
+				846DBC322E27A2AD006BB2D8 /* UtilsKit */,
+				846DBC352E27A2C2006BB2D8 /* RouterKit */,
+				846DBC382E27A2D5006BB2D8 /* StorageKit */,
+				846DBC3B2E27A4AC006BB2D8 /* WalkthroughKit */,
+				846DBC3E2E27A6A9006BB2D8 /* DesignSystemKit */,
+				840698CF2E4BA1F8006D0518 /* PhoneNumberKit */,
+			);
+			productName = iSoko;
+			productReference = 84FAC6992E20EFD200147A92 /* iSoko.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		84FAC6912E20EFD200147A92 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					84FAC6982E20EFD200147A92 = {
+						CreatedOnToolsVersion = 16.4;
+					};
+				};
+			};
+			buildConfigurationList = 84FAC6942E20EFD200147A92 /* Build configuration list for PBXProject "iSoko" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				fr,
+				sw,
+				rw,
+			);
+			mainGroup = 84FAC6902E20EFD200147A92;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				846DBC2E2E279F25006BB2D8 /* XCLocalSwiftPackageReference "../Packages/NetworkingKit" */,
+				846DBC312E27A2AD006BB2D8 /* XCLocalSwiftPackageReference "../Packages/UtilsKit" */,
+				846DBC342E27A2C2006BB2D8 /* XCLocalSwiftPackageReference "../Packages/RouterKit" */,
+				846DBC372E27A2D5006BB2D8 /* XCLocalSwiftPackageReference "../Packages/StorageKit" */,
+				846DBC3A2E27A4AC006BB2D8 /* XCLocalSwiftPackageReference "../Packages/WalkthroughKit" */,
+				846DBC3D2E27A6A9006BB2D8 /* XCLocalSwiftPackageReference "../Packages/DesignSystemKit" */,
+				840698CE2E4BA1F8006D0518 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 84FAC69A2E20EFD200147A92 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				84FAC6982E20EFD200147A92 /* iSoko */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		84FAC6972E20EFD200147A92 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		84FAC6952E20EFD200147A92 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		840698BE2E4B5280006D0518 /* UAT */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/UAT.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = UAT;
+		};
+		840698BF2E4B5280006D0518 /* UAT */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/UAT.xcconfig;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iSoko/iSoko.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iSoko/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = iSoko;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = weru.isoko.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = UAT;
+		};
+		84FAC6AD2E20EFD300147A92 /* DEV */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/DEV.xcconfig;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iSoko/iSoko.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iSoko/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = iSoko;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = weru.isoko.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = DEV;
+		};
+		84FAC6AE2E20EFD300147A92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/PROD.xcconfig;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iSoko/iSoko.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iSoko/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = iSoko;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = weru.isoko.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		84FAC6AF2E20EFD300147A92 /* DEV */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/DEV.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = DEV;
+		};
+		84FAC6B02E20EFD300147A92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 84FAC69B2E20EFD200147A92 /* iSoko */;
+			baseConfigurationReferenceRelativePath = App/Configs/PROD.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = XDVS29F4FT;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		84FAC6942E20EFD200147A92 /* Build configuration list for PBXProject "iSoko" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84FAC6AF2E20EFD300147A92 /* DEV */,
+				840698BE2E4B5280006D0518 /* UAT */,
+				84FAC6B02E20EFD300147A92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84FAC6AC2E20EFD300147A92 /* Build configuration list for PBXNativeTarget "iSoko" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84FAC6AD2E20EFD300147A92 /* DEV */,
+				840698BF2E4B5280006D0518 /* UAT */,
+				84FAC6AE2E20EFD300147A92 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		846DBC2E2E279F25006BB2D8 /* XCLocalSwiftPackageReference "../Packages/NetworkingKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/NetworkingKit;
+		};
+		846DBC312E27A2AD006BB2D8 /* XCLocalSwiftPackageReference "../Packages/UtilsKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/UtilsKit;
+		};
+		846DBC342E27A2C2006BB2D8 /* XCLocalSwiftPackageReference "../Packages/RouterKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/RouterKit;
+		};
+		846DBC372E27A2D5006BB2D8 /* XCLocalSwiftPackageReference "../Packages/StorageKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/StorageKit;
+		};
+		846DBC3A2E27A4AC006BB2D8 /* XCLocalSwiftPackageReference "../Packages/WalkthroughKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/WalkthroughKit;
+		};
+		846DBC3D2E27A6A9006BB2D8 /* XCLocalSwiftPackageReference "../Packages/DesignSystemKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../Packages/DesignSystemKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		840698CE2E4BA1F8006D0518 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/marmelroy/PhoneNumberKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.1.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		840698CF2E4BA1F8006D0518 /* PhoneNumberKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 840698CE2E4BA1F8006D0518 /* XCRemoteSwiftPackageReference "PhoneNumberKit" */;
+			productName = PhoneNumberKit;
+		};
+		846DBC2F2E279F25006BB2D8 /* NetworkingKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = NetworkingKit;
+		};
+		846DBC322E27A2AD006BB2D8 /* UtilsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UtilsKit;
+		};
+		846DBC352E27A2C2006BB2D8 /* RouterKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RouterKit;
+		};
+		846DBC382E27A2D5006BB2D8 /* StorageKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = StorageKit;
+		};
+		846DBC3B2E27A4AC006BB2D8 /* WalkthroughKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WalkthroughKit;
+		};
+		846DBC3E2E27A6A9006BB2D8 /* DesignSystemKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DesignSystemKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 84FAC6912E20EFD200147A92 /* Project object */;
+}

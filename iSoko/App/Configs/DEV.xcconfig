@@ -1,0 +1,25 @@
+//
+//  DEV.xcconfig
+//  iSoko
+//
+//  Created by Edwin Weru on 12/08/2025.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+
+//MARK: - ENVIRONMENT
+ENVIRONMENT = DEV
+
+//MARK: - API Keys
+
+
+//MARK: - Server URLs
+BASE_URL = https:/$()/isoko.twcc-tz.org/wit-backend/
+
+IMAGE_URL = https:/$()/isoko.twcc-tz.org/wit-backend/
+CERTIFICATE_BASE_URL = https:/$()/isoko.twcc-tz.org/wit-backend/
+
+CLIENT_ID = wit_android_app
+CLIENT_SECRET = QBhd$Txm42n3q@
+
