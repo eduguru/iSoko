@@ -79,4 +79,74 @@ public struct AuthenticationApi {
         
         return BasicResponseTarget(target: t)
     }
+    
+    public static func accountVerificationOTP(type: String, contact: String, accessToken: String) -> BasicResponseTarget {
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters: [String: Any] = [
+            "type": type,
+            "contact": contact,
+            "autoDetectionHash": "defaultSmsHashXYZ"
+        ]
+        
+        let t = AnyTarget(
+            path: "account-verification/pre-registration",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return BasicResponseTarget(target: t)
+    }
+}
+
+//MARK: - New Registration
+public extension AuthenticationApi {
+    /// Register an individual user
+    public static func registerIndividual(request: IndividualRegistrationRequest, accessToken: String ) -> BasicResponseTarget {
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let t = AnyTarget(
+            path: "api/user/register/individual", // 👈 adjust if backend uses same path as org
+            method: .post,
+            task: .requestJSONEncodable(request),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return BasicResponseTarget(target: t)
+    }
+    
+    /// Register an organization
+    public static func registerOrganization(request: OrganizationRegistrationRequest, accessToken: String) -> BasicResponseTarget {
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let t = AnyTarget(
+            path: "api/user/register/organization", // 👈 adjust if backend uses same path
+            method: .post,
+            task: .requestJSONEncodable(request),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return BasicResponseTarget(target: t)
+    }
+}
+
+
+
+//MARK: - Password Reset
+public extension AuthenticationApi {
+    
 }

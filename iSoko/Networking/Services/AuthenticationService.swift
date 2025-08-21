@@ -19,6 +19,11 @@ public protocol AuthenticationService {
     ) async throws -> TokenModel
     
     func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse
+    func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
+    
+    // MARK: - Registration
+    func registerIndividual(_ request: IndividualRegistrationRequest,  accessToken: String ) async throws -> BasicResponse
+    func registerOrganization( _ request: OrganizationRegistrationRequest, accessToken: String ) async throws -> BasicResponse
 }
 
 
@@ -41,7 +46,7 @@ public final class AuthenticationServiceImp: AuthenticationService {
         tokenProvider.saveToken(token)
         return token
     }
-
+    
     // MARK: - Email Pre-validation
     public func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse {
         let response: BasicResponse = try await manager.request(
@@ -66,15 +71,33 @@ public final class AuthenticationServiceImp: AuthenticationService {
         
         return response
     }
-
-}
-
-//MARK: - Password Reset
-public extension AuthenticationService {
+    
+    //MARK: - New Registration
+    public func registerIndividual(  _ request: IndividualRegistrationRequest, accessToken: String) async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.registerIndividual(request: request, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+    
+    public func registerOrganization( _ request: OrganizationRegistrationRequest, accessToken: String) async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.registerOrganization(request: request, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+    
+    //MARK: - Password Reset
     
 }
 
-//MARK: - New Registration
-public extension AuthenticationService {
-    
-}
