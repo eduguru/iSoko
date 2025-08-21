@@ -18,21 +18,40 @@ final class LoginViewModel: FormViewModel {
     private var state: State?
     
     let certificateService = NetworkEnvironment.shared.certificateService
+    let authenticationService = NetworkEnvironment.shared.authenticationService
     
-    fileprivate func getToken() -> Task<(), Never> {
-        return Task {
+    private func getToken() {
+        Task {
             do {
-                // Login and save token
-                let token = try await certificateService.getToken(
+                let token = try await authenticationService.login(
                     grant_type: AppConstants.GrantType.login.rawValue,
                     client_id: ApiEnvironment.clientId,
-                    client_secret: ApiEnvironment.clientSecret
+                    client_secret: ApiEnvironment.clientSecret,
+                    username: "+254712270408",
+                    password: "12345678"
                 )
-                
+
                 print("🔑 Logged in with token:", token.accessToken)
-                
+
+                let emailResponse = try await authenticationService.preValidateEmail(
+                    "dmjandom6@gmail.com",
+                    accessToken: token.accessToken
+                )
+
+                print("📧 Email Validation:", emailResponse.message ?? "")
+
+                if let errors = emailResponse.errors, !errors.isEmpty {
+                    for e in errors {
+                        print("❌ Validation error: \(e.field ?? "") - \(e.message ?? "")")
+                    }
+                }
+
+            } catch let NetworkError.server(apiError) {
+                // ❌ API returned error body
+                print("API error:", apiError.message ?? "")
             } catch {
-                print("❌ Error:", error)
+                // ❌ Networking/decoding
+                print("Unexpected error:", error)
             }
         }
     }

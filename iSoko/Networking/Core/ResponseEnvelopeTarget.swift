@@ -8,8 +8,15 @@
 import Foundation
 
 public struct BasicResponse: Decodable {
-    public let success: Bool
+    public let data: String?
+    public let status: Int
     public let message: String?
+    public let errors: [errorsObject]?
+    
+    public struct errorsObject: Decodable {
+        public let field: String?
+        public let message: String?
+    }
 }
 
 public struct ObjectResponse<Payload: Decodable>: Decodable {

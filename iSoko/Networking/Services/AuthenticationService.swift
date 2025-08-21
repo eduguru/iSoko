@@ -7,65 +7,74 @@
 
 import NetworkingKit
 import Combine
+import Foundation
 
 public protocol AuthenticationService {
+    func login(
+        grant_type: String,
+        client_id: String,
+        client_secret: String,
+        username: String,
+        password: String
+    ) async throws -> TokenModel
     
-    func login(phoneNumber: String, otp: String) -> String?
-    
-    func preValidateEmail() -> String?
-    func preValidatePhone() -> String?
-    
-    func requestOTP(phoneNumber: String) -> String?
-    func validateOTP(phoneNumber: String, otp: String) -> String?
-    
-    func initiatePasswordReset(phoneNumber: String) -> String?
-    func resetPassword(phoneNumber: String, newPassword: String) -> String?
-    
-    func registerIndividual(phoneNumber: String, otp: String, password: String) -> String?
-    func registerOrganization(phoneNumber: String, otp: String, password: String) -> String?
-    
-    func updateUserPassword(_ password: String)
+    func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse
 }
 
+
 public final class AuthenticationServiceImp: AuthenticationService {
+    private let manager: NetworkManager<AnyTarget>
+    private let tokenProvider: RefreshableTokenProvider
     
-    public func preValidateEmail() -> String? {
-        return nil
+    public init(provider: NetworkProvider, tokenProvider: RefreshableTokenProvider) {
+        self.manager = provider.manager()
+        self.tokenProvider = tokenProvider
     }
     
-    public func preValidatePhone() -> String? {
-        return nil
-    }
-    
-    public func requestOTP(phoneNumber: String) -> String? {
-        return nil
-    }
-    
-    public func validateOTP(phoneNumber: String, otp: String) -> String? {
-        return nil
-    }
-    
-    public func login(phoneNumber: String, otp: String) -> String? {
-        return nil
-    }
-    
-    public func initiatePasswordReset(phoneNumber: String) -> String? {
-        return nil
-    }
-    
-    public func resetPassword(phoneNumber: String, newPassword: String) -> String? {
-        return nil
-    }
-    
-    public func registerIndividual(phoneNumber: String, otp: String, password: String) -> String? {
-        return nil
-    }
-    
-    public func registerOrganization(phoneNumber: String, otp: String, password: String) -> String? {
-        return nil
-    }
-    
-    public func updateUserPassword(_ password: String) {
+    public func login(grant_type: String, client_id: String, client_secret: String, username: String, password: String) async throws -> TokenModel {
+        let token: TokenModel = try await manager.request(AuthenticationApi.login(
+            grant_type: grant_type,
+            client_id: client_id,
+            client_secret: client_secret, username: username, password: password)
+        )
         
+        tokenProvider.saveToken(token)
+        return token
     }
+
+    // MARK: - Email Pre-validation
+    public func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.preValidateEmail(email: email, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+    
+    public func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.preValidatePhoneNumber(phoneNumber: phone, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+
+}
+
+//MARK: - Password Reset
+public extension AuthenticationService {
+    
+}
+
+//MARK: - New Registration
+public extension AuthenticationService {
+    
 }

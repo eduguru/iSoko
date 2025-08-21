@@ -9,13 +9,12 @@ import Foundation
 import NetworkingKit
 
 public protocol CertificateService {
-    func getCertificate() -> Data?
-    func getToken() -> String?
-    func getRefreshToken() -> String?
+    func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> TokenModel
+    func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> TokenModel
 }
 
 
-public final class CertificateServiceImpl {
+public final class CertificateServiceImpl: CertificateService {
     private let manager: NetworkManager<AnyTarget>
     private let tokenProvider: RefreshableTokenProvider
     
