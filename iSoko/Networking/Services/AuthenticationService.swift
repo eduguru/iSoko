@@ -72,6 +72,18 @@ public final class AuthenticationServiceImp: AuthenticationService {
         return response
     }
     
+    public func accountVerificationOTP(type: RegistrationOTPType, contact: String, accessToken: String) async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.accountVerificationOTP(type: type, contact: contact, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+    
     //MARK: - New Registration
     public func registerIndividual(  _ request: IndividualRegistrationRequest, accessToken: String) async throws -> BasicResponse {
         let response: BasicResponse = try await manager.request(
@@ -98,6 +110,29 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     //MARK: - Password Reset
+    public func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) async throws -> BasicResponse{
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.initiatePasswordReset(type: type, value: value, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
+
+    public func passwordReset(type: PasswordResetType, dto: PasswordResetDto, accessToken: String)  async throws -> BasicResponse {
+        let response: BasicResponse = try await manager.request(
+            AuthenticationApi.passwordReset(type: type, dto: dto, accessToken: accessToken)
+        )
+        
+        if response.status != 200 {
+            throw NetworkError.server(response)
+        }
+        
+        return response
+    }
     
 }
 

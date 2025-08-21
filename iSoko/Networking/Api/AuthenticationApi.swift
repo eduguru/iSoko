@@ -6,6 +6,7 @@
 //
 import Moya
 import Foundation
+import UtilsKit
 
 public struct AuthenticationApi {
     
@@ -40,6 +41,7 @@ public struct AuthenticationApi {
         return ValueResponseTarget(target: t)
     }
     
+    //MARK: - pre validation
     public static func preValidateEmail(email: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
@@ -80,13 +82,14 @@ public struct AuthenticationApi {
         return BasicResponseTarget(target: t)
     }
     
-    public static func accountVerificationOTP(type: String, contact: String, accessToken: String) -> BasicResponseTarget {
+    public static func accountVerificationOTP(type: RegistrationOTPType, contact: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
+        
         let parameters: [String: Any] = [
-            "type": type,
+            "type": type.rawValue,
             "contact": contact,
             "autoDetectionHash": "defaultSmsHashXYZ"
         ]
@@ -114,7 +117,7 @@ public extension AuthenticationApi {
         ]
         
         let t = AnyTarget(
-            path: "api/user/register/individual", // 👈 adjust if backend uses same path as org
+            path: "api/user/register/individual",
             method: .post,
             task: .requestJSONEncodable(request),
             headers: headers,
@@ -133,7 +136,7 @@ public extension AuthenticationApi {
         ]
         
         let t = AnyTarget(
-            path: "api/user/register/organization", // 👈 adjust if backend uses same path
+            path: "api/user/register/organization",
             method: .post,
             task: .requestJSONEncodable(request),
             headers: headers,
@@ -142,11 +145,54 @@ public extension AuthenticationApi {
         
         return BasicResponseTarget(target: t)
     }
-}
-
-
 
 //MARK: - Password Reset
-public extension AuthenticationApi {
-    
+    public static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters: [String: Any] = [
+            "\(type.rawValue)": value
+        ]
+        
+        var path: String {
+           switch type {
+                case .email:
+               return "api/password/request/email"
+           case .phoneNumber:
+               return "api/password/request/reset"
+           @unknown default:
+               fatalError()
+            }
+        }
+        
+        let t = AnyTarget(
+            path: path,
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return BasicResponseTarget(target: t)
+    }
+
+    public static func passwordReset(type: PasswordResetType, dto: PasswordResetDto, accessToken: String) -> BasicResponseTarget {
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        let parameters: [String: Any] = dto.asDictionary
+        
+        let t = AnyTarget(
+            path: "api/password/reset",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return BasicResponseTarget(target: t)
+    }
 }

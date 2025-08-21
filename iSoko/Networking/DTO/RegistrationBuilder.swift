@@ -5,9 +5,14 @@
 //  Created by Edwin Weru on 21/08/2025.
 //
 
-enum RegistrationType {
+public enum RegistrationType {
     case individual
     case organization
+}
+
+public enum RegistrationOTPType: String {
+    case sms = "SMS"
+    case email = "EMAIL"
 }
 
 final class RegistrationBuilder {
