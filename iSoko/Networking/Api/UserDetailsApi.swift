@@ -23,7 +23,7 @@ public struct UserDetailsApi {
         let t = AnyTarget(
             path: "api/user/auth-details",
             method: .get,
-            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            task: .requestPlain,
             headers: headers,
             authorizationType: .bearer
         )

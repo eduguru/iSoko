@@ -29,7 +29,7 @@ public struct UserDetailsResponse: Codable {
     let roleName: String?
     let roleId: Int
     let roleIsAdmin: Bool
-    let dateJoined: String
+    let dateJoined: Int?
     let rating: Double?
     let appPermissions: [AppPermission]
 }

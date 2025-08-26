@@ -74,50 +74,22 @@ public final class NetworkManager<T: TargetType> {
 
 }
 
+
 public extension NetworkManager where T == AnyTarget {
-    func request<R: Decodable>(_ valueTarget: ValueResponseTarget<R>) async throws -> R {
-        return try await request(valueTarget.target)
+    
+    // For standard ResponseEnvelopeTarget
+    func request<R: Decodable>(_ envelope: ResponseEnvelopeTarget<R>) async throws -> R {
+        return try await request(envelope.target)
+    }
+    
+    // For OptionalObjectResponseTarget
+    func request<R: Decodable>(_ envelope: OptionalObjectResponseTarget<R>) async throws -> R? {
+        let wrapper: OptionalObjectResponse<R> = try await request(envelope.target)
+        return wrapper.data
+    }
+    
+    // For BasicResponseTarget
+    func request(_ envelope: BasicResponseTarget) async throws -> BasicResponse {
+        return try await request(envelope.target)
     }
 }
-
-
-
-//public final class NetworkManager<T: TargetType> {
-//    private let provider: MoyaProvider<T>
-//
-//    init(tokenProvider: RefreshableTokenProvider) {
-//        let interceptor = AuthInterceptor(tokenProvider: tokenProvider)
-//        let session = Session(interceptor: interceptor)
-//
-//        let logger = NetworkLoggerPlugin(level: NetworkConfig.logLevel)
-//
-//        self.provider = MoyaProvider<T>(
-//            session: session,
-//            plugins: [logger]
-//        )
-//    }
-//
-//    public func request<R: Decodable>(_ target: T) async throws -> R {
-//        return try await withCheckedThrowingContinuation { continuation in
-//            provider.request(target) { result in
-//                switch result {
-//                case .success(let response):
-//                    do {
-//                        let decoded = try JSONDecoder().decode(R.self, from: response.data)
-//                        continuation.resume(returning: decoded)
-//                    } catch {
-//                        continuation.resume(throwing: error)
-//                    }
-//                case .failure(let error):
-//                    continuation.resume(throwing: error)
-//                }
-//            }
-//        }
-//    }
-//}
-//
-//public extension NetworkManager where T == AnyTarget {
-//    func request<R: Decodable>(_ valueTarget: ValueResponseTarget<R>) async throws -> R {
-//        return try await request(valueTarget.target)
-//    }
-//}

@@ -8,24 +8,14 @@
 import Foundation
 import StorageKit
 
-
-//public protocol RefreshableTokenProvider {
-//    associatedtype Token: AuthToken
-//
-//    func currentToken() -> Token?
-//    func saveToken(_ token: Token)
-//    func refreshToken(
-//        grant_type: String,
-//        client_id: String,
-//        client_secret: String
-//    ) async throws -> Token
-//}
-
-
 public protocol RefreshableTokenProvider {
     func currentToken() -> TokenModel?
     func saveToken(_ token: TokenModel)
-    func refreshToken(grant_type: String, client_id: String, client_secret: String) async throws -> TokenModel
+    func refreshToken(
+        grant_type: String,
+        client_id: String,
+        client_secret: String
+    ) async throws -> TokenModel
 }
 
 public final class AppTokenProvider: RefreshableTokenProvider {
@@ -35,7 +25,7 @@ public final class AppTokenProvider: RefreshableTokenProvider {
 
     // MARK: - Current Token
     public func currentToken() -> TokenModel? {
-        return AppStorage.authToken
+        AppStorage.authToken
     }
 
     // MARK: - Save Token & Start Refresh Task
@@ -45,10 +35,8 @@ public final class AppTokenProvider: RefreshableTokenProvider {
         AppStorage.refreshToken = token.refreshToken
         AppStorage.tokenExpiry = Date().addingTimeInterval(TimeInterval(token.expiresIn))
 
-        // Cancel any existing refresh task
+        // Cancel existing refresh task and reschedule
         refreshTask?.cancel()
-
-        // Schedule new auto-refresh
         startRefreshTask(expiresIn: token.expiresIn)
     }
 
@@ -59,10 +47,14 @@ public final class AppTokenProvider: RefreshableTokenProvider {
         client_secret: String
     ) async throws -> TokenModel {
         guard let refresh = AppStorage.refreshToken else {
-            throw NSError(domain: "AppTokenProvider", code: -1,
-                          userInfo: [NSLocalizedDescriptionKey: "No refresh token available"])
+            throw NSError(
+                domain: "AppTokenProvider",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "No refresh token available"]
+            )
         }
 
+        // ✅ No `.target` needed now
         let token: TokenModel = try await NetworkProvider(tokenProvider: self)
             .manager()
             .request(
@@ -71,10 +63,10 @@ public final class AppTokenProvider: RefreshableTokenProvider {
                     client_id: client_id,
                     client_secret: client_secret,
                     refresh_token: refresh
-                ).target
+                )
             )
 
-        saveToken(token) // reschedules refresh
+        saveToken(token)
         return token
     }
 

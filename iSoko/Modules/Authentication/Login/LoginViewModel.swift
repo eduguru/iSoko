@@ -19,6 +19,7 @@ final class LoginViewModel: FormViewModel {
     
     let certificateService = NetworkEnvironment.shared.certificateService
     let authenticationService = NetworkEnvironment.shared.authenticationService
+    let userDetailsService = NetworkEnvironment.shared.userDetailsService
     
     private func getToken() {
         Task {
@@ -32,18 +33,25 @@ final class LoginViewModel: FormViewModel {
                 )
 
                 print("🔑 Logged in with token:", token.accessToken)
-
-                let emailResponse = try await authenticationService.preValidateEmail(
-                    "dmjandom6@gmail.com",
-                    accessToken: token.accessToken
-                )
-
-                print("📧 Email Validation:", emailResponse.message ?? "")
-
-                if let errors = emailResponse.errors, !errors.isEmpty {
-                    for e in errors {
-                        print("❌ Validation error: \(e.field ?? "") - \(e.message ?? "")")
-                    }
+//
+//                let emailResponse = try await authenticationService.preValidateEmail(
+//                    "dmjandom6@gmail.com",
+//                    accessToken: token.accessToken
+//                )
+//
+//                print("📧 Email Validation:", emailResponse.message ?? "")
+//
+//                if let errors = emailResponse.errors, !errors.isEmpty {
+//                    for e in errors {
+//                        print("❌ Validation error: \(e.field ?? "") - \(e.message ?? "")")
+//                    }
+//                }
+                
+                let response = try await userDetailsService.getUserDetails(accessToken: "bb2ff7d0-f65d-461c-9ef9-0dd33f709ce6")
+                if let response = response {
+                    print("User Details: \(response)")
+                } else {
+                    print("No user details returned")
                 }
 
             } catch let NetworkError.server(apiError) {
