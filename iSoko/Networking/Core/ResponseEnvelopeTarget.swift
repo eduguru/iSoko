@@ -19,6 +19,47 @@ public struct BasicResponse: Decodable {
     }
 }
 
+public struct PagedResponse<Payload: Decodable>: Decodable {
+    public let status: Int
+    public let message: String?
+    public let errors: [BasicResponse.errorsObject]?
+    public let data: Payload
+    public let total: Int
+    
+    public init(status: Int,
+                message: String?,
+                errors: [BasicResponse.errorsObject]?,
+                data: Payload,
+                total: Int) {
+        self.status = status
+        self.message = message
+        self.errors = errors
+        self.data = data
+        self.total = total
+    }
+}
+
+public struct PagedOptionalResponse<Payload: Decodable>: Decodable {
+    public let status: Int
+    public let message: String?
+    public let errors: [BasicResponse.errorsObject]?
+    public let data: Payload?
+    public let total: Int
+    
+    public init(status: Int,
+                message: String?,
+                errors: [BasicResponse.errorsObject]?,
+                data: Payload?,
+                total: Int) {
+        self.status = status
+        self.message = message
+        self.errors = errors
+        self.data = data
+        self.total = total
+    }
+}
+
+
 public struct ObjectResponse<Payload: Decodable>: Decodable {
     public let data: Payload
 }
@@ -29,8 +70,13 @@ public struct OptionalObjectResponse<Payload: Decodable>: Decodable {
 
 public typealias BasicResponseTarget = ResponseEnvelopeTarget<BasicResponse>
 public typealias ValueResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value>
+
 public typealias ObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<ObjectResponse<Payload>>
 public typealias OptionalObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<OptionalObjectResponse<Payload>>
+
+public typealias PagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedResponse<Payload>>
+public typealias PagedOptionalResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedOptionalResponse<Payload>>
+
 
 public struct ResponseEnvelopeTarget<Response: Decodable> {
     public let target: AnyTarget

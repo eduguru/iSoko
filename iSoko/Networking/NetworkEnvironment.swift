@@ -17,6 +17,7 @@ public struct NetworkEnvironment {
     public let certificateService: CertificateServiceImpl
     public let authenticationService: AuthenticationServiceImp
     public let userDetailsService: UserDetailsServiceImpl
+    public let commonUtilitiesService: CommonUtilitiesServiceImpl
 
     // MARK: - Init
     private init() {
@@ -30,5 +31,6 @@ public struct NetworkEnvironment {
         self.certificateService = CertificateServiceImpl( provider: networkProvider, tokenProvider: tokenProvider)
         self.authenticationService = AuthenticationServiceImp(provider: networkProvider, tokenProvider: tokenProvider)
         self.userDetailsService = UserDetailsServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
+        self.commonUtilitiesService = CommonUtilitiesServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
     }
 }

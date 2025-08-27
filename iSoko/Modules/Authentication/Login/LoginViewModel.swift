@@ -20,6 +20,7 @@ final class LoginViewModel: FormViewModel {
     let certificateService = NetworkEnvironment.shared.certificateService
     let authenticationService = NetworkEnvironment.shared.authenticationService
     let userDetailsService = NetworkEnvironment.shared.userDetailsService
+    let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
     
     private func getToken() {
         Task {
@@ -47,12 +48,16 @@ final class LoginViewModel: FormViewModel {
 //                    }
 //                }
                 
-                let response = try await userDetailsService.getUserDetails(accessToken: "bb2ff7d0-f65d-461c-9ef9-0dd33f709ce6")
+                let response = try await userDetailsService.getUserDetails(accessToken: "d625f3a6-085e-49f2-b8c9-ecac93d9b171")
                 if let response = response {
                     print("User Details: \(response)")
                 } else {
                     print("No user details returned")
                 }
+                
+                let respo = try await commonUtilitiesService.getAllLocations(page: 1, count: 10, accessToken: "d625f3a6-085e-49f2-b8c9-ecac93d9b171")
+                print("respo returned: \(respo) \(respo.count)")
+                
 
             } catch let NetworkError.server(apiError) {
                 // ❌ API returned error body

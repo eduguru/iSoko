@@ -42,6 +42,7 @@ public final class NetworkManager<T: TargetType> {
         )
     }
 
+    /// Generic request handler for any `TargetType`
     public func request<R: Decodable>(_ target: T) async throws -> R {
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(target) { result in
@@ -62,7 +63,7 @@ public final class NetworkManager<T: TargetType> {
                             let decoded = try JSONDecoder().decode(R.self, from: response.data)
                             continuation.resume(returning: decoded)
                         } catch {
-                            continuation.resume(throwing: error) // couldn't decode
+                            continuation.resume(throwing: error) // Couldn't decode error response
                         }
                     } else {
                         continuation.resume(throwing: error)
@@ -71,25 +72,45 @@ public final class NetworkManager<T: TargetType> {
             }
         }
     }
-
 }
 
-
+// MARK: - Convenience API for AnyTarget-based calls
 public extension NetworkManager where T == AnyTarget {
     
-    // For standard ResponseEnvelopeTarget
+    // MARK: - Generic Envelope
+    /// Handles API responses wrapped in `ResponseEnvelopeTarget`
     func request<R: Decodable>(_ envelope: ResponseEnvelopeTarget<R>) async throws -> R {
         return try await request(envelope.target)
     }
-    
-    // For OptionalObjectResponseTarget
+
+    // MARK: - Optional Object Envelope
+    /// Handles responses wrapped in `OptionalObjectResponseTarget`
     func request<R: Decodable>(_ envelope: OptionalObjectResponseTarget<R>) async throws -> R? {
         let wrapper: OptionalObjectResponse<R> = try await request(envelope.target)
         return wrapper.data
     }
-    
-    // For BasicResponseTarget
+
+    // MARK: - Basic Response
+    /// Handles responses returning a plain `BasicResponse`
     func request(_ envelope: BasicResponseTarget) async throws -> BasicResponse {
         return try await request(envelope.target)
+    }
+
+    // MARK: - Paged Response
+    /// Handles paginated responses
+    func request<R: Decodable>(_ envelope: PagedResponseTarget<R>) async throws -> PagedResponse<R> {
+        return try await request(envelope.target)
+    }
+
+    // MARK: - Optional Paged Response
+    /// Handles paginated responses where data may be optional
+    func request<R: Decodable>(_ envelope: PagedOptionalResponseTarget<R>) async throws -> PagedOptionalResponse<R> {
+        return try await request(envelope.target)
+    }
+
+    /// Convenience helper to directly access `.data` from a paginated optional response
+    func requestData<R: Decodable>(_ envelope: PagedOptionalResponseTarget<R>) async throws -> R? {
+        let wrapper: PagedOptionalResponse<R> = try await request(envelope.target)
+        return wrapper.data
     }
 }
