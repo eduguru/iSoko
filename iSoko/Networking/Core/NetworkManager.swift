@@ -114,3 +114,44 @@ public extension NetworkManager where T == AnyTarget {
         return wrapper.data
     }
 }
+
+public extension NetworkManager {
+    /// Upload a single file
+    func upload<R: Decodable>(
+        baseURL: String,
+        path: String,
+        method: Moya.Method = .post,
+        headers: [String: String]? = nil,
+        file: UploadFile,
+        additionalParams: [String: Any] = [:]
+    ) async throws -> R {
+        return try await uploadFiles(
+            baseURL: baseURL,
+            path: path,
+            method: method,
+            headers: headers,
+            files: [file],
+            additionalParams: additionalParams
+        )
+    }
+
+    /// Upload multiple files
+    func uploadFiles<R: Decodable>(
+        baseURL: String,
+        path: String,
+        method: Moya.Method = .post,
+        headers: [String: String]? = nil,
+        files: [UploadFile],
+        additionalParams: [String: Any] = [:]
+    ) async throws -> R {
+        let target = UploadTarget(
+            baseURL: baseURL,
+            path: path,
+            method: method,
+            headers: headers,
+            files: files,
+            additionalParams: additionalParams
+        )
+        return try await request(target as! T)
+    }
+}
