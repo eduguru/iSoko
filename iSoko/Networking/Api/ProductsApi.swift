@@ -240,3 +240,51 @@ public struct ProductsApi {
         return OptionalObjectResponseTarget(target: target)
     }
 }
+
+
+public enum UserAPI {
+    public static func updateUserProfileImage(image: Data, accessToken: String) -> BasicUploadResponseTarget {
+        let headers = ["Authorization": "Bearer \(accessToken)"]
+
+        let file = UploadFile(
+            data: image,
+            name: "image",
+            fileName: "profile.jpg",
+            mimeType: "image/jpeg"
+        )
+
+        let target = UploadTarget(
+            path: "api/user/update-profile-image",
+            files: [file],
+            headers: headers,
+            authorizationType: .bearer
+        )
+
+        return BasicUploadResponseTarget(target: target)
+    }
+}
+
+public enum GalleryAPI {
+    public static func uploadGallery(images: [Data], caption: String, accessToken: String) -> BasicUploadResponseTarget {
+        let headers = ["Authorization": "Bearer \(accessToken)"]
+
+        let files = images.enumerated().map { index, image in
+            UploadFile(
+                data: image,
+                name: "photos[]",
+                fileName: "photo\(index + 1).jpg",
+                mimeType: "image/jpeg"
+            )
+        }
+
+        let target = UploadTarget(
+            path: "api/gallery/upload",
+            files: files,
+            additionalParams: ["caption": caption],
+            headers: headers,
+            authorizationType: .bearer
+        )
+
+        return BasicUploadResponseTarget(target: target)
+    }
+}

@@ -6,14 +6,17 @@
 //
 
 import Foundation
+import Moya
+
+// MARK: - Response Models
 
 public struct BasicResponse: Decodable {
     public let data: String?
     public let status: Int
     public let message: String?
-    public let errors: [errorsObject]?
-    
-    public struct errorsObject: Decodable {
+    public let errors: [ErrorsObject]?
+
+    public struct ErrorsObject: Decodable {
         public let field: String?
         public let message: String?
     }
@@ -22,43 +25,18 @@ public struct BasicResponse: Decodable {
 public struct PagedResponse<Payload: Decodable>: Decodable {
     public let status: Int
     public let message: String?
-    public let errors: [BasicResponse.errorsObject]?
+    public let errors: [BasicResponse.ErrorsObject]?
     public let data: Payload
     public let total: Int
-    
-    public init(status: Int,
-                message: String?,
-                errors: [BasicResponse.errorsObject]?,
-                data: Payload,
-                total: Int) {
-        self.status = status
-        self.message = message
-        self.errors = errors
-        self.data = data
-        self.total = total
-    }
 }
 
 public struct PagedOptionalResponse<Payload: Decodable>: Decodable {
     public let status: Int
     public let message: String?
-    public let errors: [BasicResponse.errorsObject]?
+    public let errors: [BasicResponse.ErrorsObject]?
     public let data: Payload?
     public let total: Int
-    
-    public init(status: Int,
-                message: String?,
-                errors: [BasicResponse.errorsObject]?,
-                data: Payload?,
-                total: Int) {
-        self.status = status
-        self.message = message
-        self.errors = errors
-        self.data = data
-        self.total = total
-    }
 }
-
 
 public struct ObjectResponse<Payload: Decodable>: Decodable {
     public let data: Payload
@@ -68,19 +46,23 @@ public struct OptionalObjectResponse<Payload: Decodable>: Decodable {
     public let data: Payload?
 }
 
-public typealias BasicResponseTarget = ResponseEnvelopeTarget<BasicResponse>
-public typealias ValueResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value>
-
-public typealias ObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<ObjectResponse<Payload>>
-public typealias OptionalObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<OptionalObjectResponse<Payload>>
-
-public typealias PagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedResponse<Payload>>
-public typealias PagedOptionalResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedOptionalResponse<Payload>>
-
-
-public struct ResponseEnvelopeTarget<Response: Decodable> {
-    public let target: AnyTarget
-    public init(target: AnyTarget) {
+// MARK: - Generic Response Envelope
+public struct ResponseEnvelopeTarget<Response: Decodable, T: TargetType> {
+    public let target: T
+    public init(target: T) {
         self.target = target
     }
 }
+
+// MARK: - Convenience Typealiases
+
+public typealias BasicResponseTarget = ResponseEnvelopeTarget<BasicResponse, AnyTarget>
+public typealias ValueResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value, AnyTarget>
+public typealias ObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<ObjectResponse<Payload>, AnyTarget>
+public typealias OptionalObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<OptionalObjectResponse<Payload>, AnyTarget>
+public typealias PagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedResponse<Payload>, AnyTarget>
+public typealias PagedOptionalResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedOptionalResponse<Payload>, AnyTarget>
+
+// Upload-specific
+public typealias BasicUploadResponseTarget = ResponseEnvelopeTarget<BasicResponse, UploadTarget>
+public typealias ValueUploadResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value, UploadTarget>

@@ -8,6 +8,12 @@
 import Moya
 import Foundation
 
+// MARK: - Convertible Protocol
+public protocol ConvertibleToAnyTarget {
+    func asAnyTarget() -> AnyTarget
+}
+
+// MARK: - AnyTarget
 public struct AnyTarget: TargetType, AccessTokenAuthorizable {
     public let baseURL: URL
     public let path: String
@@ -35,13 +41,18 @@ public struct AnyTarget: TargetType, AccessTokenAuthorizable {
         self.task = task
         self.validationType = validationType
         self.authorizationType = authorizationType
-        
-        // 👇 Auto assign Content-Type if not explicitly passed
-        if let headers = headers {
-            self.headers = headers
-        } else {
-            self.headers = AnyTarget.defaultHeaders(for: task)
-        }
+        self.headers = headers ?? AnyTarget.defaultHeaders(for: task)
+    }
+
+    public init(_ uploadTarget: UploadTarget) {
+        self.init(
+            baseURL: uploadTarget.baseURL,
+            path: uploadTarget.path,
+            method: uploadTarget.method,
+            task: uploadTarget.task,
+            headers: uploadTarget.headers,
+            authorizationType: uploadTarget.authorizationType
+        )
     }
 }
 
@@ -54,7 +65,6 @@ private extension AnyTarget {
             } else if encoding is JSONEncoding {
                 return ["Content-Type": "application/json"]
             }
-            
             return [:]
         case .requestJSONEncodable, .requestCustomJSONEncodable:
             return ["Content-Type": "application/json"]

@@ -8,29 +8,32 @@
 import Foundation
 import Moya
 
-public struct UploadTarget: TargetType {
-    private let baseURLString: String
-    private let pathValue: String
-    private let methodValue: Moya.Method
-    private let headersValue: [String: String]?
-    private let multipartData: [MultipartFormData]
+// MARK: - UploadTarget
+public struct UploadTarget: TargetType, ConvertibleToAnyTarget {
+    public let baseURL: URL
+    public let path: String
+    public let method: Moya.Method
+    public let headers: [String: String]?
+    public let authorizationType: AuthorizationType?
+    public let multipartData: [MultipartFormData]
 
     public init(
-        baseURL: String,
+        baseURL: URL = ApiEnvironment.baseURL,
         path: String,
         method: Moya.Method = .post,
-        headers: [String: String]? = nil,
         files: [UploadFile],
-        additionalParams: [String: Any] = [:]
+        additionalParams: [String: Any] = [:],
+        headers: [String: String]? = nil,
+        authorizationType: AuthorizationType? = nil
     ) {
-        self.baseURLString = baseURL
-        self.pathValue = path
-        self.methodValue = method
-        self.headersValue = headers
+        self.baseURL = baseURL
+        self.path = path
+        self.method = method
+        self.headers = headers
+        self.authorizationType = authorizationType
 
         var parts: [MultipartFormData] = []
 
-        // 🔥 Attach multiple files
         for file in files {
             parts.append(
                 MultipartFormData(
@@ -42,9 +45,8 @@ public struct UploadTarget: TargetType {
             )
         }
 
-        // 🔥 Attach additional params
         for (key, value) in additionalParams {
-            if let data = encodeParam(value) {
+            if let data = UploadTarget.encodeParam(value) {
                 parts.append(MultipartFormData(provider: .data(data), name: key))
             }
         }
@@ -52,30 +54,26 @@ public struct UploadTarget: TargetType {
         self.multipartData = parts
     }
 
-    public var baseURL: URL { URL(string: baseURLString)! }
-    public var path: String { pathValue }
-    public var method: Moya.Method { methodValue }
-    public var headers: [String: String]? { headersValue }
-    public var sampleData: Data { Data() }
-    public var task: Task { .uploadMultipart(multipartData) }
-}
+    public var task: Task {
+        return .uploadMultipart(multipartData)
+    }
 
-// 🔹 Parameter encoding helper
-private func encodeParam(_ value: Any) -> Data? {
-    switch value {
-    case let string as String:
-        return string.data(using: .utf8)
-    case let int as Int:
-        return "\(int)".data(using: .utf8)
-    case let double as Double:
-        return "\(double)".data(using: .utf8)
-    case let bool as Bool:
-        return (bool ? "true" : "false").data(using: .utf8)
-    default:
-        if JSONSerialization.isValidJSONObject(value),
-           let data = try? JSONSerialization.data(withJSONObject: value, options: []) {
-            return data
+    public func asAnyTarget() -> AnyTarget {
+        return AnyTarget(self)
+    }
+
+    private static func encodeParam(_ value: Any) -> Data? {
+        switch value {
+        case let string as String: return string.data(using: .utf8)
+        case let int as Int: return "\(int)".data(using: .utf8)
+        case let double as Double: return "\(double)".data(using: .utf8)
+        case let bool as Bool: return (bool ? "true" : "false").data(using: .utf8)
+        default:
+            if JSONSerialization.isValidJSONObject(value),
+               let data = try? JSONSerialization.data(withJSONObject: value) {
+                return data
+            }
+            return nil
         }
-        return nil
     }
 }
