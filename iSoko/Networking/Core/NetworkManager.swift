@@ -7,6 +7,7 @@
 import Foundation
 import Moya
 import Alamofire
+import NetworkingKit
 
 // MARK: - Network Manager
 public final class NetworkManager<T: TargetType> {

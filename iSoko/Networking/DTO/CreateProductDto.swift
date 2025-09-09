@@ -5,6 +5,8 @@
 //  Created by Edwin Weru on 28/08/2025.
 //
 
+import NetworkingKit
+
 public struct CreateProductDto {
     let commodityId: Int?
     let description: String?

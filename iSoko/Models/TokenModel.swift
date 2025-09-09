@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import NetworkingKit
 
 public struct TokenModel: AuthToken {
     public let accessToken: String

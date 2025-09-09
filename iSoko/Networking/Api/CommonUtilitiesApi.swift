@@ -7,6 +7,7 @@
 
 import Moya
 import Foundation
+import NetworkingKit
 
 public struct CommonUtilitiesApi {
     
@@ -19,6 +20,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/location",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -37,6 +39,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/location-level",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -55,6 +58,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/location/\(locationLevel)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -75,6 +79,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/measurement-metric",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -93,6 +98,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/measurement-unit",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -113,6 +119,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/organisation-type",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -131,6 +138,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/organisation-size",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -151,6 +159,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user-age-group",
             method: .get,
             task: .requestPlain,
@@ -169,6 +178,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user-type",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -187,6 +197,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/roles",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -205,6 +216,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/gender",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -231,6 +243,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/commodity-category",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -250,6 +263,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/commodity-sub-category",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -282,6 +296,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/commodity",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),

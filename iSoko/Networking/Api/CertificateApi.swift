@@ -7,6 +7,7 @@
 
 import Moya
 import Foundation
+import NetworkingKit
 
 public struct CertificateApi {
     public static func getToken(grant_type: String, client_id: String, client_secret: String) -> ValueResponseTarget<TokenModel> {
@@ -18,6 +19,7 @@ public struct CertificateApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "oauth/token",
             method: .post,
             task: .requestParameters(
@@ -41,6 +43,7 @@ public struct CertificateApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "oauth/token",
             method: .post,
             task: .requestParameters(

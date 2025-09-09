@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import NetworkingKit
 
 public protocol UserDetailsService {
     

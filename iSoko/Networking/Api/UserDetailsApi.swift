@@ -8,6 +8,7 @@
 import Foundation
 import Alamofire
 import Moya
+import NetworkingKit
 
 public struct UserDetailsApi {
     
@@ -21,6 +22,7 @@ public struct UserDetailsApi {
         let parameters: [String: Any] = [:]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/auth-details",
             method: .get,
             task: .requestPlain,
@@ -40,6 +42,7 @@ public struct UserDetailsApi {
         let parameters: [String: Any] = [:]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/verification-document/current-user",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -59,6 +62,7 @@ public struct UserDetailsApi {
         let parameters: [String: Any] = dto.asDictionary
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/update-profile/individual",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -78,6 +82,7 @@ public struct UserDetailsApi {
         let parameters: [String: Any] = dto.asDictionary
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/update-profile/organization",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -99,6 +104,7 @@ public struct UserDetailsApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/contact-update/email",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -120,6 +126,7 @@ public struct UserDetailsApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/contact-update/phone",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -140,6 +147,7 @@ public struct UserDetailsApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/update-profile-image",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),

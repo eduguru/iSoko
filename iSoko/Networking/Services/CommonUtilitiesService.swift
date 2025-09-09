@@ -5,6 +5,8 @@
 //  Created by Edwin Weru on 27/08/2025.
 //
 
+import NetworkingKit
+
 public protocol CommonUtilitiesService {
     //MARK: - locations
     func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse]

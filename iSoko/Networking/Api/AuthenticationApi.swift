@@ -7,6 +7,7 @@
 import Moya
 import Foundation
 import UtilsKit
+import NetworkingKit
 
 public struct AuthenticationApi {
     
@@ -28,6 +29,7 @@ public struct AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "oauth/token",
             method: .post,
             task: .requestParameters(
@@ -52,6 +54,7 @@ public struct AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/pre-validation/email",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -72,6 +75,7 @@ public struct AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/pre-validation/phone",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -95,6 +99,7 @@ public struct AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "account-verification/pre-registration",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -117,6 +122,7 @@ public extension AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/register/individual",
             method: .post,
             task: .requestJSONEncodable(request),
@@ -136,6 +142,7 @@ public extension AuthenticationApi {
         ]
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/register/organization",
             method: .post,
             task: .requestJSONEncodable(request),
@@ -168,6 +175,7 @@ public extension AuthenticationApi {
         }
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: path,
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -186,6 +194,7 @@ public extension AuthenticationApi {
         let parameters: [String: Any] = dto.asDictionary
         
         let t = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/password/reset",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),

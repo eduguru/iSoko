@@ -7,6 +7,7 @@
 
 import Foundation
 import Moya
+import NetworkingKit
 
 public struct ProductsApi {
     
@@ -20,6 +21,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -39,6 +41,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -58,6 +61,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -77,6 +81,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/current-user",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -96,6 +101,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/product-details/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -115,6 +121,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/product-trader-details/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -135,6 +142,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -154,6 +162,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/edit/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -173,6 +182,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/image/add/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -192,6 +202,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/image/remove/\(imageId)",
             method: .put,
             task: .requestPlain,
@@ -211,6 +222,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/image/set-primary/\(imageId)",
             method: .put,
             task: .requestPlain,
@@ -230,6 +242,7 @@ public struct ProductsApi {
         ]
         
         let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/product/update-status/\(status)/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -254,6 +267,7 @@ public enum UserAPI {
         )
 
         let target = UploadTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/user/update-profile-image",
             files: [file],
             headers: headers,
@@ -278,6 +292,7 @@ public enum GalleryAPI {
         }
 
         let target = UploadTarget(
+            baseURL: ApiEnvironment.baseURL,
             path: "api/gallery/upload",
             files: files,
             additionalParams: ["caption": caption],

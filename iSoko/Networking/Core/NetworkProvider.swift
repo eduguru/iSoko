@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import NetworkingKit
 
 public final class NetworkProvider {
     private let tokenProvider: RefreshableTokenProvider
