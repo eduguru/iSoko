@@ -11,7 +11,7 @@ import NetworkingKit
 
 public struct ProductsApi {
     
-    //MARK: - products lisitings
+    //MARK: - listings
     public static func getAllProducts(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[ProductResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
 
@@ -252,10 +252,7 @@ public struct ProductsApi {
         
         return OptionalObjectResponseTarget(target: target)
     }
-}
 
-
-public enum UserAPI {
     public static func updateUserProfileImage(image: Data, accessToken: String) -> BasicUploadResponseTarget {
         let headers = ["Authorization": "Bearer \(accessToken)"]
 
@@ -276,9 +273,7 @@ public enum UserAPI {
 
         return BasicUploadResponseTarget(target: target)
     }
-}
 
-public enum GalleryAPI {
     public static func uploadGallery(images: [Data], caption: String, accessToken: String) -> BasicUploadResponseTarget {
         let headers = ["Authorization": "Bearer \(accessToken)"]
 
