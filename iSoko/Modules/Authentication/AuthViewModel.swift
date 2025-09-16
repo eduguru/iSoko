@@ -29,6 +29,45 @@ final class AuthViewModel: FormViewModel {
         
         sections.append(makeHeaderSection())
         sections.append(makeCredentialsSection())
+        sections.append(FormSection(id: -111, cells: [faceIDRow, notificationsRow, countryRow]))
+        
+        sections.append(
+        
+            FormSection(id: 0, title: "User Info", cells: [
+                DropdownFormRow(
+                    tag: 101,
+                    config: DropdownFormConfig(
+                        title: "Country",
+                        placeholder: "Choose a country",
+                        subtitle: nil,
+                        leftImage: UIImage(systemName: "globe"),
+                        rightImage: UIImage(systemName: "chevron.down"),
+                        isCardStyleEnabled: true,
+                        onTap: {
+                            print("Tapped Country")
+                        }
+                    )
+                ),
+                DropdownFormRow(
+                    tag: 102,
+                    config: DropdownFormConfig(
+                        title: nil,
+                        placeholder: "Choose a city",
+                        subtitle: nil,
+                        leftImage: nil,
+                        rightImage: UIImage(systemName: "chevron.right"),
+                        isCardStyleEnabled: true,
+                        cardBackgroundColor: .systemGray6,
+                        onTap: {
+                            print("Tapped City")
+                        }
+                    )
+                )
+            ])
+
+
+            
+        )
         
         return sections
     }
@@ -167,6 +206,70 @@ final class AuthViewModel: FormViewModel {
         return buttonRow
     }
     
+    let faceIDRow = SelectableRow(
+        tag: 1001,
+        config: SelectableRowConfig(
+            title: "Enable Face ID",
+            description: "Use Face ID for secure login",
+            isSelected: true,
+            selectionStyle: .checkbox, // or .radio
+            isAccessoryVisible: true,
+            accessoryImage: UIImage(systemName: "faceid"),
+            isCardStyleEnabled: true,
+            cardCornerRadius: 12,
+            cardBackgroundColor: .secondarySystemGroupedBackground,
+            cardBorderColor: UIColor.systemGray4,
+            cardBorderWidth: 1,
+            onToggle: { isSelected in
+                print("Face ID enabled: \(isSelected)")
+            }
+        )
+    )
+
+    let notificationsRow = SelectableRow(
+        tag: 1002,
+        config: SelectableRowConfig(
+            title: "Push Notifications",
+            description: "Get notified about new messages",
+            isSelected: false,
+            selectionStyle: .radio,
+            isAccessoryVisible: false,
+            isCardStyleEnabled: true,
+            onToggle: { isSelected in
+                print("Notifications selected: \(isSelected)")
+            }
+        )
+    )
+    
+    lazy var countryRow = DropdownFormRow(
+        tag: 3001,
+        config: DropdownFormConfig(
+            title: "Country",
+            placeholder: "Select your country",
+            leftImage: UIImage(systemName: "globe"),
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.presentCountryPicker()
+            }
+        )
+    )
+
+    private func presentCountryPicker() {
+        let countries = ["USA", "Canada", "Germany"]
+    }
+
+    func reloadRowWithTag(_ tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                let indexPath = IndexPath(row: rowIndex, section: sectionIndex)
+                onReloadRow?(indexPath)
+                break
+            }
+        }
+    }
+
+    
     // MARK: - selection
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
@@ -203,4 +306,3 @@ final class AuthViewModel: FormViewModel {
         }
     }
 }
-
