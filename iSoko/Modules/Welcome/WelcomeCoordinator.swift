@@ -12,11 +12,22 @@ import UIKit
 class WelcomeCoordinator: BaseCoordinator {
     
     override func start() {
-        showWalkthrough()
+        showCountryLanguagePreference()
     }
     
-    private func showSplashScreen() {
+    private func showCountryLanguagePreference() {
+        let viewModel = CountryLanguagePreferenceViewModel()
+        viewModel.gotoSelectCountry = gotoSelectCountry
+        viewModel.gotoSelectLanguage = gotoSelectLanguage
         
+        viewModel.gotoConfirm = { [ weak self ] in
+            self?.showWalkthrough()
+        }
+        
+        let viewController = CountryLanguagePreferenceViewController()
+        viewController.viewModel = viewModel
+        
+        router.setRoot(viewController, animated: true)
     }
 
     private func showWalkthrough() {
@@ -26,7 +37,13 @@ class WelcomeCoordinator: BaseCoordinator {
             OnboardingModel(title: "Simple", description: "Get started in seconds.", media: "onboarding03")
         ]
         
-        let viewModel = OnboardingViewModel(pages)
+        let buttonStyle: ButtonLayoutStyle = ButtonLayoutStyle(
+            primaryColor: .app(.primary),
+            secondaryColor: .app(.secondary),
+            configuration: .inlineBottom
+        )
+        
+        let viewModel = OnboardingViewModel(pages, layoutStyle: buttonStyle)
         let viewController = OnboardingController(viewModel: viewModel)
         viewController.modalPresentationStyle = .fullScreen
         
@@ -42,7 +59,6 @@ class WelcomeCoordinator: BaseCoordinator {
         router.setRoot(viewController, animated: false)
     }
     
-    
     private func showLoginFlow() {
         let coordinator = AuthCoordinator(router: router)
         coordinator.delegate = self
@@ -50,6 +66,14 @@ class WelcomeCoordinator: BaseCoordinator {
         coordinator.start()
     }
 
+    private func gotoSelectCountry() {
+        
+    }
+    
+    private func gotoSelectLanguage() {
+        
+    }
+    
     func startModal() {
         let homeVC = HomeViewController()
         homeVC.title = "Home"
