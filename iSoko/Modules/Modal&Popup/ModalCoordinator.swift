@@ -6,11 +6,33 @@
 //
 
 import RouterKit
+import UtilsKit
 import UIKit
 
-class ModalCoordinator: BaseCoordinator {
+public class ModalCoordinator: BaseCoordinator {
     
-    override func start() {
+    public override func start() { }
+    
+    public func goToCountrySelection(completion: @escaping (Country) -> Void) {
+        let model = CountryPickerViewModel()
+        model.confirmSelection = { [weak self] country in
+            completion(country)
+            self?.router.pop()
+        }
+        
+        let vc = CountryPickerViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+//        vc.onRowSelected = model.onRowSelected
+//        model.redrawSection = vc.redrawSection
+        
+        router.push(vc)
+    }
+    
+    func presentModal() {
         let modalVC = UIViewController()
         modalVC.view.backgroundColor = .systemPurple
         modalVC.title = "Modal Flow"

@@ -7,9 +7,10 @@
 
 import DesignSystemKit
 import UIKit
+import UtilsKit
 
 final class CountryLanguagePreferenceViewModel: FormViewModel {
-    var gotoSelectCountry: (() -> Void)? = { }
+    var gotoSelectCountry: (_ completion: @escaping (Country?) -> Void) -> Void = { _ in }
     var gotoSelectLanguage: (() -> Void)? = { }
     var gotoConfirm: (() -> Void)? = { }
     
@@ -85,19 +86,40 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
         }
     )
     
-    private lazy var countryRow = DropdownFormRow(
-        tag: 3001,
-        config: DropdownFormConfig(
-            title: "Select Country",
-            placeholder: "Country",
-            leftImage: nil,
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.gotoSelectCountry?()
-            }
+    private lazy var countryRow = makeCountryRow()
+
+    private func makeCountryRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: 3001,
+            config: DropdownFormConfig(
+                title: "Select Country",
+                placeholder: state?.country?.name ?? "Country",
+                leftImage: nil,
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in
+                    self?.handleCountrySelection()
+                }
+            )
         )
-    )
+    }
+
+    private func handleCountrySelection() {
+        gotoSelectCountry { [weak self] selectedCountry in
+            guard let self = self else { return }
+            guard let selectedCountry = selectedCountry else { return }
+
+            // Update state
+            self.state?.country = selectedCountry
+
+            // Update the placeholder text
+            self.countryRow.config.placeholder = selectedCountry.name
+
+            // Reload the row
+            self.reloadRowWithTag(self.countryRow.tag)
+        }
+    }
+
     
     private lazy var languageRow = DropdownFormRow(
         tag: 3001,
@@ -140,7 +162,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
     
     private struct State {
         var language: String?
-        var country: String?
+        var country: Country?
     }
     
     enum Tags {

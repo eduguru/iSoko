@@ -8,6 +8,7 @@
 import RouterKit
 import WalkthroughKit
 import UIKit
+import UtilsKit
 
 class WelcomeCoordinator: BaseCoordinator {
     
@@ -66,8 +67,13 @@ class WelcomeCoordinator: BaseCoordinator {
         coordinator.start()
     }
 
-    private func gotoSelectCountry() {
-        
+    private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] country in
+            completion(country)
+        }
     }
     
     private func gotoSelectLanguage() {

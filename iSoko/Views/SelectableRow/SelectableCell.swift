@@ -143,7 +143,7 @@ public final class SelectableCell: UITableViewCell {
         }
         selectionIcon.image = UIImage(systemName: imageName)
         // Tint or color accordingly
-        selectionIcon.tintColor = UIColor.systemBlue  // or your app primary color
+        selectionIcon.tintColor = .app(.primary) 
     }
 
     @objc private func toggleSelection() {
