@@ -72,7 +72,7 @@ final class SignupViewModel: FormViewModel {
     private func makeSimpleImageTitleDescriptionRow() -> FormRow {
         return SimpleImageTitleDescriptionRow(
             tag: 1,
-            image: UIImage(named: "user"),
+            image: UIImage(named: "logo"),
             imageIsRounded: true,
             title: "John Doe",
             description: "iOS Developer",
@@ -86,7 +86,7 @@ final class SignupViewModel: FormViewModel {
         let row = ImageTitleDescriptionRow(
             tag: 102,
             config: ImageTitleDescriptionConfig(
-                image: UIImage(named: "user"),
+                image: UIImage(named: "logo"),
                 imageStyle: .rounded, title: "Account Settings",
                 description: "Manage your personal information, Manage your personal information, Manage your personal information",
                 accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .arrowDown),

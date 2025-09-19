@@ -1,11 +1,11 @@
 {
   "images" : [
     {
+      "filename" : "iSoko_logo-white.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "Onboarding_pic-4.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

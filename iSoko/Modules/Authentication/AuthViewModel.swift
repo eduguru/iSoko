@@ -29,45 +29,6 @@ final class AuthViewModel: FormViewModel {
         
         sections.append(makeHeaderSection())
         sections.append(makeCredentialsSection())
-        sections.append(FormSection(id: -111, cells: [faceIDRow, notificationsRow, countryRow]))
-        
-        sections.append(
-        
-            FormSection(id: 0, title: "User Info", cells: [
-                DropdownFormRow(
-                    tag: 101,
-                    config: DropdownFormConfig(
-                        title: "Country",
-                        placeholder: "Choose a country",
-                        subtitle: nil,
-                        leftImage: UIImage(systemName: "globe"),
-                        rightImage: UIImage(systemName: "chevron.down"),
-                        isCardStyleEnabled: true,
-                        onTap: {
-                            print("Tapped Country")
-                        }
-                    )
-                ),
-                DropdownFormRow(
-                    tag: 102,
-                    config: DropdownFormConfig(
-                        title: nil,
-                        placeholder: "Choose a city",
-                        subtitle: nil,
-                        leftImage: nil,
-                        rightImage: UIImage(systemName: "chevron.right"),
-                        isCardStyleEnabled: true,
-                        cardBackgroundColor: .systemGray6,
-                        onTap: {
-                            print("Tapped City")
-                        }
-                    )
-                )
-            ])
-
-
-            
-        )
         
         return sections
     }
@@ -112,7 +73,7 @@ final class AuthViewModel: FormViewModel {
     
     // MARK: - make rows
     private func makeHeaderImageCell() -> FormRow {
-        let imageRow = ImageFormRow(tag: 1001, image: UIImage(named: "user"), height: 120)
+        let imageRow = ImageFormRow(tag: 1001, image: UIImage(named: "logo"), height: 120)
         return imageRow
         
     }

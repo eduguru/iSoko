@@ -66,13 +66,22 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.start()
     }
-
+    
     private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
         let coordinator = ModalCoordinator(router: router)
         // coordinator.delegate = self
         addChild(coordinator)
-        coordinator.goToCountrySelection { [weak self] country in
-            completion(country)
+        coordinator.goToCountrySelection { [weak self] result in
+            completion(result)
+        }
+    }
+    
+    private func gotoSelectLanguage(completion: @escaping (Language) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToLanguageSelection{ [weak self] result in
+            completion(result)
         }
     }
     

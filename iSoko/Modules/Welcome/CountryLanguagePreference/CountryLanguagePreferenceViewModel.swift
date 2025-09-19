@@ -10,29 +10,29 @@ import UIKit
 import UtilsKit
 
 final class CountryLanguagePreferenceViewModel: FormViewModel {
+    
     var gotoSelectCountry: (_ completion: @escaping (Country?) -> Void) -> Void = { _ in }
-    var gotoSelectLanguage: (() -> Void)? = { }
+    var gotoSelectLanguage: (_ completion: @escaping (Language?) -> Void) -> Void = { _ in }
     var gotoConfirm: (() -> Void)? = { }
-    
+
     private var state: State?
-    
+
     override init() {
         self.state = State()
         super.init()
         
         self.sections = makeSections()
     }
-    
-    // MARK: -  make sections
+
+    // MARK: - make sections
+
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-        
-        sections.append(makeHeaderSection())
-        sections.append(makeBodySection())
-        
-        return sections
+        return [
+            makeHeaderSection(),
+            makeBodySection()
+        ]
     }
-    
+
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: Tags.Section.header.rawValue,
@@ -44,34 +44,40 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
             ]
         )
     }
-    
+
     private func makeBodySection() -> FormSection {
         FormSection(
             id: Tags.Section.body.rawValue,
             title: nil,
-            cells: [countryRow, languageRow, SpacerFormRow(tag: -1), buttonRow]
+            cells: [
+                countryRow,
+                languageRow,
+                SpacerFormRow(tag: -1),
+                buttonRow
+            ]
         )
     }
-    
-    // MARK: - make rows
-    private  lazy var imageRow = ImageFormRow(
+
+    // MARK: - UI Rows
+
+    private lazy var imageRow = ImageFormRow(
         tag: 1001,
-        image: UIImage(named: "user"),
+        image: UIImage(named: "logo"),
         height: 120
     )
-    
+
     private lazy var headerTitleRow = TitleDescriptionFormRow(
         tag: 101,
         title: "Welcome to the app",
         description: "This description",
         maxTitleLines: 2,
-        maxDescriptionLines: 0,  // unlimited lines
+        maxDescriptionLines: 0,
         titleEllipsis: .none,
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .center
     )
-    
+
     private lazy var buttonRow = ButtonFormRow(
         tag: 1001,
         model: ButtonFormModel(
@@ -85,7 +91,9 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
             self?.gotoConfirm?()
         }
     )
-    
+
+    // MARK: - Country Row
+
     private lazy var countryRow = makeCountryRow()
 
     private func makeCountryRow() -> DropdownFormRow {
@@ -106,35 +114,46 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
 
     private func handleCountrySelection() {
         gotoSelectCountry { [weak self] selectedCountry in
-            guard let self = self else { return }
-            guard let selectedCountry = selectedCountry else { return }
+            guard let self = self, let selectedCountry = selectedCountry else { return }
 
-            // Update state
             self.state?.country = selectedCountry
-
-            // Update the placeholder text
             self.countryRow.config.placeholder = selectedCountry.name
-
-            // Reload the row
             self.reloadRowWithTag(self.countryRow.tag)
         }
     }
 
-    
-    private lazy var languageRow = DropdownFormRow(
-        tag: 3001,
-        config: DropdownFormConfig(
-            title: "Select Language",
-            placeholder: "Language",
-            leftImage: nil,
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.gotoSelectLanguage?()
-            }
+    // MARK: - Language Row
+
+    private lazy var languageRow = makeLanguageRow()
+
+    private func makeLanguageRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: 3002,
+            config: DropdownFormConfig(
+                title: "Select Language",
+                placeholder: state?.language?.name ?? "Language",
+                leftImage: nil,
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in
+                    self?.handleLanguageSelection()
+                }
+            )
         )
-    )
-    
+    }
+
+    private func handleLanguageSelection() {
+        gotoSelectLanguage { [weak self] selectedLanguage in
+            guard let self = self, let selectedLanguage = selectedLanguage else { return }
+
+            self.state?.language = selectedLanguage
+            self.languageRow.config.placeholder = selectedLanguage.name
+            self.reloadRowWithTag(self.languageRow.tag)
+        }
+    }
+
+    // MARK: - Helpers
+
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -144,37 +163,41 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
             }
         }
     }
-    
-    // MARK: - selection
+
+    // MARK: - Selection Override
+
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
         case Tags.Section.header.rawValue:
             print("Header section row selected: \(row.tag)")
-            // Handle header taps here
         case Tags.Section.body.rawValue:
-            print("Credentials section row selected: \(row.tag)")
-            // Handle credentials taps here
+            print("Body section row selected: \(row.tag)")
         default:
             break
         }
     }
-    
-    
+
+    // MARK: - State
+
     private struct State {
-        var language: String?
+        var language: Language?
         var country: Country?
     }
-    
+
+    // MARK: - Tags
+
     enum Tags {
         enum Section: Int {
             case header = 0
             case body = 1
         }
-        
+
         enum Cells: Int {
-            case signIn = 0
-            case headerImage = 1
-            case headerTitle = 2
+            case headerImage = 0
+            case headerTitle = 1
+            case country = 2
+            case language = 3
+            case confirm = 4
         }
     }
 }
