@@ -1,20 +1,20 @@
 //
-//  CountryPickerViewController.swift
+//  BasicProfileViewController.swift
 //  
 //
-//  Created by Edwin Weru on 17/09/2025.
+//  Created by Edwin Weru on 22/09/2025.
 //
 
 import UIKit
 import DesignSystemKit
 
-class CountryPickerViewController: FormViewController, CloseableViewController {
+class BasicProfileViewController: FormViewController, CloseableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Select Country"
+        title = "Complete Your Profile"
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

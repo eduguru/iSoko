@@ -288,7 +288,6 @@ final class LoginViewModel: FormViewModel {
         }
     }
     
-    
     private struct State {
         
     }

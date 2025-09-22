@@ -41,5 +41,18 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+    
+    <key>GIDClientID</key>
+    <string>994100242590-8fbiek5bhnlkedbgs7s8jdf18tmcv7mf.apps.googleusercontent.com</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.994100242590-8fbiek5bhnlkedbgs7s8jdf18tmcv7mf</string>
+        </array>
+      </dict>
+    </array>
+    
 </dict>
 </plist>

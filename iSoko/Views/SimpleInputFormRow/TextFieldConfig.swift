@@ -18,6 +18,12 @@ public struct TextFieldConfig {
     public var autoCapitalization: UITextAutocapitalizationType
     public var textContentType: UITextContentType?
 
+    // Optional Enhancements
+    public var textAlignment: NSTextAlignment
+    public var textFont: UIFont?
+    public var textColor: UIColor?
+    public var maxCharacterCount: Int?
+
     public init(
         placeholder: String? = nil,
         keyboardType: UIKeyboardType = .default,
@@ -27,7 +33,11 @@ public struct TextFieldConfig {
         prefixText: String? = nil,
         returnKeyType: UIReturnKeyType = .default,
         autoCapitalization: UITextAutocapitalizationType = .none,
-        textContentType: UITextContentType? = nil
+        textContentType: UITextContentType? = nil,
+        textAlignment: NSTextAlignment = .natural,
+        textFont: UIFont? = nil,
+        textColor: UIColor? = nil,
+        maxCharacterCount: Int? = nil
     ) {
         self.placeholder = placeholder
         self.keyboardType = keyboardType
@@ -38,5 +48,9 @@ public struct TextFieldConfig {
         self.returnKeyType = returnKeyType
         self.autoCapitalization = autoCapitalization
         self.textContentType = textContentType
+        self.textAlignment = textAlignment
+        self.textFont = textFont
+        self.textColor = textColor
+        self.maxCharacterCount = maxCharacterCount
     }
 }

@@ -9,55 +9,33 @@ import DesignSystemKit
 import UIKit
 
 final class SignupViewModel: FormViewModel {
-    var goToSignUp: (() -> Void)? = { }
-    
+    var confirmSelection: ((CommonIdNameModel) -> Void)? = { _ in }
+
     private var state: State?
-    
+
     override init() {
         self.state = State()
         super.init()
-        
+
         self.sections = makeSections()
     }
-    
-    // MARK: -  make sections
+
+    // MARK: - Section Builders
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = []
         
-        sections.append(makeHeaderSection())
-        sections.append(makeCredentialsSection())
-        
+        sections.append(FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]))
+        sections.append(makeSelectionSection())
+        sections.append(FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow]))
+
         return sections
-    }
-    
-    private func makeHeaderSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.header.rawValue,
-            title: nil,
-            cells: [
-                makeHeaderTitleRow(),
-            ]
-        )
-    }
-    
-    private func makeCredentialsSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.credentials.rawValue,
-            title: nil,
-            cells: [
-                SpacerFormRow(tag: 1001),
-                makeSimpleImageTitleDescriptionRow(),
-                makeImageTitleDescriptionRow()
-            ]
-        )
-        
     }
     
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Welcome to the app, Welcome to the app, Welcome to the app",
-            description: "",
+            title: "Choose your account type",
+            description: "Select your type of account that best describe your needs",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -68,71 +46,133 @@ final class SignupViewModel: FormViewModel {
         
         return row
     }
-    
-    private func makeSimpleImageTitleDescriptionRow() -> FormRow {
-        return SimpleImageTitleDescriptionRow(
-            tag: 1,
-            image: UIImage(named: "logo"),
-            imageIsRounded: true,
-            title: "John Doe",
-            description: "iOS Developer",
-            showsArrow: true
-        ) {
-            print("Cell tapped")
-        }
+
+    private func makeSelectionSection() -> FormSection {
+        FormSection(id: Tags.Section.transactions.rawValue, cells: makeSelectionCells())
     }
     
-    private func makeImageTitleDescriptionRow() -> FormRow {
-        let row = ImageTitleDescriptionRow(
-            tag: 102,
-            config: ImageTitleDescriptionConfig(
-                image: UIImage(named: "logo"),
-                imageStyle: .rounded, title: "Account Settings",
-                description: "Manage your personal information, Manage your personal information, Manage your personal information",
-                accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .arrowDown),
-                onTap: {
-                    print("Cell tapped")
+    private func updateSelectionSection() {
+        guard let sectionIndex = sections.firstIndex( where: { $0.id == Tags.Section.transactions.rawValue }) else { return }
+        let cells = makeSelectionCells()
+        
+        sections[sectionIndex].cells = cells
+        reloadSection(sectionIndex)
+    }
+
+    private func makeSelectionCells() -> [FormRow] {
+        let items = options()
+        return items.map { makeCountryRow(for: $0) }
+    }
+
+    // MARK: - Row Builders
+
+    private func makeCountryRow(for item: CommonIdNameModel) -> SelectableRow {
+        let tag = tag(for: item)
+        let isSelected: Bool = state?.selectedOption?.id == item.id ? true : false
+
+        return SelectableRow(
+            tag: tag,
+            config: SelectableRowConfig(
+                title: item.name,
+                description: item.description ?? "",
+                isSelected: isSelected,
+                selectionStyle: .radio,
+                isAccessoryVisible: true,
+                accessoryImage: nil,
+                isCardStyleEnabled: true,
+                cardCornerRadius: 12,
+                cardBackgroundColor: .secondarySystemGroupedBackground,
+                cardBorderColor: UIColor.systemGray4,
+                cardBorderWidth: 1,
+                onToggle: { [weak self] selected in
+                    guard let self = self else { return }
+
+                    if selected {
+                        self.state?.selectedOption = item
+                        self.state?.selectedTag = tag
+                        self.updateSelectionSection()
+                    }
                 }
             )
         )
+    }
 
-        return row
+
+    // MARK: - Button Row
+
+    lazy var confirmButtonRow = ButtonFormRow(
+        tag: 9999,
+        model: ButtonFormModel(
+            title: "Confirm",
+            style: .primary,
+            size: .medium,
+            icon: nil,
+            fontStyle: .headline,
+            hapticsEnabled: true
+        ) { [weak self] in
+            guard let self = self else { return }
+            guard let selectedOption = self.state?.selectedOption else { return }
+
+            self.confirmSelection?(selectedOption)
+        }
+    )
+
+    // MARK: - Helpers
+
+    private func tag(for item: CommonIdNameModel) -> Int {
+        return item.id.hashValue
     }
     
-    // MARK: - selection
+    // MARK: - Country Data
+    private func options() -> [CommonIdNameModel] {
+        var items: [CommonIdNameModel] = []
+        
+        items.append(CommonIdNameModel(
+            id: 0,
+            name: "Individual Account",
+            description: "Perfect for sole proprietor, freelancers, and individual business owners managing their own operations")
+        )
+        
+        items.append(CommonIdNameModel(
+            id: 1,
+            name: "Organisation Account",
+            description: "Ideal for companies, partnerships, cooperatives, and organisations with multiple stakeholders")
+        )
+
+        state?.options = items
+        return state?.options ?? []
+    }
+
+    // MARK: - Selection Handling (optional override)
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
-        case Tags.Section.header.rawValue:
-            print("Header section row selected: \(row.tag)")
-            // Handle header taps here
-        case Tags.Section.credentials.rawValue:
-            print("Credentials section row selected: \(row.tag)")
-            // Handle credentials taps here
         default:
             break
         }
     }
-    
-    
+
+    // MARK: - State
+
     private struct State {
-        
+        var options: [CommonIdNameModel] = []
+        var selectedOption: CommonIdNameModel?
+        var searchText: String = ""
+        var selectedTag: Int?
     }
-    
+
+    // MARK: - Tags
+
     enum Tags {
         enum Section: Int {
             case header = 0
-            case credentials = 1
+            case transactions = 1
+            case confirmation = 2
         }
-        
+
         enum Cells: Int {
-            case signIn = 0
-            case forgotPassword = 1
-            case register = 2
-            case guest = 3
-            case divideLine = 4
-            case headerImage = 5
-            case headerTitle = 6
+            case search = 0
+            case ceountry = 1
+            case comfirm = 2
         }
     }
 }
-

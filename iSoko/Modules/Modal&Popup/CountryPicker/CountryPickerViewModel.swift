@@ -126,7 +126,7 @@ final class CountryPickerViewModel: FormViewModel {
     }
     
     // MARK: - Country Data
-    public func countries() -> [Country] {
+    private func countries() -> [Country] {
         let helper = CountryHelper()
 
         state?.countries = helper.countries

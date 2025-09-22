@@ -42,16 +42,51 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToSignup() {
         let viewModel = SignupViewModel()
+        viewModel.confirmSelection = { [weak self] selection in
+            //self?.router.pop(animated: true)
+            self?.goToCompleteProfile(selection)
+        }
+        
         let vc = SignupViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in // goToMainTabs
             self?.router.pop(animated: true)
         }
         
-        router.navigationControllerInstance?.setNavigationBarHidden(false, animated: false)
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
         // router.setRoot(vc, animated: true)
+    }
+    
+    private func goToCompleteProfile(_ selectedType: CommonIdNameModel) {
+        let viewModel = BasicProfileDataViewModel()
+        viewModel.gotoConfirm = goToConfirmProfile
+        
+        let vc = BasicProfileViewController()
+        vc.viewModel = viewModel
+        
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToConfirmProfile() {
+        let viewModel = BasicProfileSecurityViewModel()
+        
+        let vc = BasicProfileViewController()
+        vc.viewModel = viewModel
+        
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToPrivacyPolicy() {
+        
+    }
+    
+    private func goToTermsAndConditions() {
+        
     }
     
     private func gotoForgotPassword() {
