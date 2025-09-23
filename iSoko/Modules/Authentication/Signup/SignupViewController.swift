@@ -23,11 +23,11 @@ class SignupViewController: FormViewController, CloseableViewController {
     }
     
     @objc func close() {
-        closeAction()
+        closeAction?()
     }
     
     deinit {
-        closeAction()
+        print("👋 ViewController is being popped or dismissed")
     }
 }
 

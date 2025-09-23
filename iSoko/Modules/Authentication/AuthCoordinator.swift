@@ -34,8 +34,6 @@ class AuthCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
 
-//        router.navigationControllerInstance?.isNavigationBarHidden = false
-        router.navigationControllerInstance?.setNavigationBarHidden(false, animated: false)
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -49,7 +47,7 @@ class AuthCoordinator: BaseCoordinator {
         
         let vc = SignupViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -65,6 +63,9 @@ class AuthCoordinator: BaseCoordinator {
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
         
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
@@ -77,6 +78,9 @@ class AuthCoordinator: BaseCoordinator {
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
         
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
@@ -108,7 +112,6 @@ class AuthCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        router.navigationControllerInstance?.setNavigationBarHidden(false, animated: false)
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
         // router.setRoot(vc, animated: true)
@@ -122,7 +125,6 @@ class AuthCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        router.navigationControllerInstance?.setNavigationBarHidden(false, animated: false)
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
         // router.setRoot(vc, animated: true)

@@ -136,6 +136,4 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         
         return response
     }
-    
-    
 }
