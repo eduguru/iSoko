@@ -72,6 +72,7 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToConfirmProfile() {
         let viewModel = BasicProfileSecurityViewModel()
+        viewModel.gotoConfirm = goToOtpVerification
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -87,6 +88,16 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToTermsAndConditions() {
         
+    }
+    
+    private func goToOtpVerification() {
+        let viewModel = OTPFormViewModel()
+        
+        let vc = OTPFormViewController()
+        vc.viewModel = viewModel
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
     private func gotoForgotPassword() {

@@ -15,6 +15,15 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     
     private var state: State?
     
+    let fullText = "You acknowledge you have read and agreed to our terms of use and privacy policy"
+    lazy var termsRange: NSRange = {
+        (fullText as NSString).range(of: "terms of use")
+    }()
+    
+    lazy var privacyRange: NSRange = {
+        (fullText as NSString).range(of: "privacy policy")
+    }()
+    
     override init() {
         self.state = State()
         super.init()
@@ -44,7 +53,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         FormSection(
             id: Tags.Section.names.rawValue,
             title: "Set Your Password",
-            cells: [ passwordRow, confirmPasswordRow]
+            cells: [ passwordRow, confirmPasswordRow, requirementsListRow, termsRow, SpacerFormRow(tag: -00001), continueButtonRow]
         )
     }
     
@@ -143,6 +152,46 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             onReturnKeyTapped: {
                 print("User pressed return on password field")
             }
+        )
+    )
+    
+    // Create a config with your preferences
+    let config = RequirementsListRowConfig(
+        title: "Password Requirements",
+        items: [
+            RequirementItem(title: "Must be at least 8 characters", isSatisfied: true),
+            RequirementItem(title: "Include a number", isSatisfied: true),
+            RequirementItem(title: "Include a special character", isSatisfied: true)
+        ],
+        titleColor: .app(.primary),        // configurable title color
+        itemColor: .label,              // configurable item text color
+        selectionStyle: .checkbox,      // or .dot
+        isCardStyleEnabled: true,       // card background with rounded corners
+        cardCornerRadius: 12,
+        cardBackgroundColor: .systemGray6,
+        cardBorderColor: .systemGray3,
+        cardBorderWidth: 1,
+        spacing: 10,
+        contentInsets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+    )
+
+    // Initialize your RequirementsListRow
+    lazy var requirementsListRow = RequirementsListRow(tag: 1, config: config)
+
+    lazy var termsRow = TermsCheckboxRow(
+        tag: 300,
+        config: TermsCheckboxRowConfig(
+            isAgreed: false,
+            descriptionText: fullText,
+            termsLinkRange:termsRange,
+            privacyLinkRange: privacyRange,
+            onToggle: { agreed in
+                print("Agreed? \(agreed)")
+            },
+            onTermsTapped: { print("Terms tapped") },
+            onPrivacyTapped: { print("Privacy tapped") },
+            checkboxTintColor: .app(.primary),
+            useCardStyle: true
         )
     )
     
