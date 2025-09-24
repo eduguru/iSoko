@@ -6,26 +6,32 @@
 //
 
 import UIKit
+import StorageKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     var appCoordinator: AppCoordinator?
     
+    
+    let certificateService = NetworkEnvironment.shared.certificateService
+    
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-//        guard let windowScene = (scene as? UIWindowScene) else { return }
-//        
-//        let window = UIWindow(windowScene: windowScene)
-//        window.rootViewController = ViewController()
-//        self.window = window
-//        window.makeKeyAndVisible()
+        //        guard let windowScene = (scene as? UIWindowScene) else { return }
+        //
+        //        let window = UIWindow(windowScene: windowScene)
+        //        window.rootViewController = ViewController()
+        //        self.window = window
+        //        window.makeKeyAndVisible()
         
         guard let windowScene = (scene as? UIWindowScene) else { return }
         
         let window = UIWindow(windowScene: windowScene)
         self.window = window
+        
+        getToken()
         
         // Initialize AppCoordinator with the window
         appCoordinator = AppCoordinator(window: window)
@@ -62,5 +68,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
     
+    private func getToken() {
+        Task {
+            do {
+                
+                let token = try await certificateService.getToken(
+                    grant_type: AppConstants.GrantType.login.rawValue,
+                    client_id: ApiEnvironment.clientId,
+                    client_secret: ApiEnvironment.clientSecret
+                )
+                
+                print("🔑 accessToken:", token.accessToken)
+                AppStorage.accessToken = token.accessToken
+            } catch let NetworkError.server(apiError) {
+                // ❌ API returned error body
+                print("accessToken API error:", apiError.message ?? "")
+            } catch {
+                // ❌ Networking/decoding
+                print("accessToken Unexpected error:", error)
+            }
+        }
+    }
     
 }

@@ -10,7 +10,7 @@ public struct CommonIdNameModel: Decodable {
     public let name: String
     public let description: String?
 
-    public init(id: Int, name: String, description: String?) {
+    public init(id: Int, name: String, description: String? = nil) {
         self.id = id
         self.name = name
         self.description = description

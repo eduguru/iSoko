@@ -56,7 +56,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         FormSection(
             id: Tags.Section.gender.rawValue,
             title: "Gender",
-            cells: [ maleGenderRow, femaleGenderRow]
+            cells: makeGenderSelectionCells()
         )
     }
     
@@ -110,36 +110,36 @@ final class BasicProfileDataViewModel: FormViewModel {
         }
     )
     
-    lazy var maleGenderRow = SelectableRow(
-        tag: Tags.Cells.male.rawValue,
-        config: SelectableRowConfig(
-            title: "Male",
-            description: nil,
-            isSelected: false,
-            selectionStyle: .radio,
-            isAccessoryVisible: false,
-            isCardStyleEnabled: false,
-            onToggle: { isSelected in
-                print("Notifications selected: \(isSelected)")
-            }
-        )
-    )
+    private func makeGenderSelectionCells() -> [FormRow] {
+        return state?.genderOptions.map { makeGenderOptionRow(for: $0) } ?? []
+    }
     
-    lazy var femaleGenderRow = SelectableRow(
-        tag: Tags.Cells.female.rawValue,
-        config: SelectableRowConfig(
-            title: "Female",
-            description: nil,
-            isSelected: false,
-            selectionStyle: .radio,
-            isAccessoryVisible: false,
-            isCardStyleEnabled: false,
-            onToggle: { isSelected in
-                print("Notifications selected: \(isSelected)")
-            }
+    private func reloadGenderSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.gender.rawValue }) else { return }
+        sections[sectionIndex].cells = makeGenderSelectionCells()
+        reloadSection(sectionIndex)
+    }
+
+    private func makeGenderOptionRow(for option: CommonIdNameModel) -> SelectableRow {
+        let isSelected = state?.gender?.id == option.id
+        return SelectableRow(
+            tag: option.id,
+            config: SelectableRowConfig(
+                title: option.name,
+                description: nil,
+                isSelected: isSelected,
+                selectionStyle: .radio,
+                isAccessoryVisible: false,
+                isCardStyleEnabled: false,
+                onToggle: { [weak self] selected in
+                    guard let self = self, selected else { return }
+                    self.state?.gender = option
+                    self.reloadGenderSection()
+                }
+            )
         )
-    )
-    
+    }
+
     lazy var firstNameInputRow = SimpleInputFormRow(
         tag: Tags.Cells.firstName.rawValue,
         model: SimpleInputModel(
@@ -303,16 +303,20 @@ final class BasicProfileDataViewModel: FormViewModel {
         }
     }
     
-    
     private struct State {
         var firstName: String?
         var lastName: String?
-        var gender: String?
+        var gender: CommonIdNameModel?
+        var genderOptions: [CommonIdNameModel] = [
+            CommonIdNameModel(id: 1, name: "Male"),
+            CommonIdNameModel(id: 2, name: "Female")
+        ]
         var ageRange: CommonIdNameModel?
         var roles: CommonIdNameModel?
         var location: LocationModel?
         var referralCode: String?
     }
+
     
     enum Tags {
         enum Section: Int {

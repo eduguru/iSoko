@@ -7,6 +7,7 @@
 
 import DesignSystemKit
 import UIKit
+import StorageKit
 
 final class LoginViewModel: FormViewModel {
     
@@ -25,37 +26,33 @@ final class LoginViewModel: FormViewModel {
     private func getToken() {
         Task {
             do {
-                let token = try await authenticationService.login(
-                    grant_type: AppConstants.GrantType.login.rawValue,
-                    client_id: ApiEnvironment.clientId,
-                    client_secret: ApiEnvironment.clientSecret,
-                    username: "+254712270408",
-                    password: "12345678"
-                )
+//                let token = try await authenticationService.login(
+//                    grant_type: AppConstants.GrantType.login.rawValue,
+//                    client_id: ApiEnvironment.clientId,
+//                    client_secret: ApiEnvironment.clientSecret,
+//                    username: "+254712270408",
+//                    password: "12345678"
+//                )
+                
+                    let token = try await authenticationService.login(
+                        grant_type: AppConstants.GrantType.login.rawValue,
+                        client_id: ApiEnvironment.clientId,
+                        client_secret: ApiEnvironment.clientSecret,
+                        username: "+254712270408",
+                        password: "12345678"
+                    )
 
                 print("🔑 Logged in with token:", token.accessToken)
-//
-//                let emailResponse = try await authenticationService.preValidateEmail(
-//                    "dmjandom6@gmail.com",
-//                    accessToken: token.accessToken
-//                )
-//
-//                print("📧 Email Validation:", emailResponse.message ?? "")
-//
-//                if let errors = emailResponse.errors, !errors.isEmpty {
-//                    for e in errors {
-//                        print("❌ Validation error: \(e.field ?? "") - \(e.message ?? "")")
-//                    }
-//                }
+                AppStorage.accessToken = token.accessToken
                 
-                let response = try await userDetailsService.getUserDetails(accessToken: "d625f3a6-085e-49f2-b8c9-ecac93d9b171")
+                let response = try await userDetailsService.getUserDetails(accessToken: token.accessToken)
                 if let response = response {
                     print("User Details: \(response)")
                 } else {
                     print("No user details returned")
                 }
                 
-                let respo = try await commonUtilitiesService.getAllLocations(page: 1, count: 10, accessToken: "d625f3a6-085e-49f2-b8c9-ecac93d9b171")
+                let respo = try await commonUtilitiesService.getAllLocations(page: 1, count: 10, accessToken: token.accessToken)
                 print("respo returned: \(respo) \(respo.count)")
                 
 

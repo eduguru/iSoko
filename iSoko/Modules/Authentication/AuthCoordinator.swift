@@ -59,6 +59,9 @@ class AuthCoordinator: BaseCoordinator {
     private func goToCompleteProfile(_ selectedType: CommonIdNameModel) {
         let viewModel = BasicProfileDataViewModel()
         viewModel.gotoConfirm = goToConfirmProfile
+        viewModel.gotoSelectAgeRange = gotoSelectAgeRange
+        viewModel.gotoSelectRole = gotoSelectRole
+        viewModel.gotoSelectLocation = gotoSelectLocation
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -99,7 +102,85 @@ class AuthCoordinator: BaseCoordinator {
         
         let vc = OTPFormViewController()
         vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
         
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectAgeRange(_ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .ageGroups)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .idName(let model):
+                completion(model)
+            default:
+                completion(nil) // or ignore if .location is not expected here
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectRole(_ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 1, count: 100))
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .idName(let model):
+                completion(model)
+            default:
+                completion(nil) // or ignore if .location is not expected here
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectLocation(_ completion: @escaping (LocationModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .locations(page: 1, count: 100))
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .location(let response):
+                let model = LocationModel(with: response)
+                completion(model)
+            default:
+                completion(nil)
+            }
+
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
