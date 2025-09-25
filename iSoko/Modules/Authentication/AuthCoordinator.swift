@@ -18,7 +18,10 @@ class AuthCoordinator: BaseCoordinator {
         let vc = AuthViewController()
         vc.viewModel = viewModel
         
-        viewModel.gotoSignIn = goToLogin
+        viewModel.gotoSignIn = { [weak self] in
+            self?.goToLogin(makeRoot: false)
+        }
+        
         viewModel.gotoSignUp = goToSignup
         viewModel.gotoForgotPassword = gotoForgotPassword
         viewModel.gotoGuestSession = goToMainTabs
@@ -26,17 +29,27 @@ class AuthCoordinator: BaseCoordinator {
         router.setRoot(vc, animated: true)
     }
     
-    private func goToLogin() {
+    public func goToLogin(makeRoot: Bool = false) {
         let viewModel = LoginViewModel()
+        viewModel.gotoConfirm = goToMainTabs
+        
         let vc = LoginViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
 
         router.navigationControllerInstance?.navigationBar.isHidden = false
-        router.push(vc, animated: true)
+
+        if makeRoot {
+            vc.makeRoot = makeRoot
+            router.setRoot(vc, animated: true)
+        } else {
+            router.push(vc, animated: true)
+        }
     }
+
     
     private func goToSignup() {
         let viewModel = SignupViewModel()
@@ -102,7 +115,7 @@ class AuthCoordinator: BaseCoordinator {
     private func goToOtpVerification(_ verificationNumber: String) {
         let viewModel = OTPFormViewModel(verificationNumber: verificationNumber)
         viewModel.gotoConfirm = { [weak self] in
-            
+            self?.goToLogin(makeRoot: true)
         }
         
         let vc = OTPFormViewController()

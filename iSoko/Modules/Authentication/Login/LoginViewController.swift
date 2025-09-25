@@ -9,12 +9,13 @@ import UIKit
 import DesignSystemKit
 
 class LoginViewController: FormViewController, CloseableViewController {
+    var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        applyCloseButtonStyling(action: #selector(close), image: "backArrow")
+        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
     }
     
     override func viewWillAppear(_ animated: Bool) {

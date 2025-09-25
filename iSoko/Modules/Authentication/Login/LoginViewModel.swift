@@ -11,9 +11,8 @@ import StorageKit
 
 final class LoginViewModel: FormViewModel {
     
+    var gotoConfirm: (() -> Void)? = { }
     var gotoSignIn: (() -> Void)? = { }
-    var gotoSignUp: (() -> Void)? = { }
-    var gotoGuestSession: (() -> Void)? = { }
     var gotoForgotPassword: (() -> Void)? = { }
     
     private var state: State?
@@ -111,9 +110,8 @@ final class LoginViewModel: FormViewModel {
                 print("👀 View More tapped for credentials section")
             },
             cells: [
-                makeOptionsSegmentFormRow(),
                 makeEmailInputRow(),
-                makePhoneNumberInputRow(),
+//                makePhoneNumberInputRow(),
                 makePasswordInputRow(),
                 SpacerFormRow(tag: 1001),
                 makeLoginButtonRow(),
@@ -192,8 +190,8 @@ final class LoginViewModel: FormViewModel {
             icon: UIImage(systemName: "email.fill"),
             fontStyle: .headline,
             hapticsEnabled: true
-        ) {
-            print("Button tapped")
+        ) { [weak self] in
+            self?.gotoConfirm?()
         }
         
         let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
@@ -208,6 +206,7 @@ final class LoginViewModel: FormViewModel {
                 placeholder: "Enter email",
                 keyboardType: .emailAddress,
                 accessoryImage: nil //UIImage(systemName: "envelope")
+                
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
@@ -215,7 +214,8 @@ final class LoginViewModel: FormViewModel {
                 maxLength: 50,
                 errorMessageRequired: "Email is required",
                 errorMessageLength: "Must be 5–50 characters"
-            )
+            ),
+            useCardStyle: true
         )
         
         let inputRow = SimpleInputFormRow(tag: 9001, model: inputModel)
@@ -244,6 +244,7 @@ final class LoginViewModel: FormViewModel {
                     errorMessageRequired: "Password is required",
                     errorMessageLength: "Password must be 6–20 characters"
                 ),
+                useCardStyle: true,
                 onTextChanged: { text in
                     print("Password updated: \(text)")
                 },
