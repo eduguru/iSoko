@@ -10,29 +10,53 @@ import DesignSystemKit
 
 public final class DropdownFormRow: FormRow {
     public let tag: Int
-    public let reuseIdentifier: String = String(describing: DropdownFormCell.self)
-    public var cellClass: AnyClass? { DropdownFormCell.self }
+    
+    // Replace fixed reuseIdentifier with this to allow swap
+    public var useExternalTitleCell: Bool = true
+    
+    public var reuseIdentifier: String {
+        return useExternalTitleCell
+            ? String(describing: DropdownFormCellWithExternalTitle.self)
+            : String(describing: DropdownFormCell.self)
+    }
+    
+    public var cellClass: AnyClass? {
+        return useExternalTitleCell
+            ? DropdownFormCellWithExternalTitle.self
+            : DropdownFormCell.self
+    }
 
     public var config: DropdownFormConfig
     private var isValid: Bool = true
 
-    public init(tag: Int, config: DropdownFormConfig) {
+    public init(tag: Int, config: DropdownFormConfig, useExternalTitleCell: Bool = true) {
         self.tag = tag
         self.config = config
+        self.useExternalTitleCell = useExternalTitleCell
     }
 
     public func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
-        guard let cell = cell as? DropdownFormCell else {
-            assertionFailure("Expected DropdownFormCell")
+        if useExternalTitleCell {
+            guard let cell = cell as? DropdownFormCellWithExternalTitle else {
+                assertionFailure("Expected DropdownFormCellWithExternalTitle")
+                return cell
+            }
+            if !isValid {
+                config.subtitle = "This field is required"
+            }
+            cell.configure(with: config)
+            return cell
+        } else {
+            guard let cell = cell as? DropdownFormCell else {
+                assertionFailure("Expected DropdownFormCell")
+                return cell
+            }
+            if !isValid {
+                config.subtitle = "This field is required"
+            }
+            cell.configure(with: config)
             return cell
         }
-
-        if !isValid {
-            config.subtitle = "This field is required"
-        }
-
-        cell.configure(with: config)
-        return cell
     }
 
     public func updateValue(_ value: String) {

@@ -93,7 +93,8 @@ final class SignupViewModel: FormViewModel {
                         self.updateSelectionSection()
                     }
                 }
-            )
+            ),
+            useDividerStyle: false
         )
     }
 
