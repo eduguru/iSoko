@@ -38,6 +38,7 @@ final class AuthViewModel: FormViewModel {
             id: Tags.Section.header.rawValue,
             title: nil,
             cells: [
+                SpacerFormRow(tag: 1001),
                 makeHeaderImageCell(),
                 makeHeaderTitleRow(),
                 SpacerFormRow(tag: 1001),
@@ -61,10 +62,7 @@ final class AuthViewModel: FormViewModel {
                 SpacerFormRow(tag: 1001),
                 makeLoginButtonRow(),
                 makeForgotPasswordButtonRow(),
-                DividerWithTextFormRow(tag: 1003, text: ""),
-                SpacerFormRow(tag: 1001),
                 makeSignUpButtonRow(),
-                DividerWithTextFormRow(tag: -1, text: "OR"),
                 makeGuestButtonRow()
             ]
         )
@@ -166,60 +164,6 @@ final class AuthViewModel: FormViewModel {
         
         return buttonRow
     }
-    
-    let faceIDRow = SelectableRow(
-        tag: 1001,
-        config: SelectableRowConfig(
-            title: "Enable Face ID",
-            description: "Use Face ID for secure login",
-            isSelected: true,
-            selectionStyle: .checkbox, // or .radio
-            isAccessoryVisible: true,
-            accessoryImage: UIImage(systemName: "faceid"),
-            isCardStyleEnabled: true,
-            cardCornerRadius: 12,
-            cardBackgroundColor: .secondarySystemGroupedBackground,
-            cardBorderColor: UIColor.systemGray4,
-            cardBorderWidth: 1,
-            onToggle: { isSelected in
-                print("Face ID enabled: \(isSelected)")
-            }
-        )
-    )
-
-    let notificationsRow = SelectableRow(
-        tag: 1002,
-        config: SelectableRowConfig(
-            title: "Push Notifications",
-            description: "Get notified about new messages",
-            isSelected: false,
-            selectionStyle: .radio,
-            isAccessoryVisible: false,
-            isCardStyleEnabled: true,
-            onToggle: { isSelected in
-                print("Notifications selected: \(isSelected)")
-            }
-        )
-    )
-    
-    lazy var countryRow = DropdownFormRow(
-        tag: 3001,
-        config: DropdownFormConfig(
-            title: "Country",
-            placeholder: "Select your country",
-            leftImage: UIImage(systemName: "globe"),
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.presentCountryPicker()
-            }
-        )
-    )
-
-    private func presentCountryPicker() {
-        let countries = ["USA", "Canada", "Germany"]
-    }
-
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {

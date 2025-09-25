@@ -230,6 +230,8 @@ class AuthCoordinator: BaseCoordinator {
     
     private func gotoForgotPassword() {
         let viewModel = ResetPasswordViewModel()
+        viewModel.confirmSelection = goToResetPasswordOtpVerification
+        
         let vc = ResetPasswordViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in // goToMainTabs
@@ -241,7 +243,59 @@ class AuthCoordinator: BaseCoordinator {
         // router.setRoot(vc, animated: true)
     }
     
-    private func gotoReturningUser() {
+    private func gotoVerifyForgotPassword(_ value: String) {
+        let viewModel = VerifyPasswordResetViewModel()
+        viewModel.confirmSelection = { [weak self] _, _ in
+            self?.goToResetPasswordSuccess()
+        }
+        
+        let vc = VerifyPasswordResetViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in // goToMainTabs
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+        // router.setRoot(vc, animated: true)
+    }
+    
+    private func goToResetPasswordOtpVerification(_ verificationNumber: String) {
+        let viewModel = OTPFormViewModel(verificationNumber: verificationNumber)
+        viewModel.gotoConfirm = { [weak self] in
+            self?.gotoVerifyForgotPassword(verificationNumber)
+        }
+        
+        let vc = OTPFormViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToResetPasswordSuccess() {
+        let viewModel = ResetPasswordSuccessViewModel()
+        viewModel.gotoSignIn = { [weak self] in
+            self?.goToLogin(makeRoot: true)
+        }
+        
+        let vc = ResetPasswordSuccessViewController()
+        vc.viewModel = viewModel
+        vc.makeRoot = true
+        
+        vc.closeAction = { [weak self] in // goToMainTabs
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+        // router.setRoot(vc, animated: true)
+    }
+    
+    private func gotoReturningUser(_ value: String) {
         let viewModel = ReturningUserViewModel()
         let vc = ReturningUserViewController()
         vc.viewModel = viewModel

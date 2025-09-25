@@ -1,14 +1,15 @@
 //
-//  LanguagePickerViewController.swift
+//  ResetPasswordSuccessViewController.swift
 //  
 //
-//  Created by Edwin Weru on 18/09/2025.
+//  Created by Edwin Weru on 25/09/2025.
 //
+
 
 import UIKit
 import DesignSystemKit
 
-class LanguagePickerViewController: FormViewController, CloseableViewController {
+class ResetPasswordSuccessViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {

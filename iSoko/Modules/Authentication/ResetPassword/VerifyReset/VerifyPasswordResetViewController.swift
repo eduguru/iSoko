@@ -1,21 +1,20 @@
 //
-//  LanguagePickerViewController.swift
+//  VerifyPasswordResetViewController.swift
 //  
 //
-//  Created by Edwin Weru on 18/09/2025.
+//  Created by Edwin Weru on 25/09/2025.
 //
 
 import UIKit
 import DesignSystemKit
 
-class LanguagePickerViewController: FormViewController, CloseableViewController {
-    var makeRoot: Bool = false
+class VerifyPasswordResetViewController: FormViewController, CloseableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
+        applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     
     override func viewWillAppear(_ animated: Bool) {

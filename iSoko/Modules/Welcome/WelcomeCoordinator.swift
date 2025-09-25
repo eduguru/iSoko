@@ -34,9 +34,20 @@ class WelcomeCoordinator: BaseCoordinator {
 
     private func showWalkthrough() {
         let pages = [
-            OnboardingModel(title: "Welcome", description: "Discover features.", media: "onboarding01"),
-            OnboardingModel(title: "Secure", description: "Data stays safe.", media: "onboarding02"),
-            OnboardingModel(title: "Simple", description: "Get started in seconds.", media: "onboarding03")
+            OnboardingModel(
+                title: "Explore the app",
+                description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
+                media: "onboarding01"),
+            OnboardingModel(
+                title: "Value Prop 1",
+                description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
+                media: "onboarding02"),
+            OnboardingModel(title: "Value Prop 1",
+                            description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
+                            media: "onboarding03"),
+            OnboardingModel(title: "Your Journey to Success",
+                            description: "It only takes a few minutes to create your profile and start connecting with the iSOKO community.",
+                            media: "onboarding04")
         ]
         
         let buttonStyle: ButtonLayoutStyle = ButtonLayoutStyle(

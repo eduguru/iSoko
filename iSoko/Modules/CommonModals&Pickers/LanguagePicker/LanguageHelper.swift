@@ -15,7 +15,9 @@ final class LanguageHelper {
         Language(code: "en", name: "English"),
         Language(code: "fr", name: "Français"),
         Language(code: "sw", name: "Kiswahili"),
-        Language(code: "ar", name: "العربية")
+        Language(code: "rw", name: "Kinyarwanda"),
+        Language(code: "rn", name: "Rundi"),
+        // Language(code: "ar", name: "العربية")
         // Add or remove as needed
     ]
 

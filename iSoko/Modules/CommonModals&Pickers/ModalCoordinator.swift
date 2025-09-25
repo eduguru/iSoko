@@ -39,6 +39,7 @@ public class ModalCoordinator: BaseCoordinator {
         }
 
         let vc = LanguagePickerViewController()
+        vc.makeRoot = true
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
