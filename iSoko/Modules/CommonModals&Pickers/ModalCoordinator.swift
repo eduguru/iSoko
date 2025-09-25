@@ -19,7 +19,6 @@ public class ModalCoordinator: BaseCoordinator {
         let model = CountryPickerViewModel()
         model.confirmSelection = { [weak self] country in
             completion(country)
-            self?.router.pop()
         }
 
         let vc = CountryPickerViewController()
@@ -37,7 +36,6 @@ public class ModalCoordinator: BaseCoordinator {
         let model = LanguagePickerViewModel()
         model.confirmSelection = { [weak self] language in
             completion(language)
-            self?.router.pop()
         }
 
         let vc = LanguagePickerViewController()

@@ -9,6 +9,7 @@ import DesignSystemKit
 import UIKit
 
 final class BasicProfileDataViewModel: FormViewModel {
+    var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
     var gotoSelectAgeRange: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectRole: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectLocation: (_ completion: @escaping (LocationModel?) -> Void) -> Void = { _ in }
@@ -30,7 +31,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         
         sections.append(makeHeaderSection())
         sections.append(makeNamesSection())
-        sections.append(makeGenderSection())
+        // sections.append(makeGenderSection())
         sections.append(makeRolesSection())
         
         return sections
@@ -65,6 +66,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             id: Tags.Section.roles.rawValue,
             title: nil,
             cells: [
+                selectGenderRow,
                 selectAgeRangeRow,
                 selectRoleRow,
                 selectLocationRow,
@@ -79,6 +81,7 @@ final class BasicProfileDataViewModel: FormViewModel {
     private lazy var selectAgeRangeRow = makeAgeRangeRow()
     private lazy var selectRoleRow = makeRoleRow()
     private lazy var selectLocationRow = makeLocationRow()
+    private lazy var selectGenderRow = makeGenderRow()
     
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
@@ -151,7 +154,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 5,
+                minLength: 3,
                 maxLength: 50,
                 errorMessageRequired: "Email is required",
                 errorMessageLength: "Must be 5–50 characters"
@@ -173,7 +176,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 5,
+                minLength: 3,
                 maxLength: 50,
                 errorMessageRequired: "Email is required",
                 errorMessageLength: "Must be 5–50 characters"
@@ -218,6 +221,22 @@ final class BasicProfileDataViewModel: FormViewModel {
         )
     }
     
+    private func makeGenderRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: Tags.Cells.gender.rawValue,
+            config: DropdownFormConfig(
+                title: "Select Gender",
+                placeholder: state?.gender?.name ?? "Gender",
+                leftImage: nil,
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in
+                    self?.handleGenderSelection()
+                }
+            )
+        )
+    }
+    
     private func makeRoleRow() -> DropdownFormRow {
         DropdownFormRow(
             tag: Tags.Cells.roles.rawValue,
@@ -251,6 +270,16 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     // MARK: - handle selection rows -
+    
+    private func handleGenderSelection() {
+        gotoSelectGender(state?.genderOptions ?? []) { [weak self] selectedValue in
+            guard let self = self, let value = selectedValue else { return }
+
+            self.state?.gender = value
+            self.selectGenderRow.config.placeholder = value.name
+            self.reloadRowWithTag(self.selectGenderRow.tag)
+        }
+    }
     
     private func handleAgeRangeSelection() {
         gotoSelectAgeRange { [weak self] selectedValue in
@@ -306,11 +335,12 @@ final class BasicProfileDataViewModel: FormViewModel {
     private struct State {
         var firstName: String?
         var lastName: String?
-        var gender: CommonIdNameModel?
         var genderOptions: [CommonIdNameModel] = [
             CommonIdNameModel(id: 1, name: "Male"),
             CommonIdNameModel(id: 2, name: "Female")
         ]
+
+        var gender: CommonIdNameModel?
         var ageRange: CommonIdNameModel?
         var roles: CommonIdNameModel?
         var location: LocationModel?
@@ -330,11 +360,12 @@ final class BasicProfileDataViewModel: FormViewModel {
             case title = 0
             case firstName = 1
             case lastName = 2
-            case male = 3
-            case female = 4
-            case ageRange = 5
-            case roles = 6
-            case location = 7
+            case gender = 3
+            case male = 4
+            case female = 5
+            case ageRange = 6
+            case roles = 7
+            case location = 8
             case referralCode = 9
             case submit = 10
         }

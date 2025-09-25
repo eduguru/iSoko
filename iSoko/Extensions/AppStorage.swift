@@ -19,7 +19,7 @@ public extension StorageKeys.Keychain {
 
 public extension StorageKeys.UserDefaults {
     static let isBiometricsEnabled = "\(AppStorage.prefix)isBiometricsEnabled"
-    static let currentLanguage = "\(AppStorage.prefix)currentLanguage"
+    static let selectedLanguage = "\(AppStorage.prefix)selectedLanguage"
     static let selectedRegion = "\(AppStorage.prefix)selectedRegion"
 }
 
@@ -30,8 +30,8 @@ extension AppStorage {
     public static var userProfile: String?
     
     //MARK: UserDefault
-    @UserDefault(StorageKeys.UserDefaults.currentLanguage)
-    public static var currentLanguage: String?
+    @UserDefault(StorageKeys.UserDefaults.selectedLanguage)
+    public static var selectedLanguage: String?
     
     @UserDefault(StorageKeys.UserDefaults.selectedRegion)
     public static var selectedRegion: String?

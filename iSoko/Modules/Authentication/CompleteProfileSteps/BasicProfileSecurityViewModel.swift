@@ -11,6 +11,7 @@ import UIKit
 final class BasicProfileSecurityViewModel: FormViewModel {
     var gotoTerms: (() -> Void)? = { }
     var gotoPrivacyPolicy: (() -> Void)? = { }
+    var gotoVerify: ((String) -> Void)? = {_ in }
     var gotoConfirm: (() -> Void)? = { }
     
     private var state: State?
@@ -84,13 +85,24 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoConfirm?()
+            // self?.gotoConfirm?()
+            self?.gotoVerify?(self?.state?.phoneNumber ?? "")
         }
     )
     
     lazy var phoneNumberRow = PhoneNumberRow(
         tag: 1,
-        model: PhoneNumberModel()
+        model: PhoneNumberModel(
+            phoneNumber: nil,
+            useCardStyle: true,
+            cardStyle: .border,
+            cardCornerRadius: 12,
+            cardBorderColor: .app(.primary),
+            onPhoneNumberChanged: {[weak self] value in
+                self?.state?.phoneNumber = value
+            }
+        )
+
     )
     
     lazy var passwordRow = SimpleInputFormRow(
@@ -224,6 +236,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         var ageRange: CommonIdNameModel?
         var roles: CommonIdNameModel?
         var location: LocationModel?
+        var phoneNumber: String?
         var referralCode: String?
     }
     

@@ -15,8 +15,8 @@ final class OTPFormViewModel: FormViewModel {
     
     private var state: State?
     
-    override init() {
-        self.state = State()
+    init(verificationNumber: String) {
+        self.state = State(verificationNumber: verificationNumber)
         super.init()
         
         self.sections = makeSections()
@@ -88,7 +88,7 @@ final class OTPFormViewModel: FormViewModel {
         tag: 1001,
         config: OTPRowConfig(
             numberOfDigits: 6,
-            sentMessage: "We’ve sent a code to +1 234 567 890",
+            sentMessage: "We’ve sent a code to \(state?.verificationNumber ?? "unknown number")",
             showResendTimer: true,
             resendDuration: 30,
             keyboardType: .numberPad,
@@ -126,6 +126,7 @@ final class OTPFormViewModel: FormViewModel {
     
     
     private struct State {
+        var verificationNumber: String
         var firstName: String?
         var lastName: String?
         var gender: String?

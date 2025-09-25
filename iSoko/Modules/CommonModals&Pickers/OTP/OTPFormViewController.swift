@@ -11,7 +11,7 @@ import DesignSystemKit
 final class OTPFormViewController: FormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.viewModel = OTPFormViewModel()
+        
         self.title = "OTP Verification"
     }
 }

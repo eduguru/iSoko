@@ -20,20 +20,18 @@ public class PhoneNumberRow: NSObject, FormRow {
     public var cellClass: AnyClass? { PhoneNumberTableViewCell.self }
     
     private var phoneNumberModel: PhoneNumberModel
-    private var phoneNumberTextField: PhoneNumberTextField
     
     // Initializer that accepts a model
     public init(tag: Int, model: PhoneNumberModel) {
         self.tag = tag
         self.phoneNumberModel = model
-        self.phoneNumberTextField = PhoneNumberTextField()
         super.init()
     }
     
     // Configure the cell for TableView
     public func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
         if let phoneCell = cell as? PhoneNumberTableViewCell {
-            phoneCell.configure(with: phoneNumberTextField, model: phoneNumberModel)
+            phoneCell.configure(with: phoneNumberModel) // ✅ Only pass model
         }
         return cell
     }
@@ -58,7 +56,7 @@ public class PhoneNumberRow: NSObject, FormRow {
     // Reset the field (clear the phone number)
     public func reset() {
         phoneNumberModel.reset()
-        phoneNumberTextField.text = ""
+        // The cell will reconfigure and update the text field when reloaded
     }
     
     // Determine the visibility of the field

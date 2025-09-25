@@ -1,6 +1,6 @@
 //
 //  CommonOptionPickerViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 23/09/2025.
 //
@@ -10,32 +10,45 @@ import UtilsKit
 import UIKit
 import StorageKit
 
-final class CommonOptionPickerViewModel: FormViewModel {
-    var confirmSelection: ((CommonSelection) -> Void)? = { _ in }
-
-    private var commonUtilitiesService: CommonUtilitiesServiceImpl = NetworkEnvironment.shared.commonUtilitiesService
+final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel {
+    var hasPrimaryActionButton: Bool = true
     
+    var confirmSelection: ((CommonSelection) -> Void)? = { _ in }
+    
+    private var commonUtilitiesService: CommonUtilitiesServiceImpl
     private var state: State
     
-
-    // MARK: - Init with injected service (defaulted)
-    init( option: CommonUtilityOption, _ commonUtilitiesService: CommonUtilitiesServiceImpl = NetworkEnvironment.shared.commonUtilitiesService) {
-        
+    // MARK: - Init (supports local or remote options)
+    init(
+        option: CommonUtilityOption,
+        options: [CommonIdNameModel]? = nil,
+        _ commonUtilitiesService: CommonUtilitiesServiceImpl = NetworkEnvironment.shared.commonUtilitiesService
+    ) {
         self.commonUtilitiesService = commonUtilitiesService
-        self.state = State(commonUtilityOption: option)
+        self.state = State(commonUtilityOption: option, options: options ?? [])
         super.init()
-
-        fetchData()
+        
+        if options != nil {
+            self.sections = makeSections()
+        } else {
+            fetchData()
+        }
     }
-
+    
     // MARK: - Fetch Data
     override func fetchData() {
+        // Don't fetch if options were provided manually
+        guard state.options.isEmpty else {
+            print("✅ Skipping API fetch — using provided options.")
+            return
+        }
+        
         Task {
             do {
                 let response = try await fetchCommonUtility(option: state.commonUtilityOption)
-
+                
                 let models: [CommonIdNameModel]
-
+                
                 switch state.commonUtilityOption {
                 case .userRoles, .userTypes, .userGender, .organisationType, .organisationSize, .ageGroups:
                     guard let items = response as? [CommonIdNameResponse] else {
@@ -43,7 +56,7 @@ final class CommonOptionPickerViewModel: FormViewModel {
                         return
                     }
                     models = items.map { CommonIdNameModel(id: $0.id, name: $0.name, description: $0.description) }
-
+                    
                 case .locations:
                     guard let items = response as? [LocationResponse] else { return }
                     self.state.rawLocationOptions = items
@@ -52,10 +65,10 @@ final class CommonOptionPickerViewModel: FormViewModel {
                         return CommonIdNameModel(id: id, name: name, description: $0.codeName)
                     }
                 }
-
+                
                 self.state.options = models
                 self.sections = makeSections()
-
+                
             } catch let NetworkError.server(apiError) {
                 print("API error:", apiError.message ?? "")
             } catch {
@@ -63,35 +76,34 @@ final class CommonOptionPickerViewModel: FormViewModel {
             }
         }
     }
-
-
+    
     // MARK: - Section Builders
-
+    
     private func makeSections() -> [FormSection] {
         return [
             makeSelectionSection(),
-            FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow])
+            // FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow])
         ]
     }
-
+    
     private func makeSelectionSection() -> FormSection {
         FormSection(id: Tags.Section.options.rawValue, cells: makeSelectionCells())
     }
-
+    
     private func updateSelectionSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.options.rawValue }) else { return }
         sections[sectionIndex].cells = makeSelectionCells()
         reloadSection(sectionIndex)
     }
-
+    
     private func makeSelectionCells() -> [FormRow] {
         return state.options.map { makeOptionsRow(for: $0) }
     }
-
+    
     private func makeOptionsRow(for option: CommonIdNameModel) -> SelectableRow {
         let tag = tag(for: option)
         let isSelected = state.selectedOption?.id == option.id
-
+        
         return SelectableRow(
             tag: tag,
             config: SelectableRowConfig(
@@ -117,9 +129,9 @@ final class CommonOptionPickerViewModel: FormViewModel {
             )
         )
     }
-
+    
     // MARK: - Confirm Button Row
-
+    
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
         model: ButtonFormModel(
@@ -132,7 +144,7 @@ final class CommonOptionPickerViewModel: FormViewModel {
         ) { [weak self] in
             guard let self = self else { return }
             guard let selected = self.state.selectedOption else { return }
-
+            
             switch self.state.commonUtilityOption {
             case .locations:
                 if let location = self.state.rawLocationOptions.first(where: { $0.id == selected.id }) {
@@ -143,19 +155,32 @@ final class CommonOptionPickerViewModel: FormViewModel {
             }
         }
     )
-
+    
     // MARK: - Helpers
-
+    
     private func tag(for option: CommonIdNameModel) -> Int {
         return option.id.hashValue
     }
-
+    
     public func getOptions() -> [CommonIdNameModel] {
         return state.options
     }
-
+    
     // MARK: - Selection Handling
-
+    
+    func handlePrimaryAction() {
+        guard let selected = self.state.selectedOption else { return }
+        
+        switch self.state.commonUtilityOption {
+        case .locations:
+            if let location = self.state.rawLocationOptions.first(where: { $0.id == selected.id }) {
+                self.confirmSelection?(.location(location))
+            }
+        default:
+            self.confirmSelection?(.idName(selected))
+        }
+    }
+    
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
         case Tags.Section.header.rawValue:
@@ -166,29 +191,33 @@ final class CommonOptionPickerViewModel: FormViewModel {
             break
         }
     }
-
+    
     // MARK: - State
-
+    
     private struct State {
-        var options: [CommonIdNameModel] = []
+        var options: [CommonIdNameModel]
         var selectedOption: CommonIdNameModel?
         var rawLocationOptions: [LocationResponse] = []
-
-        var selectedTag: Int?
         
+        var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
         var accessToken: String = AppStorage.accessToken ?? ""
+        
+        init(commonUtilityOption: CommonUtilityOption, options: [CommonIdNameModel] = []) {
+            self.commonUtilityOption = commonUtilityOption
+            self.options = options
+        }
     }
-
+    
     // MARK: - Tags
-
+    
     enum Tags {
         enum Section: Int {
             case header = 0
             case options = 1
             case confirmation = 2
         }
-
+        
         enum Cells: Int {
             case search = 0
             case option = 1
@@ -197,8 +226,7 @@ final class CommonOptionPickerViewModel: FormViewModel {
     }
 }
 
-
-
+// MARK: - ext -
 extension CommonOptionPickerViewModel {
     func fetchCommonUtility(option: CommonUtilityOption) async throws -> [Any] {
         switch option {

@@ -39,7 +39,7 @@ public final class LocalizationManager {
     
     public static var currentLanguage: String {
         get {
-            if let stored = AppStorage.currentLanguage,
+            if let stored = AppStorage.selectedLanguage,
                supportedLanguages.contains(stored) {
                 return stored
             }
@@ -47,7 +47,7 @@ public final class LocalizationManager {
         }
         set {
             guard newValue != currentLanguage else { return } // Only trigger if changed
-            AppStorage.currentLanguage = newValue
+            AppStorage.selectedLanguage = newValue
             NotificationCenter.default.post(name: languageDidChangeNotification, object: nil)
         }
     }

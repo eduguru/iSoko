@@ -23,14 +23,33 @@ final class LanguagePickerViewModel: FormViewModel {
     }
 
     // MARK: - Section Builders
-
+    
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = []
-
+        
+        sections.append(FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]))
         sections.append(makeSelectionSection())
         sections.append(FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow]))
 
         return sections
+    }
+
+    private func makeHeaderTitleRow() -> FormRow {
+        let row = TitleDescriptionFormRow(
+            tag: 101,
+            title: "Choose your Language",
+            description: "Chagua lugha / Hitamo nururimi / Sélectionnez la langue",
+            maxTitleLines: 2,
+            maxDescriptionLines: 0,  // unlimited lines
+            titleEllipsis: .none,
+            descriptionEllipsis: .none,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .title,
+            descriptionFontStyle: .headline
+        )
+        
+        return row
     }
 
     private func makeSelectionSection() -> FormSection {

@@ -14,7 +14,7 @@ class CountryPickerViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Select Country"
+        // title = "Select Country"
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

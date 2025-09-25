@@ -14,7 +14,7 @@ class LanguagePickerViewController: FormViewController, CloseableViewController 
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Select Language"
+        // title = "Select Language"
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

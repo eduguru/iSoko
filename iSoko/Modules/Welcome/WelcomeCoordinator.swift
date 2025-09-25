@@ -9,11 +9,12 @@ import RouterKit
 import WalkthroughKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 class WelcomeCoordinator: BaseCoordinator {
     
     override func start() {
-        showCountryLanguagePreference()
+        gotoSelectLanguage() // showCountryLanguagePreference()
     }
     
     private func showCountryLanguagePreference() {
@@ -73,6 +74,7 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.goToCountrySelection { [weak self] result in
             completion(result)
+            self?.router.pop()
         }
     }
     
@@ -82,12 +84,31 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.goToLanguageSelection{ [weak self] result in
             completion(result)
+            self?.router.pop()
         }
     }
     
+    //MARK: - we use this if we want transitional screens -
     private func gotoSelectLanguage() {
-        
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToLanguageSelection { [weak self] result in
+            AppStorage.selectedLanguage = result.name
+            self?.gotoSelectRegion()
+        }
     }
+    
+    private func gotoSelectRegion() {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] result in
+            AppStorage.selectedRegion = result.name
+            self?.showWalkthrough()
+        }
+    }
+    //MARK: - we use the above if we want transitional screens -
     
     func startModal() {
         let homeVC = HomeViewController()
