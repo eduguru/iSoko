@@ -14,7 +14,7 @@ class BasicProfileViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Complete Your Profile"
+        // title = "Complete Your Profile"
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

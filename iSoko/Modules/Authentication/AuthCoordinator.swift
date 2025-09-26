@@ -53,9 +53,9 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToSignup() {
         let viewModel = SignupViewModel()
-        viewModel.confirmSelection = { [weak self] selection in
+        viewModel.confirmSelection = { [weak self] selection, type in
             //self?.router.pop(animated: true)
-            self?.goToCompleteProfile(selection)
+            self?.goToCompleteProfile(selection, registrationType: type)
         }
         
         let vc = SignupViewController()
@@ -69,14 +69,16 @@ class AuthCoordinator: BaseCoordinator {
         // router.setRoot(vc, animated: true)
     }
     
-    private func goToCompleteProfile(_ selectedType: CommonIdNameModel) {
-        let viewModel = BasicProfileDataViewModel()
+    private func goToCompleteProfile(_ selectedType: CommonIdNameModel, registrationType: RegistrationType) {
+        let viewModel = BasicProfileDataViewModel(registrationType: registrationType)
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.gotoSelectGender = gotoSelectGender
         viewModel.gotoSelectAgeRange = gotoSelectAgeRange
         viewModel.gotoSelectRole = gotoSelectRole
         viewModel.gotoSelectLocation = gotoSelectLocation
+        viewModel.gotoSelectOrgType = gotoSelectOrgType
+        viewModel.gotoSelectOrgSize = gotoSelectOrgSize
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -160,6 +162,56 @@ class AuthCoordinator: BaseCoordinator {
             switch selection {
             case .idName(let model):
                 completion(model)
+            default:
+                completion(nil) // or ignore if .location is not expected here
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectOrgType(_ completion: @escaping (OrganisationTypeModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .organisationType(page: 1, count: 100))
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .organisationType(let model):
+                completion(OrganisationTypeModel(with: model))
+            default:
+                completion(nil) // or ignore if .location is not expected here
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectOrgSize(_ completion: @escaping (OrganisationSizeModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .organisationSize(page: 1, count: 100))
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .organisationSize(let model):
+                completion(OrganisationSizeModel(with: model))
             default:
                 completion(nil) // or ignore if .location is not expected here
             }

@@ -9,7 +9,7 @@ import DesignSystemKit
 import UIKit
 
 final class SignupViewModel: FormViewModel {
-    var confirmSelection: ((CommonIdNameModel) -> Void)? = { _ in }
+    var confirmSelection: ((CommonIdNameModel, _ registrationType: RegistrationType) -> Void)? = { _, _ in }
 
     private var state: State?
 
@@ -61,12 +61,12 @@ final class SignupViewModel: FormViewModel {
 
     private func makeSelectionCells() -> [FormRow] {
         let items = options()
-        return items.map { makeCountryRow(for: $0) }
+        return items.map { makeSelectionRow(for: $0) }
     }
 
     // MARK: - Row Builders
 
-    private func makeCountryRow(for item: CommonIdNameModel) -> SelectableRow {
+    private func makeSelectionRow(for item: CommonIdNameModel) -> SelectableRow {
         let tag = tag(for: item)
         let isSelected: Bool = state?.selectedOption?.id == item.id ? true : false
 
@@ -113,8 +113,10 @@ final class SignupViewModel: FormViewModel {
         ) { [weak self] in
             guard let self = self else { return }
             guard let selectedOption = self.state?.selectedOption else { return }
-
-            self.confirmSelection?(selectedOption)
+            let registrationType = selectedOption.id == 0 ? RegistrationType.individual : RegistrationType.organisation
+            self.state?.registrationType = registrationType
+            
+            self.confirmSelection?(selectedOption, registrationType)
         }
     )
 
@@ -155,6 +157,7 @@ final class SignupViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
+        var registrationType: RegistrationType = .individual
         var options: [CommonIdNameModel] = []
         var selectedOption: CommonIdNameModel?
         var searchText: String = ""

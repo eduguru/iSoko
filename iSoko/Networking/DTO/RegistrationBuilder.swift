@@ -5,10 +5,29 @@
 //  Created by Edwin Weru on 21/08/2025.
 //
 
-public enum RegistrationType {
+public enum RegistrationType: CaseIterable {
     case individual
-    case organization
+    case organisation
+
+    var title: String {
+        switch self {
+        case .individual:
+            return "Personal Information"
+        case .organisation:
+            return "Organisation Information"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .individual:
+            return "Tell us about yourself"
+        case .organisation:
+            return "Tell us about your organization"
+        }
+    }
 }
+
 
 public enum RegistrationOTPType: String {
     case sms = "SMS"
@@ -46,7 +65,7 @@ final class RegistrationBuilder {
         switch type {
         case .individual:
             return try buildIndividual()
-        case .organization:
+        case .organisation:
             return try buildOrganization()
         }
     }

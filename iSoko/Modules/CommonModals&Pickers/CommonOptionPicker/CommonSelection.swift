@@ -8,4 +8,6 @@
 enum CommonSelection {
     case idName(CommonIdNameModel)
     case location(LocationResponse)
+    case organisationSize(OrganisationSizeResponse)
+    case organisationType(OrganisationTypeResponse)
 }

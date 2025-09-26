@@ -67,9 +67,16 @@ class WelcomeCoordinator: BaseCoordinator {
         viewModel.didSkipButtonTapped = { [ weak self ] in
             self?.showLoginFlow()
         }
-
+        
         // Set walkthrough as root and hide nav bar
         router.setRoot(viewController, animated: false)
+        // Hide nav bar
+        router.navigationControllerInstance?.setNavigationBarHidden(true, animated: false)
+        
+        if let nav = router.navigationControllerInstance {
+            print("Nav stack: \(nav.viewControllers)")
+            print("Is nav bar hidden? \(nav.isNavigationBarHidden)")
+        }
     }
     
     private func showLoginFlow() {
