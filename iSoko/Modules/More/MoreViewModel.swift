@@ -110,42 +110,55 @@ final class MoreViewModel: FormViewModel {
 
     /// Easily loop and create multiple rows
     
-    private func makeRowItemsArray() -> [(String, String, UIImage)] {
-        var items: [(String, String, UIImage)] = []
+    private func makeRowItemsArray() -> [RowItemModel] {
+        var items: [RowItemModel] = []
 
-        // Shared rows for all users
+        // Common rows for both logged-in and logged-out users
         items.append(contentsOf: [
-            ("Legal", "See terms, policies, and privacy", .settings),
-            ("Security and settings", "Update your personal details", .activate),
-            ("Help and feedback", "Get customer support", .accountTabIcon)
+            RowItemModel(title: "Legal", description: "See terms, policies, and privacy", image: .accountTabIcon, onTap: {
+                print("Legal tapped")
+            }),
+            RowItemModel(title: "Security and settings", description: "Update your personal details", image: .activate, onTap: {
+                print("Security tapped")
+            }),
+            RowItemModel(title: "Help and feedback", description: "Get customer support", image: .accountTabIcon, onTap: {
+                print("Help tapped")
+            })
         ])
 
         if state.isLoggedIn {
             items.insert(contentsOf: [
-                ("Profile Information", "Manage your account details", .accountTabIcon),
-                ("Organisations", "Caption organisation benefits", .accountTabIcon),
-                ("Trade Associations", "Caption about association", .accountTabIcon),
-                ("My Orders", "View your wishlist", .accountTabIcon),
-                ("Share App & Earn", "Get customer support", .accountTabIcon)
-            ], at: 0) // Add these before the common ones
+                RowItemModel(title: "Profile Information", description: "Manage your account details", image: .accountTabIcon, onTap: {
+                    print("Profile tapped")
+                }),
+                RowItemModel(title: "Organisations", description: "Caption organisation benefits", image: .accountTabIcon, onTap: {
+                    print("Organisations tapped")
+                }),
+                RowItemModel(title: "Trade Associations", description: "Caption about association", image: .accountTabIcon, onTap: {
+                    print("Trade Associations tapped")
+                }),
+                RowItemModel(title: "My Orders", description: "View your wishlist", image: .accountTabIcon, onTap: {
+                    print("Orders tapped")
+                }),
+                RowItemModel(title: "Share App & Earn", description: "Get customer support", image: .accountTabIcon, onTap: {
+                    print("Share App tapped")
+                })
+            ], at: 0)
         }
 
         return items
     }
 
-    
     private func makeImageRows() -> [FormRow] {
-        let items: [(String, String, UIImage)] = makeRowItemsArray()
+        let items = makeRowItemsArray()
 
         return items.enumerated().map { index, item in
             makeImageTitleDescriptionRow(
                 tag: 2000 + index,
-                image: item.2,
-                title: item.0,
-                description: item.1,
-                onTap: {
-                    print("Tapped on: \(item.0)")
-                }
+                image: item.image,
+                title: item.title,
+                description: item.description,
+                onTap: item.onTap
             )
         }
     }
