@@ -7,6 +7,7 @@
 
 import Foundation
 import DesignSystemKit
+import UIKit
 
 final class MainTabsViewModel {
     var showsCenterButton: Bool = false
@@ -14,10 +15,11 @@ final class MainTabsViewModel {
     
     private func appTabs() -> [TabBarItemModel] { // private static var appTabs = CustomTabBarViewModel.defaultTabs()
         return [
-            TabBarItemModel(iconName: "house.fill", title: "Home", color: .app(.primary), badgeCount: 0, showBadge: false),
-            TabBarItemModel(iconName: "magnifyingglass", title: "Search", color: .app(.primary)),
-            TabBarItemModel(iconName: "bell.fill", title: "Alerts", color: .app(.primary), badgeCount: 4, showBadge: true),
-            TabBarItemModel(iconName: "person.fill", title: "Profile", color: .app(.primary))
+            TabBarItemModel(icon: .marketTabIcon, title: "Market", color: .app(.primary), badgeCount: 0, showBadge: false),
+            TabBarItemModel(icon: .businessTabIcon, title: "Business", color: .app(.primary)),
+            TabBarItemModel(icon: .insightsTabIcon, title: "Insight", color: .app(.primary), badgeCount: 0, showBadge: false),
+            TabBarItemModel(icon: .servicesTabIcon, title: "Services", color: .app(.primary)),
+            TabBarItemModel(icon: .accountTabIcon, title: "Account", color: .app(.primary))
         ]
     }
 

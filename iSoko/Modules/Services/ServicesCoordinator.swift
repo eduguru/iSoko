@@ -1,20 +1,20 @@
 //
-//  MoreCoordinator.swift
-//  iSoko
+//  ServicesCoordinator.swift
+//  
 //
-//  Created by Edwin Weru on 28/07/2025.
+//  Created by Edwin Weru on 01/10/2025.
 //
 
 import RouterKit
 import UtilsKit
 import UIKit
 
-public class MoreCoordinator: BaseCoordinator {
+public class ServicesCoordinator: BaseCoordinator {
     
-    func primaryViewController() -> MoreViewController {
-        var model = MoreViewModel()
+    func primaryViewController() -> ServicesViewController {
+        var model = ServicesViewModel()
         
-        let controller = MoreViewController()
+        let controller = ServicesViewController()
         controller.makeRoot = true
         controller.viewModel = model
         controller.closeAction = finishWorkflow

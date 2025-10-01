@@ -1,20 +1,20 @@
 //
-//  MoreCoordinator.swift
-//  iSoko
+//  BusinessCoordinator.swift
+//  
 //
-//  Created by Edwin Weru on 28/07/2025.
+//  Created by Edwin Weru on 01/10/2025.
 //
 
 import RouterKit
 import UtilsKit
 import UIKit
 
-public class MoreCoordinator: BaseCoordinator {
+public class BusinessCoordinator: BaseCoordinator {
     
-    func primaryViewController() -> MoreViewController {
-        var model = MoreViewModel()
+    func primaryViewController() -> BusinessViewController {
+        var model = BusinessViewModel()
         
-        let controller = MoreViewController()
+        let controller = BusinessViewController()
         controller.makeRoot = true
         controller.viewModel = model
         controller.closeAction = finishWorkflow

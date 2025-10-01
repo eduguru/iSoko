@@ -21,7 +21,6 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
         viewModel?.tabBarViewModel
     }
 
-
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -36,12 +35,13 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
 
     private func setupViewControllers() {
         // These should correspond to the number/order of your tab items
-        let vc1 = BaseNavigationController(rootViewController: HomeViewController())
-        let vc2 = BaseNavigationController(rootViewController: MoreViewController())
-        let vc3 = BaseNavigationController(rootViewController: HomeViewController())
-        let vc4 = BaseNavigationController(rootViewController: MoreViewController())
+        let vc1 = BaseNavigationController(rootViewController: HomeCoordinator().primaryViewController())
+        let vc2 = BaseNavigationController(rootViewController: BusinessCoordinator().primaryViewController())
+        let vc3 = BaseNavigationController(rootViewController: InsightsCoordinator().primaryViewController())
+        let vc4 = BaseNavigationController(rootViewController: ServicesCoordinator().primaryViewController())
+        let vc5 = BaseNavigationController(rootViewController: MoreCoordinator().primaryViewController())
 
-        viewControllers = [vc1, vc2, vc3, vc4]
+        viewControllers = [vc1, vc2, vc3, vc4, vc5]
     }
 
     private func bindViewModel() {

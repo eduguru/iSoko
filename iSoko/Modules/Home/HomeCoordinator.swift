@@ -6,45 +6,43 @@
 //
 
 import RouterKit
+import UtilsKit
 import UIKit
 
-class HomeCoordinator: BaseCoordinator {
+public class HomeCoordinator: BaseCoordinator {
     
-    override func start() {
-        let homeVC = HomeViewController()
-        homeVC.title = "Home"
+    func primaryViewController() -> HomeViewController {
+        var model = HomeViewModel()
         
-        // Use router to set root
-        router.setRoot(homeVC, animated: true)
+        let controller = HomeViewController()
+        controller.makeRoot = true
+        controller.viewModel = model
+        controller.closeAction = finishWorkflow
+        controller.modalPresentationStyle = .fullScreen
+        return controller
     }
-
-    func startModal() {
-        let homeVC = HomeViewController()
-        homeVC.title = "Home"
-        router.setRoot(homeVC, animated: true)
-        
-        // Example: Present modal flow after some trigger (simulate with delay here)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            guard let self = self else { return }
-            
-            let modalCoordinator = ModalCoordinator(parentCoordinator: self)
-            modalCoordinator.delegate = self
-            self.addChild(modalCoordinator)
-            modalCoordinator.start()
-        }
+    
+    public override func start() {
+        navigationController?.pushViewController(primaryViewController(), animated: true)
+    }
+    
+    
+    public func dismiss() {
+        dismissModal()
     }
 }
 
+
 extension HomeCoordinator: CoordinatorDelegate {
-    func coordinatorDidFinish(_ coordinator: Coordinator) {
+    public func coordinatorDidFinish(_ coordinator: Coordinator) {
         removeChild(coordinator)
     }
     
-    func coordinatorDidPresentModal(_ coordinator: Coordinator) {
+    public func coordinatorDidPresentModal(_ coordinator: Coordinator) {
         print("Modal coordinator presented")
     }
     
-    func coordinatorDidDismissModal(_ coordinator: Coordinator) {
+    public func coordinatorDidDismissModal(_ coordinator: Coordinator) {
         print("Modal coordinator dismissed")
         removeChild(coordinator)
     }

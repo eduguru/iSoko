@@ -6,24 +6,28 @@
 //
 
 import UIKit
+import DesignSystemKit
 
-class MoreViewController: UIViewController {
-
+class MoreViewController: FormViewController, CloseableViewController {
+    var makeRoot: Bool = false
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
     }
     
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
     }
-    */
-
+    
+    @objc func close() {
+        closeAction?()
+    }
+    
+    deinit {
+        print("👋 ViewController is being popped or dismissed")
+    }
 }
+

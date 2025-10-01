@@ -1,14 +1,14 @@
 //
-//  HomeViewController.swift
-//  iSoko
+//  ServicesViewController.swift
+//  
 //
-//  Created by Edwin Weru on 28/07/2025.
+//  Created by Edwin Weru on 01/10/2025.
 //
 
 import UIKit
 import DesignSystemKit
 
-class HomeViewController: FormViewController, CloseableViewController {
+class ServicesViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
