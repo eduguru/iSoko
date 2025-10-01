@@ -15,6 +15,7 @@ class MoreViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        title = "Account"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
     }
     
