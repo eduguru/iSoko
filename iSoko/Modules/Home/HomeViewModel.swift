@@ -22,9 +22,26 @@ final class HomeViewModel: FormViewModel {
     // MARK: - make sections
 
     private func makeSections() -> [FormSection] {
-        return []
+        return [
+            FormSection(id: 001, cells: [searchRow])
+        ]
     }
 
+    lazy var searchRow = SearchFormRow(
+            tag: 3001,
+            model: SearchFormModel(
+                placeholder: "Search for anything",
+                keyboardType: .default,
+                searchIcon: UIImage(systemName: "magnifyingglass"),
+                searchIconPlacement: .right,
+                filterIcon: nil,
+                didTapSearchIcon: { print("Search icon tapped") },
+                didTapFilterIcon: { print("Filter icon tapped") },
+                didStartEditing: { text in print("Started editing with: \(text)") },
+                didEndEditing: { text in print("Ended editing with: \(text)") },
+                onTextChanged: { text in print("Search text changed: \(text)") }
+            )
+        )
 
     // MARK: - State
 

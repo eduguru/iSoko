@@ -17,7 +17,6 @@ class MainCoordinator: BaseCoordinator {
         // Use router to set root
         vc.modalPresentationStyle = .fullScreen
         router.present(vc, animated: true)
-//        router.setRoot(vc, animated: true)
     }
 
     func startModal() {

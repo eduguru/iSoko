@@ -10,6 +10,7 @@ import UIKit
 public final class ImageTitleDescriptionCell: UITableViewCell {
 
     private let containerView = UIView()
+    private let iconContainerView = UIView()  // New container for icon with padding
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     private let descriptionLabel = UILabel()
@@ -41,10 +42,15 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
         containerView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(containerView)
 
-        iconImageView.contentMode = .scaleAspectFill
+        // Setup icon container view
+        iconContainerView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(iconContainerView)
+
+        // Setup icon image view
+        iconImageView.contentMode = .scaleAspectFit
         iconImageView.clipsToBounds = true
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(iconImageView)
+        iconContainerView.addSubview(iconImageView)
 
         titleLabel.font = .preferredFont(forTextStyle: .body)
         titleLabel.textColor = .label
@@ -77,60 +83,55 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
 
     public func configure(with config: ImageTitleDescriptionConfig) {
         onTap = config.onTap
-        
-        if config.isCardStyleEnabled { // Adjust padding based on card style
-            internalPadding = config.contentInsets
-        } else { // Reduce padding when card is disabled
-            internalPadding = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
-        }
 
-        
-        
+        // Padding setup
+        internalPadding = config.isCardStyleEnabled ? config.contentInsets : UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         spacing = config.spacing
 
-        // Text
+        // Text setup
         titleLabel.text = config.title
         descriptionLabel.text = config.description
         descriptionLabel.isHidden = config.description == nil
 
-        // Image
-        iconImageView.image = config.image
-        iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? config.imageSize.height / 2 : 0
-        iconImageView.layer.masksToBounds = true
-
-        // Size constraints for image
-        NSLayoutConstraint.activate([
-            iconImageView.widthAnchor.constraint(equalToConstant: config.imageSize.width),
-            iconImageView.heightAnchor.constraint(equalToConstant: config.imageSize.height)
-        ])
-
-        // Remove old accessory
+        // Clear old accessory
         accessory?.removeFromSuperview()
         accessory = nil
 
-        // Add accessory
+        // Apply new accessory
         applyAccessory(config.accessoryType)
 
-        // Clear old constraints inside container
-        NSLayoutConstraint.deactivate(containerView.constraints)
-
-        // Layout all views inside container with internal padding
-        iconImageView.removeFromSuperview()
-        textStack.removeFromSuperview()
-        accessory?.removeFromSuperview()
-
-        containerView.addSubview(iconImageView)
+        // Clear subviews before adding
+        containerView.subviews.forEach { $0.removeFromSuperview() }
+        containerView.addSubview(iconContainerView)
         containerView.addSubview(textStack)
         if let accessory = accessory {
             containerView.addSubview(accessory)
         }
 
-        // Build constraints again
+        // Setup iconContainerView size (fixed size with padding inside)
         NSLayoutConstraint.activate([
-            iconImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: internalPadding.left),
-            iconImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            iconContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: internalPadding.left),
+            iconContainerView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            iconContainerView.widthAnchor.constraint(equalToConstant: config.imageSize.width),
+            iconContainerView.heightAnchor.constraint(equalToConstant: config.imageSize.height)
+        ])
 
-            textStack.leadingAnchor.constraint(equalTo: iconImageView.trailingAnchor, constant: spacing),
+        // iconImageView with inset inside container (1 or 2 px padding)
+        NSLayoutConstraint.activate([
+            iconImageView.topAnchor.constraint(equalTo: iconContainerView.topAnchor, constant: 1),
+            iconImageView.bottomAnchor.constraint(equalTo: iconContainerView.bottomAnchor, constant: -1),
+            iconImageView.leadingAnchor.constraint(equalTo: iconContainerView.leadingAnchor, constant: 1),
+            iconImageView.trailingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: -1)
+        ])
+
+        iconImageView.image = config.image
+        iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? (config.imageSize.height / 2) - 1 : 0
+        iconImageView.layer.masksToBounds = true
+        iconImageView.contentMode = .scaleAspectFit
+
+        // Setup textStack constraints
+        NSLayoutConstraint.activate([
+            textStack.leadingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: spacing),
             textStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: internalPadding.top),
             textStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -internalPadding.bottom),
             textStack.centerYAnchor.constraint(equalTo: containerView.centerYAnchor)

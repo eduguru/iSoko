@@ -33,16 +33,52 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
         bindViewModel()
     }
 
+//    private func setupViewControllers() {
+//        // These should correspond to the number/order of your tab items
+//        let vc1 = BaseNavigationController(rootViewController: HomeCoordinator().primaryViewController())
+//        let vc2 = BaseNavigationController(rootViewController: BusinessCoordinator().primaryViewController())
+//        let vc3 = BaseNavigationController(rootViewController: InsightsCoordinator().primaryViewController())
+//        let vc4 = BaseNavigationController(rootViewController: ServicesCoordinator().primaryViewController())
+//        let vc5 = BaseNavigationController(rootViewController: MoreCoordinator().primaryViewController())
+//
+//        viewControllers = [vc1, vc2, vc3, vc4, vc5]
+//    }
+    
     private func setupViewControllers() {
-        // These should correspond to the number/order of your tab items
-        let vc1 = BaseNavigationController(rootViewController: HomeCoordinator().primaryViewController())
-        let vc2 = BaseNavigationController(rootViewController: BusinessCoordinator().primaryViewController())
-        let vc3 = BaseNavigationController(rootViewController: InsightsCoordinator().primaryViewController())
-        let vc4 = BaseNavigationController(rootViewController: ServicesCoordinator().primaryViewController())
-        let vc5 = BaseNavigationController(rootViewController: MoreCoordinator().primaryViewController())
+        // 1. Home
+        let homeNav = BaseNavigationController()
+        let homeRouter = Router(navigationController: homeNav)
+        let homeCoordinator = HomeCoordinator(router: homeRouter)
+        homeCoordinator.start()
 
-        viewControllers = [vc1, vc2, vc3, vc4, vc5]
+        // 2. Business
+        let businessNav = BaseNavigationController()
+        let businessRouter = Router(navigationController: businessNav)
+        let businessCoordinator = BusinessCoordinator(router: businessRouter)
+        businessCoordinator.start()
+
+        // 3. Insights
+        let insightsNav = BaseNavigationController()
+        let insightsRouter = Router(navigationController: insightsNav)
+        let insightsCoordinator = InsightsCoordinator(router: insightsRouter)
+        insightsCoordinator.start()
+
+        // 4. Services
+        let servicesNav = BaseNavigationController()
+        let servicesRouter = Router(navigationController: servicesNav)
+        let servicesCoordinator = ServicesCoordinator(router: servicesRouter)
+        servicesCoordinator.start()
+
+        // 5. More (this is where your issue was)
+        let moreNav = BaseNavigationController()
+        let moreRouter = Router(navigationController: moreNav)
+        let moreCoordinator = MoreCoordinator(router: moreRouter)
+        moreCoordinator.start()
+
+        // Final assignment
+        viewControllers = [homeNav, businessNav, insightsNav, servicesNav, moreNav]
     }
+
 
     private func bindViewModel() {
         guard let tabBarViewModel = tabBarViewModel else { return }

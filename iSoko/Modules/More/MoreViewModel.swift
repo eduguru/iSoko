@@ -10,7 +10,15 @@ import UtilsKit
 
 final class MoreViewModel: FormViewModel {
     var gotoSignIn: (() -> Void)? = { }
-    var gotoSignUp: (() -> Void)? = { }
+    var gotoSignOut: (() -> Void)? = { }
+    var gotoProfile: (() -> Void)? = { }
+    var gotoOrganisations: (() -> Void)? = { }
+    var gotoTradeAssociations: (() -> Void)? = { }
+    var gotoMyOrders: (() -> Void)? = { }
+    var gotoShareApp: (() -> Void)? = { }
+    var gotoLegal: (() -> Void)? = { }
+    var gotoSettings: (() -> Void)? = { }
+    var gotoHelpFeedback: (() -> Void)? = { }
 
     private var state: State
 
@@ -115,33 +123,33 @@ final class MoreViewModel: FormViewModel {
 
         // Common rows for both logged-in and logged-out users
         items.append(contentsOf: [
-            RowItemModel(title: "Legal", description: "See terms, policies, and privacy", image: .accountTabIcon, onTap: {
-                print("Legal tapped")
+            RowItemModel(title: "Legal", description: "See terms, policies, and privacy", image: .legalIcon, onTap: { [weak self] in
+                self?.gotoLegal?()
             }),
-            RowItemModel(title: "Security and settings", description: "Update your personal details", image: .activate, onTap: {
-                print("Security tapped")
+            RowItemModel(title: "Security and settings", description: "Update your personal details", image: .settingsGearIcon, onTap: { [weak self] in
+                self?.gotoLegal?()
             }),
-            RowItemModel(title: "Help and feedback", description: "Get customer support", image: .accountTabIcon, onTap: {
-                print("Help tapped")
+            RowItemModel(title: "Help and feedback", description: "Get customer support", image: .questionCircleIcon, onTap: { [weak self] in
+                self?.gotoHelpFeedback?()
             })
         ])
 
         if state.isLoggedIn {
             items.insert(contentsOf: [
-                RowItemModel(title: "Profile Information", description: "Manage your account details", image: .accountTabIcon, onTap: {
-                    print("Profile tapped")
+                RowItemModel(title: "Profile Information", description: "Manage your account details", image: .profile, onTap: { [weak self] in
+                    self?.gotoProfile?()
                 }),
-                RowItemModel(title: "Organisations", description: "Caption organisation benefits", image: .accountTabIcon, onTap: {
-                    print("Organisations tapped")
+                RowItemModel(title: "Organisations", description: "Caption organisation benefits", image: .orgIcon, onTap: { [weak self] in
+                    self?.gotoOrganisations?()
                 }),
-                RowItemModel(title: "Trade Associations", description: "Caption about association", image: .accountTabIcon, onTap: {
-                    print("Trade Associations tapped")
+                RowItemModel(title: "Trade Associations", description: "Caption about association", image: .tradeIcon, onTap: { [weak self] in
+                    self?.gotoTradeAssociations?()
                 }),
-                RowItemModel(title: "My Orders", description: "View your wishlist", image: .accountTabIcon, onTap: {
-                    print("Orders tapped")
+                RowItemModel(title: "My Orders", description: "View your wishlist", image: .bagAddIcon, onTap: { [weak self] in
+                    self?.gotoMyOrders?()
                 }),
-                RowItemModel(title: "Share App & Earn", description: "Get customer support", image: .accountTabIcon, onTap: {
-                    print("Share App tapped")
+                RowItemModel(title: "Share App & Earn", description: "Get customer support", image: .shareAppIcon, onTap: { [weak self] in
+                    self?.gotoShareApp?()
                 })
             ], at: 0)
         }
