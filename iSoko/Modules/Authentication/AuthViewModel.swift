@@ -39,7 +39,7 @@ final class AuthViewModel: FormViewModel {
             title: nil,
             cells: [
                 SpacerFormRow(tag: 1001),
-                makeHeaderImageCell(),
+//                makeHeaderImageCell(),
                 makeHeaderTitleRow(),
                 SpacerFormRow(tag: 1001),
             ]
@@ -71,7 +71,13 @@ final class AuthViewModel: FormViewModel {
     
     // MARK: - make rows
     private func makeHeaderImageCell() -> FormRow {
-        let imageRow = ImageFormRow(tag: 1001, image: UIImage(named: "logo"), height: 120)
+        let imageRow = ImageFormRow(
+            tag: 1,
+            config: .init(
+                image: UIImage(named: "logo"),
+                height: 120
+            )
+        )
         return imageRow
         
     }
@@ -79,14 +85,16 @@ final class AuthViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Welcome to the app",
-            description: "This description",
+            title: "Sign in",
+            description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
-            textAlignment: .center
+            textAlignment: .left,
+            titleFontStyle: .title,
+            descriptionFontStyle: .headline
         )
         
         return row
@@ -94,7 +102,7 @@ final class AuthViewModel: FormViewModel {
     
     private func makeLoginButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Login",
+            title: "Sign in",
             style: .primary,
             size: .medium,
             icon: UIImage(systemName: "email.fill"),

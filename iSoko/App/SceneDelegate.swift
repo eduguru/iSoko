@@ -68,6 +68,21 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // to restore the scene back to its current state.
     }
     
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        guard let url = URLContexts.first?.url else { return }
+
+        print("📥 Received OAuth redirect: \(url)")
+
+        if url.scheme == "weru.isoko.app", url.host == "auth" {
+            if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+               let code = components.queryItems?.first(where: { $0.name == "code" })?.value {
+                print("🔐 Authorization Code from deep link: \(code)")
+
+                // 👉 You can now exchange the code for tokens
+            }
+        }
+    }
+
     private func getToken() {
         Task {
             do {

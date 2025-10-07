@@ -123,7 +123,13 @@ final class LoginViewModel: FormViewModel {
     
     // MARK: - make rows
     private func makeHeaderImageCell() -> FormRow {
-        let imageRow = ImageFormRow(tag: 1001, image: UIImage(named: "logo"), height: 120)
+        let imageRow = ImageFormRow(
+            tag: 1,
+            config: .init(
+                image: UIImage(named: "logo"),
+                height: 120
+            )
+        )
         return imageRow
         
     }

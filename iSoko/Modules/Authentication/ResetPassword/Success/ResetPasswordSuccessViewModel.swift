@@ -60,7 +60,13 @@ final class ResetPasswordSuccessViewModel: FormViewModel {
     
     // MARK: - make rows
     private func makeHeaderImageCell() -> FormRow {
-        let imageRow = ImageFormRow(tag: 1001, image: UIImage(named: "logo"), height: 110)
+        let imageRow = ImageFormRow(
+            tag: 1001,
+            config: .init(
+                image: UIImage(named: "logo"),
+                height: 110
+            )
+        )
         return imageRow
         
     }

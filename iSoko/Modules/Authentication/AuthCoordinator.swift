@@ -6,8 +6,12 @@
 //
 
 import RouterKit
+import AuthenticationServices
+import UtilsKit
+
 
 class AuthCoordinator: BaseCoordinator {
+    private var authSession: ASWebAuthenticationSession?
 
     override func start() {
         goToAuthOptions()
@@ -19,14 +23,26 @@ class AuthCoordinator: BaseCoordinator {
         vc.viewModel = viewModel
         
         viewModel.gotoSignIn = { [weak self] in
-            self?.goToLogin(makeRoot: false)
+            self?.startOAuthFlow()
+            // self?.goToLogin(makeRoot: false)
         }
         
-        viewModel.gotoSignUp = goToSignup
+        viewModel.gotoSignUp = goToSignupOptions
         viewModel.gotoForgotPassword = gotoForgotPassword
         viewModel.gotoGuestSession = goToMainTabs
         
         router.setRoot(vc, animated: true)
+    }
+
+    private func startOAuthFlow() {
+        OAuthService().startOAuthFlow { result in
+            switch result {
+            case .success(let code):
+                print("✅ Got code: \(code)")
+            case .failure(let error):
+                print("❌ OAuth flow failed: \(error)")
+            }
+        }
     }
     
     public func goToLogin(makeRoot: Bool = false) {
@@ -49,7 +65,31 @@ class AuthCoordinator: BaseCoordinator {
             router.push(vc, animated: true)
         }
     }
+    
+    private func goToSignupOptions() {
+        let viewModel = SignUpOptionsViewModel()
+        viewModel.showCountryPicker = gotoSelectCountry
+        
+        let vc = SignUpOptionsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+        // router.setRoot(vc, animated: true)
+    }
 
+    private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] result in
+            completion(result)
+            self?.router.pop()
+        }
+    }
     
     private func goToSignup() {
         let viewModel = SignupViewModel()
@@ -372,5 +412,11 @@ class AuthCoordinator: BaseCoordinator {
 extension AuthCoordinator: CoordinatorDelegate {
     func coordinatorDidFinish(_ coordinator: Coordinator) {
         removeChild(coordinator)
+    }
+}
+
+extension AuthCoordinator: ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        return router.navigationControllerInstance?.view.window ?? ASPresentationAnchor()
     }
 }

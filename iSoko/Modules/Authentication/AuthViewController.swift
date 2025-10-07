@@ -27,7 +27,6 @@ class AuthViewController: FormViewController, CloseableViewController {
     }
     
     deinit {
-        print("👋 ViewController is being popped or dismissed")
     }
 }
 

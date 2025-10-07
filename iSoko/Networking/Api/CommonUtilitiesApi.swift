@@ -13,7 +13,7 @@ public struct CommonUtilitiesApi {
     
     //MARK: - locations
     public static func getAllLocations(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LocationResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+        let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Authorization": "Bearer \(accessToken)"
@@ -21,7 +21,7 @@ public struct CommonUtilitiesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/location",
+            path: "location",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -40,7 +40,7 @@ public struct CommonUtilitiesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/location-level",
+            path: "location-level",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -59,7 +59,7 @@ public struct CommonUtilitiesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/location/\(locationLevel)",
+            path: "location/\(locationLevel)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,

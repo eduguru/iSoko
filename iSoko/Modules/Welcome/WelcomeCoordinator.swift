@@ -14,7 +14,12 @@ import StorageKit
 class WelcomeCoordinator: BaseCoordinator {
     
     override func start() {
-        gotoSelectLanguage() // showCountryLanguagePreference()
+        
+        if (AppStorage.hasSelectedRegion ?? false) && (AppStorage.hasSelectedLanguage ?? false) {
+            showWalkthrough()
+        } else {
+            gotoSelectLanguage() // showCountryLanguagePreference()
+        }
     }
     
     private func showCountryLanguagePreference() {
@@ -23,6 +28,7 @@ class WelcomeCoordinator: BaseCoordinator {
         viewModel.gotoSelectLanguage = gotoSelectLanguage
         
         viewModel.gotoConfirm = { [ weak self ] in
+            AppStorage.hasSelectedRegion = true
             self?.showWalkthrough()
         }
         
@@ -33,6 +39,11 @@ class WelcomeCoordinator: BaseCoordinator {
     }
 
     private func showWalkthrough() {
+        if AppStorage.hasViewedWalkthrough ?? false {
+            showLoginFlow()
+            return
+        }
+        
         let pages = [
             OnboardingModel(
                 title: "Explore the app",
@@ -61,10 +72,12 @@ class WelcomeCoordinator: BaseCoordinator {
         viewController.modalPresentationStyle = .fullScreen
         
         viewModel.nextButtonTapped = { [ weak self ] in
+            AppStorage.hasViewedWalkthrough = true
             self?.showLoginFlow()
         }
 
         viewModel.didSkipButtonTapped = { [ weak self ] in
+            AppStorage.hasViewedWalkthrough = true
             self?.showLoginFlow()
         }
         
@@ -113,6 +126,7 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.goToLanguageSelection { [weak self] result in
             AppStorage.selectedLanguage = result.name
+            AppStorage.hasSelectedLanguage = true
             self?.gotoSelectRegion()
         }
     }
@@ -123,6 +137,7 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.goToCountrySelection { [weak self] result in
             AppStorage.selectedRegion = result.name
+            AppStorage.hasSelectedRegion = true
             self?.showWalkthrough()
         }
     }
