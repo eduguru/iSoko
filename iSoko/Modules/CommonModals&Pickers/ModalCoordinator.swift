@@ -62,4 +62,31 @@ public class ModalCoordinator: BaseCoordinator {
     public func dismiss() {
         dismissModal()
     }
+
+    public func goToOtpVerification( type: OTPVerificationType, onSuccess: (() -> Void)? = nil ) {
+        let viewModel = OTPFormViewModel(type: type)
+
+        viewModel.gotoConfirm = { [weak self] in
+            onSuccess?()
+            self?.router.pop(animated: true)
+        }
+
+        viewModel.onResendCode = {
+            print("🔁 Resend requested for \(type.targetValue)")
+        }
+
+        viewModel.onOTPComplete = { otp in
+            print("✅ OTP entered: \(otp)")
+            // Optional: add server validation logic here
+        }
+
+        let vc = OTPFormViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
 }

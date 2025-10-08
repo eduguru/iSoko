@@ -10,7 +10,7 @@ import UtilsKit
 import UIKit
 
 final class ResetPasswordViewModel: FormViewModel {
-    var confirmSelection: ((String) -> Void)? = { _ in }
+    var confirmSelection: ((OTPVerificationType) -> Void)? = { _ in }
 
     private var state: State?
 
@@ -91,8 +91,10 @@ final class ResetPasswordViewModel: FormViewModel {
             hapticsEnabled: true
         ) { [weak self] in
             guard let self = self else { return }
-            guard let selected = self.state?.email else { return }
-            self.confirmSelection?(selected)
+            
+            guard let email = self.state?.email else { return }
+            self.confirmSelection?(.email(address: email, title: nil))
+
         }
     )
 

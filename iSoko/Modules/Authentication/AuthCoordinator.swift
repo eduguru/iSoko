@@ -70,6 +70,9 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = SignUpOptionsViewModel()
         viewModel.showCountryPicker = gotoSelectCountry
         
+        viewModel.goToOtp = goToOtpVerification
+        viewModel.goToCompleteProfile = goToCompleteIndividualProfile
+        
         let vc = SignUpOptionsViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -109,6 +112,28 @@ class AuthCoordinator: BaseCoordinator {
         // router.setRoot(vc, animated: true)
     }
     
+    private func goToCompleteIndividualProfile() {
+        let viewModel = BasicProfileDataViewModel(registrationType: .individual)
+        viewModel.gotoConfirm = goToConfirmProfile
+        
+        viewModel.gotoSelectGender = gotoSelectGender
+        viewModel.gotoSelectAgeRange = gotoSelectAgeRange
+        viewModel.gotoSelectRole = gotoSelectRole
+        viewModel.gotoSelectLocation = gotoSelectLocation
+        viewModel.gotoSelectOrgType = gotoSelectOrgType
+        viewModel.gotoSelectOrgSize = gotoSelectOrgSize
+        
+        let vc = BasicProfileViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     private func goToCompleteProfile(_ selectedType: CommonIdNameModel, registrationType: RegistrationType) {
         let viewModel = BasicProfileDataViewModel(registrationType: registrationType)
         viewModel.gotoConfirm = goToConfirmProfile
@@ -134,6 +159,10 @@ class AuthCoordinator: BaseCoordinator {
     private func goToConfirmProfile() {
         let viewModel = BasicProfileSecurityViewModel()
         viewModel.gotoVerify = goToOtpVerification
+        viewModel.goToLogin = { [weak self] in
+            // self?.goToLogin(makeRoot: true)
+            self?.goToMainTabs()
+        }
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -154,18 +183,29 @@ class AuthCoordinator: BaseCoordinator {
         
     }
     
-    private func goToOtpVerification(_ verificationNumber: String) {
-        let viewModel = OTPFormViewModel(verificationNumber: verificationNumber)
+    private func goToOtpVerification(_ type: OTPVerificationType, onSuccess: (() -> Void)? = nil) {
+        let viewModel = OTPFormViewModel(type: type)
+
         viewModel.gotoConfirm = { [weak self] in
-            self?.goToLogin(makeRoot: true)
+            onSuccess?()
         }
-        
+
+        viewModel.onResendCode = {
+            print("🔁 Resend requested for \(type.targetValue)")
+            // Optionally re-trigger OTP send logic here
+        }
+
+        viewModel.onOTPComplete = { otp in
+            print("✅ OTP entered: \(otp)")
+            // Add validation or API logic here if needed
+        }
+
         let vc = OTPFormViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -352,10 +392,14 @@ class AuthCoordinator: BaseCoordinator {
         // router.setRoot(vc, animated: true)
     }
     
-    private func goToResetPasswordOtpVerification(_ verificationNumber: String) {
-        let viewModel = OTPFormViewModel(verificationNumber: verificationNumber)
+    private func goToResetPasswordOtpVerification(_ verification: OTPVerificationType) {
+        let viewModel = OTPFormViewModel(type: verification)
         viewModel.gotoConfirm = { [weak self] in
-            self?.gotoVerifyForgotPassword(verificationNumber)
+            self?.gotoVerifyForgotPassword(verification.targetValue)
+        }
+        
+        viewModel.onResendCode = {
+            print("🔁 Resend requested for \(verification.targetValue)")
         }
         
         let vc = OTPFormViewController()

@@ -12,11 +12,13 @@ import UtilsKit
 final class SignUpOptionsViewModel: FormViewModel {
 
     // MARK: - Callbacks
-
-    var gotoSignIn: (() -> Void)? = { }
-    var gotoSignUp: (() -> Void)? = { }
+    var goToContinue: (() -> Void)? = { }
+    var goToOtp: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
+    var goToCompleteProfile: (() -> Void)? = { }
+    
+    var gotoSignUpWithGoogle: (() -> Void)? = { }
     var gotoGuestSession: (() -> Void)? = { }
-    var gotoForgotPassword: (() -> Void)? = { }
+    var gotoSignIn: (() -> Void)? = { }
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)? = { _ in }
 
     // MARK: - State
@@ -163,7 +165,37 @@ final class SignUpOptionsViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoSignIn?()
+            guard let self = self else { return }
+
+            if self.state.isUsingPhone {
+                // 📞 Phone flow
+                let phoneModel = self.phoneDropDownRow.model
+                let phone = phoneModel.phoneNumber.trimmingCharacters(in: .whitespaces)
+                let phoneCode = phoneModel.selectedCountry.phoneCode  // 🔄 Use `phoneCode` here
+
+                guard !phone.isEmpty else {
+                    print("⚠️ Phone number is empty.")
+                    return
+                }
+
+                let fullPhone = "\(phoneCode)\(phone)"
+                self.goToOtp?(.phone(number: fullPhone, title: "Verify your phone")) { [weak self] in
+                    self?.goToCompleteProfile?()
+                }
+
+            } else {
+                // 📧 Email flow
+                let email = self.emailInputRow.model.text.trimmingCharacters(in: .whitespaces)
+
+                guard !email.isEmpty else {
+                    print("⚠️ Email is empty.")
+                    return
+                }
+
+                self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
+                    self?.goToCompleteProfile?()
+                }
+            }
         }
     )
 
@@ -186,7 +218,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true,
             action: { [weak self] in
-                self?.gotoSignUp?()
+                self?.gotoSignUpWithGoogle?()
             }
         )
     )

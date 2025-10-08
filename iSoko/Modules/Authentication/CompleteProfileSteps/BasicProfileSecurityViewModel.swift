@@ -11,7 +11,9 @@ import UIKit
 final class BasicProfileSecurityViewModel: FormViewModel {
     var gotoTerms: (() -> Void)? = { }
     var gotoPrivacyPolicy: (() -> Void)? = { }
-    var gotoVerify: ((String) -> Void)? = {_ in }
+    
+    var gotoVerify: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
+    var goToLogin: (() -> Void)? = { }
     var gotoConfirm: (() -> Void)? = { }
     
     private var state: State?
@@ -85,8 +87,15 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            // self?.gotoConfirm?()
-            self?.gotoVerify?(self?.state?.phoneNumber ?? "")
+            guard let phone = self?.state?.phoneNumber, !phone.isEmpty else {
+                print("❌ No phone number provided")
+                return
+            }
+
+            let otpType: OTPVerificationType = .phone(number: phone, title: "Verify your phone")
+            self?.gotoVerify?(otpType) { [weak self] in
+                self?.goToLogin?()
+            }
         }
     )
     

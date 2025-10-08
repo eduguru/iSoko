@@ -9,102 +9,112 @@ import DesignSystemKit
 import UIKit
 
 final class OTPFormViewModel: FormViewModel {
-    var gotoTerms: (() -> Void)? = { }
-    var gotoPrivacyPolicy: (() -> Void)? = { }
-    var gotoConfirm: (() -> Void)? = { }
-    
-    private var state: State?
-    
-    init(verificationNumber: String) {
-        self.state = State(verificationNumber: verificationNumber)
+
+    // MARK: - Callbacks
+
+    var gotoTerms: (() -> Void)?
+    var gotoPrivacyPolicy: (() -> Void)?
+    var gotoConfirm: (() -> Void)?
+    var onResendCode: (() -> Void)?
+    var onOTPComplete: ((String) -> Void)?
+
+    // MARK: - State
+
+    private var state: State
+
+    // MARK: - Init
+
+    init(type: OTPVerificationType) {
+        self.state = State(type: type)
         super.init()
-        
         self.sections = makeSections()
     }
-    
-    // MARK: -  make sections
+
+    // MARK: - Section Builders
+
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-        
-        sections.append(makeHeaderSection())
-        sections.append(makeNamesSection())
-        
-        return sections
+        [
+            makeHeaderSection(),
+            makeOTPSection()
+        ]
     }
-    
+
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: Tags.Section.header.rawValue,
             title: nil,
-            cells: [ makeHeaderTitleRow()]
+            cells: [makeHeaderTitleRow()]
         )
     }
-    
-    private func makeNamesSection() -> FormSection {
+
+    private func makeOTPSection() -> FormSection {
         FormSection(
-            id: Tags.Section.names.rawValue,
+            id: Tags.Section.otp.rawValue,
             title: nil,
             cells: [
-                SpacerFormRow(tag: -00001),
+                SpacerFormRow(tag: Tags.Cells.spacerTop.rawValue),
                 otpRow,
-                SpacerFormRow(tag: -00001),
+                SpacerFormRow(tag: Tags.Cells.spacerBottom.rawValue),
                 continueButtonRow
             ]
         )
     }
-    
-    // MARK: - make rows
+
+    // MARK: - Row Builders
+
     private func makeHeaderTitleRow() -> FormRow {
-        let row = TitleDescriptionFormRow(
-            tag: -101,
-            title: "Enter the code",
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.headerTitle.rawValue,
+            title: state.type.displayTitle,
             description: "",
             maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
+            maxDescriptionLines: 0,
             titleEllipsis: .none,
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
         )
-        
-        return row
     }
-    
-    lazy var continueButtonRow = ButtonFormRow(
-        tag: Tags.Cells.submit.rawValue,
-        model: ButtonFormModel(
-            title: "Continue",
-            style: .primary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            self?.gotoConfirm?()
-        }
-    )
-    
-    lazy var otpRow = OTPRow(
-        tag: 1001,
-        config: OTPRowConfig(
-            numberOfDigits: 6,
-            sentMessage: "We’ve sent a code to \(state?.verificationNumber ?? "unknown number")",
-            showResendTimer: true,
-            resendDuration: 30,
-            keyboardType: .numberPad,
-            onOTPComplete: { otp in
-                print("✅ Entered OTP: \(otp)")
-                // Here you can verify the OTP or trigger next step
-            },
-            onResendTapped: {
-                print("🔄 Resend tapped!")
-                // Trigger resend logic here
+
+    lazy var otpRow: OTPRow = {
+        OTPRow(
+            tag: Tags.Cells.otp.rawValue,
+            config: OTPRowConfig(
+                numberOfDigits: 6,
+                sentMessage: "We’ve sent a code to \(state.type.targetValue)",
+                showResendTimer: true,
+                resendDuration: 30,
+                keyboardType: .numberPad,
+                onOTPComplete: { [weak self] otp in
+                    print("✅ Entered OTP: \(otp)")
+                    self?.onOTPComplete?(otp)
+                },
+                onResendTapped: { [weak self] in
+                    print("🔄 Resend tapped!")
+                    self?.onResendCode?()
+                }
+            )
+        )
+    }()
+
+    lazy var continueButtonRow: ButtonFormRow = {
+        ButtonFormRow(
+            tag: Tags.Cells.continueButton.rawValue,
+            model: ButtonFormModel(
+                title: "Continue",
+                style: .primary,
+                size: .medium,
+                icon: nil,
+                fontStyle: .headline,
+                hapticsEnabled: true
+            ) { [weak self] in
+                self?.gotoConfirm?()
             }
         )
-    )
-    
+    }()
+
     // MARK: - Helpers
-    
+
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -114,47 +124,33 @@ final class OTPFormViewModel: FormViewModel {
             }
         }
     }
-    
-    
-    // MARK: - selection
+
+    // MARK: - Selection
+
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
-        switch indexPath.section {
-        default:
-            break
-        }
+        // Add selection logic here if needed
     }
-    
-    
+
+    // MARK: - Internal State
+
     private struct State {
-        var verificationNumber: String
-        var firstName: String?
-        var lastName: String?
-        var gender: String?
-        var ageRange: CommonIdNameModel?
-        var roles: CommonIdNameModel?
-        var location: LocationModel?
-        var referralCode: String?
+        var type: OTPVerificationType
     }
-    
+
+    // MARK: - Tags
+
     enum Tags {
         enum Section: Int {
             case header = 0
-            case names = 1
-            case gender = 2
-            case roles = 3
+            case otp = 1
         }
-        
+
         enum Cells: Int {
-            case title = 0
-            case firstName = 1
-            case lastName = 2
-            case male = 3
-            case female = 4
-            case ageRange = 5
-            case roles = 6
-            case location = 7
-            case referralCode = 9
-            case submit = 10
+            case headerTitle = 100
+            case spacerTop = 101
+            case spacerBottom = 102
+            case otp = 103
+            case continueButton = 104
         }
     }
 }
