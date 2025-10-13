@@ -10,6 +10,9 @@ import UIKit
 final public class ProductImageGalleryCell: UITableViewCell, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UIScrollViewDelegate {
 
     private var images: [ProductImage] = []
+    private var placeholderImage: UIImage?
+    private var fallbackImage: UIImage?
+
 
     private let collectionView: UICollectionView
     private let pageControl = UIPageControl()
@@ -67,7 +70,6 @@ final public class ProductImageGalleryCell: UITableViewCell, UICollectionViewDat
         ])
     }
 
-
     public func configure(with config: ProductImageGalleryConfig) {
         // Put featured images first
         let featured = config.images.filter { $0.isFeatured }
@@ -79,7 +81,12 @@ final public class ProductImageGalleryCell: UITableViewCell, UICollectionViewDat
 
         collectionView.reloadData()
         collectionView.setContentOffset(.zero, animated: false)
+
+        // Save the placeholder and fallback images for cell configuration
+        self.placeholderImage = config.placeholderImage
+        self.fallbackImage = config.fallbackImage
     }
+
 
     // MARK: - UICollectionViewDataSource
 

@@ -31,8 +31,13 @@ public struct ProductImageGalleryConfig {
     public var images: [ProductImage]
     public var imageHeight: CGFloat
 
-    public init(images: [ProductImage], imageHeight: CGFloat = 180) {
+    public var placeholderImage: UIImage?
+    public var fallbackImage: UIImage?
+
+    public init(images: [ProductImage], imageHeight: CGFloat = 180, placeholderImage: UIImage? = nil, fallbackImage: UIImage? = nil) {
         self.images = images
         self.imageHeight = imageHeight
+        self.placeholderImage = placeholderImage
+        self.fallbackImage = fallbackImage
     }
 }
