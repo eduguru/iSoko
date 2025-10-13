@@ -25,6 +25,7 @@ public extension StorageKeys.UserDefaults {
     static let hasSelectedLanguage = "\(AppStorage.prefix)hasSelectedLanguage"
     static let hasSelectedRegion = "\(AppStorage.prefix)hasSelectedRegion"
     static let hasViewedWalkthrough = "\(AppStorage.prefix)hasViewedWalkthrough"
+    static let hasShownInitialLoginOptions = "\(AppStorage.prefix)hasShownInitialLoginOptions"
 }
 
 extension AppStorage {
@@ -48,6 +49,9 @@ extension AppStorage {
     
     @UserDefault(StorageKeys.UserDefaults.hasViewedWalkthrough)
     public static var hasViewedWalkthrough: Bool?
+    
+    @UserDefault(StorageKeys.UserDefaults.hasShownInitialLoginOptions)
+    public static var hasShownInitialLoginOptions: Bool?
     
     @UserDefault(StorageKeys.UserDefaults.isBiometricsEnabled)
     public static var isBiometricsEnabled: Bool?

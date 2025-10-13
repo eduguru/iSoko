@@ -36,6 +36,7 @@ final class GridTableViewCell: UITableViewCell {
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.isScrollEnabled = false // ✅ prevent scrolling conflict
         collectionView.showsVerticalScrollIndicator = false
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
@@ -45,6 +46,7 @@ final class GridTableViewCell: UITableViewCell {
                                 forCellWithReuseIdentifier: "GridViewCollectionViewCell")
 
         contentView.addSubview(collectionView)
+
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: contentView.topAnchor),
             collectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -55,16 +57,33 @@ final class GridTableViewCell: UITableViewCell {
 
     func configure(with items: [GridItemModel], columns: Int) {
         self.items = items
-        self.numberOfColumns = max(1, columns)
+        self.numberOfColumns = max(columns, 1)
 
-        // ✅ Fix: Ensure layout is settled before measuring
-        collectionView.setNeedsLayout()
-        collectionView.layoutIfNeeded()
-
-        collectionView.collectionViewLayout.invalidateLayout()
         collectionView.reloadData()
+        collectionView.collectionViewLayout.invalidateLayout()
+    }
+
+    // MARK: - Public Static Height Calculator
+
+    static func estimatedHeight(
+        width: CGFloat,
+        items: [GridItemModel],
+        columns: Int,
+        itemHeight: CGFloat = 200,
+        sectionInsets: UIEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16),
+        interItemSpacing: CGFloat = 8,
+        lineSpacing: CGFloat = 12
+    ) -> CGFloat {
+        guard columns > 0 else { return 0 }
+
+        let rows = ceil(CGFloat(items.count) / CGFloat(columns))
+        let verticalSpacing = CGFloat(max(0, rows - 1)) * lineSpacing
+        let totalVerticalInset = sectionInsets.top + sectionInsets.bottom
+
+        return rows * itemHeight + verticalSpacing + totalVerticalInset
     }
 }
+
 
 extension GridTableViewCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 

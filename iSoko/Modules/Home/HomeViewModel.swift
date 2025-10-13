@@ -8,15 +8,38 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class HomeViewModel: FormViewModel {
     private var state: State?
+    
+    let productsService = NetworkEnvironment.shared.productsService
+    let servicesService = NetworkEnvironment.shared.servicesService
 
     override init() {
         self.state = State()
         super.init()
         
         self.sections = makeSections()
+    }
+    
+    override func fetchData() {
+        getFeaturedProducts()
+    }
+    
+    private func getFeaturedProducts() {
+        Task {
+            do {
+                let accessToken = AppStorage.accessToken ?? ""
+                
+                let response = try await productsService.getFeaturedProducts(page: 1, count: 20, accessToken: accessToken)
+                print("response Details: \(response)")
+            } catch let NetworkError.server(apiError) { // ❌ API returned error body
+                print("API error:", apiError.message ?? "")
+            } catch {  // ❌ Networking/decoding
+                print("Unexpected error:", error)
+            }
+        }
     }
 
     // MARK: - make sections

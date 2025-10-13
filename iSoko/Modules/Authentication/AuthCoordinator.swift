@@ -8,13 +8,17 @@
 import RouterKit
 import AuthenticationServices
 import UtilsKit
-
+import StorageKit
 
 class AuthCoordinator: BaseCoordinator {
     private var authSession: ASWebAuthenticationSession?
 
     override func start() {
-        goToAuthOptions()
+        if AppStorage.hasShownInitialLoginOptions ?? false {
+            goToMainTabs()
+        } else {
+            goToAuthOptions()
+        }
     }
     
     private func goToAuthOptions() {
@@ -31,6 +35,7 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.gotoForgotPassword = gotoForgotPassword
         viewModel.gotoGuestSession = goToMainTabs
         
+        AppStorage.hasShownInitialLoginOptions = true
         router.setRoot(vc, animated: true)
     }
 
