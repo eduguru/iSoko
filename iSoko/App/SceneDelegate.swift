@@ -7,6 +7,7 @@
 
 import UIKit
 import StorageKit
+import GoogleSignIn
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
@@ -80,6 +81,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
                 // 👉 You can now exchange the code for tokens
             }
+        }
+        
+        if GIDSignIn.sharedInstance.handle(url) {
+            return
         }
     }
 

@@ -62,6 +62,7 @@
             <key>CFBundleURLSchemes</key>
             <array>
                 <string>weru.isoko.app</string>
+                <string>com.googleusercontent.apps.YOUR_REVERSED_CLIENT_ID</string>
             </array>
         </dict>
     </array>
