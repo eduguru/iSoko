@@ -9,6 +9,8 @@ import NetworkingKit
 
 public protocol ServicesService {
     //MARK: - listings
+    func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceCategoryResponse]
+    
     func getAllTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse]
     
     func getFeaturedTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse]
@@ -45,6 +47,12 @@ public final class ServicesServiceImpl: ServicesService {
     public init(provider: NetworkProvider, tokenProvider: RefreshableTokenProvider) {
         self.manager = provider.manager()
         self.tokenProvider = tokenProvider
+    }
+    
+    public func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceCategoryResponse] {
+        let response: [TradeServiceCategoryResponse] = try await manager.request(ServicesApi.getAllTradeServiceCategories(page: page, count: count, accessToken: accessToken)) ?? []
+        
+        return response
     }
     
     public func getAllTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse] {

@@ -12,6 +12,26 @@ import NetworkingKit
 public struct ServicesApi {
     
     //MARK: - listings
+    public static func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceCategoryResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/market-service-category",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return OptionalObjectResponseTarget(target: target)
+    }
+    
     public static func getAllTradeServices(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
 

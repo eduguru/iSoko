@@ -11,38 +11,96 @@ import UtilsKit
 import StorageKit
 
 final class HomeViewModel: FormViewModel {
-    private var state: State?
     
-    let productsService = NetworkEnvironment.shared.productsService
-    let servicesService = NetworkEnvironment.shared.servicesService
+    // MARK: - Services
+    private let productsService = NetworkEnvironment.shared.productsService
+    private let servicesService = NetworkEnvironment.shared.servicesService
+    private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
+
+    // MARK: - State
+    private var state: State?
 
     override init() {
         self.state = State()
         super.init()
-        
         self.sections = makeSections()
     }
-    
+
+    // MARK: - Fetch
     override func fetchData() {
-        getFeaturedProducts()
-    }
-    
-    private func getFeaturedProducts() {
         Task {
-            do {
-                let accessToken = AppStorage.accessToken ?? ""
-                
-                let response = try await productsService.getFeaturedProducts(page: 1, count: 20, accessToken: accessToken)
-                print("response Details: \(response)")
-            } catch let NetworkError.server(apiError) { // ❌ API returned error body
-                print("API error:", apiError.message ?? "")
-            } catch {  // ❌ Networking/decoding
-                print("Unexpected error:", error)
+            let categoriesSuccess = await fetchCategories()
+            let featuredSuccess = await fetchFeaturedItems()
+
+            if !categoriesSuccess {
+                print("⚠️ Failed to fetch one or more category types.")
             }
+
+            if !featuredSuccess {
+                print("⚠️ Failed to fetch one or more featured item types.")
+            }
+
+            // TODO: Update UI here if needed (e.g. reloadSections())
         }
     }
 
-    // MARK: - make sections
+    private func fetchCategories() async -> Bool {
+        async let productCategories = fetchData(type: .productCategories)
+        async let serviceCategories = fetchData(type: .serviceCategories)
+
+        let results = await [productCategories, serviceCategories]
+        return results.allSatisfy { $0 }
+    }
+
+    private func fetchFeaturedItems() async -> Bool {
+        async let featuredProducts = fetchData(type: .featuredProducts)
+        async let featuredServices = fetchData(type: .featuredServices)
+
+        let results = await [featuredProducts, featuredServices]
+        return results.allSatisfy { $0 }
+    }
+
+    @discardableResult
+    private func fetchData(type: HomeDataType) async -> Bool {
+        do {
+            switch type {
+            case .featuredProducts:
+                let response = try await productsService.getFeaturedProducts(
+                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                self.state?.featuredProducts = response
+                print("✅ Fetched Featured Products")
+
+            case .featuredServices:
+                let response = try await servicesService.getFeaturedTradeServices(
+                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                self.state?.featuredServices = response
+                print("✅ Fetched Featured Services")
+
+            case .productCategories:
+                let response = try await commonUtilitiesService.getCommodityCategory(
+                    page: 1, count: 20, module: "<regulation | trade-documents | standards>", accessToken: state?.accessToken ?? "")
+                self.state?.productCategories = response
+                print("✅ Fetched Product Categories")
+
+            case .serviceCategories:
+                let response = try await servicesService.getAllTradeServiceCategories(
+                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                self.state?.serviceCategories = response
+                print("✅ Fetched Service Categories")
+            }
+
+            return true
+
+        } catch let NetworkError.server(apiError) {
+            print("❌ API Error in \(type):", apiError.message ?? "")
+        } catch {
+            print("❌ Unexpected Error in \(type):", error)
+        }
+
+        return false
+    }
+
+    // MARK: - Sections
 
     private func makeSections() -> [FormSection] {
         return [
@@ -54,7 +112,7 @@ final class HomeViewModel: FormViewModel {
             makeTrndingServicesSection()
         ]
     }
-    
+
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
@@ -62,7 +120,7 @@ final class HomeViewModel: FormViewModel {
             cells: [categoriesFormRow]
         )
     }
-    
+
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
@@ -70,7 +128,7 @@ final class HomeViewModel: FormViewModel {
             cells: [categoriesFormRow]
         )
     }
-    
+
     private func makeBannerSection() -> FormSection {
         return FormSection(
             id: Tags.Section.banner.rawValue,
@@ -78,7 +136,7 @@ final class HomeViewModel: FormViewModel {
             cells: [bannerRow]
         )
     }
-    
+
     private func makeTrndingProductsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
@@ -86,33 +144,33 @@ final class HomeViewModel: FormViewModel {
             cells: [trendingProducts]
         )
     }
-    
+
     private func makeTrndingServicesSection() -> FormSection {
         return FormSection(
-            id: Tags.Section.trendingProducts.rawValue,
+            id: Tags.Section.trendingServices.rawValue,
             title: "Trending Services",
             cells: [trendingServices]
         )
     }
-    
-    //MARK: - rows -
+
+    // MARK: - Form Rows
 
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
-            model: SearchFormModel(
-                placeholder: "Search for anything",
-                keyboardType: .default,
-                searchIcon: UIImage(systemName: "magnifyingglass"),
-                searchIconPlacement: .right,
-                filterIcon: nil,
-                didTapSearchIcon: { print("Search icon tapped") },
-                didTapFilterIcon: { print("Filter icon tapped") },
-                didStartEditing: { text in print("Started editing with: \(text)") },
-                didEndEditing: { text in print("Ended editing with: \(text)") },
-                onTextChanged: { text in print("Search text changed: \(text)") }
-            )
+        model: SearchFormModel(
+            placeholder: "Search for anything",
+            keyboardType: .default,
+            searchIcon: UIImage(systemName: "magnifyingglass"),
+            searchIconPlacement: .right,
+            filterIcon: nil,
+            didTapSearchIcon: { print("Search icon tapped") },
+            didTapFilterIcon: { print("Filter icon tapped") },
+            didStartEditing: { text in print("Started editing with: \(text)") },
+            didEndEditing: { text in print("Ended editing with: \(text)") },
+            onTextChanged: { text in print("Search text changed: \(text)") }
         )
-    
+    )
+
     lazy var bannerRow = CarouselRow(
         tag: Tags.Section.banner.rawValue,
         model: CarouselModel(
@@ -125,78 +183,41 @@ final class HomeViewModel: FormViewModel {
             autoPlayInterval: 4,
             paginationPlacement: .inside,
             imageContentMode: .scaleAspectFill,
-            transitionStyle: .fade,          // <-- Fade transition
-            hideText: false,                 // <-- Set to true to hide all labels
-            currentPageDotColor: .red,       // <-- Customize active dot color
-            pageDotColor: .lightGray         // <-- Customize inactive dots
+            transitionStyle: .fade,
+            hideText: false,
+            currentPageDotColor: .red,
+            pageDotColor: .lightGray
         )
     )
-    
-    lazy var categoriesFormRow =  QuickActionsFormRow(tag: 1, items: [
-        QuickActionItem(
-            id: "1",
-            image: UIImage(systemName: "paperplane.fill") ?? UIImage(),
-            imageShape: .circle,
-            title: "Send Money",
-            onTap: { print("Send Money tapped") }
-        ),
-        QuickActionItem(
-            id: "2",
-            image: UIImage(systemName: "tray.and.arrow.down.fill") ?? UIImage(),
-            imageShape: .rounded(12),
-            title: "Request",
-            titleColor: .secondaryLabel,
-            onTap: { print("Request tapped") }
-        ),
-        QuickActionItem(
-            id: "3",
-            image: UIImage(systemName: "plus.circle.fill") ?? UIImage(),
-            imageShape: .square,
-            title: "Top Up",
-            onTap: { print("Top Up tapped") }
-        ),
-        QuickActionItem(
-            id: "4",
-            image: UIImage(systemName: "plus.circle.fill") ?? UIImage(),
-            imageShape: .square,
-            title: "Top Up",
-            onTap: { print("Top Up tapped") }
-        ),
-        QuickActionItem(
-            id: "5",
-            image: UIImage(systemName: "plus.circle.fill") ?? UIImage(),
-            imageShape: .square,
-            title: "Top Up",
-            onTap: { print("Top Up tapped") }
-        ),
-        QuickActionItem(
-            id: "6",
-            image: UIImage(systemName: "plus.circle.fill") ?? UIImage(),
-            imageShape: .square,
-            title: "Top Up",
-            onTap: { print("Top Up tapped") }
-        )
-    ])
-    
+
+    lazy var categoriesFormRow = QuickActionsFormRow(
+        tag: 1,
+        items: [
+            QuickActionItem(id: "1", image: UIImage(systemName: "paperplane.fill")!, imageShape: .circle, title: "Send Money", onTap: { print("Tapped 1") }),
+            QuickActionItem(id: "2", image: UIImage(systemName: "tray.and.arrow.down.fill")!, imageShape: .rounded(12), title: "Request", titleColor: .secondaryLabel, onTap: { print("Tapped 2") }),
+            QuickActionItem(id: "3", image: UIImage(systemName: "plus.circle.fill")!, imageShape: .square, title: "Top Up", onTap: { print("Tapped 3") })
+        ]
+    )
+
     lazy var trendingProducts = GridFormRow(
         tag: Tags.Cells.trendingProducts.rawValue,
         items: populateTrendingProductsItems(),
         numberOfColumns: 2,
         useCollectionView: false
     )
-    
+
     lazy var trendingServices = GridFormRow(
         tag: Tags.Cells.trendingServices.rawValue,
         items: populateTrendingServicesItems(),
         numberOfColumns: 2,
         useCollectionView: false
     )
-    
-    // MARK: - funcs
-    
+
+    // MARK: - Grid Item Populators
+
     private func populateTrendingProductsItems() -> [GridItemModel] {
         var items: [GridItemModel] = []
-        for i in 0..<10 {
+        for _ in 0..<10 {
             items.append(
                 GridItemModel(
                     id: "1",
@@ -205,46 +226,41 @@ final class HomeViewModel: FormViewModel {
                     subtitle: "Best Seller",
                     price: "$9.99",
                     isFavorite: false,
-                    onTap: {
-                        print("Tapped product 1")
-                    },
-                    onToggleFavorite: { isFav in
-                        print("Favorite toggled to: \(isFav)")
-                    }
+                    onTap: { print("Tapped product 1") },
+                    onToggleFavorite: { isFav in print("Favorite toggled to: \(isFav)") }
                 )
             )
         }
-        
         return items
     }
-    
+
     private func populateTrendingServicesItems() -> [GridItemModel] {
         var items: [GridItemModel] = []
-        for i in 0..<10 {
+        for _ in 0..<10 {
             items.append(
                 GridItemModel(
                     id: "1",
                     image: UIImage(named: "carousel04")!,
-                    title: "Product One",
-                    subtitle: "Best Seller",
-                    price: "$9.99",
+                    title: "Service One",
+                    subtitle: "Top Rated",
+                    price: "$19.99",
                     isFavorite: false,
-                    onTap: {
-                        print("Tapped product 1")
-                    },
-                    onToggleFavorite: { isFav in
-                        print("Favorite toggled to: \(isFav)")
-                    }
+                    onTap: { print("Tapped service 1") },
+                    onToggleFavorite: { isFav in print("Favorite toggled to: \(isFav)") }
                 )
             )
         }
-        
         return items
     }
-    
+
     // MARK: - State
 
     private struct State {
+        var accessToken = AppStorage.accessToken ?? ""
+        var featuredProducts: [ProductResponse] = []
+        var featuredServices: [TradeServiceResponse] = []
+        var productCategories: [CommodityCategoryResponse] = []
+        var serviceCategories: [TradeServiceCategoryResponse] = []
     }
 
     // MARK: - Tags
@@ -266,6 +282,24 @@ final class HomeViewModel: FormViewModel {
             case trendingProducts = 6
             case trendingServices = 7
             case search = 3001
+        }
+    }
+
+    // MARK: - Home Data Type Enum
+
+    private enum HomeDataType: CustomStringConvertible {
+        case featuredProducts
+        case featuredServices
+        case productCategories
+        case serviceCategories
+
+        var description: String {
+            switch self {
+            case .featuredProducts: return "Featured Products"
+            case .featuredServices: return "Featured Services"
+            case .productCategories: return "Product Categories"
+            case .serviceCategories: return "Service Categories"
+            }
         }
     }
 }
