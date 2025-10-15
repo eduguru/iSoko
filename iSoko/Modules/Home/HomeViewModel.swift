@@ -1,6 +1,6 @@
 //
 //  HomeViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 01/10/2025.
 //
@@ -16,50 +16,56 @@ final class HomeViewModel: FormViewModel {
     private let productsService = NetworkEnvironment.shared.productsService
     private let servicesService = NetworkEnvironment.shared.servicesService
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
-
+    
     // MARK: - State
     private var state: State?
-
+    
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
     }
-
+    
     // MARK: - Fetch
     override func fetchData() {
         Task {
             let categoriesSuccess = await fetchCategories()
             let featuredSuccess = await fetchFeaturedItems()
-
+            
             if !categoriesSuccess {
                 print("⚠️ Failed to fetch one or more category types.")
             }
-
+            
             if !featuredSuccess {
                 print("⚠️ Failed to fetch one or more featured item types.")
             }
-
-            // TODO: Update UI here if needed (e.g. reloadSections())
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                self.updateProductCategoriesSection()
+                self.updateServiceCategoriesSection()
+                self.updateTrendingProductsSection()
+                self.updateTrendingServicesSection()
+            }
         }
     }
-
+    
     private func fetchCategories() async -> Bool {
         async let productCategories = fetchData(type: .productCategories)
         async let serviceCategories = fetchData(type: .serviceCategories)
-
+        
         let results = await [productCategories, serviceCategories]
         return results.allSatisfy { $0 }
     }
-
+    
     private func fetchFeaturedItems() async -> Bool {
         async let featuredProducts = fetchData(type: .featuredProducts)
         async let featuredServices = fetchData(type: .featuredServices)
-
+        
         let results = await [featuredProducts, featuredServices]
         return results.allSatisfy { $0 }
     }
-
+    
     @discardableResult
     private func fetchData(type: HomeDataType) async -> Bool {
         do {
@@ -69,50 +75,47 @@ final class HomeViewModel: FormViewModel {
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.featuredProducts = response
                 print("✅ Fetched Featured Products")
-
+                
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.featuredServices = response
                 print("✅ Fetched Featured Services")
-
+                
             case .productCategories:
                 let response = try await commonUtilitiesService.getCommodityCategory(
                     page: 1, count: 20, module: "<regulation | trade-documents | standards>", accessToken: state?.accessToken ?? "")
                 self.state?.productCategories = response
                 print("✅ Fetched Product Categories")
-
+                
             case .serviceCategories:
                 let response = try await servicesService.getAllTradeServiceCategories(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.serviceCategories = response
                 print("✅ Fetched Service Categories")
             }
-
             return true
-
+            
         } catch let NetworkError.server(apiError) {
             print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
             print("❌ Unexpected Error in \(type):", error)
         }
-
         return false
     }
-
+    
     // MARK: - Sections
-
     private func makeSections() -> [FormSection] {
         return [
-            FormSection(id: 001, cells: [searchRow]),
+            FormSection(id: Tags.Section.search.rawValue, title: nil, cells: [searchRow]),
             makeCategoriesQuickActionsSection(),
             makeServicesQuickActionsSection(),
             makeBannerSection(),
-            makeTrndingProductsSection(),
-            makeTrndingServicesSection()
+            makeTrendingProductsSection(),
+            makeTrendingServicesSection()
         ]
     }
-
+    
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
@@ -120,7 +123,7 @@ final class HomeViewModel: FormViewModel {
             cells: [productCategoriesFormRow]
         )
     }
-
+    
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
@@ -128,7 +131,7 @@ final class HomeViewModel: FormViewModel {
             cells: [tradeServiceCategoriesFormRow]
         )
     }
-
+    
     private func makeBannerSection() -> FormSection {
         return FormSection(
             id: Tags.Section.banner.rawValue,
@@ -136,16 +139,16 @@ final class HomeViewModel: FormViewModel {
             cells: [bannerRow]
         )
     }
-
-    private func makeTrndingProductsSection() -> FormSection {
+    
+    private func makeTrendingProductsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
             title: "Trending Products",
             cells: [trendingProducts]
         )
     }
-
-    private func makeTrndingServicesSection() -> FormSection {
+    
+    private func makeTrendingServicesSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingServices.rawValue,
             title: "Trending Services",
@@ -153,8 +156,70 @@ final class HomeViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Form Rows
+    // MARK: - Update Sections
 
+    private func updateProductCategoriesSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.categories.rawValue }) else {
+            return
+        }
+        let updatedRow = QuickActionsFormRow(
+            tag: Tags.Cells.categories.rawValue,
+            items: makeProductCategoryItems()
+        )
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        reloadSection(sectionIndex)
+    }
+
+    private func updateServiceCategoriesSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.serviceCategories.rawValue }) else {
+            return
+        }
+        let updatedRow = QuickActionsFormRow(
+            tag: Tags.Cells.serviceCategories.rawValue,
+            items: makeServiceCategoryItems()
+        )
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        reloadSection(sectionIndex)
+    }
+
+    private func updateTrendingProductsSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingProducts.rawValue }) else {
+            return
+        }
+        let updatedRow = GridFormRow(
+            tag: Tags.Cells.trendingProducts.rawValue,
+            items: makeTrendingProductItems(),
+            numberOfColumns: 2,
+            useCollectionView: false
+        )
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        reloadSection(sectionIndex)
+    }
+
+    private func updateTrendingServicesSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingServices.rawValue }) else {
+            return
+        }
+        let updatedRow = GridFormRow(
+            tag: Tags.Cells.trendingServices.rawValue,
+            items: makeTrendingServiceItems(),
+            numberOfColumns: 2,
+            useCollectionView: false
+        )
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        reloadSection(sectionIndex)
+    }
+
+    // MARK: - Form Rows
+    
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
@@ -170,7 +235,7 @@ final class HomeViewModel: FormViewModel {
             onTextChanged: { text in print("Search text changed: \(text)") }
         )
     )
-
+    
     lazy var bannerRow = CarouselRow(
         tag: Tags.Section.banner.rawValue,
         model: CarouselModel(
@@ -202,91 +267,92 @@ final class HomeViewModel: FormViewModel {
 
     lazy var trendingProducts = GridFormRow(
         tag: Tags.Cells.trendingProducts.rawValue,
-        items: populateTrendingProductsItems(),
+        items: makeTrendingProductItems(),
         numberOfColumns: 2,
         useCollectionView: false
     )
 
     lazy var trendingServices = GridFormRow(
         tag: Tags.Cells.trendingServices.rawValue,
-        items: populateTrendingServicesItems(),
+        items: makeTrendingServiceItems(),
         numberOfColumns: 2,
         useCollectionView: false
     )
 
-    // MARK: - Grid Item Populators
-    func makeProductCategoryItems() -> [QuickActionItem] {
-        let count = 5// state?.productCategories.count ?? 0
-        return (0..<count).map { index in
-            // let category = state?.productCategories[index]
-            
-            return QuickActionItem(  // <-- Add 'return' here
-                id: "\(0)",
-                image: UIImage(systemName: "cart.fill"),  // Replace with your actual image or URL if available
-                imageUrl: nil,
+    // MARK: - Grid Item Builders
+
+    private func makeProductCategoryItems() -> [QuickActionItem] {
+        let count = min(state?.productCategories.count ?? 0, 5)
+        return (0..<count).compactMap { index in
+            guard let category = state?.productCategories[index] else { return nil }
+            return QuickActionItem(
+                id: "\(category.id ?? 0)",
+                image: UIImage(systemName: "cart.fill"),
+                imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
-                title: "title",
+                title: category.name ?? "",
                 onTap: {
-                    print("Tapped product category: \("unknown")")
+                    print("Tapped product category: \(category.name ?? category.imageUrl ?? "")")
                 }
             )
         }
     }
 
-    func makeServiceCategoryItems() -> [QuickActionItem] {
-        let count = 5 // state?.serviceCategories.count ?? 0
-        return (0..<count).map { index in
-            // let category = state?.serviceCategories[index]
-            
-            return QuickActionItem(  // <-- Add 'return' here
-                id: "\(0)",
-                image: UIImage(systemName: "wrench.fill"), // Replace with your actual image or URL if available
-                imageUrl: nil,
+    private func makeServiceCategoryItems() -> [QuickActionItem] {
+        let count = min(state?.serviceCategories.count ?? 0, 5)
+        return (0..<count).compactMap { index in
+            guard let category = state?.serviceCategories[index] else { return nil }
+            return QuickActionItem(
+                id: "\(category.id ?? 0)",
+                image: UIImage(systemName: "wrench.fill"),
+                imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
-                title: "title 0",
+                title: category.name ?? "",
                 onTap: {
-                    print("Tapped service category: \("unknown")")
+                    print("Tapped service category: \(category.name ?? category.imageUrl ?? "")")
                 }
             )
         }
     }
 
-    private func populateTrendingProductsItems() -> [GridItemModel] {
-        var items: [GridItemModel] = []
-        for _ in 0..<10 {
-            items.append(
-                GridItemModel(
-                    id: "1",
-                    image: UIImage(named: "carousel04")!,
-                    title: "Product One",
-                    subtitle: "Best Seller",
-                    price: "$9.99",
-                    isFavorite: false,
-                    onTap: { print("Tapped product 1") },
-                    onToggleFavorite: { isFav in print("Favorite toggled to: \(isFav)") }
-                )
+    private func makeTrendingProductItems() -> [GridItemModel] {
+        return state?.featuredProducts.map { product in
+            GridItemModel(
+                id: "\(product.id ?? 0)",
+                image: nil,
+                imageUrl: product.primaryImage ?? "",
+                title: product.name ?? "Unnamed Product",
+                subtitle: product.traderName ?? "",
+                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
+                isFavorite: false,
+                onTap: {
+                    print("Tapped product: \(product.name ?? "")")
+                },
+                onToggleFavorite: { isFav in
+                    print("Toggled favorite for product \(product.name ?? ""): \(isFav)")
+                }
             )
-        }
-        return items
+        } ?? []
     }
 
-    private func populateTrendingServicesItems() -> [GridItemModel] {
-        var items: [GridItemModel] = []
-        for _ in 0..<10 {
-            items.append(
-                GridItemModel(
-                    id: "1",
-                    image: UIImage(named: "carousel04")!,
-                    title: "Service One",
-                    subtitle: "Top Rated",
-                    price: "$19.99",
-                    isFavorite: false,
-                    onTap: { print("Tapped service 1") },
-                    onToggleFavorite: { isFav in print("Favorite toggled to: \(isFav)") }
-                )
+    private func makeTrendingServiceItems() -> [GridItemModel] {
+        return state?.featuredServices.map { service in
+            GridItemModel(
+                id: "\(service.id ?? 0)",
+                image: nil,
+                imageUrl: service.primaryImage ?? "",
+                title: service.name ?? "Unnamed Service",
+                subtitle: service.traderName ?? "",
+                price: service.price != nil ? "$\(String(format: "%.2f", service.price!))" : nil,
+                isFavorite: false,
+                onTap: {
+                    print("Tapped service: \(service.name ?? "")")
+                },
+                onToggleFavorite: { isFav in
+                    print("Toggled favorite for service \(service.name ?? ""): \(isFav)")
+                }
             )
-        }
-        return items
+        } ?? []
     }
 
     // MARK: - State
@@ -321,7 +387,7 @@ final class HomeViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Home Data Type Enum
+    // MARK: - Data Types
 
     private enum HomeDataType: CustomStringConvertible {
         case featuredProducts
@@ -337,14 +403,5 @@ final class HomeViewModel: FormViewModel {
             case .serviceCategories: return "Service Categories"
             }
         }
-    }
-}
-
-
-extension Double { // $0.price?.toCurrencyString() ?? "$0.00"
-    func toCurrencyString() -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        return formatter.string(from: NSNumber(value: self)) ?? "$0.00"
     }
 }

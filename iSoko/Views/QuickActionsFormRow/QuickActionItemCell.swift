@@ -47,13 +47,23 @@ final class QuickActionItemCell: UICollectionViewCell {
     }
 
     func configure(with item: QuickActionItem) {
-        // Use Kingfisher if imageUrl exists, otherwise fallback to image
         if let urlString = item.imageUrl, let url = URL(string: urlString) {
-            imageView.kf.setImage(with: url, placeholder: item.image)
+            // Create a custom downloader with increased timeout
+            let downloader = ImageDownloader(name: "custom.downloader")
+            downloader.downloadTimeout = 40 // Increase timeout (seconds) as needed
+
+            // Create a custom Kingfisher manager with that downloader
+            let options: KingfisherOptionsInfo = [
+                .downloader(downloader),
+                .transition(.fade(0.3)),
+                .cacheOriginalImage
+            ]
+
+            imageView.kf.setImage(with: url, placeholder: item.image, options: options)
         } else {
             imageView.image = item.image
         }
-        
+
         titleLabel.text = item.title
         titleLabel.font = item.titleFont
         titleLabel.textColor = item.titleColor
@@ -73,4 +83,5 @@ final class QuickActionItemCell: UICollectionViewCell {
             imageView.heightAnchor.constraint(equalToConstant: item.imageSize.height)
         ])
     }
+
 }

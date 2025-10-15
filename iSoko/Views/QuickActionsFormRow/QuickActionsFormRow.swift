@@ -10,7 +10,7 @@ import UIKit
 
 public final class QuickActionsFormRow: FormRow {
     public let tag: Int
-    public let items: [QuickActionItem]
+    public var items: [QuickActionItem]
     public let useCollectionView: Bool
 
     public init(tag: Int, items: [QuickActionItem], useCollectionView: Bool = false) {
