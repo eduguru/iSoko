@@ -9,7 +9,8 @@ import UIKit
 
 public struct GridItemModel {
     public let id: String
-    public let image: UIImage
+    public let image: UIImage?
+    public let imageUrl: String?
     public let title: String
     public let subtitle: String?
     public let price: String?
@@ -20,7 +21,8 @@ public struct GridItemModel {
     
     public init(
         id: String,
-        image: UIImage,
+        image: UIImage? = nil,
+        imageUrl: String? = nil,
         title: String,
         subtitle: String? = nil,
         price: String? = nil,
@@ -30,6 +32,7 @@ public struct GridItemModel {
     ) {
         self.id = id
         self.image = image
+        self.imageUrl = imageUrl
         self.title = title
         self.subtitle = subtitle
         self.price = price

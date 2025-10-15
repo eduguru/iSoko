@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 class GridViewCollectionViewCell: UICollectionViewCell {
     
@@ -45,10 +46,30 @@ class GridViewCollectionViewCell: UICollectionViewCell {
     }
 
 
+//    func configure(with item: GridItemModel) {
+//        self.item = item
+//
+//        imageView.image = item.image
+//        titleLabel.text = item.title
+//        subtitleLabel.text = item.subtitle
+//        priceLabel.text = item.price
+//
+//        subtitleLabel.isHidden = item.subtitle == nil
+//        priceLabel.isHidden = item.price == nil
+//
+//        updateFavoriteIcon(isFavorite: item.isFavorite)
+//    }
+    
     func configure(with item: GridItemModel) {
         self.item = item
-
-        imageView.image = item.image
+        
+        // Use Kingfisher if imageUrl exists, otherwise fallback to image
+        if let urlString = item.imageUrl, let url = URL(string: urlString) {
+            imageView.kf.setImage(with: url, placeholder: item.image)
+        } else {
+            imageView.image = item.image
+        }
+        
         titleLabel.text = item.title
         subtitleLabel.text = item.subtitle
         priceLabel.text = item.price

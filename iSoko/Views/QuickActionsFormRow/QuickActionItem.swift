@@ -17,7 +17,8 @@ public struct QuickActionItem {
     }
 
     public let id: String
-    public let image: UIImage
+    public let image: UIImage?
+    public let imageUrl: String?
     public let imageSize: CGSize
     public let imageShape: ImageShape
     public let title: String
@@ -27,7 +28,8 @@ public struct QuickActionItem {
 
     public init(
         id: String,
-        image: UIImage,
+        image: UIImage? = nil,
+        imageUrl: String? = nil,
         imageSize: CGSize = CGSize(width: 60, height: 60),
         imageShape: ImageShape = .circle,
         title: String,
@@ -37,6 +39,7 @@ public struct QuickActionItem {
     ) {
         self.id = id
         self.image = image
+        self.imageUrl = imageUrl
         self.imageSize = imageSize
         self.imageShape = imageShape
         self.title = title

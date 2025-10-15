@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class QuickActionItemCell: UICollectionViewCell {
     
@@ -46,7 +47,13 @@ final class QuickActionItemCell: UICollectionViewCell {
     }
 
     func configure(with item: QuickActionItem) {
-        imageView.image = item.image
+        // Use Kingfisher if imageUrl exists, otherwise fallback to image
+        if let urlString = item.imageUrl, let url = URL(string: urlString) {
+            imageView.kf.setImage(with: url, placeholder: item.image)
+        } else {
+            imageView.image = item.image
+        }
+        
         titleLabel.text = item.title
         titleLabel.font = item.titleFont
         titleLabel.textColor = item.titleColor

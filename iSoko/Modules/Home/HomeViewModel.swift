@@ -117,7 +117,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.categories.rawValue,
             title: "Explore Categories",
-            cells: [categoriesFormRow]
+            cells: [productCategoriesFormRow]
         )
     }
 
@@ -125,7 +125,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
             title: "Explore Service Categories",
-            cells: [categoriesFormRow]
+            cells: [tradeServiceCategoriesFormRow]
         )
     }
 
@@ -190,13 +190,14 @@ final class HomeViewModel: FormViewModel {
         )
     )
 
-    lazy var categoriesFormRow = QuickActionsFormRow(
+    lazy var productCategoriesFormRow = QuickActionsFormRow(
         tag: 1,
-        items: [
-            QuickActionItem(id: "1", image: UIImage(systemName: "paperplane.fill")!, imageShape: .circle, title: "Send Money", onTap: { print("Tapped 1") }),
-            QuickActionItem(id: "2", image: UIImage(systemName: "tray.and.arrow.down.fill")!, imageShape: .rounded(12), title: "Request", titleColor: .secondaryLabel, onTap: { print("Tapped 2") }),
-            QuickActionItem(id: "3", image: UIImage(systemName: "plus.circle.fill")!, imageShape: .square, title: "Top Up", onTap: { print("Tapped 3") })
-        ]
+        items: makeProductCategoryItems()
+    )
+
+    lazy var tradeServiceCategoriesFormRow = QuickActionsFormRow(
+        tag: 2,
+        items: makeServiceCategoryItems()
     )
 
     lazy var trendingProducts = GridFormRow(
@@ -214,6 +215,41 @@ final class HomeViewModel: FormViewModel {
     )
 
     // MARK: - Grid Item Populators
+    func makeProductCategoryItems() -> [QuickActionItem] {
+        let count = 5// state?.productCategories.count ?? 0
+        return (0..<count).map { index in
+            // let category = state?.productCategories[index]
+            
+            return QuickActionItem(  // <-- Add 'return' here
+                id: "\(0)",
+                image: UIImage(systemName: "cart.fill"),  // Replace with your actual image or URL if available
+                imageUrl: nil,
+                imageShape: .circle,
+                title: "title",
+                onTap: {
+                    print("Tapped product category: \("unknown")")
+                }
+            )
+        }
+    }
+
+    func makeServiceCategoryItems() -> [QuickActionItem] {
+        let count = 5 // state?.serviceCategories.count ?? 0
+        return (0..<count).map { index in
+            // let category = state?.serviceCategories[index]
+            
+            return QuickActionItem(  // <-- Add 'return' here
+                id: "\(0)",
+                image: UIImage(systemName: "wrench.fill"), // Replace with your actual image or URL if available
+                imageUrl: nil,
+                imageShape: .circle,
+                title: "title 0",
+                onTap: {
+                    print("Tapped service category: \("unknown")")
+                }
+            )
+        }
+    }
 
     private func populateTrendingProductsItems() -> [GridItemModel] {
         var items: [GridItemModel] = []
@@ -301,5 +337,14 @@ final class HomeViewModel: FormViewModel {
             case .serviceCategories: return "Service Categories"
             }
         }
+    }
+}
+
+
+extension Double { // $0.price?.toCurrencyString() ?? "$0.00"
+    func toCurrencyString() -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        return formatter.string(from: NSNumber(value: self)) ?? "$0.00"
     }
 }
