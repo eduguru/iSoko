@@ -11,35 +11,46 @@ import UtilsKit
 import StorageKit
 
 final class HomeViewModel: FormViewModel {
-    
+
+    // MARK: - Callbacks
+    var onTapProduct: ((ProductResponse) -> Void)?
+    var onFavoriteProductToggle: ((Bool, ProductResponse) -> Void)?
+
+    var onTapService: ((TradeServiceResponse) -> Void)?
+    var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
+
+    var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
+    var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
+
+
     // MARK: - Services
     private let productsService = NetworkEnvironment.shared.productsService
     private let servicesService = NetworkEnvironment.shared.servicesService
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
-    
+
     // MARK: - State
     private var state: State?
-    
+
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
     }
-    
+
     // MARK: - Fetch
     override func fetchData() {
         Task {
             let categoriesSuccess = await fetchCategories()
             let featuredSuccess = await fetchFeaturedItems()
-            
+
             if !categoriesSuccess {
                 print("⚠️ Failed to fetch one or more category types.")
             }
-            
+
             if !featuredSuccess {
                 print("⚠️ Failed to fetch one or more featured item types.")
             }
-            
+
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 self.updateProductCategoriesSection()
@@ -49,23 +60,23 @@ final class HomeViewModel: FormViewModel {
             }
         }
     }
-    
+
     private func fetchCategories() async -> Bool {
         async let productCategories = fetchData(type: .productCategories)
         async let serviceCategories = fetchData(type: .serviceCategories)
-        
+
         let results = await [productCategories, serviceCategories]
         return results.allSatisfy { $0 }
     }
-    
+
     private func fetchFeaturedItems() async -> Bool {
         async let featuredProducts = fetchData(type: .featuredProducts)
         async let featuredServices = fetchData(type: .featuredServices)
-        
+
         let results = await [featuredProducts, featuredServices]
         return results.allSatisfy { $0 }
     }
-    
+
     @discardableResult
     private func fetchData(type: HomeDataType) async -> Bool {
         do {
@@ -75,19 +86,19 @@ final class HomeViewModel: FormViewModel {
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.featuredProducts = response
                 print("✅ Fetched Featured Products")
-                
+
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.featuredServices = response
                 print("✅ Fetched Featured Services")
-                
+
             case .productCategories:
                 let response = try await commonUtilitiesService.getCommodityCategory(
                     page: 1, count: 20, module: "<regulation | trade-documents | standards>", accessToken: state?.accessToken ?? "")
                 self.state?.productCategories = response
                 print("✅ Fetched Product Categories")
-                
+
             case .serviceCategories:
                 let response = try await servicesService.getAllTradeServiceCategories(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
@@ -95,7 +106,7 @@ final class HomeViewModel: FormViewModel {
                 print("✅ Fetched Service Categories")
             }
             return true
-            
+
         } catch let NetworkError.server(apiError) {
             print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
@@ -103,7 +114,7 @@ final class HomeViewModel: FormViewModel {
         }
         return false
     }
-    
+
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         return [
@@ -115,7 +126,7 @@ final class HomeViewModel: FormViewModel {
             makeTrendingServicesSection()
         ]
     }
-    
+
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
@@ -123,7 +134,7 @@ final class HomeViewModel: FormViewModel {
             cells: [productCategoriesFormRow]
         )
     }
-    
+
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
@@ -131,7 +142,7 @@ final class HomeViewModel: FormViewModel {
             cells: [tradeServiceCategoriesFormRow]
         )
     }
-    
+
     private func makeBannerSection() -> FormSection {
         return FormSection(
             id: Tags.Section.banner.rawValue,
@@ -139,7 +150,7 @@ final class HomeViewModel: FormViewModel {
             cells: [bannerRow]
         )
     }
-    
+
     private func makeTrendingProductsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
@@ -147,7 +158,7 @@ final class HomeViewModel: FormViewModel {
             cells: [trendingProducts]
         )
     }
-    
+
     private func makeTrendingServicesSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingServices.rawValue,
@@ -219,7 +230,7 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - Form Rows
-    
+
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
@@ -235,7 +246,7 @@ final class HomeViewModel: FormViewModel {
             onTextChanged: { text in print("Search text changed: \(text)") }
         )
     )
-    
+
     lazy var bannerRow = CarouselRow(
         tag: Tags.Section.banner.rawValue,
         model: CarouselModel(
@@ -287,12 +298,12 @@ final class HomeViewModel: FormViewModel {
             guard let category = state?.productCategories[index] else { return nil }
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
-                image: UIImage(systemName: "cart.fill"),
+                image: UIImage(named: "logo"),
                 imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
                 title: category.name ?? "",
-                onTap: {
-                    print("Tapped product category: \(category.name ?? category.imageUrl ?? "")")
+                onTap: { [weak self] in
+                    self?.onTapProductCategory?(category)
                 }
             )
         }
@@ -304,12 +315,12 @@ final class HomeViewModel: FormViewModel {
             guard let category = state?.serviceCategories[index] else { return nil }
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
-                image: UIImage(systemName: "wrench.fill"),
+                image: UIImage(named: "logo"),
                 imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
                 title: category.name ?? "",
-                onTap: {
-                    print("Tapped service category: \(category.name ?? category.imageUrl ?? "")")
+                onTap: { [weak self] in
+                    self?.onTapServiceCategory?(category)
                 }
             )
         }
@@ -319,17 +330,17 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredProducts.map { product in
             GridItemModel(
                 id: "\(product.id ?? 0)",
-                image: nil,
+                image: UIImage(named: "logo"),
                 imageUrl: product.primaryImage ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderName ?? "",
                 price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
                 isFavorite: false,
-                onTap: {
-                    print("Tapped product: \(product.name ?? "")")
+                onTap: { [weak self] in
+                    self?.onTapProduct?(product)
                 },
-                onToggleFavorite: { isFav in
-                    print("Toggled favorite for product \(product.name ?? ""): \(isFav)")
+                onToggleFavorite: { [weak self] isFav in
+                    self?.onFavoriteProductToggle?(isFav, product)
                 }
             )
         } ?? []
@@ -339,17 +350,17 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredServices.map { service in
             GridItemModel(
                 id: "\(service.id ?? 0)",
-                image: nil,
+                image: UIImage(named: "logo"),
                 imageUrl: service.primaryImage ?? "",
                 title: service.name ?? "Unnamed Service",
                 subtitle: service.traderName ?? "",
                 price: service.price != nil ? "$\(String(format: "%.2f", service.price!))" : nil,
                 isFavorite: false,
-                onTap: {
-                    print("Tapped service: \(service.name ?? "")")
+                onTap: { [weak self] in
+                    self?.onTapService?(service)
                 },
-                onToggleFavorite: { isFav in
-                    print("Toggled favorite for service \(service.name ?? ""): \(isFav)")
+                onToggleFavorite: { [weak self] isFav in
+                    self?.onFavoriteServiceToggle?(isFav, service)
                 }
             )
         } ?? []

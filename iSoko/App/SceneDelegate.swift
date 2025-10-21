@@ -17,28 +17,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     let certificateService = NetworkEnvironment.shared.certificateService
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        // Use this method to optionally configure and attach the UIWindow `window` to the provided UIWindowScene `scene`.
-        // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
-        // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
-        //        guard let windowScene = (scene as? UIWindowScene) else { return }
-        //
-        //        let window = UIWindow(windowScene: windowScene)
-        //        window.rootViewController = ViewController()
-        //        self.window = window
-        //        window.makeKeyAndVisible()
-        
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        
+
         let window = UIWindow(windowScene: windowScene)
         self.window = window
-        
-        getToken()
-        
-        // Initialize AppCoordinator with the window
-        appCoordinator = AppCoordinator(window: window)
-        
-        // Start the coordinator
-        appCoordinator?.start()
+
+        // ✅ Show splash screen immediately
+        let splashVC = SplashScreenViewController()
+        window.rootViewController = splashVC
+        window.makeKeyAndVisible()
+
+        // ✅ Start async task in background
+        Task {
+            let success = await fetchToken()
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+
+                if success {
+                    // ✅ Now start the app coordinator
+                    self.appCoordinator = AppCoordinator(window: window)
+                    self.appCoordinator?.start()
+                } else {
+                    // Optional: Show error or retry
+                    print("❌ Failed to fetch token. Consider showing retry UI.")
+                }
+            }
+        }
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -88,26 +93,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
 
-    private func getToken() {
-        Task {
-            do {
-                
-                let token = try await certificateService.getToken(
-                    grant_type: AppConstants.GrantType.login.rawValue,
-                    client_id: ApiEnvironment.clientId,
-                    client_secret: ApiEnvironment.clientSecret
-                )
-                
-                print("🔑 accessToken:", token.accessToken)
-                AppStorage.accessToken = token.accessToken
-            } catch let NetworkError.server(apiError) {
-                // ❌ API returned error body
-                print("accessToken API error:", apiError.message ?? "")
-            } catch {
-                // ❌ Networking/decoding
-                print("accessToken Unexpected error:", error)
-            }
+    private func fetchToken() async -> Bool {
+        do {
+            let token = try await certificateService.getToken(
+                grant_type: AppConstants.GrantType.login.rawValue,
+                client_id: ApiEnvironment.clientId,
+                client_secret: ApiEnvironment.clientSecret
+            )
+            
+            print("🔑 accessToken:", token.accessToken)
+            AppStorage.accessToken = token.accessToken
+            
+            return true
+        } catch let NetworkError.server(apiError) {
+            print("accessToken API error:", apiError.message ?? "")
+        } catch {
+            print("accessToken Unexpected error:", error)
         }
+        return false
     }
     
 }

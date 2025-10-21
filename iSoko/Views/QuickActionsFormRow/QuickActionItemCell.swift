@@ -75,6 +75,7 @@ final class QuickActionItemCell: UICollectionViewCell {
             case .square: return 0
             }
         }()
+        
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
 
