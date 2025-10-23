@@ -13,6 +13,7 @@ import StorageKit
 final class HomeViewModel: FormViewModel {
 
     // MARK: - Callbacks
+    var onTapMoreProduct: (() -> Void)?
     var onTapProduct: ((ProductResponse) -> Void)?
     var onFavoriteProductToggle: ((Bool, ProductResponse) -> Void)?
 
@@ -155,6 +156,10 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
             title: "Trending Products",
+            actionTitle: "See All",
+            onActionTapped: { [weak self] in
+                self?.onTapMoreProduct?()
+            },
             cells: [trendingProducts]
         )
     }

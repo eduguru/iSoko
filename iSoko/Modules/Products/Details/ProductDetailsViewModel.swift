@@ -229,44 +229,12 @@ final class ProductDetailsViewModel: FormViewModel {
     
     private lazy var moreFromThisSellerFormRow = HorizontalGridFormRow(
         tag: 300,
-        items: [
-            GridItemModel(
-                id: "p1",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "MacBook Air",
-                price: "$999"),
-            GridItemModel(
-                id: "p2",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "iPhone 15",
-                price: "$799"),
-            GridItemModel(
-                id: "p3",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "AirPods Pro",
-                price: "$249"),
-        ]
+        items: []
     )
     
     private lazy var similarProductsFormRow = HorizontalGridFormRow(
         tag: 300,
-        items: [
-            GridItemModel(
-                id: "p1",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "MacBook Air",
-                price: "$999"),
-            GridItemModel(
-                id: "p2",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "iPhone 15",
-                price: "$799"),
-            GridItemModel(
-                id: "p3",
-                imageUrl: "https://ichef.bbci.co.uk/news/1536/cpsprodpb/14235/production/_100058428_mediaitem100058424.jpg.webp",
-                title: "AirPods Pro",
-                price: "$249"),
-        ]
+        items: []
     )
     
     // MARK: - Builders
