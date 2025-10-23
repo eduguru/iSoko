@@ -22,10 +22,18 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - State
     private var state = State()
 
+    // Debounce task for search
+    private var searchDebounceTask: Task<Void, Never>? = nil
+
     // MARK: - Init
     override init() {
         super.init()
         self.sections = makeSections()
+        setupSearchCallbacks()
+    }
+
+    deinit {
+        searchDebounceTask?.cancel()
     }
 
     // MARK: - Fetch
@@ -47,13 +55,15 @@ final class ProductListingsViewModel: FormViewModel {
         state.currentPage = 1
         state.hasMorePages = true
         state.products.removeAll()
-
+        state.filteredProducts.removeAll()
+        state.searchText = ""
         fetchData() // Re-fetch from start
     }
 
     // MARK: - Pagination (Load More)
     override func loadMoreIfNeeded() {
-        guard state.hasMorePages, !state.isLoadingMore else { return }
+        // Disable load more while searching
+        guard state.hasMorePages, !state.isLoadingMore, state.searchText.isEmpty else { return }
 
         state.isLoadingMore = true
         state.currentPage += 1
@@ -72,6 +82,136 @@ final class ProductListingsViewModel: FormViewModel {
         }
     }
 
+    // MARK: - Search handling
+    private func setupSearchCallbacks() {
+        searchRow.model.onTextChanged = { [weak self] newText in
+            self?.handleSearchTextChanged(newText)
+        }
+        searchRow.model.didStartEditing = { text in
+            print("Started editing search with: \(text)")
+        }
+        searchRow.model.didEndEditing = { text in
+            print("Ended editing search with: \(text)")
+        }
+        searchRow.model.didTapSearchIcon = {
+            print("Search icon tapped")
+        }
+        searchRow.model.didTapFilterIcon = {
+            print("Filter icon tapped")
+        }
+    }
+
+    private func handleSearchTextChanged(_ newText: String) {
+        // Save new search term in state
+        state.searchText = newText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Cancel previous debounce task
+        searchDebounceTask?.cancel()
+
+        // Debounce filtering (300ms delay)
+        searchDebounceTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+            } catch {
+                // Task was cancelled; just return
+                return
+            }
+
+            guard let self = self else { return }
+
+            await self.applyLocalFilter(with: self.state.searchText)
+        }
+    }
+
+    // MARK: - Local Filter (async)
+    private func applyLocalFilter(with searchText: String) async {
+        if searchText.isEmpty {
+            // Show all products when no search
+            await MainActor.run {
+                self.refreshProductListSection()
+            }
+            return
+        }
+
+        // Filter locally on background queue
+        let lowercasedSearch = searchText.lowercased()
+        let filtered = await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                let results = self.state.products.filter { product in
+                    (product.name?.lowercased().contains(lowercasedSearch) ?? false) ||
+                    (product.traderName?.lowercased().contains(lowercasedSearch) ?? false)
+                }
+                continuation.resume(returning: results)
+            }
+        }
+
+        // Update state.filteredProducts with filtered products
+        await MainActor.run {
+            state.filteredProducts = filtered
+            self.refreshProductListSection()
+        }
+    }
+
+    // MARK: - Update Section with filtered products if searching
+    private func refreshProductListSection() {
+        // Keep search text updated in searchRow model so it doesn’t reset
+        updateSearchRowText()
+
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.productList.rawValue }) else {
+            return
+        }
+
+        let updatedRow = GridFormRow(
+            tag: CellTag.productList.rawValue,
+            items: makeProductGridItems(),
+            numberOfColumns: 2,
+            useCollectionView: false
+        )
+
+        var section = sections[sectionIndex]
+        section.cells = [updatedRow]
+        sections[sectionIndex] = section
+
+        reloadSection(sectionIndex)
+    }
+
+    private func updateSearchRowText() {
+        DispatchQueue.main.async {
+            if self.searchRow.model.text != self.state.searchText {
+                self.searchRow.model.text = self.state.searchText
+            }
+        }
+    }
+
+    // MARK: - Builders
+    private func makeProductGridItems() -> [GridItemModel] {
+        // If searching, use filteredProducts, else use full products list
+        let productsToShow = state.searchText.isEmpty ? state.products : state.filteredProducts
+
+        return productsToShow.map { product in
+            GridItemModel(
+                id: "\(product.id ?? 0)",
+                image: UIImage(named: "logo"),
+                imageUrl: product.primaryImage ?? "",
+                title: product.name ?? "Unnamed Product",
+                subtitle: product.traderName ?? "",
+                price: formattedPrice(for: product),
+                isFavorite: false,
+                onTap: { [weak self] in
+                    self?.onTapProduct?(product)
+                },
+                onToggleFavorite: { [weak self] isFav in
+                    self?.onToggleFavorite?(isFav, product)
+                }
+            )
+        }
+    }
+
+    private func formattedPrice(for product: ProductResponse) -> String? {
+        guard let price = product.price else { return nil }
+        return "$\(String(format: "%.2f", price))"
+    }
+
     // MARK: - API Call
     private func loadProducts(reset: Bool) async -> Bool {
         do {
@@ -83,6 +223,7 @@ final class ProductListingsViewModel: FormViewModel {
 
             if reset {
                 state.products = response
+                state.filteredProducts.removeAll()
             } else {
                 state.products.append(contentsOf: response)
             }
@@ -122,26 +263,6 @@ final class ProductListingsViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Update Section
-    private func refreshProductListSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.productList.rawValue }) else {
-            return
-        }
-
-        let updatedRow = GridFormRow(
-            tag: CellTag.productList.rawValue,
-            items: makeProductGridItems(),
-            numberOfColumns: 2,
-            useCollectionView: false
-        )
-
-        var section = sections[sectionIndex]
-        section.cells = [updatedRow]
-        sections[sectionIndex] = section
-
-        reloadSection(sectionIndex)
-    }
-
     // MARK: - Rows
     private lazy var searchRow = SearchFormRow(
         tag: CellTag.search.rawValue,
@@ -163,40 +284,16 @@ final class ProductListingsViewModel: FormViewModel {
         useCollectionView: false
     )
 
-    // MARK: - Builders
-    private func makeProductGridItems() -> [GridItemModel] {
-        state.products.map { product in
-            GridItemModel(
-                id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: formattedPrice(for: product),
-                isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapProduct?(product)
-                },
-                onToggleFavorite: { [weak self] isFav in
-                    self?.onToggleFavorite?(isFav, product)
-                }
-            )
-        }
-    }
-
-    private func formattedPrice(for product: ProductResponse) -> String? {
-        guard let price = product.price else { return nil }
-        return "$\(String(format: "%.2f", price))"
-    }
-
     // MARK: - State
     private struct State {
         var accessToken = AppStorage.accessToken ?? ""
         var products: [ProductResponse] = []
+        var filteredProducts: [ProductResponse] = [] // Store filtered products separately
         var currentPage: Int = 1
         var itemsPerPage: Int = 20
         var hasMorePages: Bool = true
         var isLoadingMore: Bool = false
+        var searchText: String = ""
     }
 
     // MARK: - Tags
