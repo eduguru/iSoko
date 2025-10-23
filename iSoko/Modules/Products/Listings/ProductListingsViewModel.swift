@@ -22,7 +22,7 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - State
     private var state = State()
 
-    // MARK: - Initialization
+    // MARK: - Init
     override init() {
         super.init()
         self.sections = makeSections()
@@ -31,33 +31,73 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await loadAllProducts()
-
+            let success = await loadProducts(reset: true)
             if !success {
-                print("⚠️ Failed to fetch product listings.")
+                showError("⚠️ Failed to fetch product listings.")
             }
-
             DispatchQueue.main.async { [weak self] in
                 self?.refreshProductListSection()
             }
         }
     }
 
-    @discardableResult
-    private func loadAllProducts() async -> Bool {
+    // MARK: - Refresh (Pull-to-Refresh)
+    override func refresh() {
+        print("🔄 Refresh triggered")
+        state.currentPage = 1
+        state.hasMorePages = true
+        state.products.removeAll()
+
+        fetchData() // Re-fetch from start
+    }
+
+    // MARK: - Pagination (Load More)
+    override func loadMoreIfNeeded() {
+        guard state.hasMorePages, !state.isLoadingMore else { return }
+
+        state.isLoadingMore = true
+        state.currentPage += 1
+
+        Task {
+            let success = await loadProducts(reset: false)
+            state.isLoadingMore = false
+
+            if success {
+                DispatchQueue.main.async { [weak self] in
+                    self?.refreshProductListSection()
+                }
+            } else {
+                state.hasMorePages = false
+            }
+        }
+    }
+
+    // MARK: - API Call
+    private func loadProducts(reset: Bool) async -> Bool {
         do {
             let response = try await productService.getAllProducts(
-                page: 1,
-                count: 20,
+                page: state.currentPage,
+                count: state.itemsPerPage,
                 accessToken: state.accessToken
             )
-            state.products = response
-            print("✅ Successfully fetched all products")
+
+            if reset {
+                state.products = response
+            } else {
+                state.products.append(contentsOf: response)
+            }
+
+            // If fewer items returned than requested → no more pages
+            state.hasMorePages = response.count >= state.itemsPerPage
+            print("✅ Fetched page \(state.currentPage) (\(response.count) items)")
             return true
+
         } catch let NetworkError.server(apiError) {
-            print("❌ Server error while fetching products:", apiError.message ?? "")
+            print("❌ Server error:", apiError.message ?? "")
+            showError(apiError.message ?? "Unknown server error")
         } catch {
-            print("❌ Unexpected error while fetching products:", error.localizedDescription)
+            print("❌ Unexpected error:", error.localizedDescription)
+            showError(error.localizedDescription)
         }
         return false
     }
@@ -102,7 +142,7 @@ final class ProductListingsViewModel: FormViewModel {
         reloadSection(sectionIndex)
     }
 
-    // MARK: - Form Rows
+    // MARK: - Rows
     private lazy var searchRow = SearchFormRow(
         tag: CellTag.search.rawValue,
         model: SearchFormModel(
@@ -112,10 +152,7 @@ final class ProductListingsViewModel: FormViewModel {
             searchIconPlacement: .right,
             filterIcon: UIImage(systemName: "slider.horizontal.3"),
             didTapSearchIcon: { print("🔍 Search tapped") },
-            didTapFilterIcon: { print("⚙️ Filter tapped") },
-            didStartEditing: { text in print("Started typing: \(text)") },
-            didEndEditing: { text in print("Finished editing: \(text)") },
-            onTextChanged: { text in print("Search text changed: \(text)") }
+            didTapFilterIcon: { print("⚙️ Filter tapped") }
         )
     )
 
@@ -126,7 +163,7 @@ final class ProductListingsViewModel: FormViewModel {
         useCollectionView: false
     )
 
-    // MARK: - Item Builders
+    // MARK: - Builders
     private func makeProductGridItems() -> [GridItemModel] {
         state.products.map { product in
             GridItemModel(
@@ -156,6 +193,10 @@ final class ProductListingsViewModel: FormViewModel {
     private struct State {
         var accessToken = AppStorage.accessToken ?? ""
         var products: [ProductResponse] = []
+        var currentPage: Int = 1
+        var itemsPerPage: Int = 20
+        var hasMorePages: Bool = true
+        var isLoadingMore: Bool = false
     }
 
     // MARK: - Tags
