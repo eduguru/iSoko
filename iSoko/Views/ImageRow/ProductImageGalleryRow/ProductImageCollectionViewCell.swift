@@ -25,7 +25,7 @@ final class ProductImageCollectionViewCell: UICollectionViewCell {
     }
 
     private func setup() {
-        imageView.contentMode = .scaleAspectFit
+        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         contentView.addSubview(imageView)
         imageView.translatesAutoresizingMaskIntoConstraints = false

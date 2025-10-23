@@ -25,13 +25,6 @@ final class LoginViewModel: FormViewModel {
     private func getToken() {
         Task {
             do {
-//                let token = try await authenticationService.login(
-//                    grant_type: AppConstants.GrantType.login.rawValue,
-//                    client_id: ApiEnvironment.clientId,
-//                    client_secret: ApiEnvironment.clientSecret,
-//                    username: "+254712270408",
-//                    password: "12345678"
-//                )
                 
                     let token = try await authenticationService.login(
                         grant_type: AppConstants.GrantType.login.rawValue,

@@ -12,7 +12,8 @@ import UIKit
 public class HomeCoordinator: BaseCoordinator {
     
     func primaryViewController() -> HomeViewController {
-        var model = HomeViewModel()
+        let model = HomeViewModel()
+        model.onTapProduct = goToProduct
         
         let controller = HomeViewController()
         controller.makeRoot = true
@@ -26,6 +27,35 @@ public class HomeCoordinator: BaseCoordinator {
         navigationController?.pushViewController(primaryViewController(), animated: true)
     }
     
+    private  func goToProduct(_ product: ProductResponse) {
+        let viewModel = ProductDetailsViewModel(product)
+        
+        let vc = ProductDetailsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in // goToMainTabs
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoHelpFeedback() {
+        let viewModel = HelpFeedbackViewModel()
+        
+        let vc = HelpFeedbackViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in // goToMainTabs
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func backAction() {
+        dismiss()
+    }
     
     public func dismiss() {
         dismissModal()

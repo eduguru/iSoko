@@ -42,4 +42,5 @@ public struct ProductResponse: Decodable {
     let dateAdded: Int?
     let isPublished:  Bool?
     let isActive:  Bool?
+    let images: [String]?
 }
