@@ -13,11 +13,14 @@ public class HomeCoordinator: BaseCoordinator {
     
     func primaryViewController() -> HomeViewController {
         let model = HomeViewModel()
+        
         model.onTapProduct = goToProduct
         model.onTapMoreProduct = goToAllProduct
         model.onTapMoreServices = onTapMoreServices
         model.onTapMoreProductCategories = onTapMoreProductCategories
         model.onTapMoreServiceCategories = onTapMoreServiceCategories
+        model.onTapProductCategory = onTapProductCategory
+        model.onTapServiceCategory = onTapServiceCategory
         
         let controller = HomeViewController()
         controller.makeRoot = true
@@ -44,7 +47,7 @@ public class HomeCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private  func goToAllProduct() {
+    private func goToAllProduct() {
         let viewModel = ProductListingsViewModel()
         
         let vc = ProductListingsViewController()
@@ -57,8 +60,38 @@ public class HomeCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private  func onTapMoreServices() {
+    private func onTapMoreServices() {
         let viewModel = ServiceListingsViewModel()
+        
+        let vc = ServiceListingsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func  onTapProductCategory(_ item: CommodityCategoryResponse) {
+        let id = item.id ?? 0
+        
+        let viewModel = ProductListingsViewModel(categoryId: "\(id)")
+        
+        let vc = ProductListingsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func  onTapServiceCategory(_ item: TradeServiceCategoryResponse) {
+        let id = item.id ?? 0
+        
+        let viewModel = ServiceListingsViewModel(categoryId: "\(id)")
         
         let vc = ServiceListingsViewController()
         vc.viewModel = viewModel
@@ -72,6 +105,7 @@ public class HomeCoordinator: BaseCoordinator {
     
     private  func onTapMoreProductCategories() {
         let viewModel = ProductCategoriesViewModel()
+        viewModel.onTapProduct = onTapProductCategory
         
         let vc = ProductCategoriesViewController()
         vc.viewModel = viewModel
@@ -85,6 +119,7 @@ public class HomeCoordinator: BaseCoordinator {
     
     private  func onTapMoreServiceCategories() {
         let viewModel = ServiceCategoriesViewModel()
+        viewModel.onTapProduct = onTapServiceCategory
         
         let vc = ServiceCategoriesViewController()
         vc.viewModel = viewModel
