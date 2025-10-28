@@ -42,7 +42,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product",
+            path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -62,7 +62,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product",
+            path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -82,7 +82,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product",
+            path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -102,7 +102,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/current-user",
+            path: "api/market-service/current-user",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -142,7 +142,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/product-trader-details/\(productId)",
+            path: "api/market-service/product-details/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -163,7 +163,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product",
+            path: "api/market-service",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -183,7 +183,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/edit/\(productId)",
+            path: "api/market-service/edit/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -203,7 +203,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/image/add/\(productId)",
+            path: "api/market-service/image/add/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -223,7 +223,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/image/remove/\(imageId)",
+            path: "api/market-service/image/remove/\(imageId)",
             method: .put,
             task: .requestPlain,
             headers: headers,
@@ -243,7 +243,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/image/set-primary/\(imageId)",
+            path: "api/market-service/image/set-primary/\(imageId)",
             method: .put,
             task: .requestPlain,
             headers: headers,
@@ -263,7 +263,7 @@ public struct ServicesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/product/update-status/\(status)/\(productId)",
+            path: "api/market-service/update-status/\(status)/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,

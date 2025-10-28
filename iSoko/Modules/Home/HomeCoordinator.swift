@@ -15,6 +15,7 @@ public class HomeCoordinator: BaseCoordinator {
         let model = HomeViewModel()
         model.onTapProduct = goToProduct
         model.onTapMoreProduct = goToAllProduct
+        model.onTapMoreServices = onTapMoreServices
         
         let controller = HomeViewController()
         controller.makeRoot = true
@@ -45,6 +46,19 @@ public class HomeCoordinator: BaseCoordinator {
         let viewModel = ProductListingsViewModel()
         
         let vc = ProductListingsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private  func onTapMoreServices() {
+        let viewModel = ServiceListingsViewModel()
+        
+        let vc = ServiceListingsViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)

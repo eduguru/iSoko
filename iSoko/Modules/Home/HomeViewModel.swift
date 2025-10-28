@@ -16,7 +16,8 @@ final class HomeViewModel: FormViewModel {
     var onTapMoreProduct: (() -> Void)?
     var onTapProduct: ((ProductResponse) -> Void)?
     var onFavoriteProductToggle: ((Bool, ProductResponse) -> Void)?
-
+    
+    var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
     var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
 
@@ -168,6 +169,10 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.trendingServices.rawValue,
             title: "Trending Services",
+            actionTitle: "See All",
+            onActionTapped: { [weak self] in
+                self?.onTapMoreServices?()
+            },
             cells: [trendingServices]
         )
     }
