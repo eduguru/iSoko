@@ -15,7 +15,7 @@ public protocol ServicesService {
     
     func getFeaturedTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse]
     
-    func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [TradeServiceCategoryResponse]
+    func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [TradeServiceResponse]
     
     func getTradeServicesByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse]
     
@@ -67,8 +67,8 @@ public final class ServicesServiceImpl: ServicesService {
         return response
     }
     
-    public func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [TradeServiceCategoryResponse] {
-        let response: [TradeServiceCategoryResponse] = try await manager.request(ServicesApi.getTradeServicesByCategory(page: page, count: count, categoryId: categoryId, accessToken: accessToken)) ?? []
+    public func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [TradeServiceResponse] {
+        let response: [TradeServiceResponse] = try await manager.request(ServicesApi.getTradeServicesByCategory(page: page, count: count, categoryId: categoryId, accessToken: accessToken)) ?? []
         
         return response
     }

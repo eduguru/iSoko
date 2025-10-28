@@ -72,7 +72,7 @@ public struct ServicesApi {
         return OptionalObjectResponseTarget(target: target)
     }
     
-    public static func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceCategoryResponse]> {
+    public static func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count, "categoryId": categoryId]
 
         let headers = [

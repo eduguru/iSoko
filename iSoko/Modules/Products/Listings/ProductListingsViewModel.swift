@@ -1,6 +1,6 @@
 //
 //  ProductListingsViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 23/10/2025.
 //
@@ -26,8 +26,9 @@ final class ProductListingsViewModel: FormViewModel {
     private var searchDebounceTask: Task<Void, Never>? = nil
 
     // MARK: - Init
-    override init() {
+    init(categoryId: String? = nil) { // ✅ Changed to match service signature
         super.init()
+        self.state.categoryId = categoryId
         self.sections = makeSections()
         setupSearchCallbacks()
     }
@@ -57,12 +58,11 @@ final class ProductListingsViewModel: FormViewModel {
         state.products.removeAll()
         state.filteredProducts.removeAll()
         state.searchText = ""
-        fetchData() // Re-fetch from start
+        fetchData()
     }
 
     // MARK: - Pagination (Load More)
     override func loadMoreIfNeeded() {
-        // Disable load more while searching
         guard state.hasMorePages, !state.isLoadingMore, state.searchText.isEmpty else { return }
 
         state.isLoadingMore = true
@@ -102,23 +102,14 @@ final class ProductListingsViewModel: FormViewModel {
     }
 
     private func handleSearchTextChanged(_ newText: String) {
-        // Save new search term in state
         state.searchText = newText.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // Cancel previous debounce task
         searchDebounceTask?.cancel()
 
-        // Debounce filtering (300ms delay)
         searchDebounceTask = Task { [weak self] in
             do {
-                try await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
-            } catch {
-                // Task was cancelled; just return
-                return
-            }
-
+                try await Task.sleep(nanoseconds: 300_000_000)
+            } catch { return }
             guard let self = self else { return }
-
             await self.applyLocalFilter(with: self.state.searchText)
         }
     }
@@ -126,14 +117,10 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - Local Filter (async)
     private func applyLocalFilter(with searchText: String) async {
         if searchText.isEmpty {
-            // Show all products when no search
-            await MainActor.run {
-                self.refreshProductListSection()
-            }
+            await MainActor.run { self.refreshProductListSection() }
             return
         }
 
-        // Filter locally on background queue
         let lowercasedSearch = searchText.lowercased()
         let filtered = await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -145,16 +132,14 @@ final class ProductListingsViewModel: FormViewModel {
             }
         }
 
-        // Update state.filteredProducts with filtered products
         await MainActor.run {
             state.filteredProducts = filtered
             self.refreshProductListSection()
         }
     }
 
-    // MARK: - Update Section with filtered products if searching
+    // MARK: - Update Section
     private func refreshProductListSection() {
-        // Keep search text updated in searchRow model so it doesn’t reset
         updateSearchRowText()
 
         guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.productList.rawValue }) else {
@@ -171,7 +156,6 @@ final class ProductListingsViewModel: FormViewModel {
         var section = sections[sectionIndex]
         section.cells = [updatedRow]
         sections[sectionIndex] = section
-
         reloadSection(sectionIndex)
     }
 
@@ -185,7 +169,6 @@ final class ProductListingsViewModel: FormViewModel {
 
     // MARK: - Builders
     private func makeProductGridItems() -> [GridItemModel] {
-        // If searching, use filteredProducts, else use full products list
         let productsToShow = state.searchText.isEmpty ? state.products : state.filteredProducts
 
         return productsToShow.map { product in
@@ -197,12 +180,8 @@ final class ProductListingsViewModel: FormViewModel {
                 subtitle: product.traderName ?? "",
                 price: formattedPrice(for: product),
                 isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapProduct?(product)
-                },
-                onToggleFavorite: { [weak self] isFav in
-                    self?.onToggleFavorite?(isFav, product)
-                }
+                onTap: { [weak self] in self?.onTapProduct?(product) },
+                onToggleFavorite: { [weak self] isFav in self?.onToggleFavorite?(isFav, product) }
             )
         }
     }
@@ -215,11 +194,24 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - API Call
     private func loadProducts(reset: Bool) async -> Bool {
         do {
-            let response = try await productService.getAllProducts(
-                page: state.currentPage,
-                count: state.itemsPerPage,
-                accessToken: state.accessToken
-            )
+            let response: [ProductResponse]
+
+            if let categoryId = state.categoryId { // ✅ Now using your service signature
+                print("📦 Fetching products for categoryId: \(categoryId), page \(state.currentPage)")
+                response = try await productService.getProductsByCategory(
+                    page: state.currentPage,
+                    count: state.itemsPerPage,
+                    categoryId: categoryId,
+                    accessToken: state.accessToken
+                )
+            } else {
+                print("📦 Fetching all products, page \(state.currentPage)")
+                response = try await productService.getAllProducts(
+                    page: state.currentPage,
+                    count: state.itemsPerPage,
+                    accessToken: state.accessToken
+                )
+            }
 
             if reset {
                 state.products = response
@@ -228,7 +220,6 @@ final class ProductListingsViewModel: FormViewModel {
                 state.products.append(contentsOf: response)
             }
 
-            // If fewer items returned than requested → no more pages
             state.hasMorePages = response.count >= state.itemsPerPage
             print("✅ Fetched page \(state.currentPage) (\(response.count) items)")
             return true
@@ -246,19 +237,16 @@ final class ProductListingsViewModel: FormViewModel {
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
-            FormSection(
-                id: SectionTag.search.rawValue,
-                title: nil,
-                cells: [searchRow]
-            ),
+            FormSection(id: SectionTag.search.rawValue, title: nil, cells: [searchRow]),
             makeProductListSection()
         ]
     }
 
     private func makeProductListSection() -> FormSection {
-        FormSection(
+        let title = state.categoryId == nil ? "All Products" : "Products in Category"
+        return FormSection(
             id: SectionTag.productList.rawValue,
-            title: "All Products",
+            title: title,
             cells: [productGridRow]
         )
     }
@@ -288,12 +276,13 @@ final class ProductListingsViewModel: FormViewModel {
     private struct State {
         var accessToken = AppStorage.accessToken ?? ""
         var products: [ProductResponse] = []
-        var filteredProducts: [ProductResponse] = [] // Store filtered products separately
+        var filteredProducts: [ProductResponse] = []
         var currentPage: Int = 1
         var itemsPerPage: Int = 20
         var hasMorePages: Bool = true
         var isLoadingMore: Bool = false
         var searchText: String = ""
+        var categoryId: String? = nil // ✅ Changed type to match service
     }
 
     // MARK: - Tags
@@ -307,3 +296,4 @@ final class ProductListingsViewModel: FormViewModel {
         case productList = 2
     }
 }
+
