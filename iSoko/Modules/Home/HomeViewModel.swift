@@ -20,7 +20,9 @@ final class HomeViewModel: FormViewModel {
     var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
     var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
-
+    
+    var onTapMoreProductCategories: (() -> Void)?
+    var onTapMoreServiceCategories: (() -> Void)?
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
     var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
 
@@ -133,6 +135,10 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.categories.rawValue,
             title: "Explore Categories",
+            actionTitle: "See All",
+            onActionTapped: { [weak self] in
+                self?.onTapMoreProductCategories?()
+            },
             cells: [productCategoriesFormRow]
         )
     }
@@ -141,6 +147,10 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
             title: "Explore Service Categories",
+            actionTitle: "See All",
+            onActionTapped: { [weak self] in
+                self?.onTapMoreServiceCategories?()
+            },
             cells: [tradeServiceCategoriesFormRow]
         )
     }
