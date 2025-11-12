@@ -26,8 +26,6 @@ class CommonOptionPickerViewController: FormViewController, CloseableViewControl
         closeAction?()
     }
     
-    deinit {
-        print("👋 ViewController is being popped or dismissed")
-    }
+    deinit { }
 }
 

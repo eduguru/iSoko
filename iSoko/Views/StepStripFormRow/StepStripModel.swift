@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import DesignSystemKit
 
 public struct StepStripModel {
     public var title: String?
@@ -21,7 +22,7 @@ public struct StepStripModel {
         title: String? = nil,
         totalSteps: Int,
         currentStep: Int,
-        activeColor: UIColor? = .systemBlue,
+        activeColor: UIColor? = .app(.primary),
         inactiveColor: UIColor? = .systemGray4,
         titleColor: UIColor? = .secondaryLabel
     ) {

@@ -26,8 +26,6 @@ class ServicesViewController: FormViewController, CloseableViewController {
         closeAction?()
     }
     
-    deinit {
-        print("👋 ViewController is being popped or dismissed")
-    }
+    deinit { }
 }
 

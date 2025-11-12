@@ -61,7 +61,8 @@ public final class StepStripCell: UITableViewCell {
     public func configure(with model: StepStripModel) {
         self.model = model
 
-        titleLabel.text = model.title ?? "Step \(model.currentStep) of \(model.totalSteps)"
+        titleLabel.text = model.title ?? ""
+        // titleLabel.text = model.title ?? "Step \(model.currentStep) of \(model.totalSteps)"
         titleLabel.textColor = model.titleColor ?? .secondaryLabel
 
         // Clear old steps
@@ -75,7 +76,7 @@ public final class StepStripCell: UITableViewCell {
             segment.clipsToBounds = true
 
             if i <= model.currentStep {
-                segment.backgroundColor = model.activeColor ?? .systemBlue
+                segment.backgroundColor = model.activeColor ?? .app(.primary)
             } else {
                 segment.backgroundColor = model.inactiveColor ?? UIColor.systemGray4
             }

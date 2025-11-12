@@ -11,6 +11,8 @@ import DesignSystemKit
 class OrganisationListingsViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
+    var goToCreateAction: (() -> Void)?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -38,10 +40,6 @@ class OrganisationListingsViewController: FormViewController, CloseableViewContr
     }
     
     @objc func didTapButton01() {
-        
-    }
-    
-    @objc func didTapButton02() {
-        
+        goToCreateAction?()
     }
 }

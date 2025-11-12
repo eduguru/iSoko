@@ -39,9 +39,7 @@ class HomeViewController: FormViewController, CloseableViewController {
         closeAction?()
     }
     
-    deinit {
-        print("👋 ViewController is being popped or dismissed")
-    }
+    deinit { }
     
     @objc func didTapButton01() {
         

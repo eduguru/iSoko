@@ -27,8 +27,6 @@ class ResetPasswordSuccessViewController: FormViewController, CloseableViewContr
         closeAction?()
     }
     
-    deinit {
-        print("👋 ViewController is being popped or dismissed")
-    }
+    deinit { }
 }
 

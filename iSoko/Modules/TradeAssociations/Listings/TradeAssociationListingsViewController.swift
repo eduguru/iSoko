@@ -9,7 +9,7 @@ import UIKit
 import DesignSystemKit
 
 class TradeAssociationListingsViewController: FormViewController, CloseableViewController {
-    var goToEditAction: (() -> Void)?
+    var goToCreateAction: (() -> Void)?
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
@@ -42,16 +42,10 @@ class TradeAssociationListingsViewController: FormViewController, CloseableViewC
         closeAction?()
     }
     
-    deinit {
-        print("👋 ViewController is being popped or dismissed")
-    }
+    deinit { }
     
     @objc func didTapButton01() {
-        goToEditAction?()
-    }
-    
-    @objc func didTapButton02() {
-        
+        goToCreateAction?()
     }
 }
 

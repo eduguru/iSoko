@@ -88,7 +88,9 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = OrganisationListingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        
+        vc.goToCreateAction = { [weak self] in }
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -100,12 +102,29 @@ public class MoreCoordinator: BaseCoordinator {
         let viewModel = TradeAssociationListingsViewModel()
         viewModel.goToMoreDetails = { [weak self] in }
         viewModel.goToButtonAction = { [weak self] in
-            self?.showSheet()
+            // self?.showSheet()
         }
         
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        
+        vc.goToCreateAction = { [weak self] in
+            self?.gotoCreateTradeAssociations()
+        }
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoCreateTradeAssociations() {
+        let viewModel = NewTradeAssociationViewModel()
+        
+        let vc = NewTradeAssociationViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
