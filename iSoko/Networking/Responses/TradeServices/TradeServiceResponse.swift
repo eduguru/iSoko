@@ -28,4 +28,6 @@ public struct TradeServiceResponse: Decodable {
     let isFeatured: Bool?
     let locationName: String?
     let price: Double?
+    
+    let images: [String]?
 }

@@ -53,11 +53,28 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     private func gotoProfile() {
-        let viewModel = ResetPasswordViewModel()
+        let viewModel = ProfileInfoViewModel()
         
-        let vc = ResetPasswordViewController()
+        let vc = ProfileInfoViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        
+        vc.goToEditAction = { [weak self] in
+            self?.goToEditProfile()
+        }
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToEditProfile() {
+        let viewModel = ProfileEditViewModel()
+        
+        let vc = ProfileEditViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -70,7 +87,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = OrganisationListingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -83,7 +100,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -96,7 +113,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = MyOrdersViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -109,7 +126,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -122,7 +139,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = LegalViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -135,7 +152,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = SettingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -148,7 +165,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = HelpFeedbackViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         

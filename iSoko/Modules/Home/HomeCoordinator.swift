@@ -15,10 +15,13 @@ public class HomeCoordinator: BaseCoordinator {
         let model = HomeViewModel()
         
         model.onTapProduct = goToProduct
+        model.onTapService = goToServiceDetails
+        
         model.onTapMoreProduct = goToAllProduct
         model.onTapMoreServices = onTapMoreServices
         model.onTapMoreProductCategories = onTapMoreProductCategories
         model.onTapMoreServiceCategories = onTapMoreServiceCategories
+        
         model.onTapProductCategory = onTapProductCategory
         model.onTapServiceCategory = onTapServiceCategory
         
@@ -47,8 +50,24 @@ public class HomeCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
+    private  func goToServiceDetails(_ product: TradeServiceResponse) {
+        let viewModel = ServiceDetailsViewModel(product)
+        
+        let vc = ServiceDetailsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in // goToMainTabs
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     private func goToAllProduct() {
         let viewModel = ProductListingsViewModel()
+        viewModel.onTapProduct = { [weak self] in
+            self?.goToProduct($0)
+        }
         
         let vc = ProductListingsViewController()
         vc.viewModel = viewModel
@@ -62,6 +81,9 @@ public class HomeCoordinator: BaseCoordinator {
     
     private func onTapMoreServices() {
         let viewModel = ServiceListingsViewModel()
+        viewModel.onTapService = { [weak self] in
+            self?.goToServiceDetails($0)
+        }
         
         let vc = ServiceListingsViewController()
         vc.viewModel = viewModel
@@ -77,6 +99,9 @@ public class HomeCoordinator: BaseCoordinator {
         let id = item.id ?? 0
         
         let viewModel = ProductListingsViewModel(categoryId: "\(id)")
+        viewModel.onTapProduct = { [weak self] in
+            self?.goToProduct($0)
+        }
         
         let vc = ProductListingsViewController()
         vc.viewModel = viewModel
@@ -92,6 +117,9 @@ public class HomeCoordinator: BaseCoordinator {
         let id = item.id ?? 0
         
         let viewModel = ServiceListingsViewModel(categoryId: "\(id)")
+        viewModel.onTapService = { [weak self] in
+            self?.goToServiceDetails($0)
+        }
         
         let vc = ServiceListingsViewController()
         vc.viewModel = viewModel

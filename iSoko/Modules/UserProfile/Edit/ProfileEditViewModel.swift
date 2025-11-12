@@ -1,0 +1,219 @@
+//
+//  ProfileEditViewModel.swift
+//  
+//
+//  Created by Edwin Weru on 11/11/2025.
+//
+
+import DesignSystemKit
+import UIKit
+import UtilsKit
+
+final class ProfileEditViewModel: FormViewModel {
+    var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
+    var gotoSelectAgeRange: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
+    var gotoConfirm: (() -> Void)? = { }
+    
+    private var state: State?
+
+    override init() {
+        self.state = State()
+        super.init()
+        self.sections = makeSections()
+    }
+
+    // MARK: - make sections
+
+    private func makeSections() -> [FormSection] {
+        var sections: [FormSection] = []
+
+        sections.append(FormSection(
+            id: Tags.Section.body.rawValue,
+            cells: [
+                imageRow,
+                firstNameInputRow,
+                selectGenderRow,
+                selectAgeRangeRow,
+                emailInputRow,
+                phoneNameInputRow,
+                SpacerFormRow(tag: 20),
+                continueButtonRow
+            ]
+        ))
+
+        return sections
+    }
+
+    // MARK: - Lazy or Computed Rows
+    
+    lazy var firstNameInputRow = makeFirstNameInputRow()
+    lazy var emailInputRow = makeFirstEmailInputRow()
+    lazy var phoneNameInputRow = makePhoneNameInputRow()
+    
+    lazy var selectGenderRow = makeGenderRow()
+    lazy var selectAgeRangeRow = makeAgeRangeRow()
+
+    private lazy var imageRow = EditableImageFormRow(
+        tag: 2001,
+        config: .init(
+            image: UIImage(named: "user"),
+            height: 120,
+            fillWidth: false,
+            alignment: .left,
+            editable: true,
+            backgroundColor: .clear,
+            cornerRadius: 60
+        ),
+        onEditTapped: { [weak self] in
+            // self?.presentImagePicker()
+        }
+    )
+
+    private func makeFirstNameInputRow() -> SimpleInputFormRow {
+        SimpleInputFormRow(
+            tag: Tags.Cells.firstName.rawValue,
+            model: SimpleInputModel(
+                text: "",
+                config: TextFieldConfig(placeholder: "First name", keyboardType: .default),
+                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+                titleText: "First name",
+                useCardStyle: true
+            )
+        )
+    }
+    
+    private func makeFirstEmailInputRow() -> SimpleInputFormRow {
+        SimpleInputFormRow(
+            tag: Tags.Cells.email.rawValue,
+            model: SimpleInputModel(
+                text: "",
+                config: TextFieldConfig(placeholder: "Email Address", keyboardType: .default),
+                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+                titleText: "Email Address",
+                useCardStyle: true
+            )
+        )
+    }
+    
+    private func makePhoneNameInputRow() -> SimpleInputFormRow {
+        SimpleInputFormRow(
+            tag: Tags.Cells.phoneNumber.rawValue,
+            model: SimpleInputModel(
+                text: "",
+                config: TextFieldConfig(placeholder: "Phone Number", keyboardType: .default),
+                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+                titleText: "Phone Number",
+                useCardStyle: true
+            )
+        )
+    }
+    
+    private func makeAgeRangeRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: Tags.Cells.ageGroup.rawValue,
+            config: DropdownFormConfig(
+                title: "Select Age Range",
+                placeholder: state?.ageRange?.name ?? "Age Range",
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in
+                    self?.handleAgeRangeSelection()
+                }
+            )
+        )
+    }
+    
+    private func makeGenderRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: Tags.Cells.gender.rawValue,
+            config: DropdownFormConfig(
+                title: "Select Gender",
+                placeholder: state?.gender?.name ?? "Gender",
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in
+                    self?.handleGenderSelection()
+                }
+            )
+        )
+    }
+    
+    lazy var continueButtonRow = ButtonFormRow(
+        tag: Tags.Cells.submit.rawValue,
+        model: ButtonFormModel(
+            title: "Continue",
+            style: .primary,
+            size: .medium,
+            icon: nil,
+            fontStyle: .headline,
+            hapticsEnabled: true
+        ) { [weak self] in
+            self?.gotoConfirm?()
+        }
+    )
+    
+    // MARK: - Selection Handlers
+
+    private func handleGenderSelection() {
+        gotoSelectGender(state?.genderOptions ?? []) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            self.state?.gender = value
+            self.selectGenderRow.config.placeholder = value.name
+            self.reloadRowWithTag(self.selectGenderRow.tag)
+        }
+    }
+    
+    private func handleAgeRangeSelection() {
+        gotoSelectAgeRange { [weak self] value in
+            guard let self = self, let value = value else { return }
+            self.state?.ageRange = value
+            self.selectAgeRangeRow.config.placeholder = value.name
+            self.reloadRowWithTag(self.selectAgeRangeRow.tag)
+        }
+    }
+    
+    // MARK: - Helpers
+
+    func reloadRowWithTag(_ tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
+                break
+            }
+        }
+    }
+    
+    // MARK: - State
+
+    private struct State {
+        var isLoggedIn: Bool = true
+        
+        var firstName: String?
+        var lastName: String?
+        var genderOptions: [CommonIdNameModel] = [
+            CommonIdNameModel(id: 1, name: "Male"),
+            CommonIdNameModel(id: 2, name: "Female")
+        ]
+        var gender: CommonIdNameModel?
+        var ageRange: CommonIdNameModel?
+    }
+
+    // MARK: - Tags
+
+    enum Tags {
+        enum Section: Int {
+            case header = 0
+            case body = 1
+        }
+
+        enum Cells: Int {
+            case headerImage = 0
+            case firstName = 1
+            case gender = 2
+            case ageGroup = 3
+            case email = 4
+            case phoneNumber = 5
+            case submit = 6
+        }
+    }
+}

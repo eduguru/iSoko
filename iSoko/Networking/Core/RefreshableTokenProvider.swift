@@ -75,9 +75,15 @@ public final class AppTokenProvider: RefreshableTokenProvider {
         let fireInterval = max(TimeInterval(expiresIn - 60), 30)
         print("⏰ Scheduling refresh in \(fireInterval) seconds")
 
-        refreshTask = Task.detached { [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(fireInterval * 1_000_000_000))
+        refreshTask?.cancel()
+        refreshTask = Task { [weak self] in
             guard let self else { return }
+            try? await Task.sleep(nanoseconds: UInt64(fireInterval * 1_000_000_000))
+            guard !Task.isCancelled else {
+                print("⚠️ Refresh task cancelled")
+                return
+            }
+
             do {
                 let newToken = try await self.refreshToken(
                     grant_type: AppConstants.GrantType.refreshToken.rawValue,
@@ -90,4 +96,5 @@ public final class AppTokenProvider: RefreshableTokenProvider {
             }
         }
     }
+
 }

@@ -1,0 +1,44 @@
+//
+//  ProfileEditViewController.swift
+//  
+//
+//  Created by Edwin Weru on 11/11/2025.
+//
+
+import UIKit
+import DesignSystemKit
+
+class ProfileEditViewController: FormViewController, CloseableViewController {
+    var makeRoot: Bool = false
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        title = "Profile Edit"
+        
+        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+    
+    @objc func close() {
+        closeAction?()
+    }
+    
+    deinit {
+        print("👋 ViewController is being popped or dismissed")
+    }
+    
+    @objc func didTapButton01() {
+        
+    }
+    
+    @objc func didTapButton02() {
+        
+    }
+}
+
+

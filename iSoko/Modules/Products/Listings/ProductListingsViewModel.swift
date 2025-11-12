@@ -180,7 +180,9 @@ final class ProductListingsViewModel: FormViewModel {
                 subtitle: product.traderName ?? "",
                 price: formattedPrice(for: product),
                 isFavorite: false,
-                onTap: { [weak self] in self?.onTapProduct?(product) },
+                onTap: { [weak self] in
+                    self?.onTapProduct?(product)
+                },
                 onToggleFavorite: { [weak self] isFav in self?.onToggleFavorite?(isFav, product) }
             )
         }

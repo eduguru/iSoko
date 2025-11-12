@@ -13,7 +13,7 @@ import StorageKit
 final class ServiceListingsViewModel: FormViewModel {
 
     // MARK: - Callbacks
-    var onTapProduct: ((TradeServiceResponse) -> Void)?
+    var onTapService: ((TradeServiceResponse) -> Void)?
     var onToggleFavorite: ((Bool, TradeServiceResponse) -> Void)?
 
     // MARK: - Services
@@ -180,7 +180,7 @@ final class ServiceListingsViewModel: FormViewModel {
                 subtitle: product.traderName ?? "",
                 price: formattedPrice(for: product),
                 isFavorite: false,
-                onTap: { [weak self] in self?.onTapProduct?(product) },
+                onTap: { [weak self] in self?.onTapService?(product) },
                 onToggleFavorite: { [weak self] isFav in self?.onToggleFavorite?(isFav, product) }
             )
         }
