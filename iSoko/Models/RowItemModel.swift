@@ -14,6 +14,7 @@ public struct RowItemModel {
     let bottomLabelText: String?
     let bottomButtonTitle: String?
     let bottomButtonStyle: ImageTitleDescriptionBottomConfig.BottomButtonStyle?
+    let onBottomButtonTap: (() -> Void)?
     let onTap: (() -> Void)?
 
     public init(
@@ -23,6 +24,7 @@ public struct RowItemModel {
         bottomLabelText: String? = nil,
         bottomButtonTitle: String? = nil,
         bottomButtonStyle: ImageTitleDescriptionBottomConfig.BottomButtonStyle? = nil,
+        onBottomButtonTap: (() -> Void)? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.title = title
@@ -31,6 +33,7 @@ public struct RowItemModel {
         self.bottomLabelText = bottomLabelText
         self.bottomButtonTitle = bottomButtonTitle
         self.bottomButtonStyle = bottomButtonStyle
+        self.onBottomButtonTap = onBottomButtonTap
         self.onTap = onTap
     }
 }
