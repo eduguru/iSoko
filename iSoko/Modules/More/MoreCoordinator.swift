@@ -8,6 +8,7 @@
 import RouterKit
 import UtilsKit
 import UIKit
+import DesignSystemKit
 
 public class MoreCoordinator: BaseCoordinator {
     
@@ -97,6 +98,10 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoTradeAssociations() {
         let viewModel = TradeAssociationListingsViewModel()
+        viewModel.goToMoreDetails = { [weak self] in }
+        viewModel.goToButtonAction = { [weak self] in
+            self?.showSheet()
+        }
         
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
@@ -172,5 +177,4 @@ public class MoreCoordinator: BaseCoordinator {
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
-    
 }
