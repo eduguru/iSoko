@@ -7,18 +7,42 @@
 
 import UIKit
 
-
 // MARK: - Config
 public struct ImageTitleDescriptionBottomConfig {
+    public enum BottomButtonStyle {
+        case primary
+        case secondary
+        case plain
+        case custom(backgroundColor: UIColor, textColor: UIColor)
+    }
+
+    public enum AccessoryType {
+        case none
+        case chevron
+        case custom(view: UIView)
+        case image(image: UIImage)
+    }
+
+    public enum ImageStyle {
+        case rounded
+        case square
+    }
+
     public var image: UIImage?
-    public var imageStyle: ImageTitleDescriptionConfig.ImageStyle
+    public var imageStyle: ImageStyle
     public var title: String
     public var description: String?
 
-    // Bottom optional content
+    // Bottom content
     public var bottomLabelText: String?
     public var bottomButtonTitle: String?
+    public var bottomButtonStyle: BottomButtonStyle
+    public var onBottomButtonTap: (() -> Void)? // ✅ separate callback
 
+    // Accessory
+    public var accessoryType: AccessoryType?
+
+    // Layout
     public var spacing: CGFloat
     public var contentInsets: UIEdgeInsets
     public var isEnabled: Bool
@@ -33,11 +57,14 @@ public struct ImageTitleDescriptionBottomConfig {
 
     public init(
         image: UIImage? = nil,
-        imageStyle: ImageTitleDescriptionConfig.ImageStyle = .rounded,
+        imageStyle: ImageStyle = .rounded,
         title: String,
         description: String? = nil,
         bottomLabelText: String? = nil,
         bottomButtonTitle: String? = nil,
+        bottomButtonStyle: BottomButtonStyle = .plain,
+        onBottomButtonTap: (() -> Void)? = nil,
+        accessoryType: AccessoryType? = .chevron,
         spacing: CGFloat = 12,
         contentInsets: UIEdgeInsets = .init(top: 12, left: 16, bottom: 12, right: 16),
         isEnabled: Bool = true,
@@ -54,6 +81,9 @@ public struct ImageTitleDescriptionBottomConfig {
         self.description = description
         self.bottomLabelText = bottomLabelText
         self.bottomButtonTitle = bottomButtonTitle
+        self.bottomButtonStyle = bottomButtonStyle
+        self.onBottomButtonTap = onBottomButtonTap
+        self.accessoryType = accessoryType
         self.spacing = spacing
         self.contentInsets = contentInsets
         self.isEnabled = isEnabled
