@@ -42,7 +42,7 @@ public class HomeCoordinator: BaseCoordinator {
         
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -55,7 +55,7 @@ public class HomeCoordinator: BaseCoordinator {
         
         let vc = ServiceDetailsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
@@ -164,7 +164,7 @@ public class HomeCoordinator: BaseCoordinator {
         
         let vc = HelpFeedbackViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         

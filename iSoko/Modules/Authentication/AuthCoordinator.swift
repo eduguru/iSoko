@@ -21,6 +21,28 @@ class AuthCoordinator: BaseCoordinator {
         }
     }
     
+    public func popLogginFlow() {
+        let viewModel = AuthViewModel()
+        let vc = AuthViewController()
+        vc.viewModel = viewModel
+        
+        viewModel.gotoSignIn = { [weak self] in
+            self?.startOAuthFlow()
+            // self?.goToLogin(makeRoot: false)
+        }
+        
+        viewModel.gotoSignUp = goToSignupOptions
+        viewModel.gotoForgotPassword = gotoForgotPassword
+        viewModel.gotoGuestSession = goToMainTabs
+        
+        AppStorage.hasShownInitialLoginOptions = true
+        
+        // Use router to set root
+        vc.modalPresentationStyle = .fullScreen
+        router.present(vc, animated: true)
+    }
+
+    
     private func goToAuthOptions() {
         let viewModel = AuthViewModel()
         let vc = AuthViewController()
@@ -36,6 +58,8 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.gotoGuestSession = goToMainTabs
         
         AppStorage.hasShownInitialLoginOptions = true
+        
+        vc.modalPresentationStyle = .fullScreen
         router.setRoot(vc, animated: true)
     }
 
@@ -76,6 +100,9 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.showCountryPicker = gotoSelectCountry
         
         viewModel.goToOtp = goToOtpVerification
+        viewModel.goBack = { [weak self] in
+            self?.router.pop(animated: true)
+        }
         viewModel.goToCompleteProfile = goToCompleteIndividualProfile
         
         let vc = SignUpOptionsViewController()
@@ -84,9 +111,9 @@ class AuthCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        router.navigationControllerInstance?.navigationBar.isHidden = false
+        // router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
 
     private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
@@ -114,7 +141,7 @@ class AuthCoordinator: BaseCoordinator {
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
     
     private func goToCompleteIndividualProfile() {
@@ -371,13 +398,13 @@ class AuthCoordinator: BaseCoordinator {
         
         let vc = ResetPasswordViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
     
     private func gotoVerifyForgotPassword(_ value: String) {
@@ -388,13 +415,13 @@ class AuthCoordinator: BaseCoordinator {
         
         let vc = VerifyPasswordResetViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
     
     private func goToResetPasswordOtpVerification(_ verification: OTPVerificationType) {
@@ -427,26 +454,26 @@ class AuthCoordinator: BaseCoordinator {
         vc.viewModel = viewModel
         vc.makeRoot = true
         
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
     
     private func gotoReturningUser(_ value: String) {
         let viewModel = ReturningUserViewModel()
         let vc = ReturningUserViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in // goToMainTabs
+        vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
-        // router.setRoot(vc, animated: true)
+        
     }
     
     private func goToMainTabs() {

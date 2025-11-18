@@ -13,6 +13,7 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var goToContinue: (() -> Void)? = { }
+    var goBack: (() -> Void)? = { }
     var goToOtp: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
     var goToCompleteProfile: (() -> Void)? = { }
     
@@ -25,6 +26,7 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     private var state: State
     let countryHelper = CountryHelper()
+    let registrationBuilder = RegistrationBuilder()
 
     // MARK: - Init
 
@@ -48,6 +50,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             id: Tags.Section.header.rawValue,
             title: nil,
             cells: [
+                navBarRow,
                 SpacerFormRow(tag: Tags.Cells.spacer1.rawValue),
                 makeHeaderTitleRow(),
                 SpacerFormRow(tag: Tags.Cells.spacer2.rawValue),
@@ -222,6 +225,24 @@ final class SignUpOptionsViewModel: FormViewModel {
             }
         )
     )
+
+    // Create the left and right button configurations
+    lazy var leftButtonConfig = NavigationBarButtonConfig(
+        image: .backArrow,
+        action: { [weak self] in
+            self?.goBack?()
+            print("Back button tapped")
+        }
+    )
+
+    // Create the navigation bar config
+    lazy var navBarConfig = NavigationBarConfig(
+        leftButton: leftButtonConfig,
+        rightButton: nil
+    )
+
+    // Create the form row with the config
+    lazy var navBarRow = NavigationBarFormRow(tag: 1, navBarConfig: navBarConfig)
 
     // MARK: - Helpers
 

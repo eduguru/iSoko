@@ -10,156 +10,140 @@ import UIKit
 import UtilsKit
 
 final class NewTradeAssociationViewModel: FormViewModel {
-    var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
-    var gotoSelectAgeRange: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
-    var gotoConfirm: (() -> Void)? = { }
-    
-    private var state: State?
 
+    // MARK: - Navigation Callbacks
+    var gotoSelectFoundedYear: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)? = nil
+    var gotoSelectMemberCount: ((_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)? = nil
+    var gotoConfirm: (() -> Void)?
+
+    // MARK: - Internal State
+    private var state = State()
+
+    // MARK: - Init
     override init() {
-        self.state = State()
         super.init()
-        self.sections = makeSections()
+        sections = makeSections()
     }
 
-    // MARK: - make sections
-
+    // MARK: - Section Builder
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-
-        sections.append(FormSection(
-            id: Tags.Section.body.rawValue,
-            cells: [
-                headerTitleRow,
-                stepsRow,
-                nameInputRow,
-                descriptionInputRow,
-                selectGenderRow,
-                selectAgeRangeRow,
-                
-                SpacerFormRow(tag: 20),
-                continueButtonRow
-            ]
-        ))
-
-        return sections
-    }
-
-    // MARK: - Lazy or Computed Rows
-    lazy var stepsRow = makeStepsRow()
-    lazy var headerTitleRow = makeHeaderTitleRow()
-    
-    lazy var nameInputRow = makeNameInputRow()
-    lazy var descriptionInputRow = makeDescriptionInputRow()
-    
-    lazy var selectGenderRow = makeGenderRow()
-    lazy var selectAgeRangeRow = makeAgeRangeRow()
-    
-    private func makeStepsRow() -> StepStripFormRow {
-        StepStripFormRow(
-            tag: 001,
-            model: StepStripModel(totalSteps: 2, currentStep: 1)
-        )
-    }
-    
-    private func makeHeaderTitleRow() -> FormRow {
-        TitleDescriptionFormRow(
-            tag: 002,
-            title: "Register Association",
-            description: "Join the iSOKO network and expand your association's reach",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
-        )
-    }
-    
-    private func makeNameInputRow() -> SimpleInputFormRow {
-        SimpleInputFormRow(
-            tag: Tags.Cells.firstName.rawValue,
-            model: SimpleInputModel(
-                text: "",
-                config: TextFieldConfig(placeholder: "First name", keyboardType: .default),
-                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
-                titleText: "First name",
-                useCardStyle: true
+        [
+            FormSection(
+                id: SectionTag.main.rawValue,
+                cells: [
+                    headerRow,
+                    stepIndicatorRow,
+                    requirementsListRow,
+                    associationNameRow,
+                    associationDescriptionRow,
+                    memberCountRow,
+                    foundedYearRow,
+                    SpacerFormRow(tag: 20),
+                    continueButtonRow
+                ]
             )
-        )
+        ]
     }
-    
-    private func makeDescriptionInputRow() -> LongInputDescriptionFormRow {
-        LongInputDescriptionFormRow(
-            tag: Tags.Cells.description.rawValue,
-            model: LongInputDescriptionModel(
-                text: "",
-                config: TextViewConfig(
-                    prefixText: "Description",
-                    accessoryImage: UIImage(systemName: "pencil"),
-                    isScrollable: true,
-                    fixedHeight: 120
-                ),
-                validation: ValidationConfiguration(isRequired: true),
-                titleText: "Enter description",
-                useCardStyle: false,  // Use card style here
-                cardStyle: .borderAndShadow,  // Card style configuration
-                cardCornerRadius: 12,  // Custom corner radius
-                cardBorderColor: .app(.primary),  // Custom border color
-                cardShadowColor: .gray,  // Custom shadow color
-                onTextChanged: { newText in
-                    print("Text changed to: \(newText)")
-                },
-                onValidationError: { error in
-                    if let error = error {
-                        print("Validation error: \(error)")
-                    }
+
+    // MARK: - Form Rows
+
+    // Step indicator at top
+    private lazy var stepIndicatorRow = StepStripFormRow(
+        tag: CellTag.steps.rawValue,
+        model: StepStripModel(totalSteps: 2, currentStep: 1)
+    )
+
+    // Header title
+    private lazy var headerRow = TitleDescriptionFormRow(
+        tag: CellTag.header.rawValue,
+        title: "Register Association",
+        description: "Join the iSOKO network and expand your association's reach",
+        maxTitleLines: 2,
+        layoutStyle: .stackedVertical,
+        textAlignment: .left,
+        titleFontStyle: .title,
+        descriptionFontStyle: .headline
+    )
+
+    // Association name input
+    private lazy var associationNameRow = SimpleInputFormRow(
+        tag: CellTag.associationName.rawValue,
+        model: SimpleInputModel(
+            text: "",
+            config: TextFieldConfig(
+                placeholder: "Association Name",
+                keyboardType: .default
+            ),
+            validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+            titleText: "Association Name",
+            useCardStyle: true
+        )
+    )
+
+    // Description input (multiline)
+    private lazy var associationDescriptionRow = LongInputDescriptionFormRow(
+        tag: CellTag.description.rawValue,
+        model: LongInputDescriptionModel(
+            text: "",
+            config: TextViewConfig(
+                prefixText: "Description",
+                accessoryImage: UIImage(systemName: "pencil"),
+                isScrollable: true,
+                fixedHeight: 120
+            ),
+            validation: ValidationConfiguration(isRequired: true),
+            titleText: "Association Description",
+            useCardStyle: false,
+            cardStyle: .borderAndShadow,
+            cardCornerRadius: 12,
+            cardBorderColor: .app(.primary),
+            cardShadowColor: .gray,
+            onTextChanged: { newText in
+                print("Description changed to: \(newText)")
+            },
+            onValidationError: { error in
+                if let error = error {
+                    print("Validation error: \(error)")
                 }
-            )
+            }
         )
-    }
+    )
 
+    // Member count dropdown
+    private lazy var memberCountRow = DropdownFormRow(
+        tag: CellTag.memberCount.rawValue,
+        config: DropdownFormConfig(
+            title: "Number of Members",
+            placeholder: state.memberCount?.name ?? "Select number of members",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleMemberCountSelection()
+            }
+        )
+    )
 
-    
-    private func makeAgeRangeRow() -> DropdownFormRow {
-        DropdownFormRow(
-            tag: Tags.Cells.ageGroup.rawValue,
-            config: DropdownFormConfig(
-                title: "Select Age Range",
-                placeholder: state?.ageRange?.name ?? "Age Range",
-                rightImage: UIImage(systemName: "chevron.down"),
-                isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleAgeRangeSelection()
-                }
-            )
+    // Founded year dropdown
+    private lazy var foundedYearRow = DropdownFormRow(
+        tag: CellTag.foundedYear.rawValue,
+        config: DropdownFormConfig(
+            title: "Founded Year",
+            placeholder: state.foundedYear?.name ?? "Select founded year",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleFoundedYearSelection()
+            }
         )
-    }
-    
-    private func makeGenderRow() -> DropdownFormRow {
-        DropdownFormRow(
-            tag: Tags.Cells.gender.rawValue,
-            config: DropdownFormConfig(
-                title: "Select Gender",
-                placeholder: state?.gender?.name ?? "Gender",
-                rightImage: UIImage(systemName: "chevron.down"),
-                isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleGenderSelection()
-                }
-            )
-        )
-    }
-    
-    lazy var continueButtonRow = ButtonFormRow(
-        tag: Tags.Cells.submit.rawValue,
+    )
+
+    // Continue button
+    private lazy var continueButtonRow = ButtonFormRow(
+        tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
             title: "Continue",
             style: .primary,
             size: .medium,
-            icon: nil,
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
@@ -167,29 +151,53 @@ final class NewTradeAssociationViewModel: FormViewModel {
         }
     )
     
+    // Create a config with your preferences
+    let config = RequirementsListRowConfig(
+        title: "Requirements",
+        items: [
+            RequirementItem(title: "Valid registration documents", isSatisfied: true),
+            RequirementItem(title: "Minimum 5 active members", isSatisfied: true),
+            RequirementItem(title: "Established for at least 1 year", isSatisfied: true),
+            RequirementItem(title: "East African region based", isSatisfied: true)
+        ],
+        titleColor: .app(.primary),        // configurable title color
+        itemColor: .label,              // configurable item text color
+        selectionStyle: .checkbox,      // or .dot
+        isCardStyleEnabled: true,       // card background with rounded corners
+        cardCornerRadius: 12,
+        cardBackgroundColor: .systemGray6,
+        cardBorderColor: .systemGray3,
+        cardBorderWidth: 1,
+        spacing: 10,
+        contentInsets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+    )
+
+    // Initialize your RequirementsListRow
+    lazy var requirementsListRow = RequirementsListRow(tag: 1, config: config)
+
     // MARK: - Selection Handlers
 
-    private func handleGenderSelection() {
-        gotoSelectGender(state?.genderOptions ?? []) { [weak self] value in
-            guard let self = self, let value = value else { return }
-            self.state?.gender = value
-            self.selectGenderRow.config.placeholder = value.name
-            self.reloadRowWithTag(self.selectGenderRow.tag)
+    private func handleMemberCountSelection() {
+        gotoSelectMemberCount?(state.memberCountOptions) { [weak self] value in
+            guard let self, let value else { return }
+            state.memberCount = value
+            memberCountRow.config.placeholder = value.name
+            reloadRow(withTag: memberCountRow.tag)
         }
     }
-    
-    private func handleAgeRangeSelection() {
-        gotoSelectAgeRange { [weak self] value in
-            guard let self = self, let value = value else { return }
-            self.state?.ageRange = value
-            self.selectAgeRangeRow.config.placeholder = value.name
-            self.reloadRowWithTag(self.selectAgeRangeRow.tag)
+
+    private func handleFoundedYearSelection() {
+        gotoSelectFoundedYear? { [weak self] value in
+            guard let self, let value else { return }
+            state.foundedYear = value
+            foundedYearRow.config.placeholder = value.name
+            reloadRow(withTag: foundedYearRow.tag)
         }
     }
-    
+
     // MARK: - Helpers
 
-    func reloadRowWithTag(_ tag: Int) {
+    private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
                 onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
@@ -197,40 +205,32 @@ final class NewTradeAssociationViewModel: FormViewModel {
             }
         }
     }
-    
+
     // MARK: - State
 
     private struct State {
-        var isLoggedIn: Bool = true
-        
-        var firstName: String?
-        var lastName: String?
-        var genderOptions: [CommonIdNameModel] = [
-            CommonIdNameModel(id: 1, name: "Male"),
-            CommonIdNameModel(id: 2, name: "Female")
+        var memberCountOptions: [CommonIdNameModel] = [
+            CommonIdNameModel(id: 1, name: "1–50 members"),
+            CommonIdNameModel(id: 2, name: "51–200 members"),
+            CommonIdNameModel(id: 3, name: "200+ members")
         ]
-        var gender: CommonIdNameModel?
-        var ageRange: CommonIdNameModel?
+        var memberCount: CommonIdNameModel?
+        var foundedYear: CommonIdNameModel?
     }
 
     // MARK: - Tags
 
-    enum Tags {
-        enum Section: Int {
-            case header = 0
-            case body = 1
-        }
+    private enum SectionTag: Int {
+        case main = 0
+    }
 
-        enum Cells: Int {
-            case headerImage = 0
-            case firstName = 1
-            case gender = 2
-            case ageGroup = 3
-            case email = 4
-            case phoneNumber = 5
-            case submit = 6
-            case description = 7
-            
-        }
+    private enum CellTag: Int {
+        case header = 1
+        case steps = 2
+        case associationName = 3
+        case description = 4
+        case memberCount = 5
+        case foundedYear = 6
+        case continueButton = 7
     }
 }

@@ -113,37 +113,22 @@ public struct AuthenticationApi {
 
 //MARK: - New Registration
 public extension AuthenticationApi {
-    /// Register an individual user
-    public static func registerIndividual(request: IndividualRegistrationRequest, accessToken: String ) -> BasicResponseTarget {
+    /// Register a user (individual or organization)
+    public static func register(request: RegistrationRequest, accessToken: String) -> BasicResponseTarget {
         
         let headers = [
             "Content-Type": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
-        let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/user/register/individual",
-            method: .post,
-            task: .requestJSONEncodable(request),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return BasicResponseTarget(target: t)
-    }
-    
-    /// Register an organization
-    public static func registerOrganization(request: OrganizationRegistrationRequest, accessToken: String) -> BasicResponseTarget {
-        
-        let headers = [
-            "Content-Type": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
+        // Choose endpoint based on registration type
+        let path = request.isOrganization
+            ? "api/user/register/organization"
+            : "api/user/register/individual"
         
         let t = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
-            path: "api/user/register/organization",
+            path: path,
             method: .post,
             task: .requestJSONEncodable(request),
             headers: headers,

@@ -9,6 +9,7 @@ import RouterKit
 import UtilsKit
 import UIKit
 import DesignSystemKit
+import StorageKit
 
 public class MoreCoordinator: BaseCoordinator {
     
@@ -46,7 +47,15 @@ public class MoreCoordinator: BaseCoordinator {
     
     
     private func gotoSignIn() {
-        
+        showLoginFlow()
+    }
+    
+    private func showLoginFlow() {
+        AppStorage.hasShownInitialLoginOptions = false
+        let router = Router(navigationController: navigationController)
+        let cordinator = AuthCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.popLogginFlow()
     }
     
     private func gotoSignOut() {
@@ -100,10 +109,11 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoTradeAssociations() {
         let viewModel = TradeAssociationListingsViewModel()
-        viewModel.goToMoreDetails = { [weak self] in }
-        viewModel.goToButtonAction = { [weak self] in
-            // self?.showSheet()
+        viewModel.goToMoreDetails = { [weak self] in
+            self?.gotoTradeAssociationDetails()
         }
+        
+        viewModel.goToButtonAction = showConfirmationBottomSheet
         
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
@@ -119,8 +129,39 @@ public class MoreCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
+    private func gotoTradeAssociationDetails() {
+        let viewModel = TradeAssociationDetailsViewModel()
+        
+        let vc = TradeAssociationDetailsViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     private func gotoCreateTradeAssociations() {
         let viewModel = NewTradeAssociationViewModel()
+        viewModel.gotoConfirm = { [weak self] in
+            self?.gotoCompleteCreateTradeAssociations()
+        }
+        
+        let vc = NewTradeAssociationViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoCompleteCreateTradeAssociations() {
+        let viewModel = CompleteNewTradeAssociationViewModel()
         
         let vc = NewTradeAssociationViewController()
         vc.viewModel = viewModel
@@ -195,5 +236,9 @@ public class MoreCoordinator: BaseCoordinator {
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    private func showConfirmationBottomSheet(title: String, message: String,completion: @escaping (Bool) -> Void) {
+        
     }
 }

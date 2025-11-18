@@ -11,7 +11,8 @@ import UtilsKit
 
 final class TradeAssociationListingsViewModel: FormViewModel {
     var goToMoreDetails: (() -> Void)? = { }
-    var goToButtonAction: (() -> Void)? = { }
+    var goToButtonAction: ((String, String, @escaping(Bool) -> Void) -> Void)? = { _, _, _ in }
+    
 
     private var state: State
 
@@ -123,7 +124,9 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                         bottomButtonTitle: "Cancel",
                         bottomButtonStyle: .secondary,
                         onBottomButtonTap: { [weak self] in
-                            self?.goToButtonAction?()
+                            self?.goToButtonAction?("", "") { _ in
+                                
+                            }
                             print("Cancel request \(i) tapped")
                         },
                         onTap: { [weak self] in self?.goToMoreDetails?() }
@@ -141,7 +144,9 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                         bottomButtonTitle: "Join",
                         bottomButtonStyle: .primary,
                         onBottomButtonTap: { [weak self] in
-                            self?.goToButtonAction?()
+                            self?.goToButtonAction?("", "") { _ in
+                                
+                            }
                             print("Join association \(i) tapped")
                         },
                         onTap: { [weak self] in self?.goToMoreDetails?() }

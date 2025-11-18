@@ -22,8 +22,8 @@ public protocol AuthenticationService {
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
     
     // MARK: - Registration
-    func registerIndividual(_ request: IndividualRegistrationRequest,  accessToken: String ) async throws -> BasicResponse
-    func registerOrganization( _ request: OrganizationRegistrationRequest, accessToken: String ) async throws -> BasicResponse
+    func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse
+
 }
 
 
@@ -85,21 +85,10 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     //MARK: - New Registration
-    public func registerIndividual(  _ request: IndividualRegistrationRequest, accessToken: String) async throws -> BasicResponse {
-        let response: BasicResponse = try await manager.request(
-            AuthenticationApi.registerIndividual(request: request, accessToken: accessToken)
-        )
+    public func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse {
         
-        if response.status != 200 {
-            throw NetworkError.server(response)
-        }
-        
-        return response
-    }
-    
-    public func registerOrganization( _ request: OrganizationRegistrationRequest, accessToken: String) async throws -> BasicResponse {
         let response: BasicResponse = try await manager.request(
-            AuthenticationApi.registerOrganization(request: request, accessToken: accessToken)
+            AuthenticationApi.register(request: request, accessToken: accessToken)
         )
         
         if response.status != 200 {

@@ -45,7 +45,7 @@ public struct ImageTitleDescriptionConfig {
 
     public init(
         image: UIImage? = nil,
-        imageSize: CGSize = CGSize(width: 40, height: 40),
+        imageSize: CGSize = CGSize(width: 36, height: 36),
         imageStyle: ImageStyle = .rounded,
         title: String,
         description: String? = nil,

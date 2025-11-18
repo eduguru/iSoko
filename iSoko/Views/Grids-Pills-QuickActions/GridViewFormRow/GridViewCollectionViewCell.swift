@@ -45,21 +45,6 @@ class GridViewCollectionViewCell: UICollectionViewCell {
         container.addGestureRecognizer(tapGesture)
     }
 
-
-//    func configure(with item: GridItemModel) {
-//        self.item = item
-//
-//        imageView.image = item.image
-//        titleLabel.text = item.title
-//        subtitleLabel.text = item.subtitle
-//        priceLabel.text = item.price
-//
-//        subtitleLabel.isHidden = item.subtitle == nil
-//        priceLabel.isHidden = item.price == nil
-//
-//        updateFavoriteIcon(isFavorite: item.isFavorite)
-//    }
-    
     func configure(with item: GridItemModel) {
         self.item = item
         
