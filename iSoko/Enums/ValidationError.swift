@@ -8,5 +8,6 @@
 import Foundation
 
 enum ValidationError: Error {
-    case missingFields
+    // case missingFields
+    case missingFields([String])
 }

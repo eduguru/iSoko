@@ -10,7 +10,7 @@ import UIKit
 
 final class AuthViewModel: FormViewModel {
     var gotoSignIn: (() -> Void)? = { }
-    var gotoSignUp: (() -> Void)? = { }
+    var gotoSignUp: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
     var gotoGuestSession: (() -> Void)? = { }
     var gotoForgotPassword: (() -> Void)? = { }
     
@@ -147,7 +147,8 @@ final class AuthViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true,
             action: { [weak self] in
-                self?.gotoSignUp?()
+                guard let self, let state else { return }
+                self.gotoSignUp?(state.registrationBuilder)
             }
         )
         
@@ -199,7 +200,7 @@ final class AuthViewModel: FormViewModel {
     
     
     private struct State {
-        
+        var registrationBuilder: RegistrationBuilder = RegistrationBuilder()
     }
     
     enum Tags {

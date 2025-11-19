@@ -9,123 +9,136 @@ import DesignSystemKit
 import UIKit
 
 final class BasicProfileSecurityViewModel: FormViewModel {
+
+    // MARK: - Navigation callbacks
     var gotoTerms: (() -> Void)? = { }
     var gotoPrivacyPolicy: (() -> Void)? = { }
-    
+
     var gotoVerify: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
     var goToLogin: (() -> Void)? = { }
     var gotoConfirm: (() -> Void)? = { }
-    
-    private var state: State?
-    
-    let fullText = "You acknowledge you have read and agreed to our terms of use and privacy policy"
+
+    // MARK: - Internal State
+    private var state: State
+
+    // MARK: - UI Text
+    private let fullText =
+    "You acknowledge you have read and agreed to our terms of use and privacy policy"
+
     lazy var termsRange: NSRange = {
         (fullText as NSString).range(of: "terms of use")
     }()
-    
+
     lazy var privacyRange: NSRange = {
         (fullText as NSString).range(of: "privacy policy")
     }()
-    
-    override init() {
-        self.state = State()
-        super.init()
+
+    // MARK: - Init
+    init(builder: RegistrationBuilder, registrationType: RegistrationType) {
+        self.state = State(
+            registrationType: registrationType,
+            builder: builder,
+            phoneNumber: builder.phoneNumber,
+            password: builder.password,
+            confirmPassword: builder.confirmPassword,
+            agreedToTerms: false
+        )
         
+        super.init()
         self.sections = makeSections()
     }
-    
-    // MARK: -  make sections
+
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-        
-        sections.append(makeHeaderSection())
-        sections.append(makeNamesSection())
-        
-        return sections
+        [
+            makeHeaderSection(),
+            makeSecuritySection()
+        ]
     }
-    
+
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: Tags.Section.header.rawValue,
             title: nil,
-            cells: [ makeHeaderTitleRow(), phoneNumberRow]
+            cells: [
+                makeHeaderTitleRow(),
+                phoneNumberRow
+            ]
         )
     }
-    
-    private func makeNamesSection() -> FormSection {
+
+    private func makeSecuritySection() -> FormSection {
         FormSection(
-            id: Tags.Section.names.rawValue,
+            id: Tags.Section.security.rawValue,
             title: "Set Your Password",
-            cells: [ passwordRow, confirmPasswordRow, requirementsListRow, termsRow, SpacerFormRow(tag: -00001), continueButtonRow]
+            cells: [
+                passwordRow,
+                confirmPasswordRow,
+                requirementsListRow,
+                termsRow,
+                SpacerFormRow(tag: -1),
+                continueButtonRow
+            ]
         )
     }
-    
-    // MARK: - make rows
+
+    // MARK: - Header Row
     private func makeHeaderTitleRow() -> FormRow {
-        let row = TitleDescriptionFormRow(
+        TitleDescriptionFormRow(
             tag: -101,
             title: "Verify your phone number",
             description: "",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
+            maxTitleLines: 2
         )
-        
-        return row
     }
-    
+
+    // MARK: - Rows
     lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
             title: "Continue",
             style: .primary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
+            size: .medium
         ) { [weak self] in
-            guard let phone = self?.state?.phoneNumber, !phone.isEmpty else {
+            guard let self else { return }
+            guard let phone = state.phoneNumber, !phone.isEmpty else {
                 print("❌ No phone number provided")
                 return
             }
 
-            let otpType: OTPVerificationType = .phone(number: phone, title: "Verify your phone")
-            self?.gotoVerify?(otpType) { [weak self] in
+            let otpType: OTPVerificationType =
+                .phone(number: phone, title: "Verify your phone")
+
+            gotoVerify?(otpType) { [weak self] in
                 self?.goToLogin?()
             }
         }
     )
-    
+
     lazy var phoneNumberRow = PhoneNumberRow(
-        tag: 1,
+        tag: Tags.Cells.phoneNumber.rawValue,
         model: PhoneNumberModel(
             phoneNumber: nil,
             useCardStyle: true,
             cardStyle: .border,
             cardCornerRadius: 12,
             cardBorderColor: .app(.primary),
-            onPhoneNumberChanged: {[weak self] value in
-                self?.state?.phoneNumber = value
+            onPhoneNumberChanged: { [weak self] value in
+                self?.state.phoneNumber = value
+                self?.state.builder.phoneNumber = value
             }
         )
-
     )
-    
+
     lazy var passwordRow = SimpleInputFormRow(
-        tag: 1003,
+        tag: Tags.Cells.password.rawValue,
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
                 placeholder: "Enter password",
                 keyboardType: .default,
                 isSecureTextEntry: true,
-                accessoryImage: nil,
-                returnKeyType: .done,
-                autoCapitalization: .none,
-                textContentType: .password
+                returnKeyType: .done
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
@@ -136,47 +149,38 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             ),
             useCardStyle: true,
             cardStyle: .border,
-            onTextChanged: { text in
-                print("Password updated: \(text)")
-            },
-            onReturnKeyTapped: {
-                print("User pressed return on password field")
+            onTextChanged: { [weak self] text in
+                self?.state.password = text
+                self?.state.builder.password = text
             }
         )
     )
-    
+
     lazy var confirmPasswordRow = SimpleInputFormRow(
-        tag: 1003,
+        tag: Tags.Cells.confirmPassword.rawValue,
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
                 placeholder: "Confirm password",
                 keyboardType: .default,
                 isSecureTextEntry: true,
-                accessoryImage: nil,
-                returnKeyType: .done,
-                autoCapitalization: .none,
-                textContentType: .password
+                returnKeyType: .done
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
                 minLength: 6,
-                maxLength: 20,
-                errorMessageRequired: "Password is required",
-                errorMessageLength: "Password must be 6–20 characters"
+                maxLength: 20
             ),
             useCardStyle: true,
             cardStyle: .border,
-            onTextChanged: { text in
-                print("Password updated: \(text)")
-            },
-            onReturnKeyTapped: {
-                print("User pressed return on password field")
+            onTextChanged: { [weak self] text in
+                self?.state.confirmPassword = text
+                self?.state.builder.confirmPassword = text
             }
         )
     )
-    
-    // Create a config with your preferences
+
+    // Password requirements UI
     let config = RequirementsListRowConfig(
         title: "Password Requirements",
         items: [
@@ -184,90 +188,66 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             RequirementItem(title: "Include a number", isSatisfied: true),
             RequirementItem(title: "Include a special character", isSatisfied: true)
         ],
-        titleColor: .app(.primary),        // configurable title color
-        itemColor: .label,              // configurable item text color
-        selectionStyle: .checkbox,      // or .dot
-        isCardStyleEnabled: true,       // card background with rounded corners
-        cardCornerRadius: 12,
-        cardBackgroundColor: .systemGray6,
-        cardBorderColor: .systemGray3,
-        cardBorderWidth: 1,
-        spacing: 10,
-        contentInsets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
+        isCardStyleEnabled: true
     )
 
-    // Initialize your RequirementsListRow
     lazy var requirementsListRow = RequirementsListRow(tag: 1, config: config)
 
     lazy var termsRow = TermsCheckboxRow(
-        tag: 300,
+        tag: Tags.Cells.terms.rawValue,
         config: TermsCheckboxRowConfig(
             isAgreed: false,
             descriptionText: fullText,
-            termsLinkRange:termsRange,
+            termsLinkRange: termsRange,
             privacyLinkRange: privacyRange,
-            onToggle: { agreed in
-                print("Agreed? \(agreed)")
+            onToggle: { [weak self] agreed in
+                self?.state.agreedToTerms = agreed
             },
-            onTermsTapped: { print("Terms tapped") },
-            onPrivacyTapped: { print("Privacy tapped") },
             checkboxTintColor: .app(.primary),
             useCardStyle: true
         )
     )
-    
-    // MARK: - Helpers
-    
+
+    // MARK: - Builder Mapping
+    func mapToRegistrationBuilder() -> RegistrationBuilder {
+        return state.builder
+    }
+
+    // MARK: - Row Reload Helper
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
                 let indexPath = IndexPath(row: rowIndex, section: sectionIndex)
                 onReloadRow?(indexPath)
-                break
+                return
             }
         }
     }
-    
-    
-    // MARK: - selection
-    override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
-        switch indexPath.section {
-        default:
-            break
-        }
-    }
-    
-    
+
+    // MARK: - State
     private struct State {
-        var firstName: String?
-        var lastName: String?
-        var gender: String?
-        var ageRange: CommonIdNameModel?
-        var roles: CommonIdNameModel?
-        var location: LocationModel?
+        var registrationType: RegistrationType
+        var builder: RegistrationBuilder
+
         var phoneNumber: String?
-        var referralCode: String?
+        var password: String?
+        var confirmPassword: String?
+        var agreedToTerms: Bool
     }
-    
+
+    // MARK: - Tags
     enum Tags {
         enum Section: Int {
             case header = 0
-            case names = 1
-            case gender = 2
-            case roles = 3
+            case security = 1
         }
-        
+
         enum Cells: Int {
-            case title = 0
-            case firstName = 1
-            case lastName = 2
-            case male = 3
-            case female = 4
-            case ageRange = 5
-            case roles = 6
-            case location = 7
-            case referralCode = 9
-            case submit = 10
+            case phoneNumber = 1
+            case password = 2
+            case confirmPassword = 3
+            case terms = 4
+            case submit = 5
         }
     }
 }

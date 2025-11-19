@@ -28,6 +28,20 @@ public enum ApiEnvironment {
         }
         return baseURL
     }()
+    
+    public static let apiBaseURLString: String = {
+        guard let baseURLString = ApiEnvironment.infoDictionary[Keys.apiBaseURL.rawValue] as? String else {
+            fatalError("Base URL not set in the plist for this environment")
+        }
+        return baseURLString
+    }()
+    
+    public static let apibBaseURL: URL = {
+        guard let baseURL = URL(string: apiBaseURLString) else {
+            fatalError("Couldn't convert base url string to URL")
+        }
+        return baseURL
+    }()
 
     public static let certificateURLString: String = {
         guard let urlString = ApiEnvironment.infoDictionary[Keys.certificateBaseURL.rawValue] as? String else {
@@ -98,6 +112,7 @@ public enum ApiEnvironment {
     
     private enum Keys: String {
         case baseURL = "BASE_URL"
+        case apiBaseURL = "API_BASE_URL"
         case certificateBaseURL = "CERTIFICATE_BASE_URL"
         case imageURL = "IMAGE_URL"
         case environment = "ENVIRONMENT"

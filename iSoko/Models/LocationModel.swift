@@ -22,3 +22,13 @@ public struct LocationModel: Decodable {
         self.codeName = model.codeName
     }
 }
+
+extension LocationModel {
+    var toIDNamePairInt: IDNamePairInt {
+        IDNamePairInt(id: self.id ?? 0, name: self.name ?? "")
+    }
+    
+    var toIDNamePairString: IDNamePairString {
+        IDNamePairString(id: "\(self.id ?? 0)", name: self.name ?? "")
+    }
+}

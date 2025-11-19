@@ -15,7 +15,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     var goToContinue: (() -> Void)? = { }
     var goBack: (() -> Void)? = { }
     var goToOtp: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
-    var goToCompleteProfile: (() -> Void)? = { }
+    var goToCompleteProfile: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
     
     var gotoSignUpWithGoogle: (() -> Void)? = { }
     var gotoGuestSession: (() -> Void)? = { }
@@ -23,21 +23,17 @@ final class SignUpOptionsViewModel: FormViewModel {
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)? = { _ in }
 
     // MARK: - State
-
     private var state: State
     let countryHelper = CountryHelper()
-    let registrationBuilder = RegistrationBuilder()
 
     // MARK: - Init
-
-    override init() {
-        self.state = State()
+    init(builder: RegistrationBuilder) {
+        self.state = State(registrationBuilder: builder)
         super.init()
         self.sections = makeSections()
     }
 
     // MARK: - Section Builders
-
     private func makeSections() -> [FormSection] {
         [
             makeHeaderSection(),
@@ -85,61 +81,72 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     // MARK: - Row Builders
 
-    lazy var emailInputRow = makeEmailInputRow()
-
-    private func makeEmailInputRow() -> SimpleInputFormRow {
-        SimpleInputFormRow(
-            tag: Tags.Cells.emailInput.rawValue,
-            model: SimpleInputModel(
-                text: "",
-                config: TextFieldConfig(
-                    placeholder: "Email Address",
-                    keyboardType: .default
-                ),
-                validation: ValidationConfiguration(
-                    isRequired: true,
-                    minLength: 3,
-                    maxLength: 50
-                ),
-                titleText: nil,
-                useCardStyle: true
-            )
-        )
-    }
-
-    lazy var phoneDropDownRow = PhoneDropDownFormRow(
-        tag: Tags.Cells.phoneDropDown.rawValue,
-        model: PhoneDropDownModel(
-            phoneNumber: "",
-            selectedCountry: countryHelper.country(forISO: "KE")!,
-            placeholder: "Enter phone number",
-            titleText: nil,
+    // MARK: Email Input
+    lazy var emailInputRow: SimpleInputFormRow = {
+        var model = SimpleInputModel(
+            text: state.email ?? "",
+            config: TextFieldConfig(
+                placeholder: "Email Address",
+                keyboardType: .emailAddress
+            ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 5,
-                maxLength: 15,
-                errorMessageRequired: "Phone is required",
-                errorMessageLength: "Phone length invalid"
+                minLength: 3,
+                maxLength: 50
             ),
-            onPhoneChanged: { new in
-                print("Phone changed: \(new)")
+            titleText: nil,
+            useCardStyle: true,
+            onTextChanged: { [weak self] newText in
+                guard let self = self else { return }
+                self.state.email = newText
+                self.state.registrationBuilder.email = newText
             },
-            onCountryTapped: { [weak self] in
-                self?.showCountryPicker? { selectedCountry in
-                    self?.updatePhoneCountry(selectedCountry)
-                }
-            },
-            onValidationError: { err in
-                print("Validation error: \(String(describing: err))")
+            onValidationError: { error in
+                print("Email validation error: \(String(describing: error))")
             }
         )
-    )
+        return SimpleInputFormRow(tag: Tags.Cells.emailInput.rawValue, model: model)
+    }()
+
+    // MARK: Phone Input
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = {
+        PhoneDropDownFormRow(
+            tag: Tags.Cells.phoneDropDown.rawValue,
+            model: PhoneDropDownModel(
+                phoneNumber: state.phoneNumber ?? "",
+                selectedCountry: countryHelper.country(forISO: "KE")!,
+                placeholder: "Enter phone number",
+                titleText: nil,
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 5,
+                    maxLength: 15,
+                    errorMessageRequired: "Phone is required",
+                    errorMessageLength: "Phone length invalid"
+                ),
+                onPhoneChanged: { [weak self] new in
+                    guard let self = self else { return }
+                    self.state.phoneNumber = new
+                    self.state.registrationBuilder.phoneNumber = new
+                },
+                onCountryTapped: { [weak self] in
+                    self?.showCountryPicker? { selectedCountry in
+                        self?.updatePhoneCountry(selectedCountry)
+                    }
+                },
+                onValidationError: { err in
+                    print("Phone validation error: \(String(describing: err))")
+                }
+            )
+        )
+    }()
 
     private func updatePhoneCountry(_ newCountry: Country) {
         var model = phoneDropDownRow.model
         model.selectedCountry = newCountry
         phoneDropDownRow.model = model
         reloadRowWithTag(phoneDropDownRow.tag)
+        state.registrationBuilder.country = IDNamePairInt(id: Int(newCountry.id) ?? 0, name: newCountry.name)
     }
 
     private func makeHeaderTitleRow() -> FormRow {
@@ -158,6 +165,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         )
     }
 
+    // MARK: Continue Button
     lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.continueButton.rawValue,
         model: ButtonFormModel(
@@ -171,37 +179,27 @@ final class SignUpOptionsViewModel: FormViewModel {
             guard let self = self else { return }
 
             if self.state.isUsingPhone {
-                // 📞 Phone flow
                 let phoneModel = self.phoneDropDownRow.model
                 let phone = phoneModel.phoneNumber.trimmingCharacters(in: .whitespaces)
-                let phoneCode = phoneModel.selectedCountry.phoneCode  // 🔄 Use `phoneCode` here
-
-                guard !phone.isEmpty else {
-                    print("⚠️ Phone number is empty.")
-                    return
-                }
-
+                let phoneCode = phoneModel.selectedCountry.phoneCode
+                guard !phone.isEmpty else { return }
                 let fullPhone = "\(phoneCode)\(phone)"
                 self.goToOtp?(.phone(number: fullPhone, title: "Verify your phone")) { [weak self] in
-                    self?.goToCompleteProfile?()
+                    guard let self = self else { return }
+                    self.goToCompleteProfile?(self.state.registrationBuilder)
                 }
-
             } else {
-                // 📧 Email flow
                 let email = self.emailInputRow.model.text.trimmingCharacters(in: .whitespaces)
-
-                guard !email.isEmpty else {
-                    print("⚠️ Email is empty.")
-                    return
-                }
-
+                guard !email.isEmpty else { return }
                 self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
-                    self?.goToCompleteProfile?()
+                    guard let self = self else { return }
+                    self.goToCompleteProfile?(state.registrationBuilder)
                 }
             }
         }
     )
 
+    // MARK: Email / Google Buttons
     lazy var emailButtonRow = ButtonFormRow(
         tag: Tags.Cells.emailButton.rawValue,
         model: makeEmailButtonModel()
@@ -226,26 +224,22 @@ final class SignUpOptionsViewModel: FormViewModel {
         )
     )
 
-    // Create the left and right button configurations
+    // MARK: Navigation Bar
     lazy var leftButtonConfig = NavigationBarButtonConfig(
         image: .backArrow,
         action: { [weak self] in
             self?.goBack?()
-            print("Back button tapped")
         }
     )
 
-    // Create the navigation bar config
     lazy var navBarConfig = NavigationBarConfig(
         leftButton: leftButtonConfig,
         rightButton: nil
     )
 
-    // Create the form row with the config
     lazy var navBarRow = NavigationBarFormRow(tag: 1, navBarConfig: navBarConfig)
 
-    // MARK: - Helpers
-
+    // MARK: Helpers
     private func makeEmailButtonModel() -> ButtonFormModel {
         let title = state.isUsingPhone ? "Continue with Email" : "Continue with Phone"
         return ButtonFormModel(
@@ -267,14 +261,10 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     private func toggleEmailPhoneInput() {
         state.isUsingPhone.toggle()
-
         emailButtonRow.model = makeEmailButtonModel()
-
         self.sections = makeSections()
         onReloadData?()
     }
-
-    // MARK: - Reload Helpers
 
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
@@ -286,23 +276,14 @@ final class SignUpOptionsViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Selection Handling
+    override func didSelectRow(at indexPath: IndexPath, row: FormRow) {}
 
-    override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
-        switch indexPath.section {
-        case Tags.Section.header.rawValue:
-            print("Header section row selected: \(row.tag)")
-        case Tags.Section.credentials.rawValue:
-            print("Credentials section row selected: \(row.tag)")
-        default:
-            break
-        }
-    }
-
-    // MARK: - Nested Types
-
+    // MARK: Nested Types
     private struct State {
+        var registrationBuilder: RegistrationBuilder
         var isUsingPhone: Bool = false
+        var email: String?
+        var phoneNumber: String?
     }
 
     enum Tags {

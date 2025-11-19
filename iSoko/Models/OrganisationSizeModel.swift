@@ -20,3 +20,9 @@ public struct OrganisationSizeModel: Decodable {
     }
     
 }
+
+extension OrganisationSizeModel {
+    var toIDNamePairInt: IDNamePairInt {
+        IDNamePairInt(id: self.id ?? 0, name: self.name ?? "")
+    }
+}

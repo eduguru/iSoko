@@ -9,7 +9,7 @@ import DesignSystemKit
 import UIKit
 
 final class SignupViewModel: FormViewModel {
-    var confirmSelection: ((CommonIdNameModel, _ registrationType: RegistrationType) -> Void)? = { _, _ in }
+    var confirmSelection: ((_ builder: RegistrationBuilder, CommonIdNameModel, _ registrationType: RegistrationType) -> Void)? = { _, _, _ in }
 
     private var state: State?
 
@@ -116,7 +116,7 @@ final class SignupViewModel: FormViewModel {
             let registrationType = selectedOption.id == 0 ? RegistrationType.individual : RegistrationType.organisation
             self.state?.registrationType = registrationType
             
-            self.confirmSelection?(selectedOption, registrationType)
+            self.confirmSelection?(state?.registrationBuilder ?? RegistrationBuilder(), selectedOption, registrationType)
         }
     )
 
@@ -157,6 +157,7 @@ final class SignupViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
+        var registrationBuilder = RegistrationBuilder()
         var registrationType: RegistrationType = .individual
         var options: [CommonIdNameModel] = []
         var selectedOption: CommonIdNameModel?

@@ -23,3 +23,10 @@ public struct OrganisationTypeModel: Decodable {
     }
     
 }
+
+extension OrganisationTypeModel {
+    var toIDNamePairInt: IDNamePairInt {
+        IDNamePairInt(id: self.id ?? 0, name: self.name ?? "")
+    }
+}
+

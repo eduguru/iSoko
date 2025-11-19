@@ -14,17 +14,16 @@ final class BasicProfileDataViewModel: FormViewModel {
     var gotoSelectRole: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectLocation: (_ completion: @escaping (LocationModel?) -> Void) -> Void = { _ in }
 
-    // Org specific dropdowns
     var gotoSelectOrgType: (_ completion: @escaping (OrganisationTypeModel?) -> Void) -> Void = { _ in }
     var gotoSelectOrgSize: (_ completion: @escaping (OrganisationSizeModel?) -> Void) -> Void = { _ in }
 
-    var gotoConfirm: (() -> Void)? = { }
+    var gotoConfirm: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
 
     private var state: State?
 
     // MARK: - Init
-    init(registrationType: RegistrationType) {
-        self.state = State(registrationType: registrationType)
+    init(builder: RegistrationBuilder, registrationType: RegistrationType) {
+        self.state = State(registrationType: registrationType, builder: builder)
         super.init()
         self.sections = makeSections()
     }
@@ -36,7 +35,6 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     // MARK: - Form Construction
-
     private func makeSections() -> [FormSection] {
         guard let state = state else { return [] }
 
@@ -120,19 +118,15 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     // MARK: - Input Rows
-
-    // Shared
     lazy var selectAgeRangeRow = makeAgeRangeRow()
     lazy var selectRoleRow = makeRoleRow()
     lazy var selectLocationRow = makeLocationRow()
     lazy var selectGenderRow = makeGenderRow()
 
-    // Individual
     lazy var firstNameInputRow = makeFirstNameInputRow()
     lazy var lastNameInputRow = makeLastNameInputRow()
     lazy var referralCodeInputRow = makeReferralInputRow()
 
-    // Organization
     lazy var orgNameInputRow = makeOrgNameRow()
     lazy var orgTypeDropdownRow = makeOrgTypeRow()
     lazy var orgSizeDropdownRow = makeOrgSizeRow()
@@ -147,21 +141,33 @@ final class BasicProfileDataViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoConfirm?()
+            guard let builder = self?.mapToRegistrationBuilder() else { return }
+            self?.gotoConfirm?(builder)
         }
     )
 
     // MARK: - Row Factories
-
     private func makeFirstNameInputRow() -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: Tags.Cells.firstName.rawValue,
             model: SimpleInputModel(
-                text: "",
-                config: TextFieldConfig(placeholder: "First name *", keyboardType: .default),
-                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+                text: state?.firstName ?? "",
+                config: TextFieldConfig(
+                    placeholder: "First name *",
+                    keyboardType: .default
+                ),
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 2,
+                    maxLength: 50
+                ),
                 titleText: "First name *",
-                useCardStyle: true
+                useCardStyle: true,
+                onTextChanged: { [weak self] text in
+                    guard let self else { return }
+                    self.state?.firstName = text
+                    self.state?.builder.firstName = text
+                }
             )
         )
     }
@@ -170,11 +176,23 @@ final class BasicProfileDataViewModel: FormViewModel {
         SimpleInputFormRow(
             tag: Tags.Cells.lastName.rawValue,
             model: SimpleInputModel(
-                text: "",
-                config: TextFieldConfig(placeholder: "Last name *", keyboardType: .default),
-                validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+                text: state?.lastName ?? "",
+                config: TextFieldConfig(
+                    placeholder: "Last name *",
+                    keyboardType: .default
+                ),
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 2,
+                    maxLength: 50
+                ),
                 titleText: "Last name *",
-                useCardStyle: true
+                useCardStyle: true,
+                onTextChanged: { [weak self] text in
+                    guard let self else { return }
+                    self.state?.lastName = text
+                    self.state?.builder.lastName = text
+                }
             )
         )
     }
@@ -305,7 +323,6 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     // MARK: - Selection Handlers
-
     private func handleGenderSelection() {
         gotoSelectGender(state?.genderOptions ?? []) { [weak self] value in
             guard let self = self, let value = value else { return }
@@ -343,7 +360,6 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     // MARK: - Helpers
-
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -353,9 +369,31 @@ final class BasicProfileDataViewModel: FormViewModel {
         }
     }
 
+    // MARK: - Mapping to RegistrationBuilder
+    func mapToRegistrationBuilder() -> RegistrationBuilder? {
+        guard let state = state else { return state?.builder }
+
+        // Individual
+        state.builder.firstName = state.firstName
+        state.builder.lastName = state.lastName
+        state.builder.gender = state.gender?.toIDNamePairInt
+        state.builder.role = state.roles?.toIDNamePairInt
+        state.builder.location = state.location?.toIDNamePairString
+        state.builder.referralCode = state.referralCode
+
+        // Organization
+        state.builder.isOrganization = (state.registrationType == .organisation)
+        state.builder.organizationName = state.orgName
+        state.builder.organizationType = state.orgType?.toIDNamePairInt
+        state.builder.organizationSize = state.orgSize?.toIDNamePairInt
+
+        return state.builder
+    }
+
     // MARK: - State
     private struct State {
         var registrationType: RegistrationType
+        var builder: RegistrationBuilder
 
         // Individual
         var firstName: String?

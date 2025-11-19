@@ -16,6 +16,7 @@ ENVIRONMENT = UAT
 
 //MARK: - Server URLs
 BASE_URL = https:/$()/tz.isoko.africa/wit-backend/
+API_BASE_URL = https:/$()/api.dev.isoko.africa/v1/
 
 IMAGE_URL = https:/$()/isoko.twcc-tz.org/wit-backend/
 CERTIFICATE_BASE_URL = https:/$()/tz.isoko.africa/wit-backend/

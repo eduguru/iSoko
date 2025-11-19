@@ -22,3 +22,9 @@ public struct CommonIdNameModel: Decodable {
         self.description = model.description
     }
 }
+
+extension CommonIdNameModel {
+    var toIDNamePairInt: IDNamePairInt {
+        IDNamePairInt(id: self.id, name: self.name)
+    }
+}

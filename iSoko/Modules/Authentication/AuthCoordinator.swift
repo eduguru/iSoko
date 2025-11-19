@@ -95,8 +95,8 @@ class AuthCoordinator: BaseCoordinator {
         }
     }
     
-    private func goToSignupOptions() {
-        let viewModel = SignUpOptionsViewModel()
+    private func goToSignupOptions(builder: RegistrationBuilder) {
+        let viewModel = SignUpOptionsViewModel(builder: builder)
         viewModel.showCountryPicker = gotoSelectCountry
         
         viewModel.goToOtp = goToOtpVerification
@@ -128,9 +128,9 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToSignup() {
         let viewModel = SignupViewModel()
-        viewModel.confirmSelection = { [weak self] selection, type in
+        viewModel.confirmSelection = { [weak self] builder, selection, type in
             //self?.router.pop(animated: true)
-            self?.goToCompleteProfile(selection, registrationType: type)
+            self?.goToCompleteProfile(builder: builder, selection, registrationType: type)
         }
         
         let vc = SignupViewController()
@@ -144,8 +144,8 @@ class AuthCoordinator: BaseCoordinator {
         
     }
     
-    private func goToCompleteIndividualProfile() {
-        let viewModel = BasicProfileDataViewModel(registrationType: .individual)
+    private func goToCompleteIndividualProfile(builder: RegistrationBuilder) {
+        let viewModel = BasicProfileDataViewModel(builder: builder, registrationType: .individual)
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.gotoSelectGender = gotoSelectGender
@@ -166,8 +166,8 @@ class AuthCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func goToCompleteProfile(_ selectedType: CommonIdNameModel, registrationType: RegistrationType) {
-        let viewModel = BasicProfileDataViewModel(registrationType: registrationType)
+    private func goToCompleteProfile(builder: RegistrationBuilder, _ selectedType: CommonIdNameModel, registrationType: RegistrationType) {
+        let viewModel = BasicProfileDataViewModel(builder: builder, registrationType: registrationType)
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.gotoSelectGender = gotoSelectGender
@@ -188,8 +188,8 @@ class AuthCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func goToConfirmProfile() {
-        let viewModel = BasicProfileSecurityViewModel()
+    private func goToConfirmProfile(builder: RegistrationBuilder) {
+        let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
         viewModel.gotoVerify = goToOtpVerification
         viewModel.goToLogin = { [weak self] in
             // self?.goToLogin(makeRoot: true)
@@ -268,7 +268,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectRole(_ completion: @escaping (CommonIdNameModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 1, count: 100))
+        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 0, count: 100))
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {
@@ -293,7 +293,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectOrgType(_ completion: @escaping (OrganisationTypeModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .organisationType(page: 1, count: 100))
+        let viewModel = CommonOptionPickerViewModel(option: .organisationType(page: 0, count: 100))
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {
@@ -318,7 +318,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectOrgSize(_ completion: @escaping (OrganisationSizeModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .organisationSize(page: 1, count: 100))
+        let viewModel = CommonOptionPickerViewModel(option: .organisationSize(page: 0, count: 100))
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {
@@ -343,7 +343,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectGender(options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 1, count: 100), options: options)
+        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 0, count: 100), options: options)
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {
@@ -368,7 +368,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectLocation(_ completion: @escaping (LocationModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .locations(page: 1, count: 100))
+        let viewModel = CommonOptionPickerViewModel(option: .locations(page: 0, count: 100))
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {
