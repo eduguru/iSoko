@@ -189,8 +189,8 @@ final class ServicesViewModel: FormViewModel {
 
         var description: String {
             switch self {
-            case .similarProduct: return "Similar Products"
-            case .moreOwnerProducts: return "More from this Seller"
+            case .similarProduct: return "Logistics Services"
+            case .moreOwnerProducts: return "Service Providers"
             }
         }
     }

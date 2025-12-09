@@ -12,29 +12,52 @@ import NetworkingKit
 public struct CommonUtilitiesApi {
     
     //MARK: - locations
-    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LocationResponse]> {
+    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[LocationResponse]> {
+
         let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
-        
+
         let target = AnyTarget(
             baseURL: ApiEnvironment.apibBaseURL,
             path: "locations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
-        
-        return OptionalObjectResponseTarget(target: target)
+
+        return NewPagedResponseTarget(target: target)
+    }
+    
+    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[LocationResponse]> {
+
+        let parameters = ["page": page, "size": count]
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apibBaseURL,
+            path: "locations",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers
+        )
+
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getLocationLevels(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LocationLevelsResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -54,6 +77,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -75,6 +99,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -94,6 +119,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -115,6 +141,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -134,6 +161,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -155,6 +183,7 @@ public struct CommonUtilitiesApi {
     public static func getUserAgeGroups( accessToken: String) -> OptionalObjectResponseTarget<[CommonIdNameResponse]> {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -174,6 +203,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -193,6 +223,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -212,6 +243,7 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -239,6 +271,7 @@ public struct CommonUtilitiesApi {
         
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -259,6 +292,7 @@ public struct CommonUtilitiesApi {
         
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -292,6 +326,7 @@ public struct CommonUtilitiesApi {
         
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         

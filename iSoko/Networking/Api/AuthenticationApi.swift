@@ -47,6 +47,7 @@ public struct AuthenticationApi {
     public static func preValidateEmail(email: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [
@@ -68,6 +69,7 @@ public struct AuthenticationApi {
     public static func preValidatePhoneNumber(phoneNumber: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [
@@ -89,6 +91,7 @@ public struct AuthenticationApi {
     public static func accountVerificationOTP(type: RegistrationOTPType, contact: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -118,6 +121,7 @@ public extension AuthenticationApi {
         
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -142,6 +146,7 @@ public extension AuthenticationApi {
     public static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [
@@ -174,6 +179,7 @@ public extension AuthenticationApi {
     public static func passwordReset(type: PasswordResetType, dto: PasswordResetDto, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = dto.asDictionary

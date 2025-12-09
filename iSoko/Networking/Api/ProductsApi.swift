@@ -17,6 +17,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -37,6 +38,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -57,6 +59,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -77,6 +80,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -97,6 +101,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -117,6 +122,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -138,6 +144,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -158,6 +165,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -178,6 +186,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -198,6 +207,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -218,6 +228,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -238,6 +249,7 @@ public struct ProductsApi {
 
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         

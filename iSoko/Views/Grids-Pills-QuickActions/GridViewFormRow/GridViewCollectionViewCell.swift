@@ -6,9 +6,11 @@
 //
 
 import UIKit
+import DesignSystemKit
 import Kingfisher
 
 class GridViewCollectionViewCell: UICollectionViewCell {
+    private let styleGuide: StyleGuideProtocol = DesignSystemKit.sharedStyleGuide
     
     @IBOutlet var container: UIView!
     @IBOutlet var stackView: UIStackView!
@@ -61,6 +63,15 @@ class GridViewCollectionViewCell: UICollectionViewCell {
 
         subtitleLabel.isHidden = item.subtitle == nil
         priceLabel.isHidden = item.price == nil
+        
+        titleLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        titleLabel.font = styleGuide.font(for: FontStyle.subheadline)
+        
+        subtitleLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        subtitleLabel.font = styleGuide.font(for: FontStyle.body)
+        
+        priceLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        priceLabel.font = styleGuide.font(for: FontStyle.callout)
 
         updateFavoriteIcon(isFavorite: item.isFavorite)
     }

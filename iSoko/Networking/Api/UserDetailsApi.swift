@@ -16,6 +16,7 @@ public struct UserDetailsApi {
     public static func getUserDetails(accessToken: String) -> OptionalObjectResponseTarget<UserDetailsResponse> {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -36,6 +37,7 @@ public struct UserDetailsApi {
     public static func getTraderVerificationDocuments(accessToken: String) -> OptionalObjectResponseTarget<[TraderVerificationDocResponse]> {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
@@ -57,6 +59,7 @@ public struct UserDetailsApi {
     public static func updateUserDetails(accessToken: String, with dto: UserDetailsRequestDto) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = dto.asDictionary
@@ -77,6 +80,7 @@ public struct UserDetailsApi {
     public static func updateOrganisationDetails(accessToken: String, with dto: OrganisationDetailsRequestDto) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = dto.asDictionary
@@ -97,6 +101,7 @@ public struct UserDetailsApi {
     public static func updateUserEmail(email: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [
@@ -119,6 +124,7 @@ public struct UserDetailsApi {
     public static func updateUserPhone(phone: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [
@@ -140,6 +146,7 @@ public struct UserDetailsApi {
     public static func updateUserProfileImage(image: Data, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
+            "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         let parameters: [String: Any] = [

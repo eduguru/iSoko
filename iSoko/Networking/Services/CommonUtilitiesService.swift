@@ -53,11 +53,70 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         self.tokenProvider = tokenProvider
     }
     
+//    public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse] {
+//        let response: NewPagedResponse<[LocationResponse]> =
+//            try await manager.request(
+//                CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)
+//            )
+//
+//        return response.data
+//    }
+    
+//    public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[LocationResponse]> {
+//        let response: NewPagedResponse<[LocationResponse]> =
+//            try await manager.request(CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken))
+//
+//        return PagedResult(
+//            data: response.data,
+//            page: response.page.number,
+//            size: response.page.size,
+//            totalPages: response.page.totalPages,
+//            totalElements: response.page.totalElements
+//        )
+//    }
+    
     public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse] {
-        let response: [LocationResponse] = try await manager.request(CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)) ?? []
-        
-        return response
+
+        let response: UnifiedPagedEnvelope<[LocationResponse]> =
+            try await manager.request(
+                CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)
+            )
+
+        switch response {
+        case .old(let data):
+            return data
+
+        case .new(let data, _):
+            return data
+        }
     }
+    
+    public func getAllLocationsPaged(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[LocationResponse]> {
+
+        let response: UnifiedPagedEnvelope<[LocationResponse]> =
+            try await manager.request(CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken))
+
+        switch response {
+        case .old(let data):
+            return PagedResult(
+                data: data,
+                page: nil,
+                size: nil,
+                totalPages: nil,
+                totalElements: nil
+            )
+
+        case .new(let data, let pageInfo):
+            return PagedResult(
+                data: data,
+                page: pageInfo.number,
+                size: pageInfo.size,
+                totalPages: pageInfo.totalPages,
+                totalElements: pageInfo.totalElements
+            )
+        }
+    }
+
     
     public func getLocationLevels(page: Int, count: Int, accessToken: String) async throws -> [LocationLevelsResponse] {
         let response: [LocationLevelsResponse] = try await manager.request(CommonUtilitiesApi.getLocationLevels(page: page, count: count, accessToken: accessToken)) ?? []

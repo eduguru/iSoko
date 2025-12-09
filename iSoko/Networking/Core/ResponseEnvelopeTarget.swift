@@ -11,6 +11,50 @@ import NetworkingKit
 
 // MARK: - Response Models
 
+public enum UnifiedPagedEnvelope<Payload: Decodable>: Decodable {
+    case old(data: Payload)
+    case new(
+        data: Payload,
+        page: NewPageInfo
+    )
+
+    public struct NewPageInfo: Decodable {
+        public let number: Int
+        public let size: Int
+        public let totalPages: Int
+        public let totalElements: Int
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Try NEW format
+        if let page = try? container.decode(NewPageInfo.self, forKey: .page) {
+            let data = try container.decode(Payload.self, forKey: .data)
+            self = .new(data: data, page: page)
+            return
+        }
+
+        // Fallback to OLD format
+        let data = try container.decode(Payload.self, forKey: .data)
+        self = .old(data: data)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case data
+        case page
+    }
+}
+
+
+public struct PagedResult<Data> {
+    public let data: Data
+    public let page: Int?
+    public let size: Int?
+    public let totalPages: Int?
+    public let totalElements: Int?
+}
+
 public struct BasicResponse: Decodable {
     public let data: String?
     public let status: Int
@@ -39,6 +83,20 @@ public struct PagedOptionalResponse<Payload: Decodable>: Decodable {
     public let total: Int
 }
 
+public struct NewPagedResponse<Payload: Decodable>: Decodable {
+    public struct PageInfo: Decodable {
+        public let number: Int
+        public let size: Int
+        public let totalPages: Int
+        public let totalElements: Int
+    }
+
+    public let data: Payload
+    public let query: [String: String]?
+    public let page: PageInfo
+}
+
+
 public struct ObjectResponse<Payload: Decodable>: Decodable {
     public let data: Payload
 }
@@ -61,9 +119,14 @@ public typealias BasicResponseTarget = ResponseEnvelopeTarget<BasicResponse, Any
 public typealias ValueResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value, AnyTarget>
 public typealias ObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<ObjectResponse<Payload>, AnyTarget>
 public typealias OptionalObjectResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<OptionalObjectResponse<Payload>, AnyTarget>
+
 public typealias PagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedResponse<Payload>, AnyTarget>
 public typealias PagedOptionalResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<PagedOptionalResponse<Payload>, AnyTarget>
+public typealias NewPagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<NewPagedResponse<Payload>, AnyTarget>
+
 
 // Upload-specific
 public typealias BasicUploadResponseTarget = ResponseEnvelopeTarget<BasicResponse, UploadTarget>
 public typealias ValueUploadResponseTarget<Value: Decodable> = ResponseEnvelopeTarget<Value, UploadTarget>
+
+public typealias UnifiedPagedResponseTarget<Payload: Decodable> = ResponseEnvelopeTarget<UnifiedPagedEnvelope<Payload>, AnyTarget>

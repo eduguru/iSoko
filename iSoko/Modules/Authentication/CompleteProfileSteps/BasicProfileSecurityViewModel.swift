@@ -106,12 +106,11 @@ final class BasicProfileSecurityViewModel: FormViewModel {
                 return
             }
 
-            let otpType: OTPVerificationType =
-                .phone(number: phone, title: "Verify your phone")
-
-            gotoVerify?(otpType) { [weak self] in
-                self?.goToLogin?()
-            }
+            let otpType: OTPVerificationType = .phone(number: phone, title: "Verify your phone")
+            self.goToLogin?()
+//            gotoVerify?(otpType) { [weak self] in
+//                self?.goToLogin?()
+//            }
         }
     )
 
