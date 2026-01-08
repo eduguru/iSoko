@@ -13,59 +13,80 @@ import NetworkingKit
 public final class NetworkManager<T: TargetType> {
     private let provider: MoyaProvider<T>
 
+    // Initializer now accepts tokenProvider and allows validation of status codes
     public init(tokenProvider: RefreshableTokenProvider, validateStatusCodes: Bool = false) {
         let interceptor = AuthInterceptor(tokenProvider: tokenProvider)
 
-        // Configure Alamofire session
+        // Configure Alamofire session with the given interceptor
         let session: Session
         if validateStatusCodes {
+            // Validate status codes if true
             session = Session(interceptor: interceptor)
         } else {
+            // Disable automatic status code validation (for custom 401/403 handling)
             let configuration = URLSessionConfiguration.default
             configuration.httpAdditionalHeaders = Session.default.sessionConfiguration.httpAdditionalHeaders
             session = Session(configuration: configuration, interceptor: interceptor)
         }
 
         let logger = NetworkLoggerPlugin(level: NetworkConfig.logLevel)
-
-        self.provider = MoyaProvider<T>(
-            session: session,
-            plugins: [logger],
-            trackInflights: false
-        )
+        self.provider = MoyaProvider<T>(session: session, plugins: [logger], trackInflights: false)
     }
 
-    /// Generic request handler for any `TargetType`
+    // A method to request and handle any target
     public func request<R: Decodable>(_ target: T) async throws -> R {
+        // Update the interceptor to reflect the correct requiresAuth flag
+        if let anyTarget = target as? AnyTarget {
+            let interceptor = provider.session.interceptor as! AuthInterceptor
+            interceptor.setRequiresAuth(anyTarget.requiresAuth)
+        }
+
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(target) { result in
                 switch result {
                 case .success(let response):
                     do {
+                        // Try decoding normally
                         let decoded = try JSONDecoder().decode(R.self, from: response.data)
                         continuation.resume(returning: decoded)
                     } catch {
+                        // Decoding failed, print raw response for debugging
+                        if let rawString = String(data: response.data, encoding: .utf8) {
+                            print("⚠️ Decoding failed. Raw response:\n\(rawString)")
+                        } else {
+                            print("⚠️ Decoding failed. Raw bytes: \(response.data as NSData)")
+                        }
                         continuation.resume(throwing: error)
                     }
-
                 case .failure(let error):
+                    // Failure handling for non-2xx status (401, 403, etc.)
                     if let response = error.response {
+                        if let rawString = String(data: response.data, encoding: .utf8) {
+                            print("⚠️ Request failed. Status: \(response.statusCode), Raw response:\n\(rawString)")
+                        } else {
+                            print("⚠️ Request failed. Status: \(response.statusCode), Raw bytes: \(response.data as NSData)")
+                        }
+
+                        // Try decoding anyway even if status != 200
                         do {
                             let decoded = try JSONDecoder().decode(R.self, from: response.data)
                             continuation.resume(returning: decoded)
+                            return // exit early if successful
                         } catch {
-                            continuation.resume(throwing: error)
+                            print("⚠️ Decoding failed for non-200 response")
                         }
-                    } else {
-                        continuation.resume(throwing: error)
                     }
+
+                    // Pass the original error if nothing works
+                    continuation.resume(throwing: error)
                 }
             }
         }
     }
 }
 
-// MARK: - Convenience API for AnyTarget (Standard JSON Calls)
+
+// MARK: - Convenience API for AnyTarget
 public extension NetworkManager where T == AnyTarget {
 
     func request<R: Decodable>(_ envelope: ResponseEnvelopeTarget<R, AnyTarget>) async throws -> R {
@@ -93,12 +114,15 @@ public extension NetworkManager where T == AnyTarget {
         let wrapper: PagedOptionalResponse<R> = try await request(envelope.target)
         return wrapper.data
     }
+
+    func request<R: Decodable>(_ envelope: UnifiedPagedResponseTarget<R>) async throws -> UnifiedPagedEnvelope<R> {
+        return try await request(envelope.target)
+    }
 }
 
-// MARK: - Upload Support (UploadTarget)
+// MARK: - Upload Support
 public extension NetworkManager where T == UploadTarget {
 
-    /// Upload a single file
     func upload<R: Decodable>(
         baseURL: URL,
         path: String,
@@ -117,7 +141,6 @@ public extension NetworkManager where T == UploadTarget {
         )
     }
 
-    /// Upload multiple files
     func uploadFiles<R: Decodable>(
         baseURL: URL,
         path: String,
@@ -137,7 +160,6 @@ public extension NetworkManager where T == UploadTarget {
         return try await request(target)
     }
 
-    /// Unified upload request using an envelope target
     func request<R: Decodable>(_ envelope: ResponseEnvelopeTarget<R, UploadTarget>) async throws -> R {
         return try await request(envelope.target)
     }

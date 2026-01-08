@@ -17,40 +17,21 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            "Accept": "application/json"
         ]
-
+        
+        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
+        
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apiBaseURL,
-            path: "locations",
+            baseURL: locationUrl,
+            path: "v1/countries", // "locations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .none
+            requiresAuth: false
         )
 
         return NewPagedResponseTarget(target: target)
-    }
-    
-    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[LocationResponse]> {
-
-        let parameters = ["page": page, "size": count]
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-
-        let target = AnyTarget(
-            baseURL: ApiEnvironment.apiBaseURL,
-            path: "locations",
-            method: .get,
-            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers
-        )
-
-        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getLocationLevels(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LocationLevelsResponse]> {
@@ -193,7 +174,8 @@ public struct CommonUtilitiesApi {
             method: .get,
             task: .requestPlain,
             headers: headers,
-            authorizationType: .bearer
+            requiresAuth: false,
+            authorizationType: .none
         )
         
         return OptionalObjectResponseTarget(target: target)
@@ -341,5 +323,7 @@ public struct CommonUtilitiesApi {
         
         return OptionalObjectResponseTarget(target: target)
     }
+    
+    //MARK: - location levels -
     
 }

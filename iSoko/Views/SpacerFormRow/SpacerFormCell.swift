@@ -8,7 +8,7 @@
 import UIKit
 
 public final class SpacerFormCell: UITableViewCell {
-    public static let height: CGFloat = 24
+    public static let height: CGFloat = 8
 
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)

@@ -14,6 +14,7 @@ class SignUpOptionsViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        title = "Welcome to iSOKO"
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

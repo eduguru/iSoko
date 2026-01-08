@@ -152,8 +152,8 @@ final class SignUpOptionsViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
-            title: "Sign up",
-            description: "",
+            title: "Create an Account",
+            description: "Join a network of Traders and grow your network.",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
             titleEllipsis: .none,
@@ -161,7 +161,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
         )
     }
 
