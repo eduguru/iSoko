@@ -37,7 +37,8 @@ public final class AppTokenProvider: RefreshableTokenProvider {
 
         // Cancel existing refresh task and reschedule
         refreshTask?.cancel()
-        startRefreshTask(expiresIn: token.expiresIn)
+        // startRefreshTask(expiresIn: token.expiresIn)
+        startRefreshTask(expiresIn: 20)
     }
 
     // MARK: - Refresh Token
@@ -72,27 +73,35 @@ public final class AppTokenProvider: RefreshableTokenProvider {
 
     // MARK: - Private
     private func startRefreshTask(expiresIn: Int) {
-        let fireInterval = max(TimeInterval(expiresIn - 60), 30)
-        print("⏰ Scheduling refresh in \(fireInterval) seconds")
-
+        // Cancel any previous task
         refreshTask?.cancel()
+        
+        // Start a new task that keeps running until cancelled (i.e., app exit)
         refreshTask = Task { [weak self] in
-            guard let self else { return }
-            try? await Task.sleep(nanoseconds: UInt64(fireInterval * 1_000_000_000))
-            guard !Task.isCancelled else {
-                print("⚠️ Refresh task cancelled")
-                return
-            }
-
-            do {
-                let newToken = try await self.refreshToken(
-                    grant_type: AppConstants.GrantType.refreshToken.rawValue,
-                    client_id: ApiEnvironment.clientId,
-                    client_secret: ApiEnvironment.clientSecret
-                )
-                print("✅ Auto refreshed token: \(newToken.accessToken)")
-            } catch {
-                print("❌ Failed to auto-refresh token: \(error)")
+            guard let self = self else { return }
+            
+            while !Task.isCancelled {
+                // Refresh a bit before token expires (e.g., 60 seconds before)
+                let refreshInterval = max(expiresIn - 60, 30) // at least 30s delay
+                try? await Task.sleep(nanoseconds: UInt64(refreshInterval) * 1_000_000_000)
+                
+                // Exit if cancelled
+                if Task.isCancelled { break }
+                
+                do {
+                    // Attempt to refresh using stored client_id/secret
+                    let _ = try await self.refreshToken(
+                        grant_type: "refresh_token",
+                        client_id: ApiEnvironment.clientId,
+                        client_secret: ApiEnvironment.clientSecret
+                    )
+                    // Successfully refreshed, loop continues
+                } catch {
+                    // Handle refresh error
+                    print("Failed to refresh token: \(error)")
+                    // Optional: retry after a short delay
+                    try? await Task.sleep(nanoseconds: 10 * 1_000_000_000) // 10s
+                }
             }
         }
     }

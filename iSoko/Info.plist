@@ -2,21 +2,33 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>BASE_URL</key>
-    <string>$(BASE_URL)</string>
-    <key>API_BASE_URL</key>
-    <string>$(API_BASE_URL)</string>
     
-	<key>CERTIFICATE_BASE_URL</key>
-	<string>$(CERTIFICATE_BASE_URL)</string>
-	<key>CLIENT_ID</key>
-	<string>$(CLIENT_ID)</string>
-	<key>CLIENT_SECRET</key>
-	<string>$(CLIENT_SECRET)</string>
-	<key>ENVIRONMENT</key>
+    <key>DEFAULT_COUNTRY_CODE</key>
+    <string>$(COUNTRY_CODE)</string>
+
+    <key>LEGACY_CORE_DOMAIN</key>
+    <string>$(LEGACY_CORE_DOMAIN)</string>
+    <key>LEGACY_CORE_PATH</key>
+    <string>$(LEGACY_CORE_PATH)</string>
+
+    <key>API_DOMAIN</key>
+    <string>$(API_DOMAIN)</string>
+    <key>API_PATH</key>
+    <string>$(API_PATH)</string>
+
+    <key>IMAGE_DOMAIN</key>
+    <string>$(IMAGE_DOMAIN)</string>
+
+    <key>CLIENT_ID</key>
+    <string>$(CLIENT_ID)</string>
+
+    <key>CLIENT_SECRET</key>
+    <string>$(CLIENT_SECRET)</string>
+	
+    <key>ENVIRONMENT</key>
 	<string>$(ENVIRONMENT)</string>
-	<key>IMAGE_URL</key>
-	<string>$(IMAGE_URL)</string>
+    
+    
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

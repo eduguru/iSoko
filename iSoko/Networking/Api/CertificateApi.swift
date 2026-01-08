@@ -53,6 +53,7 @@ public struct CertificateApi {
             headers: headers,
             authorizationType: .none
         )
+        
         return ValueResponseTarget(target: t)
     }
 }

@@ -20,6 +20,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         let window = UIWindow(windowScene: windowScene)
         self.window = window
+        
+        // ✅ Set region default immediately
+        AppBootstrap.setup()
 
         // ✅ Show splash screen immediately
         let splashVC = SplashScreenViewController()

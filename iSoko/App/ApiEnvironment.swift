@@ -8,115 +8,53 @@
 import Foundation
 
 public enum ApiEnvironment {
-    private static let infoDictionary: [String: Any] = {
-        guard let dictionary = Bundle.main.infoDictionary else {
-            fatalError("Plist file not found")
-        }
-        return dictionary
-    }()
 
-    public static let baseURLString: String = {
-        guard let baseURLString = ApiEnvironment.infoDictionary[Keys.baseURL.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return baseURLString
-    }()
-    
-    public static let baseURL: URL = {
-        guard let baseURL = URL(string: baseURLString) else {
-            fatalError("Couldn't convert base url string to URL")
-        }
-        return baseURL
-    }()
-    
-    public static let apiBaseURLString: String = {
-        guard let baseURLString = ApiEnvironment.infoDictionary[Keys.apiBaseURL.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return baseURLString
-    }()
-    
-    public static let apibBaseURL: URL = {
-        guard let baseURL = URL(string: apiBaseURLString) else {
-            fatalError("Couldn't convert base url string to URL")
-        }
-        return baseURL
-    }()
+    private static let info = Bundle.main.infoDictionary!
 
-    public static let certificateURLString: String = {
-        guard let urlString = ApiEnvironment.infoDictionary[Keys.certificateBaseURL.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return urlString
-    }()
-    
-    public static let certificateBaseURL: URL = {
-        guard let baseURL = URL(string: certificateURLString) else {
-            fatalError("Couldn't convert url string to URL")
-        }
-        return baseURL
-    }()
-    
-    public static let imageURLString: String = {
-        guard let urlString = ApiEnvironment.infoDictionary[Keys.imageURL.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return urlString
-    }()
+    // MARK: - Country
 
-    public static let imageURL: URL = {
-        guard let url = URL(string: imageURLString) else {
-            fatalError("Couldn't convert url string to URL")
-        }
-        return url
-    }()
-    
-    public static let clientSecret: String = {
-        guard let urlString = ApiEnvironment.infoDictionary[Keys.client_secret.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return urlString
-    }()
-    
-    public static let clientId: String = {
-        guard let urlString = ApiEnvironment.infoDictionary[Keys.client_id.rawValue] as? String else {
-            fatalError("Base URL not set in the plist for this environment")
-        }
-        return urlString
-    }()
-
-    // MARK: -
-    public static let appEnvironment: APPEnvironment = {
-        let apiEnvironmentKey = ApiEnvironment.infoDictionary[Keys.environment.rawValue] as? String
-        switch apiEnvironmentKey {
-        case "Development":
-            return .development
-
-        case "UAT":
-            return .uat
-
-        case "Production":
-            return .production
-
-        default:
-            return .development
-        }
-    }()
-    
-    // MARK: - Inner Declarations -
-    public enum APPEnvironment: String {
-        case development
-        case uat
-        case production
+    private static var country: String {
+        UserDefaults.standard.string(forKey: "country_code")
+        ?? (info["DEFAULT_COUNTRY_CODE"] as? String ?? "tz")
     }
-    
-    private enum Keys: String {
-        case baseURL = "BASE_URL"
-        case apiBaseURL = "API_BASE_URL"
-        case certificateBaseURL = "CERTIFICATE_BASE_URL"
-        case imageURL = "IMAGE_URL"
-        case environment = "ENVIRONMENT"
-        case client_id = "CLIENT_ID"
-        case client_secret = "CLIENT_SECRET"
+
+    // MARK: - Helpers
+
+    private static func value(_ key: String) -> String {
+        guard let v = info[key] as? String else {
+            fatalError("\(key) missing in Info.plist")
+        }
+        return v
     }
+
+    // MARK: - V1 (BASE_URL)
+
+    public static var baseURL: URL = {
+        URL(string:
+            "https://\(country).\(value("LEGACY_CORE_DOMAIN"))/\(value("LEGACY_CORE_PATH"))"
+        )!
+    }()
+
+    // MARK: - V2 / API_BASE_URL
+
+    public static var apiBaseURL: URL = {
+        URL(string:
+            "https://\(country).\(value("API_DOMAIN"))/\(value("API_PATH"))"
+        )!
+    }()
+
+    // MARK: - Other URLs
+
+    public static var imageURL: URL = {
+        URL(string:
+            "https://\(value("IMAGE_DOMAIN"))/\(value("LEGACY_CORE_PATH"))"
+        )!
+    }()
+
+    public static var certificateBaseURL: URL = baseURL
+
+    // MARK: - OAuth
+
+    public static var clientId: String = value("CLIENT_ID")
+    public static var clientSecret: String = value("CLIENT_SECRET")
 }

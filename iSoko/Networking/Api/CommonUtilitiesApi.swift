@@ -22,7 +22,7 @@ public struct CommonUtilitiesApi {
         ]
 
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apibBaseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "locations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -43,7 +43,7 @@ public struct CommonUtilitiesApi {
         ]
 
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apibBaseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "locations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -62,7 +62,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apibBaseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "location-level",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -82,7 +82,7 @@ public struct CommonUtilitiesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apibBaseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "location/\(locationLevel)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),

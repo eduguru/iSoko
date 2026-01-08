@@ -11,15 +11,17 @@
 //MARK: - ENVIRONMENT
 ENVIRONMENT = DEV
 
-//MARK: - API Keys
+// MARK: - Country (build-time)
+COUNTRY_CODE = tz
 
+// MARK: - Domains
+LEGACY_CORE_DOMAIN = isoko.africa
+API_DOMAIN = api.dev.isoko.africa
+IMAGE_DOMAIN = isoko.twcc-tz.org
 
-//MARK: - Server URLs
-BASE_URL = https:/$()/tz.isoko.africa/wit-backend/
-API_BASE_URL = https:/$()/api.dev.isoko.africa/v1/
-
-IMAGE_URL = https:/$()/isoko.twcc-tz.org/wit-backend/
-CERTIFICATE_BASE_URL = https:/$()/tz.isoko.africa/wit-backend/
+// MARK: - Paths (explicit!)
+LEGACY_CORE_PATH = wit-backend/
+API_PATH = v1/
 
 CLIENT_ID = wit_android_app
 CLIENT_SECRET = QBhd$Txm42n3q@
