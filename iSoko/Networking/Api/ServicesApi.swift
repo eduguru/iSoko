@@ -22,7 +22,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service-category",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -43,7 +43,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -64,7 +64,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -85,7 +85,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -106,7 +106,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/current-user",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -127,7 +127,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/product/product-details/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -148,7 +148,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/product-details/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -170,7 +170,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -191,7 +191,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/edit/\(productId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -212,7 +212,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/image/add/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -233,7 +233,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/image/remove/\(imageId)",
             method: .put,
             task: .requestPlain,
@@ -254,7 +254,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/image/set-primary/\(imageId)",
             method: .put,
             task: .requestPlain,
@@ -275,7 +275,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/update-status/\(status)/\(productId)",
             method: .put,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),

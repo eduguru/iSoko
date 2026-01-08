@@ -137,6 +137,7 @@ class WelcomeCoordinator: BaseCoordinator {
         addChild(coordinator)
         coordinator.goToCountrySelection { [weak self] result in
             AppStorage.selectedRegion = result.name
+            AppStorage.selectedRegionCode = result.id.lowercased()
             AppStorage.hasSelectedRegion = true
             self?.showWalkthrough()
         }

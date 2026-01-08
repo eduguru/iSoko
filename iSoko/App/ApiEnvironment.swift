@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StorageKit
 
 public enum ApiEnvironment {
 
@@ -14,8 +15,7 @@ public enum ApiEnvironment {
     // MARK: - Country
 
     private static var country: String {
-        UserDefaults.standard.string(forKey: "country_code")
-        ?? (info["DEFAULT_COUNTRY_CODE"] as? String ?? "tz")
+        AppStorage.selectedRegionCode ?? (info["DEFAULT_COUNTRY_CODE"] as? String ?? "tz")
     }
 
     // MARK: - Helpers

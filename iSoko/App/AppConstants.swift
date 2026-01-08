@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StorageKit
 
 final class AppConstants {
     static let shared = AppConstants()
@@ -22,10 +23,11 @@ final class AppConstants {
 
 struct AppBootstrap {
     static func setup() {
-        let defaults = UserDefaults.standard
-        if defaults.string(forKey: "country_code") == nil {
-            let buildCountry = Bundle.main.object( forInfoDictionaryKey: "DEFAULT_COUNTRY_CODE" ) as? String ?? "ke"
-            defaults.set(buildCountry, forKey: "country_code")
+        let selectedRegionCode = AppStorage.selectedRegionCode
+        
+        if selectedRegionCode == nil {
+            let buildCountry = Bundle.main.object( forInfoDictionaryKey: "DEFAULT_COUNTRY_CODE" ) as? String ?? "tz"
+            AppStorage.selectedRegionCode = buildCountry.lowercased()
         }
     }
 }
