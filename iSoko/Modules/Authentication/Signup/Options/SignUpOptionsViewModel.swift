@@ -8,6 +8,8 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
+import NetworkingKit
 
 final class SignUpOptionsViewModel: FormViewModel {
 
@@ -25,6 +27,8 @@ final class SignUpOptionsViewModel: FormViewModel {
     // MARK: - State
     private var state: State
     let countryHelper = CountryHelper()
+    
+    let authenticationService = NetworkEnvironment.shared.authenticationService
 
     // MARK: - Init
     init(builder: RegistrationBuilder) {
@@ -177,24 +181,32 @@ final class SignUpOptionsViewModel: FormViewModel {
             hapticsEnabled: true
         ) { [weak self] in
             guard let self = self else { return }
-
+            
             if self.state.isUsingPhone {
-                let phoneModel = self.phoneDropDownRow.model
-                let phone = phoneModel.phoneNumber.trimmingCharacters(in: .whitespaces)
-                let phoneCode = phoneModel.selectedCountry.phoneCode
-                guard !phone.isEmpty else { return }
-                let fullPhone = "\(phoneCode)\(phone)"
-                self.goToOtp?(.phone(number: fullPhone, title: "Verify your phone")) { [weak self] in
-                    guard let self = self else { return }
-                    self.goToCompleteProfile?(self.state.registrationBuilder)
+                // Get phone number and country code
+                let phone = self.phoneDropDownRow.model.phoneNumber.trimmingCharacters(in: .whitespaces)
+                let countryCode = self.phoneDropDownRow.model.selectedCountry.phoneCode
+                
+                // Combine country code with local number to form full phone number
+                let fullPhoneNumber = "\(countryCode)\(phone)"
+                
+                // Validate the full phone number
+                if !fullPhoneNumber.isValidPhoneNumber() {
+                    self.showErrorMessage("Please enter a valid phone number.")
+                    return
                 }
+                
+                _ = self.preValidatePhone(fullPhoneNumber)
+                
             } else {
+                // Validate email
                 let email = self.emailInputRow.model.text.trimmingCharacters(in: .whitespaces)
-                guard !email.isEmpty else { return }
-                self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
-                    guard let self = self else { return }
-                    self.goToCompleteProfile?(state.registrationBuilder)
+                if !email.isValidEmail() {
+                    self.showErrorMessage("Please enter a valid email address.")
+                    return
                 }
+                
+                _ = self.preValidateEmail(email)
             }
         }
     )
@@ -259,11 +271,16 @@ final class SignUpOptionsViewModel: FormViewModel {
         )
     }
 
+    //MARK: - funcs
     private func toggleEmailPhoneInput() {
         state.isUsingPhone.toggle()
         emailButtonRow.model = makeEmailButtonModel()
         self.sections = makeSections()
         onReloadData?()
+    }
+    
+    private func showErrorMessage(_ message: String) {
+        print("⚠️ Pre-Validation Error: \(message)")
     }
 
     func reloadRowWithTag(_ tag: Int) {
@@ -277,6 +294,93 @@ final class SignUpOptionsViewModel: FormViewModel {
     }
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {}
+    
+    //MARK: - calls
+    private func preValidatePhone(_ phone: String) -> Task<Void, Never> {
+        Task { [weak self] in
+            guard let self = self else { return }
+
+            do {
+                let response = try await authenticationService.preValidatePhone(
+                    phone,
+                    accessToken: state.accessToken
+                )
+
+                // ✅ Success path (status == 200 guaranteed)
+                await MainActor.run {
+                    // Proceed to OTP screen if phone is valid
+                    self.goToOtp?(.phone(number: phone, title: "Verify your phone")) { [weak self] in
+                        guard let self = self else { return }
+                        self.goToCompleteProfile?(self.state.registrationBuilder)
+                    }
+                }
+
+            } catch let NetworkError.server(response) {
+                // ❌ Backend error
+                print("🚫 Server error:", response.message ?? "Unknown")
+
+                response.errors?.forEach {
+                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
+                }
+
+                await MainActor.run {
+                    self.state.errorMessage = response.message
+                    self.state.fieldErrors = response.errors
+                }
+
+            } catch {
+                // ❌ Network / decoding / unexpected
+                print("❌ Error:", error)
+
+                await MainActor.run {
+                    self.state.errorMessage = "Something went wrong. Please try again."
+                }
+            }
+        }
+    }
+    
+    private func preValidateEmail(_ email: String) -> Task<Void, Never> {
+        Task { [weak self] in
+            guard let self = self else { return }
+
+            do {
+                let response = try await authenticationService.preValidateEmail(
+                    email,
+                    accessToken: state.accessToken
+                )
+
+                // ✅ Success (status == 200 guaranteed)
+                await MainActor.run {
+                    self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
+                        guard let self = self else { return }
+                        self.goToCompleteProfile?(self.state.registrationBuilder)
+                    }
+                }
+
+            } catch let NetworkError.server(response) {
+                // ❌ Backend error
+                print("🚫 Server error:", response.message ?? "Unknown")
+
+                response.errors?.forEach {
+                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
+                }
+
+                await MainActor.run {
+                    self.state.errorMessage = response.message
+                    self.state.fieldErrors = response.errors
+                }
+
+            } catch {
+                // ❌ Network / decoding / unexpected
+                print("❌ Error:", error)
+
+                await MainActor.run {
+                    self.state.errorMessage = "Something went wrong. Please try again."
+                }
+            }
+        }
+    }
+
 
     // MARK: Nested Types
     private struct State {
@@ -284,6 +388,10 @@ final class SignUpOptionsViewModel: FormViewModel {
         var isUsingPhone: Bool = false
         var email: String?
         var phoneNumber: String?
+        var accessToken = AppStorage.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
     enum Tags {

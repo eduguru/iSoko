@@ -54,13 +54,16 @@ public struct AuthenticationApi {
             "email": email
         ]
         
+        let apiBaseURL: URL = { URL(string: "https://tz.isoko.africa/wit-backend/" )! }()
+        
         let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: apiBaseURL,
             path: "api/user/pre-validation/email",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            requiresAuth: false,
+            authorizationType: .none
         )
         
         return BasicResponseTarget(target: t)
@@ -72,17 +75,21 @@ public struct AuthenticationApi {
             "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
+        
         let parameters: [String: Any] = [
             "phoneNumber": phoneNumber
         ]
         
+        let apiBaseURL: URL = { URL(string: "https://tz.isoko.africa/wit-backend/" )! }()
+        
         let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
+            baseURL: apiBaseURL,
             path: "api/user/pre-validation/phone",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            requiresAuth: false,
+            authorizationType: .none
         )
         
         return BasicResponseTarget(target: t)
