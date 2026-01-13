@@ -8,6 +8,7 @@ import Moya
 import Foundation
 import UtilsKit
 import NetworkingKit
+import UIKit
 
 public struct AuthenticationApi {
     
@@ -124,30 +125,88 @@ public struct AuthenticationApi {
 //MARK: - New Registration
 public extension AuthenticationApi {
     /// Register a user (individual or organization)
-    public static func register(request: RegistrationRequest, accessToken: String) -> BasicResponseTarget {
-        
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+    public static func register(request: RegistrationRequest, accessToken: String) {
+        let userDict: [String: Any] = [
+            "userTypeId": 1,
+            "middleName": "Simons",
+            "lastName": "Malacia",
+            "referralCode": "REF12345",
+            "locationId": 1,
+            "roleId": 1,
+            "countryId": 1,
+            "phoneNumber": "+254712345678",
+            "firstName": "Gregory",
+            "ageGroupId": 1,
+            "password": "P@ssw0rd!",
+            "email": "user@example.com",
+            "genderId": 1
         ]
-        
-        // Choose endpoint based on registration type
-        let path = request.isOrganization
-            ? "api/user/register/organization"
-            : "api/user/register/individual"
-        
-        let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: path,
-            method: .post,
-            task: .requestJSONEncodable(request),
-            headers: headers,
-            authorizationType: .bearer
+
+        let userJSON = try! JSONSerialization.data(withJSONObject: userDict)
+
+        uploadUser(
+            userJSON: userJSON,
+            profileImage: UIImage(named: "profile"), // or nil
+            accessToken: "<YOUR_TOKEN>"
         )
-        
-        return BasicResponseTarget(target: t)
+
     }
+    
+//    public static func register(
+//        request: RegistrationRequest,
+//        accessToken: String
+//    ) -> BasicResponseTarget {
+//
+//        let path = "v1/users"
+//        let baseURL = URL(string: "https://api.dev.isoko.africa/")!
+//        // 🔹 user JSON part
+//        let userJSONData = try! JSONEncoder()
+//                .encode(request.mapToCreateUserRequest())
+//
+//        let uploadTarget = UploadTarget(
+//            baseURL: baseURL,
+//            path: path,
+//            files: [],
+//            additionalParams: [
+//                "user": String(data: userJSONData, encoding: .utf8)!
+//            ],
+//            requiresAuth: false,
+//            authorizationType: .none
+//        )
+//
+//        return BasicResponseTarget(target: uploadTarget.asAnyTarget())
+//    }
+//
+//    public static func register(
+//        request: RegistrationRequest,
+//        profileImage: UIImage,
+//        accessToken: String
+//    ) -> BasicResponseTarget {
+//
+//        let path = "v1/users"
+//        let baseURL = URL(string: "https://api.dev.isoko.africa/")!
+//        let payload = request.mapToCreateUserRequest()
+//
+//        let imageFile = UploadFile(
+//            data: profileImage.jpegData(compressionQuality: 0.8)!,
+//            name: "profile_image",          // backend key
+//            fileName: "profile.jpg",
+//            mimeType: "image/jpeg"
+//        )
+//
+//        let uploadTarget = UploadTarget(
+//            baseURL: baseURL,
+//            path: path,
+//            method: .post,
+//            files: [imageFile],
+//            additionalParams: payload.asDictionary,
+//            requiresAuth: true,
+//            authorizationType: .bearer
+//        )
+//
+//        return BasicResponseTarget(target: uploadTarget.asAnyTarget())
+//    }
+
 
 //MARK: - Password Reset
     public static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
@@ -201,5 +260,83 @@ public extension AuthenticationApi {
         )
         
         return BasicResponseTarget(target: t)
+    }
+}
+
+
+//MARK: - -
+extension AuthenticationApi {
+    public static func uploadUser(
+        userJSON: Data,
+        profileImage: UIImage?,
+        accessToken: String
+    ) {
+
+        let url = URL(string: "https://api.dev.isoko.africa/v1/users")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        // 🔹 Boundary
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        // 🔹 Headers
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+
+        // 🔹 Body
+        var body = Data()
+
+        // ---- user JSON part ----
+        body.append("--\(boundary)\r\n")
+        body.append("Content-Disposition: form-data; name=\"user\"\r\n")
+        body.append("Content-Type: application/json\r\n\r\n")
+        body.append(userJSON)
+        body.append("\r\n")
+
+        // ---- profile image part (optional) ----
+        if let image = profileImage,
+           let imageData = image.jpegData(compressionQuality: 0.8) {
+
+            body.append("--\(boundary)\r\n")
+            body.append("Content-Disposition: form-data; name=\"profileImage\"; filename=\"profile.jpg\"\r\n")
+            body.append("Content-Type: image/jpeg\r\n\r\n")
+            body.append(imageData)
+            body.append("\r\n")
+        }
+
+        // ---- closing boundary ----
+        body.append("--\(boundary)--\r\n")
+
+        request.httpBody = body
+
+        // 🔹 Send request
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("❌ Error:", error)
+                return
+            }
+
+            if let httpResponse = response as? HTTPURLResponse {
+                print("✅ Status Code:", httpResponse.statusCode)
+            }
+
+            if let data = data {
+                print("Response:", String(data: data, encoding: .utf8) ?? "")
+            }
+        }.resume()
+    }
+
+}
+
+
+extension Data {
+    mutating func append(_ string: String) {
+        if let data = string.data(using: .utf8) {
+            append(data)
+        }
     }
 }

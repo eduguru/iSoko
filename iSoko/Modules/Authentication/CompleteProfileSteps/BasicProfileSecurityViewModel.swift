@@ -7,23 +7,29 @@
 
 import DesignSystemKit
 import UIKit
+import UtilsKit
+import StorageKit
 
 final class BasicProfileSecurityViewModel: FormViewModel {
 
     // MARK: - Navigation callbacks
     var gotoTerms: (() -> Void)? = { }
     var gotoPrivacyPolicy: (() -> Void)? = { }
+    
+    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)? = { _ in }
 
     var gotoVerify: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
     var goToLogin: (() -> Void)? = { }
     var gotoConfirm: (() -> Void)? = { }
 
     // MARK: - Internal State
+    let countryHelper = CountryHelper()
+    let authenticationService = NetworkEnvironment.shared.authenticationService
+    
     private var state: State
 
     // MARK: - UI Text
-    private let fullText =
-    "You acknowledge you have read and agreed to our terms of use and privacy policy"
+    private let fullText = "You acknowledge you have read and agreed to our terms of use and privacy policy"
 
     lazy var termsRange: NSRange = {
         (fullText as NSString).range(of: "terms of use")
@@ -62,7 +68,8 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             title: nil,
             cells: [
                 makeHeaderTitleRow(),
-                phoneNumberRow
+                phoneDropDownRow, // phoneNumberRow,
+                emailRow
             ]
         )
     }
@@ -86,7 +93,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: -101,
-            title: "Verify your phone number",
+            title: "Verify",
             description: "",
             maxTitleLines: 2
         )
@@ -107,27 +114,80 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             }
 
             let otpType: OTPVerificationType = .phone(number: phone, title: "Verify your phone")
-            self.goToLogin?()
-//            gotoVerify?(otpType) { [weak self] in
-//                self?.goToLogin?()
-//            }
+            
+            self.performRegistration()
         }
     )
 
-    lazy var phoneNumberRow = PhoneNumberRow(
-        tag: Tags.Cells.phoneNumber.rawValue,
-        model: PhoneNumberModel(
-            phoneNumber: nil,
+    private lazy var emailRow = TitleDescriptionFormRow(
+        tag: -00012,
+        title: "Email Address",
+        description: "Enter your email",
+        maxTitleLines: 2,
+        maxDescriptionLines: 0,
+        titleEllipsis: .none,
+        descriptionEllipsis: .none,
+        layoutStyle: .stackedVertical,
+        textAlignment: .left
+    )
+    
+    lazy var emailInputRow = SimpleInputFormRow(
+        tag: Tags.Cells.email.rawValue,
+        model: SimpleInputModel(
+            text: "",
+            config: TextFieldConfig(
+                placeholder:  "Enter email",
+                keyboardType: .emailAddress,
+                accessoryImage: nil
+            ),
+            validation: ValidationConfiguration(
+                isRequired: true,
+                minLength: 3,
+                maxLength: 50,
+                errorMessageRequired: "Email is required",
+                errorMessageLength: "Must be 5–50 characters"
+            ),
+            titleText: "Email address",
             useCardStyle: true,
-            cardStyle: .border,
-            cardCornerRadius: 12,
-            cardBorderColor: .app(.primary),
-            onPhoneNumberChanged: { [weak self] value in
-                self?.state.phoneNumber = value
-                self?.state.builder.phoneNumber = value
+            onTextChanged: { [weak self] in
+                self?.state.builder.email = $0
             }
         )
+    
     )
+
+    // MARK: Phone Input
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = {
+        PhoneDropDownFormRow(
+            tag: Tags.Cells.phoneDropDown.rawValue,
+            model: PhoneDropDownModel(
+                phoneNumber: state.phoneNumber ?? "",
+                selectedCountry: countryHelper.country(forISO: "KE")!,
+                placeholder: "Enter phone number",
+                titleText: nil,
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 5,
+                    maxLength: 15,
+                    errorMessageRequired: "Phone is required",
+                    errorMessageLength: "Phone length invalid"
+                ),
+                onPhoneChanged: { [weak self] new in
+                    guard let self = self else { return }
+                    self.state.phoneNumber = "+254" + new
+                    self.state.builder.phoneNumber = self.state.phoneNumber
+                },
+                onCountryTapped: { [weak self] in
+                    self?.showCountryPicker? { selectedCountry in
+                        self?.updatePhoneCountry(selectedCountry)
+                    }
+                },
+                onValidationError: { err in
+                    print("Phone validation error: \(String(describing: err))")
+                }
+            )
+        )
+    }()
 
     lazy var passwordRow = SimpleInputFormRow(
         tag: Tags.Cells.password.rawValue,
@@ -207,9 +267,16 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         )
     )
 
-    // MARK: - Builder Mapping
+    // MARK: - Builder Mapping & more funcs
     func mapToRegistrationBuilder() -> RegistrationBuilder {
         return state.builder
+    }
+    
+    private func updatePhoneCountry(_ newCountry: Country) {
+        var model = phoneDropDownRow.model
+        model.selectedCountry = newCountry
+        phoneDropDownRow.model = model
+        reloadRowWithTag(phoneDropDownRow.tag)
     }
 
     // MARK: - Row Reload Helper
@@ -222,16 +289,55 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             }
         }
     }
+    
+    // MARK: - network calls -
+    private func performRegistration() -> Task<Void, Never> {
+        Task { [weak self] in
+            guard let self = self else { return }
 
+            do {
+                // let response = try await authenticationService.register(state.builder.build(), accessToken: state.accessToken)
+                let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
+
+                await MainActor.run { // ✅ Success path (status == 200 guaranteed) // Proceed
+                    self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
+                }
+
+            } catch let NetworkError.server(response) { // ❌ Backend error
+                print("🚫 Server error:", response.message ?? "Unknown")
+
+                response.errors?.forEach {
+                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
+                }
+
+                await MainActor.run {
+                    self.state.errorMessage = response.message
+                    self.state.fieldErrors = response.errors
+                }
+
+            } catch {
+                print("❌ Registration Error:", error)
+
+                await MainActor.run {
+                    self.state.errorMessage = "Something went wrong. Please try again."
+                }
+            }
+        }
+    }
+    
     // MARK: - State
     private struct State {
         var registrationType: RegistrationType
         var builder: RegistrationBuilder
+        var accessToken = AppStorage.accessToken ?? ""
 
         var phoneNumber: String?
         var password: String?
         var confirmPassword: String?
         var agreedToTerms: Bool
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
     // MARK: - Tags
@@ -247,6 +353,8 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             case confirmPassword = 3
             case terms = 4
             case submit = 5
+            case email = 6
+            case phoneDropDown = 7
         }
     }
 }

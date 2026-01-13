@@ -279,7 +279,6 @@ public struct ProductsApi {
             baseURL: ApiEnvironment.baseURL,
             path: "api/user/update-profile-image",
             files: [file],
-            headers: headers,
             authorizationType: .bearer
         )
 
@@ -303,7 +302,6 @@ public struct ProductsApi {
             path: "api/gallery/upload",
             files: files,
             additionalParams: ["caption": caption],
-            headers: headers,
             authorizationType: .bearer
         )
 

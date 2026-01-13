@@ -150,7 +150,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         model.selectedCountry = newCountry
         phoneDropDownRow.model = model
         reloadRowWithTag(phoneDropDownRow.tag)
-        state.registrationBuilder.country = IDNamePairInt(id: Int(newCountry.id) ?? 0, name: newCountry.name)
+        state.registrationBuilder.phoneNumberCountry = IDNamePairInt(id: Int(newCountry.id) ?? 0, name: newCountry.name)
     }
 
     private func makeHeaderTitleRow() -> FormRow {
@@ -380,7 +380,6 @@ final class SignUpOptionsViewModel: FormViewModel {
             }
         }
     }
-
 
     // MARK: Nested Types
     private struct State {

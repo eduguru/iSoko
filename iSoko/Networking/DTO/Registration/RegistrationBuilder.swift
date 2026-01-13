@@ -10,17 +10,20 @@ final class RegistrationBuilder {
     // MARK: - Common fields
     var email: String?
     var phoneNumber: String?
+    var phoneNumberCountry: IDNamePairInt?
     var password: String?
     var confirmPassword: String?
-    var country: IDNamePairInt?
     var languagePreference: Int?
-    var location: IDNamePairString?
     var verificationMode: String?
+    var country: IDNamePairInt?
+    var location: IDNamePairString?
     var role: IDNamePairInt?
+    var ageGroup: IDNamePairInt?
+    var gender: IDNamePairInt?
+    
     var firstName: String?
     var middleName: String?
     var lastName: String?
-    var gender: IDNamePairInt?
     var otpRequestId: String?
     var code: String?
     var referralCode: String?
@@ -35,68 +38,8 @@ final class RegistrationBuilder {
 
     // MARK: - Registration Type
     var isOrganization: Bool = false
-
-    // MARK: - Build
-//    func build() throws -> RegistrationRequest {
-//        // Validate common required fields
-//        guard
-//            let email,
-//            let phoneNumber,
-//            let password,
-//            let confirmPassword,
-//            let country,
-//            let location,
-//            let verificationMode,
-//            let role,
-//            let firstName,
-//            let lastName,
-//            let gender,
-//            let otpRequestId,
-//            let code
-//        else {
-//            throw ValidationError.missingFields
-//        }
-//
-//        // If organization, validate extra required fields
-//        if isOrganization {
-//            guard
-//                let organizationName,
-//                let organizationType,
-//                let organizationSize,
-//                let postalAddress,
-//                let physicalAddress
-//            else {
-//                throw ValidationError.missingFields
-//            }
-//        }
-//
-//        return RegistrationRequest(
-//            email: email,
-//            phoneNumber: phoneNumber,
-//            password: password,
-//            confirmPassword: confirmPassword,
-//            country: country,
-//            languagePreference: languagePreference,
-//            location: location,
-//            verificationMode: verificationMode,
-//            role: role,
-//            firstName: firstName,
-//            middleName: middleName,
-//            lastName: lastName,
-//            gender: gender,
-//            otpRequestId: otpRequestId,
-//            code: code,
-//            referralCode: referralCode,
-//            isOrganization: isOrganization,
-//            organizationName: organizationName,
-//            organizationType: organizationType,
-//            organizationSize: organizationSize,
-//            postalAddress: postalAddress,
-//            physicalAddress: physicalAddress,
-//            website: website
-//        )
-//    }
     
+    // MARK: - Build
     func build() throws -> RegistrationRequest {
 
         let missing = findMissingFields()
@@ -108,21 +51,23 @@ final class RegistrationBuilder {
 
         // Safe to unwrap now because we validated everything
         return RegistrationRequest(
-            email: email!,
-            phoneNumber: phoneNumber!,
-            password: password!,
+            email: email ?? "",
+            phoneNumber: phoneNumber ?? "",
+            phoneNumberCountry: phoneNumberCountry,
+            password: password ?? "",
             confirmPassword: confirmPassword!,
-            country: country!,
-            languagePreference: languagePreference,
+            languagePreference: languagePreference ?? 0,
+            verificationMode: verificationMode ?? "",
+            country: IDNamePairInt(id: Int(location?.id ?? "0") ?? 0, name: location?.name ?? ""),
             location: location!,
-            verificationMode: verificationMode!,
             role: role!,
-            firstName: firstName!,
-            middleName: middleName,
-            lastName: lastName!,
             gender: gender!,
-            otpRequestId: otpRequestId!,
-            code: code!,
+            ageGroup: ageGroup!,
+            firstName: firstName ?? "",
+            middleName: middleName ?? "",
+            lastName: lastName ?? "",
+            otpRequestId: otpRequestId ?? "",
+            code: code ?? "",
             referralCode: referralCode,
             isOrganization: isOrganization,
             organizationName: organizationName,
@@ -147,15 +92,16 @@ final class RegistrationBuilder {
         check(phoneNumber, name: "phoneNumber")
         check(password, name: "password")
         check(confirmPassword, name: "confirmPassword")
-        check(country, name: "country")
         check(location, name: "location")
-        check(verificationMode, name: "verificationMode")
         check(role, name: "role")
+        check(ageGroup, name: "ageGroup")
         check(firstName, name: "firstName")
         check(lastName, name: "lastName")
         check(gender, name: "gender")
-        check(otpRequestId, name: "otpRequestId")
-        check(code, name: "code")
+        // check(country, name: "country")
+        //check(verificationMode, name: "verificationMode")
+        //check(otpRequestId, name: "otpRequestId")
+        //check(code, name: "code")
 
         // ORG-ONLY
         if isOrganization {

@@ -64,14 +64,28 @@ class AuthCoordinator: BaseCoordinator {
     }
 
     private func startOAuthFlow() {
-        OAuthService().startOAuthFlow { result in
+        let oauthService = OAuthService()
+        oauthService.startAuthorization { result in
             switch result {
             case .success(let code):
-                print("✅ Got code: \(code)")
+                print("Authorization code: \(code)")
+
+                let tokenService = OAuthTokenService()
+                tokenService.exchangeCodeForToken(authorizationCode: code) { tokenResult in
+                    switch tokenResult {
+                    case .success(let token):
+                        print("Access token: \(token.access_token)")
+                    case .failure(let error):
+                        print("Token exchange error: \(error)")
+                    }
+                }
+
             case .failure(let error):
-                print("❌ OAuth flow failed: \(error)")
+                print("Authorization error: \(error)")
             }
         }
+
+
     }
     
     public func goToLogin(makeRoot: Bool = false) {
@@ -343,7 +357,32 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoSelectGender(options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) {
-        let viewModel = CommonOptionPickerViewModel(option: .userRoles(page: 0, count: 100), options: options)
+        let viewModel = CommonOptionPickerViewModel(option: .userGender(page: 0, count: 100), options: options)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .idName(let model):
+                completion(model)
+            default:
+                completion(nil) // or ignore if .location is not expected here
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectGender(_ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: .userGender(page: 0, count: 100))
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {

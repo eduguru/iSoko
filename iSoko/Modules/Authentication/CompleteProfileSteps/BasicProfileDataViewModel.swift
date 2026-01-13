@@ -9,7 +9,8 @@ import DesignSystemKit
 import UIKit
 
 final class BasicProfileDataViewModel: FormViewModel {
-    var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
+    // var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
+    var gotoSelectGender: ( _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectAgeRange: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectRole: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
     var gotoSelectLocation: (_ completion: @escaping (LocationModel?) -> Void) -> Void = { _ in }
@@ -324,7 +325,7 @@ final class BasicProfileDataViewModel: FormViewModel {
 
     // MARK: - Selection Handlers
     private func handleGenderSelection() {
-        gotoSelectGender(state?.genderOptions ?? []) { [weak self] value in
+        gotoSelectGender() { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.gender = value
             self.selectGenderRow.config.placeholder = value.name
@@ -355,6 +356,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             guard let self = self, let value = value else { return }
             self.state?.location = value
             self.selectLocationRow.config.placeholder = value.name ?? ""
+            
             self.reloadRowWithTag(self.selectLocationRow.tag)
         }
     }
@@ -378,6 +380,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         state.builder.lastName = state.lastName
         state.builder.gender = state.gender?.toIDNamePairInt
         state.builder.role = state.roles?.toIDNamePairInt
+        state.builder.ageGroup = state.ageRange?.toIDNamePairInt
         state.builder.location = state.location?.toIDNamePairString
         state.builder.referralCode = state.referralCode
 

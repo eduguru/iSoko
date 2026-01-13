@@ -39,7 +39,7 @@ public enum ApiEnvironment {
 
     public static var apiBaseURL: URL = {
         URL(string:
-            "https://\(country).\(value("API_DOMAIN"))/\(value("API_PATH"))"
+            "https://\(value("API_DOMAIN"))/\(value("API_PATH"))"
         )!
     }()
 

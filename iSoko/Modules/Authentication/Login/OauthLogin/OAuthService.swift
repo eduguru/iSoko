@@ -5,40 +5,58 @@
 //  Created by Edwin Weru on 06/10/2025.
 //
 
+import Foundation
+import CryptoKit
 import AuthenticationServices
+import UIKit
 
+// MARK: - OAuth Service
 final class OAuthService: NSObject {
+
     private var authSession: ASWebAuthenticationSession?
 
-    func startOAuthFlow(completion: @escaping (Result<String, Error>) -> Void) {
+    func startAuthorization(
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+
         guard let authURL = OAuthConfig.authorizationURL else {
             completion(.failure(OAuthError.invalidAuthURL))
             return
         }
 
-        let callbackScheme = "weru.isoko.app" // Must match Info.plist
+        // Universal Link scheme is HTTPS
+        let callbackScheme = "https"
 
+//        authSession = ASWebAuthenticationSession(
+//            url: authURL,
+//            callbackURLScheme: callbackScheme
+//        )
+        
         authSession = ASWebAuthenticationSession(
             url: authURL,
-            callbackURLScheme: callbackScheme
-        ) { callbackURL, error in
+            callbackURLScheme: "weru.isoko.app"
+        )
+        { callbackURL, error in
+
             if let error = error {
                 completion(.failure(error))
                 return
             }
 
-            guard let callbackURL = callbackURL else {
-                completion(.failure(OAuthError.noCallbackURL))
+            guard
+                let callbackURL = callbackURL,
+                let components = URLComponents(
+                    url: callbackURL,
+                    resolvingAgainstBaseURL: false
+                ),
+                let code = components.queryItems?
+                    .first(where: { $0.name == "code" })?.value
+            else {
+                completion(.failure(OAuthError.missingAuthorizationCode))
                 return
             }
 
-            // Extract the code from the callback URL
-            if let components = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false),
-               let code = components.queryItems?.first(where: { $0.name == "code" })?.value {
-                completion(.success(code))
-            } else {
-                completion(.failure(OAuthError.missingAuthorizationCode))
-            }
+            completion(.success(code))
         }
 
         authSession?.presentationContextProvider = self
@@ -47,16 +65,76 @@ final class OAuthService: NSObject {
     }
 }
 
-// MARK: - ASWebAuthenticationPresentationContextProviding
+// MARK: - Presentation Context
 extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        return UIApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        return UIApplication.shared
+            .connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.windows.first(where: { $0.isKeyWindow }) }
+            .first ?? ASPresentationAnchor()
     }
 }
 
-// MARK: - Custom Error
+// MARK: - OAuth Token Exchange
+struct OAuthTokenResponse: Decodable {
+    let access_token: String
+    let refresh_token: String?
+    let expires_in: Int
+    let token_type: String
+}
+
+final class OAuthTokenService {
+
+    func exchangeCodeForToken(
+        authorizationCode: String,
+        completion: @escaping (Result<OAuthTokenResponse, Error>) -> Void
+    ) {
+
+        var request = URLRequest(url: URL(string: OAuthConfig.tokenEndpoint)!)
+        request.httpMethod = "POST"
+        request.setValue(
+            "application/x-www-form-urlencoded",
+            forHTTPHeaderField: "Content-Type"
+        )
+
+        let bodyParams: [String: String] = [
+            "grant_type": "authorization_code",
+            "client_id": OAuthConfig.clientId,
+            "code": authorizationCode,
+            "redirect_uri": OAuthConfig.redirectURI,
+            "code_verifier": OAuthConfig.codeVerifier
+        ]
+
+        request.httpBody = bodyParams
+            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")" }
+            .joined(separator: "&")
+            .data(using: .utf8)
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let data = data else {
+                completion(.failure(OAuthError.emptyResponse))
+                return
+            }
+
+            do {
+                let token = try JSONDecoder().decode(OAuthTokenResponse.self, from: data)
+                completion(.success(token))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+}
+
+// MARK: - OAuth Errors
 enum OAuthError: Error {
     case invalidAuthURL
-    case noCallbackURL
     case missingAuthorizationCode
+    case emptyResponse
 }

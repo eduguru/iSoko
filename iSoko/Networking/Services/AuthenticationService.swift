@@ -22,7 +22,7 @@ public protocol AuthenticationService {
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
     
     // MARK: - Registration
-    func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse
+    // func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse
 
 }
 
@@ -85,18 +85,17 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     //MARK: - New Registration
-    public func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse {
-        
-        let response: BasicResponse = try await manager.request(
-            AuthenticationApi.register(request: request, accessToken: accessToken)
-        )
-        
-        if response.status != 200 {
-            throw NetworkError.server(response)
-        }
-        
-        return response
-    }
+//    public func register(_ request: RegistrationRequest, accessToken: String) async throws -> BasicResponse {
+//        let response: BasicResponse = try await manager.request(
+//            AuthenticationApi.register(request: request, accessToken: accessToken)
+//        )
+//        
+//        if response.status != 200 {
+//            throw NetworkError.server(response)
+//        }
+//        
+//        return response
+//    }
     
     //MARK: - Password Reset
     public func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) async throws -> BasicResponse{

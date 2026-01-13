@@ -154,8 +154,7 @@ public extension NetworkManager where T == UploadTarget {
             path: path,
             method: method,
             files: files,
-            additionalParams: additionalParams,
-            headers: headers
+            additionalParams: additionalParams
         )
         return try await request(target)
     }
