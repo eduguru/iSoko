@@ -131,6 +131,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoTradeAssociationDetails() {
         let viewModel = TradeAssociationDetailsViewModel()
+        viewModel.goToNewsDetails = goToNewsDetails
         
         let vc = TradeAssociationDetailsViewController()
         vc.viewModel = viewModel
@@ -231,6 +232,19 @@ public class MoreCoordinator: BaseCoordinator {
         let vc = HelpFeedbackViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in 
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToNewsDetails() {
+        let viewModel = NewsDetailsViewModel()
+        
+        let vc = NewsDetailsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         

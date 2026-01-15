@@ -22,7 +22,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="452" height="130"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="top" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="YUZ-aJ-PAq">
-                                <rect key="frame" x="8" y="8" width="436" height="115"/>
+                                <rect key="frame" x="8" y="8" width="432" height="115"/>
                                 <subviews>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="HDH-Kj-8xg">
                                         <rect key="frame" x="0.0" y="0.0" width="115" height="115"/>
@@ -32,22 +32,22 @@
                                         </constraints>
                                     </imageView>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="M3w-mm-5DS">
-                                        <rect key="frame" x="123" y="0.0" width="313" height="77"/>
+                                        <rect key="frame" x="123" y="0.0" width="309" height="77"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XaP-0g-4SX">
-                                                <rect key="frame" x="0.0" y="0.0" width="313" height="20.333333333333332"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="309" height="20.333333333333332"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XIk-BG-1fw">
-                                                <rect key="frame" x="0.0" y="28.333333333333336" width="313" height="20.333333333333336"/>
+                                                <rect key="frame" x="0.0" y="28.333333333333336" width="309" height="20.333333333333336"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gh9-1Y-rnn">
-                                                <rect key="frame" x="0.0" y="56.666666666666679" width="313" height="20.333333333333336"/>
+                                                <rect key="frame" x="0.0" y="56.666666666666679" width="309" height="20.333333333333336"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
@@ -60,7 +60,7 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="YUZ-aJ-PAq" firstAttribute="top" secondItem="GoW-ph-Z9V" secondAttribute="top" constant="8" id="ayt-6l-ZIN"/>
-                            <constraint firstAttribute="trailing" secondItem="YUZ-aJ-PAq" secondAttribute="trailing" constant="8" id="bik-Fr-dEC"/>
+                            <constraint firstAttribute="trailing" secondItem="YUZ-aJ-PAq" secondAttribute="trailing" constant="12" id="bik-Fr-dEC"/>
                             <constraint firstItem="YUZ-aJ-PAq" firstAttribute="leading" secondItem="GoW-ph-Z9V" secondAttribute="leading" constant="8" id="dx0-ik-jfr"/>
                         </constraints>
                     </view>

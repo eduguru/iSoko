@@ -10,26 +10,23 @@ import UIKit
 import UtilsKit
 
 final class TradeAssociationDetailsViewModel: FormViewModel {
-
-    private var state: State
+    var goToNewsDetails: (() -> Void)? = { }
+    
+    private var state = State()
 
     override init() {
-        self.state = State()
         super.init()
         self.sections = makeSections()
-        reloadBodySection() // show initial segment
+        reloadBodySection(animated: false)
     }
 
     // MARK: - Sections
 
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-
-        sections.append(makeHeaderSection())
-        sections.append(makeAboutSection())
-        sections.append(makeNewsSection())
-
-        return sections
+        [
+            makeHeaderSection(),
+            makeBodySection()
+        ]
     }
 
     private func makeHeaderSection() -> FormSection {
@@ -42,83 +39,44 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         )
     }
 
-    private func makeAboutSection() -> FormSection {
+    private func makeBodySection() -> FormSection {
         FormSection(
-            id: Tags.Section.about.rawValue,
+            id: Tags.Section.body.rawValue,
             cells: []
         )
     }
 
-    private func makeNewsSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.info.rawValue,
-            cells: []
-        )
-    }
+    // MARK: - Body Switching (Single Section)
 
-    // MARK: - Section Updates
-
-    private func updateAboutSection() {
+    private func reloadBodySection(animated: Bool = true) {
         guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.about.rawValue
+            $0.id == Tags.Section.body.rawValue
         }) else { return }
 
-        sections[index].cells = makeAboutCells()
-        reloadSection(index)
-    }
+        let newCells: [FormRow]
 
-    private func updateNewsSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.info.rawValue
-        }) else { return }
-
-        sections[index].cells = makeInfoCells()
-        reloadSection(index)
-    }
-
-    private func clearAboutSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.about.rawValue
-        }) else { return }
-
-        sections[index].cells = []
-        reloadSection(index)
-    }
-
-    private func clearNewsSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.info.rawValue
-        }) else { return }
-
-        sections[index].cells = []
-        reloadSection(index)
-    }
-
-    // MARK: - Segment Switching Logic
-
-    private func reloadBodySection() {
         switch state.selectedSegmentIndex {
-        case 0: // About
-            clearNewsSection()
-            updateAboutSection()
-
-        case 1: // News
-            clearAboutSection()
-            updateNewsSection()
-
+        case 0:
+            newCells = makeAboutCells()
+        case 1:
+            newCells = makeInfoCells()
         default:
-            break
+            newCells = []
         }
+
+        sections[index].cells = newCells
+
+        animated
+        ? reloadSection(index)
+        : reloadSection(index)
     }
 
     // MARK: - Lazy Rows
 
     private lazy var segmentedOptions = makeOptionsSegmentFormRow()
-    private lazy var associationsHeader: FormRow = makeAssociationsHeaderFormRow()
-    private lazy var pillsFilter: FormRow = makePillsFilterFormRow()
-    private lazy var infoListing: FormRow = makeInfoListingFormRow()
+    private lazy var associationsHeader = makeAssociationsHeaderFormRow()
 
-    // MARK: - Rows
+    // MARK: - Segmented Control
 
     private func makeOptionsSegmentFormRow() -> FormRow {
         SegmentedFormRow(
@@ -136,46 +94,18 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
                 onSelectionChanged: { [weak self] index in
                     guard let self else { return }
                     self.state.selectedSegmentIndex = index
-                    self.reloadBodySection()
+                    self.reloadBodySection(animated: true)
                 }
             )
         )
     }
 
+    // MARK: - Header
+
     private func makeAssociationsHeaderFormRow() -> FormRow {
-        let model = AssociationHeaderModel(
-            title: "Baraka Womens Football Club",
-            subtitle: "Founded in 2025",
-            desc: "12 Members",
-            icon: .activate,
-            cardBackgroundColor: .white,
-            cardRadius: 0
-        )
-
-        return AssociationHeaderFormRow(
+        AssociationHeaderFormRow(
             tag: 001001,
-            model: model
-        )
-    }
-
-    private func makePillsFilterFormRow() -> FormRow {
-        PillsFormRow(
-            tag: 0090,
-            items: [
-                PillItem(id: "01", title: "Hey there"),
-                PillItem(id: "03", title: "Hey you"),
-                PillItem(id: "04", title: "Hey man"),
-                PillItem(id: "05", title: "Hey girl"),
-                PillItem(id: "06", title: "Hey there"),
-                PillItem(id: "07", title: "Hey")
-            ]
-        )
-    }
-
-    private func makeInfoListingFormRow() -> FormRow {
-        InfoListingFormRow(
-            tag: 0101001,
-            model: InfoListingModel(
+            model: AssociationHeaderModel(
                 title: "Baraka Womens Football Club",
                 subtitle: "Founded in 2025",
                 desc: "12 Members",
@@ -186,75 +116,64 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         )
     }
 
-    // MARK: - About Rows
+    // MARK: - About
 
     private func makeAboutCells() -> [FormRow] {
-        makeAboutRowItemsArray().enumerated().map { index, item in
-            makeImageTitleDescriptionRow(
-                tag: 2000 + index,
-                image: item.image,
-                title: item.title,
-                description: item.description,
-                onTap: item.onTap
-            )
-        }
-    }
-
-    private func makeAboutRowItemsArray() -> [RowItemModel] {
         [
-            RowItemModel(
-                title: "www.assocation-website.com",
-                description: "",
+            makeImageTitleDescriptionRow(
+                tag: 2001,
                 image: .link,
-                onTap: {}
+                title: "www.association-website.com",
+                description: ""
             ),
-            RowItemModel(
-                title: "+254 738 789 333",
-                description: "",
+            makeImageTitleDescriptionRow(
+                tag: 2002,
                 image: .activate,
-                onTap: {}
+                title: "+254 738 789 333",
+                description: ""
             ),
-            RowItemModel(
-                title: "Nairobi, Kenya",
-                description: "",
+            makeImageTitleDescriptionRow(
+                tag: 2003,
                 image: .location,
-                onTap: {}
+                title: "Nairobi, Kenya",
+                description: ""
             )
         ]
     }
 
-    // MARK: - News Rows
+    // MARK: - News
 
     private func makeInfoCells() -> [FormRow] {
-        var rows: [FormRow] = []
-
-        for i in 0..<9 {
-            rows.append(
-                InfoListingFormRow(
-                    tag: 9000 + i,
-                    model: InfoListingModel(
-                        title: "Finance \(i)",
-                        subtitle: "Updated Test cases for BulkPaymentRecipientViewModel",
-                        desc: "10:00 AM",
-                        icon: .addPhoto,
-                        cardBackgroundColor: .white,
-                        cardRadius: 0
-                    )
+        (0..<9).map { i in
+            InfoListingFormRow(
+                tag: 9000 + i,
+                model: InfoListingModel(
+                    title: "Finance \(i)",
+                    subtitle: "Updated Test cases",
+                    desc: "10:00 AM",
+                    icon: .addPhoto,
+                    cardBackgroundColor: .white,
+                    cardRadius: 0,
+                    onTap: { [weak self] in
+                        self?.handleInfoTap(index: i)
+                    }
                 )
             )
         }
-
-        return rows
     }
 
-    // MARK: - Shared Row Factory
+    private func handleInfoTap(index: Int) {
+        print("Tapped item at index: \(index)")
+        goToNewsDetails?()
+        // navigation / analytics / routing here
+    }
 
+    // MARK: - Shared Row Builder
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage,
         title: String,
-        description: String,
-        onTap: (() -> Void)? = nil
+        description: String
     ) -> FormRow {
         ImageTitleDescriptionRow(
             tag: tag,
@@ -264,7 +183,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
                 title: title,
                 description: description,
                 accessoryType: .none,
-                onTap: onTap,
+                onTap: nil,
                 isCardStyleEnabled: true
             )
         )
@@ -273,7 +192,6 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var isLoggedIn: Bool = true
         var selectedSegmentIndex: Int = 0
     }
 
@@ -282,13 +200,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
     enum Tags {
         enum Section: Int {
             case header = 0
-            case about = 1
-            case info = 2
-        }
-
-        enum Cells: Int {
-            case headerImage = 0
-            case headerTitle = 1
+            case body = 1
         }
     }
 }
