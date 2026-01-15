@@ -28,7 +28,6 @@ final class ProfileInfoViewModel: FormViewModel {
             id: Tags.Section.body.rawValue,
             cells: Helpers.insertDividers(into: [
                 imageRow,
-                pills,
                 firstNameRow,
                 genderRow,
                 ageGroupRow,
@@ -41,18 +40,6 @@ final class ProfileInfoViewModel: FormViewModel {
     }
 
     // MARK: - Lazy or Computed Rows
-    
-    private lazy var pills = PillsFormRow(
-        tag: 0090,
-        items: [
-            PillItem(id: "01", title: "Hey there"),
-            PillItem(id: "03", title: "Hey you"),
-            PillItem(id: "04", title: "Hey man"),
-            PillItem(id: "05", title: "Hey girl"),
-            PillItem(id: "06", title: "Hey there"),
-            PillItem(id: "07", title: "Hey")
-        ]
-    )
 
     private lazy var imageRow = EditableImageFormRow(
         tag: 2001,

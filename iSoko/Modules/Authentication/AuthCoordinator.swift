@@ -71,7 +71,7 @@ class AuthCoordinator: BaseCoordinator {
                 print("Authorization code: \(code)")
 
                 let tokenService = OAuthTokenService()
-                tokenService.exchangeCodeForToken(authorizationCode: code) { tokenResult in
+                tokenService.exchangeAuthorizationCode(code: code) { tokenResult in
                     switch tokenResult {
                     case .success(let token):
                         print("Access token: \(token.access_token)")

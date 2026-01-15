@@ -10,37 +10,118 @@ import UIKit
 import UtilsKit
 
 final class TradeAssociationDetailsViewModel: FormViewModel {
-    
+
     private var state: State
-    
+
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
+        reloadBodySection() // show initial segment
     }
-    
-    // MARK: - make sections
-    
+
+    // MARK: - Sections
+
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = []
-        
-        sections.append(FormSection(id: Tags.Section.header.rawValue, cells: [segmentedOptions]))
-        
-        sections.append(
-            FormSection(
-                id: Tags.Section.body.rawValue,
-                cells: makeImageRows()
-            )
-        )
-        
+
+        sections.append(makeHeaderSection())
+        sections.append(makeAboutSection())
+        sections.append(makeNewsSection())
+
         return sections
     }
-    
-    // MARK: - Lazy or Computed Rows
+
+    private func makeHeaderSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.header.rawValue,
+            cells: [
+                associationsHeader,
+                segmentedOptions
+            ]
+        )
+    }
+
+    private func makeAboutSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.about.rawValue,
+            cells: []
+        )
+    }
+
+    private func makeNewsSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.info.rawValue,
+            cells: []
+        )
+    }
+
+    // MARK: - Section Updates
+
+    private func updateAboutSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.about.rawValue
+        }) else { return }
+
+        sections[index].cells = makeAboutCells()
+        reloadSection(index)
+    }
+
+    private func updateNewsSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.info.rawValue
+        }) else { return }
+
+        sections[index].cells = makeInfoCells()
+        reloadSection(index)
+    }
+
+    private func clearAboutSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.about.rawValue
+        }) else { return }
+
+        sections[index].cells = []
+        reloadSection(index)
+    }
+
+    private func clearNewsSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.info.rawValue
+        }) else { return }
+
+        sections[index].cells = []
+        reloadSection(index)
+    }
+
+    // MARK: - Segment Switching Logic
+
+    private func reloadBodySection() {
+        switch state.selectedSegmentIndex {
+        case 0: // About
+            clearNewsSection()
+            updateAboutSection()
+
+        case 1: // News
+            clearAboutSection()
+            updateNewsSection()
+
+        default:
+            break
+        }
+    }
+
+    // MARK: - Lazy Rows
+
     private lazy var segmentedOptions = makeOptionsSegmentFormRow()
+    private lazy var associationsHeader: FormRow = makeAssociationsHeaderFormRow()
+    private lazy var pillsFilter: FormRow = makePillsFilterFormRow()
+    private lazy var infoListing: FormRow = makeInfoListingFormRow()
+
+    // MARK: - Rows
 
     private func makeOptionsSegmentFormRow() -> FormRow {
-        let styledSegmentRow = SegmentedFormRow(
+        SegmentedFormRow(
             model: SegmentedFormModel(
                 title: nil,
                 segments: ["About", "News"],
@@ -52,38 +133,122 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
                 titleTextColor: .darkGray,
                 segmentTextColor: .lightGray,
                 selectedSegmentTextColor: .white,
-                onSelectionChanged: { [weak self] selectedIndex in
-                    guard let self = self else { return }
-                    self.state.selectedSegmentIndex = selectedIndex
+                onSelectionChanged: { [weak self] index in
+                    guard let self else { return }
+                    self.state.selectedSegmentIndex = index
                     self.reloadBodySection()
                 }
             )
         )
-        return styledSegmentRow
     }
-    
-    // MARK: - Body Reload Logic
-    private func reloadBodySection() {
-        // Replace the "body" section with updated rows
-        var updatedSections = sections
 
-        // let newBodyRows = makeImageRows(for: state.selectedSegmentIndex)
-        let newBodySection = FormSection(id: Tags.Section.body.rawValue, cells: [])
+    private func makeAssociationsHeaderFormRow() -> FormRow {
+        let model = AssociationHeaderModel(
+            title: "Baraka Womens Football Club",
+            subtitle: "Founded in 2025",
+            desc: "12 Members",
+            icon: .activate,
+            cardBackgroundColor: .white,
+            cardRadius: 0
+        )
 
-        if updatedSections.count > 1 {
-            updatedSections[1] = newBodySection
-        } else {
-            updatedSections.append(newBodySection)
+        return AssociationHeaderFormRow(
+            tag: 001001,
+            model: model
+        )
+    }
+
+    private func makePillsFilterFormRow() -> FormRow {
+        PillsFormRow(
+            tag: 0090,
+            items: [
+                PillItem(id: "01", title: "Hey there"),
+                PillItem(id: "03", title: "Hey you"),
+                PillItem(id: "04", title: "Hey man"),
+                PillItem(id: "05", title: "Hey girl"),
+                PillItem(id: "06", title: "Hey there"),
+                PillItem(id: "07", title: "Hey")
+            ]
+        )
+    }
+
+    private func makeInfoListingFormRow() -> FormRow {
+        InfoListingFormRow(
+            tag: 0101001,
+            model: InfoListingModel(
+                title: "Baraka Womens Football Club",
+                subtitle: "Founded in 2025",
+                desc: "12 Members",
+                icon: .activate,
+                cardBackgroundColor: .white,
+                cardRadius: 0
+            )
+        )
+    }
+
+    // MARK: - About Rows
+
+    private func makeAboutCells() -> [FormRow] {
+        makeAboutRowItemsArray().enumerated().map { index, item in
+            makeImageTitleDescriptionRow(
+                tag: 2000 + index,
+                image: item.image,
+                title: item.title,
+                description: item.description,
+                onTap: item.onTap
+            )
+        }
+    }
+
+    private func makeAboutRowItemsArray() -> [RowItemModel] {
+        [
+            RowItemModel(
+                title: "www.assocation-website.com",
+                description: "",
+                image: .link,
+                onTap: {}
+            ),
+            RowItemModel(
+                title: "+254 738 789 333",
+                description: "",
+                image: .activate,
+                onTap: {}
+            ),
+            RowItemModel(
+                title: "Nairobi, Kenya",
+                description: "",
+                image: .location,
+                onTap: {}
+            )
+        ]
+    }
+
+    // MARK: - News Rows
+
+    private func makeInfoCells() -> [FormRow] {
+        var rows: [FormRow] = []
+
+        for i in 0..<9 {
+            rows.append(
+                InfoListingFormRow(
+                    tag: 9000 + i,
+                    model: InfoListingModel(
+                        title: "Finance \(i)",
+                        subtitle: "Updated Test cases for BulkPaymentRecipientViewModel",
+                        desc: "10:00 AM",
+                        icon: .addPhoto,
+                        cardBackgroundColor: .white,
+                        cardRadius: 0
+                    )
+                )
+            )
         }
 
-        // Trigger UI reload automatically through didSet
-        self.sections = updatedSections
-
-        // Optionally, if you want a fade animation on the body section:
-        onReloadSection?(Tags.Section.body.rawValue)
+        return rows
     }
-    
-    /// Generates a reusable ImageTitleDescriptionRow
+
+    // MARK: - Shared Row Factory
+
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage,
@@ -91,7 +256,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         description: String,
         onTap: (() -> Void)? = nil
     ) -> FormRow {
-        return ImageTitleDescriptionRow(
+        ImageTitleDescriptionRow(
             tag: tag,
             config: ImageTitleDescriptionConfig(
                 image: image,
@@ -104,56 +269,23 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             )
         )
     }
-    
-    /// Easily loop and create multiple rows
-    
-    private func makeRowItemsArray() -> [RowItemModel] {
-        var items: [RowItemModel] = []
-        
-        items.append(contentsOf: [
-            RowItemModel(title: "www.assocation-website.com", description: "", image: .link, onTap: { [weak self] in
-                
-            }),
-            RowItemModel(title: "+254 738 789 333", description: "", image: .activate, onTap: { [weak self] in
-                
-            }),
-            RowItemModel(title: "Nairobi, Kenya", description: "", image: .location, onTap: { [weak self] in
-                
-            })
-        ])
-        
-        return items
-    }
-    
-    private func makeImageRows() -> [FormRow] {
-        let items = makeRowItemsArray()
-        
-        return items.enumerated().map { index, item in
-            makeImageTitleDescriptionRow(
-                tag: 2000 + index,
-                image: item.image,
-                title: item.title,
-                description: item.description,
-                onTap: item.onTap
-            )
-        }
-    }
-    
+
     // MARK: - State
-    
+
     private struct State {
         var isLoggedIn: Bool = true
         var selectedSegmentIndex: Int = 0
     }
-    
+
     // MARK: - Tags
-    
+
     enum Tags {
         enum Section: Int {
             case header = 0
-            case body = 1
+            case about = 1
+            case info = 2
         }
-        
+
         enum Cells: Int {
             case headerImage = 0
             case headerTitle = 1

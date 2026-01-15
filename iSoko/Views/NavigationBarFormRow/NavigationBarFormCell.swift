@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 public final class NavigationBarFormCell: UITableViewCell {
     
     private let leftButton = UIButton(type: .system)

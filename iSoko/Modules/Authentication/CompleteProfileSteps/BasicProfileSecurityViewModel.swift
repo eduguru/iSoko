@@ -296,11 +296,11 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             guard let self = self else { return }
 
             do {
-                // let response = try await authenticationService.register(state.builder.build(), accessToken: state.accessToken)
-                let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
+                let response = try await authenticationService.register(state.builder.build(), accessToken: state.accessToken)
+                // let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
 
                 await MainActor.run { // ✅ Success path (status == 200 guaranteed) // Proceed
-                    self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
+                    // self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
                 }
 
             } catch let NetworkError.server(response) { // ❌ Backend error

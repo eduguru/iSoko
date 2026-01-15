@@ -10,6 +10,7 @@ import StorageKit
 
 public extension StorageKeys.Keychain {
     static let userProfile = "\(AppStorage.prefix)userProfile"
+    static let userResponseObject = "\(AppStorage.prefix)userResponseObject"
     
     static let authToken = "\(AppStorage.prefix)authToken"
     static let accessToken = "\(AppStorage.prefix)accessToken"
@@ -35,6 +36,8 @@ extension AppStorage {
     //MARK: KeychainStored
     @KeychainStored(StorageKeys.Keychain.userProfile)
     public static var userProfile: String?
+    @KeychainStored(StorageKeys.Keychain.userResponseObject)
+    public static var userResponseObject: UserV1Response?
     
     //MARK: UserDefault
     @UserDefault(StorageKeys.UserDefaults.selectedLanguage)
