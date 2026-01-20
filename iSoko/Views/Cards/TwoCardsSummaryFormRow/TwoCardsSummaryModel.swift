@@ -1,53 +1,42 @@
 //
-//  ArticleItemModel.swift
+//  TwoCardsSummaryModel.swift
 //  
 //
-//  Created by Edwin Weru on 15/01/2026.
+//  Created by Edwin Weru on 20/01/2026.
 //
 
 import UIKit
 
-public struct ArticleItemModel {
-
-    // Content
-    let image: UIImage?
-    let thumbnail: UIImage?
-
+public struct TwoCardsSummaryModel {
     let title: String?
-    let subtitle: String?
     let description: String?
+    let leftCard: SummaryCardModel?
+    let rightCard: SummaryCardModel?
+}
 
-    let secondaryText: String?
-    let callout: String?
+public struct SummaryCardModel {
+
+    let image: UIImage?
+    let title: String?
 
     // Styling
     let backgroundColor: UIColor?
     let cornerRadius: CGFloat?
     let isHidden: Bool?
 
-    // Tap
+    // Tap callback
     let onTap: (() -> Void)?
 
     init(
         image: UIImage? = nil,
-        thumbnail: UIImage? = nil,
         title: String? = nil,
-        subtitle: String? = nil,
-        description: String? = nil,
-        secondaryText: String? = nil,
-        callout: String? = nil,
         backgroundColor: UIColor? = nil,
         cornerRadius: CGFloat? = nil,
         isHidden: Bool? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.image = image
-        self.thumbnail = thumbnail
         self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.secondaryText = secondaryText
-        self.callout = callout
         self.backgroundColor = backgroundColor
         self.cornerRadius = cornerRadius
         self.isHidden = isHidden

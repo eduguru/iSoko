@@ -1,53 +1,42 @@
 //
-//  ArticleItemModel.swift
+//  TransactionSummaryModel.swift
 //  
 //
-//  Created by Edwin Weru on 15/01/2026.
+//  Created by Edwin Weru on 20/01/2026.
 //
 
 import UIKit
 
-public struct ArticleItemModel {
+public struct TransactionSummaryModel {
 
     // Content
     let image: UIImage?
-    let thumbnail: UIImage?
-
     let title: String?
-    let subtitle: String?
-    let description: String?
-
-    let secondaryText: String?
     let callout: String?
+    let description: String?
 
     // Styling
     let backgroundColor: UIColor?
     let cornerRadius: CGFloat?
     let isHidden: Bool?
 
-    // Tap
+    // Tap callback
     let onTap: (() -> Void)?
 
     init(
         image: UIImage? = nil,
-        thumbnail: UIImage? = nil,
         title: String? = nil,
-        subtitle: String? = nil,
-        description: String? = nil,
-        secondaryText: String? = nil,
         callout: String? = nil,
+        description: String? = nil,
         backgroundColor: UIColor? = nil,
         cornerRadius: CGFloat? = nil,
         isHidden: Bool? = nil,
         onTap: (() -> Void)? = nil
     ) {
         self.image = image
-        self.thumbnail = thumbnail
         self.title = title
-        self.subtitle = subtitle
-        self.description = description
-        self.secondaryText = secondaryText
         self.callout = callout
+        self.description = description
         self.backgroundColor = backgroundColor
         self.cornerRadius = cornerRadius
         self.isHidden = isHidden

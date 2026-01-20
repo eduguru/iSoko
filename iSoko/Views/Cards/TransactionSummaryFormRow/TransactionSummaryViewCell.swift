@@ -1,26 +1,21 @@
 //
-//  ArticleItemViewCell.swift
+//  TransactionSummaryViewCell.swift
 //  
 //
-//  Created by Edwin Weru on 15/01/2026.
+//  Created by Edwin Weru on 20/01/2026.
 //
 
 import UIKit
 
-class ArticleItemViewCell: UITableViewCell {
+class TransactionSummaryViewCell: UITableViewCell {
 
     @IBOutlet weak var containerView: UIView!
-    @IBOutlet weak var imgView: UIImageView!
-    @IBOutlet weak var imgThumb: UIImageView!
     
-    @IBOutlet weak var stackSecondary: UIStackView!
+    @IBOutlet weak var imgView: UIImageView!
     
     @IBOutlet weak var labelTitle: UILabel!
-    @IBOutlet weak var labelSubTitle: UILabel!
-    @IBOutlet weak var labelDesc: UILabel!
-    
-    @IBOutlet weak var labelSecondary: UILabel!
     @IBOutlet weak var labelCallout: UILabel!
+    @IBOutlet weak var labelDesc: UILabel!
     
     private var tapAction: (() -> Void)?
     
@@ -32,9 +27,8 @@ class ArticleItemViewCell: UITableViewCell {
         containerView.isUserInteractionEnabled = true
 
         labelTitle.numberOfLines = 0
-        labelSubTitle.numberOfLines = 0
+        labelCallout.numberOfLines = 0
         labelDesc.numberOfLines = 0
-        labelSecondary.numberOfLines = 0
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
@@ -43,35 +37,22 @@ class ArticleItemViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func configure(with model: ArticleItemModel) {
+    func configure(with model: TransactionSummaryModel) {
 
         containerView.isHidden = model.isHidden ?? false
 
-        // Images
+        // Content
         imgView.image = model.image
         imgView.isHidden = model.image == nil
 
-        imgThumb.image = model.thumbnail
-        imgThumb.isHidden = model.thumbnail == nil
-
-        // Text
         labelTitle.text = model.title
         labelTitle.isHidden = model.title == nil
-
-        labelSubTitle.text = model.subtitle
-        labelSubTitle.isHidden = model.subtitle == nil
-
-        labelDesc.text = model.description
-        labelDesc.isHidden = model.description == nil
-
-        labelSecondary.text = model.secondaryText
-        labelSecondary.isHidden = model.secondaryText == nil
 
         labelCallout.text = model.callout
         labelCallout.isHidden = model.callout == nil
 
-        // Secondary stack
-        stackSecondary.isHidden = model.secondaryText == nil && model.callout == nil
+        labelDesc.text = model.description
+        labelDesc.isHidden = model.description == nil
 
         // Styling
         if let bgColor = model.backgroundColor {
@@ -94,17 +75,14 @@ class ArticleItemViewCell: UITableViewCell {
     
 }
 
-//let model = ArticleItemModel(
-//    image: UIImage(named: "article_header"),
-//    thumbnail: UIImage(named: "author"),
-//    title: "How UIKit Layout Really Works",
-//    subtitle: "iOS Development",
-//    description: "A deep dive into Auto Layout, stack views, and dynamic sizing.",
-//    secondaryText: "5 min read",
-//    callout: "New",
+//let model = TransactionSummaryModel(
+//    image: UIImage(systemName: "arrow.up.right"),
+//    title: "Sent Money",
+//    callout: "-$120.00",
+//    description: "To John • Today",
 //    backgroundColor: .secondarySystemBackground,
-//    cornerRadius: 16,
+//    cornerRadius: 14,
 //    onTap: { [weak self] in
-//        self?.openArticle()
+//        self?.openTransactionDetails()
 //    }
 //)
