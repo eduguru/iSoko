@@ -9,7 +9,7 @@ import DesignSystemKit
 import UIKit
 import UtilsKit
 
-final class TradeAssociationDetailsViewModel: FormViewModel {
+final class NewsListingViewModel: FormViewModel {
     var goToNewsDetails: (() -> Void)? = { }
     
     private var state = State()
