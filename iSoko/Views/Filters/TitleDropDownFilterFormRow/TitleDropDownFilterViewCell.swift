@@ -15,16 +15,21 @@ class TitleDropDownFilterViewCell: UITableViewCell {
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelDesc: UILabel!
     
-    @IBOutlet weak var buttonFilter: IconLabelButton!
+    @IBOutlet weak var buttonFilter: IconLabelActionView!
     
     private var filterTapAction: (() -> Void)?
     
     override func awakeFromNib() {
         super.awakeFromNib()
 
-        labelTitle.numberOfLines = 0
-        labelDesc.numberOfLines = 0
+        labelTitle.numberOfLines = 1
+        labelDesc.numberOfLines = 1
+
+        labelTitle.font = .systemFont(ofSize: 16, weight: .semibold)
+        labelDesc.font = .systemFont(ofSize: 13)
+        labelDesc.textColor = .secondaryLabel
     }
+
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -47,10 +52,17 @@ class TitleDropDownFilterViewCell: UITableViewCell {
         labelDesc.text = model.description
         labelDesc.isHidden = model.description == nil
 
-        // Button
-        buttonFilter.setTitle(model.filterTitle, for: .normal)
-        buttonFilter.setImage(model.filterIcon, for: .normal)
+        buttonFilter.text = model.filterTitle ?? ""
+        buttonFilter.icon = model.filterIcon
         buttonFilter.isHidden = model.filterTitle == nil && model.filterIcon == nil
+
+        buttonFilter.addTarget(self, action: #selector(actionFilter), for: .touchUpInside)
+        
+        // In configure(with:)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(actionFilter))
+        buttonFilter.addGestureRecognizer(tap)
+        buttonFilter.isUserInteractionEnabled = true
+
 
         // Styling
         if let bgColor = model.backgroundColor {

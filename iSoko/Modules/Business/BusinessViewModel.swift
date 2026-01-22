@@ -12,15 +12,14 @@ import UtilsKit
 final class BusinessViewModel: FormViewModel {
     var gotoSignIn: (() -> Void)? = { }
     var gotoSignOut: (() -> Void)? = { }
-    var gotoProfile: (() -> Void)? = { }
-    var gotoOrganisations: (() -> Void)? = { }
-    var gotoTradeAssociations: (() -> Void)? = { }
-    var gotoMyOrders: (() -> Void)? = { }
-    var gotoShareApp: (() -> Void)? = { }
-    var gotoLegal: (() -> Void)? = { }
-    var gotoSettings: (() -> Void)? = { }
-    var gotoHelpFeedback: (() -> Void)? = { }
-    
+    var goToBookKeeping: (() -> Void)? = { }
+    var goToMyProducts: (() -> Void)? = { }
+    var goToMyServices: (() -> Void)? = { }
+    var goToMyOrders: (() -> Void)? = { }
+    var goToReports: (() -> Void)? = { }
+    var goToTaxCalculator: (() -> Void)? = { }
+    var goToCurrencyExchange: (() -> Void)? = { }
+ 
     private var state: State
     
     override init() {
@@ -100,26 +99,26 @@ final class BusinessViewModel: FormViewModel {
         
         items.append(contentsOf: [
             RowItemModel(title: "My Products", description: "", image: .legalIcon, onTap: { [weak self] in
-                self?.gotoLegal?()
+                self?.goToMyProducts?()
             }),
             RowItemModel(title: "My Services", description: "", image: .settingsGearIcon, onTap: { [weak self] in
-                self?.gotoLegal?()
+                self?.goToMyServices?()
             }),
             RowItemModel(title: "My Orders", description: "", image: .questionCircleIcon, onTap: { [weak self] in
-                self?.gotoHelpFeedback?()
+                self?.goToMyOrders?()
             }),
             
             RowItemModel(title: "Reports", description: "", image: .profile, onTap: { [weak self] in
-                self?.gotoProfile?()
+                self?.goToReports?()
             }),
             RowItemModel(title: "Book Keeping", description: "", image: .orgIcon, onTap: { [weak self] in
-                self?.gotoOrganisations?()
+                self?.goToBookKeeping?()
             }),
             RowItemModel(title: "Tax Calculator", description: "", image: .tradeIcon, onTap: { [weak self] in
-                self?.gotoTradeAssociations?()
+                self?.goToTaxCalculator?()
             }),
             RowItemModel(title: "Currency Exchange", description: "", image: .bagAddIcon, onTap: { [weak self] in
-                self?.gotoMyOrders?()
+                self?.goToCurrencyExchange?()
             })
         ])
         

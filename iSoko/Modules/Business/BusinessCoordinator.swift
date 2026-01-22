@@ -13,6 +13,7 @@ public class BusinessCoordinator: BaseCoordinator {
     
     func primaryViewController() -> BusinessViewController {
         var model = BusinessViewModel()
+        model.goToBookKeeping = goToBookKeeping
         
         let controller = BusinessViewController()
         controller.makeRoot = true
@@ -26,6 +27,12 @@ public class BusinessCoordinator: BaseCoordinator {
         navigationController?.pushViewController(primaryViewController(), animated: true)
     }
     
+    public func goToBookKeeping() {
+        let router = Router(navigationController: navigationController)
+        let cordinator = BookKeepingCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.start()
+    }
     
     public func dismiss() {
         dismissModal()

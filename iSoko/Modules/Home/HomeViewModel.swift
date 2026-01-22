@@ -43,6 +43,7 @@ final class HomeViewModel: FormViewModel {
 
     // MARK: - Fetch
     override func fetchData() {
+        showLoader()
         Task {
             let categoriesSuccess = await fetchCategories()
             let featuredSuccess = await fetchFeaturedItems()
@@ -61,6 +62,8 @@ final class HomeViewModel: FormViewModel {
                 self.updateServiceCategoriesSection()
                 self.updateTrendingProductsSection()
                 self.updateTrendingServicesSection()
+                
+                self.hideLoader()
             }
         }
     }

@@ -7,7 +7,7 @@
 
 import UIKit
 
-struct TitleDropDownFilterModel {
+public struct TitleDropDownFilterModel {
 
     // Content
     let title: String?
