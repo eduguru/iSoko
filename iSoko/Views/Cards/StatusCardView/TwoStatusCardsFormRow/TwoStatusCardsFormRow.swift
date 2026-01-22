@@ -1,22 +1,22 @@
 //
-//  TwoCardsSummaryFormRow.swift
+//  TwoStatusCardsFormRow.swift
 //  
 //
-//  Created by Edwin Weru on 20/01/2026.
+//  Created by Edwin Weru on 22/01/2026.
 //
 
 import DesignSystemKit
 import UIKit
 
-public final class TwoCardsSummaryFormRow: FormRow {
+public final class TwoStatusCardsFormRow: FormRow {
 
     public let tag: Int
     public let reuseIdentifier = String(describing: TwoStatusCardsViewCell.self)
     public var cellClass: AnyClass? { TwoStatusCardsViewCell.self }
 
-    public var model: TwoCardsSummaryViewModel
+    public var model: TwoStatusCardsViewModel
 
-    public init(tag: Int, model: TwoCardsSummaryViewModel) {
+    public init(tag: Int, model: TwoStatusCardsViewModel) {
         self.tag = tag
         self.model = model
     }
@@ -37,6 +37,18 @@ public final class TwoCardsSummaryFormRow: FormRow {
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
+
+        // If vertical → dynamic height
+        if model.layout == .vertical {
+            return UITableView.automaticDimension
+        }
+
+        // Horizontal → derive height from cards (or fallback)
+        let heights = [
+            model.first?.fixedHeight,
+            model.second?.fixedHeight
+        ].compactMap { $0 }
+
+        return heights.max() ?? 72
     }
 }

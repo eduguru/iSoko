@@ -9,32 +9,28 @@ import UIKit
 
 
 struct StatusCardViewModel {
-
-    // Content
-    let title: String
+    let title: String?
     let image: UIImage?
 
-    // Styling (optional)
+    // Existing styling
     let backgroundColor: UIColor?
     let cornerRadius: CGFloat?
     let borderColor: UIColor?
     let borderWidth: CGFloat?
-
-    // Shadow (optional override)
     let shadowColor: UIColor?
     let shadowOpacity: Float?
     let shadowRadius: CGFloat?
     let shadowOffset: CGSize?
-
-    // Icon styling
     let iconTintColor: UIColor?
-
-    // Text styling
     let textColor: UIColor?
     let font: UIFont?
 
+    // NEW (optional, safe)
+    let iconSize: CGSize?
+    let fixedHeight: CGFloat?
+
     init(
-        title: String,
+        title: String?,
         image: UIImage?,
         backgroundColor: UIColor? = nil,
         cornerRadius: CGFloat? = nil,
@@ -46,7 +42,9 @@ struct StatusCardViewModel {
         shadowOffset: CGSize? = nil,
         iconTintColor: UIColor? = nil,
         textColor: UIColor? = nil,
-        font: UIFont? = nil
+        font: UIFont? = nil,
+        iconSize: CGSize? = nil,
+        fixedHeight: CGFloat? = nil
     ) {
         self.title = title
         self.image = image
@@ -61,5 +59,7 @@ struct StatusCardViewModel {
         self.iconTintColor = iconTintColor
         self.textColor = textColor
         self.font = font
+        self.iconSize = iconSize
+        self.fixedHeight = fixedHeight
     }
 }

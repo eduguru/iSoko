@@ -43,6 +43,6 @@ public final class TwoCardsFormRow: FormRow {
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        UITableView.automaticDimension
+        150 // UITableView.automaticDimension
     }
 }

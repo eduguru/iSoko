@@ -47,7 +47,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeQuickActionsSection() -> FormSection {
         FormSection(
             id: Tags.Section.quickActions.rawValue,
-            cells: [quickActionsRow]
+            cells: [quickActionsRow, quickActionsNoTitleRow]
         )
     }
     
@@ -70,7 +70,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     // MARK: - Lazy Rows
     private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    
     private lazy var  quickActionsRow: FormRow = makeQuickActionsRow()
+    private lazy var  quickActionsNoTitleRow: FormRow = makeQuickNoTitleActionsRow()
+    
     private lazy var  businessMetricsRow: FormRow = makeBusinessMetricsRow()
     private lazy var  recentActivitiesRow: FormRow = makeRecentActivitiesRow()
     
@@ -93,56 +96,146 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .lightGray,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: {
-                
+        let leftCard = CardModel(
+            title: "Balance",
+            titleIcon: UIImage(systemName: "wallet.pass"),
+            description: "$1,240.00",
+            statusModel: StatusCardViewModel(
+                title: "200 percent",
+                image: .stockmarketArrowUp,
+                backgroundColor: .systemGreen.withAlphaComponent(0.1)
+            ),
+            backgroundColor: .systemGreen.withAlphaComponent(0.1),
+            onTap: { [weak self] in
+               // self?.openBalance()
             }
         )
         
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
+        let rightCard = CardModel(
+            title: "Transactions",
+            titleIcon: UIImage(systemName: "list.bullet"),
+            description: "View history",
+            statusModel: StatusCardViewModel(
+                title: "200 percent",
+                image: .stockmarketArrowDown,
+                backgroundColor: .systemRed.withAlphaComponent(0.1)
+            ),
+            backgroundColor: .systemOrange.withAlphaComponent(0.1),
+            onTap: { [weak self] in
+               // self?.openTransactions()
+            }
+        )
+        
+        let model = TwoCardsModel(
+            leftCard: leftCard,
+            rightCard: rightCard
+        )
+
+        let row = TwoCardsFormRow(tag: Tags.Cells.financialSummary.rawValue, model: model)
         return row
     }
     
     private func makeQuickActionsRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .lightGray,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: {
-                
-            }
+        let payBill = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemBlue,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 56
         )
         
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
+        let transfer = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemBlue,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 80
+        )
+
+        let row = TwoCardsSummaryFormRow(
+            tag: 200,
+            model: TwoCardsSummaryViewModel(
+                title: "Quick Actions",
+                description: "Common things you can do",
+                cards: TwoStatusCardsViewModel(
+                    first: payBill,
+                    second: transfer,
+                    layout: .horizontal
+                )
+            )
+        )
+        return row
+    }
+    
+    private func makeQuickNoTitleActionsRow() -> FormRow {
+        let payBill = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemRed,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 56
+        )
+        
+        let transfer = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemGreen,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 80
+        )
+
+        let row = TwoCardsSummaryFormRow(
+            tag: 200,
+            model: TwoCardsSummaryViewModel(
+                cards: TwoStatusCardsViewModel(
+                    first: payBill,
+                    second: transfer,
+                    layout: .horizontal
+                )
+            )
+        )
         return row
     }
     
     private func makeBusinessMetricsRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .lightGray,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: {
-                
-            }
+        
+        let quickAction1 = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemBlue,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 56
         )
         
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
+        let quickAction2 = StatusCardViewModel(
+            title: "Pay Bills",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemBlue,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 80
+        )
+        
+        let row = TwoStatusCardsFormRow(
+            tag: 101,
+            model: TwoStatusCardsViewModel(
+                first: quickAction1,
+                second: quickAction2,
+                layout: .horizontal
+            )
+        )
+        
         return row
     }
     

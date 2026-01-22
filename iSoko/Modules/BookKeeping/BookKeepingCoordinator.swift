@@ -1,6 +1,6 @@
 //
 //  BookKeepingCoordinator.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/01/2026.
 //
@@ -10,12 +10,14 @@ import UtilsKit
 import UIKit
 
 public class BookKeepingCoordinator: BaseCoordinator {
- 
+    
     public override func start() {
-        goToDashboard()
+        goToBookKeepingDashboard()
     }
-
-    private func goToDashboard() {
+    
+    // MARK: -
+    public func goToBookKeepingDashboard() {
+        
         let model = BookKeepingDashboardViewModel()
         model.goToDetails = goToDetails
         
@@ -24,11 +26,11 @@ public class BookKeepingCoordinator: BaseCoordinator {
         vc.closeAction = { [weak self] in
             self?.finish()
         }
-
+        
         // Wrap dashboard in a navigation controller
         let nav = BaseNavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-
+        
         // Present from the topmost view controller in the main flow
         if let top = router.topViewController() {
             top.present(nav, animated: true)
@@ -41,116 +43,103 @@ public class BookKeepingCoordinator: BaseCoordinator {
     public func goToDetails() {
         goToBookKeepingPurchases()
     }
-
-    // MARK: -
-    public func goToBookKeepingDashboard() {
-        let model = BookKeepingDashboardViewModel()
-
-        let vc = BookKeepingDashboardViewController()
-        vc.viewModel = model
-        vc.closeAction = { [weak self] in
-            self?.router.pop()
-        }
-
-        router.push(vc)
-    }
     
     public func goToBookKeepingCustomers() {
         let model = BookKeepingCustomersViewModel()
-
+        
         let vc = BookKeepingCustomersViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingPurchases() {
         let model = BookKeepingPurchasesViewModel()
-
+        
         let vc = BookKeepingPurchasesViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingSupplies() {
         let model = BookKeepingSuppliesViewModel()
-
+        
         let vc = BookKeepingSuppliesViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingStock() {
         let model = BookKeepingStockViewModel()
-
+        
         let vc = BookKeepingStockViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingExpenses() {
         let model = BookKeepingExpensesViewModel()
-
+        
         let vc = BookKeepingExpensesViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingSalesPayments() {
         let model = BookKeepingSalesViewModel()
-
+        
         let vc = BookKeepingSalesViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingReports() {
         let model = BookKeepingReportsViewModel()
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
     
     public func goToBookKeepingProfitLoss() {
         let model = BookKeepingProfitLossViewModel()
-
+        
         let vc = BookKeepingProfitLossViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
-
+    
     public func dismiss() {
         dismissModal()
     }
