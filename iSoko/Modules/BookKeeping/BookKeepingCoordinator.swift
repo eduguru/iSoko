@@ -41,7 +41,7 @@ public class BookKeepingCoordinator: BaseCoordinator {
     }
     
     public func goToDetails() {
-        goToBookKeepingPurchases()
+        goToBookKeepingCustomers()
     }
     
     public func goToBookKeepingCustomers() {
