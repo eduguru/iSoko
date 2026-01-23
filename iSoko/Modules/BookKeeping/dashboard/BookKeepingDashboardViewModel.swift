@@ -61,7 +61,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
-            cells: [recentActivitiesRow]
+            cells: makeRecentActivitiesRow()
         )
     }
     
@@ -75,7 +75,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private lazy var  quickActionsNoTitleRow: FormRow = makeQuickNoTitleActionsRow()
     
     private lazy var  businessMetricsRow: FormRow = makeBusinessMetricsRow()
-    private lazy var  recentActivitiesRow: FormRow = makeRecentActivitiesRow()
+    // private lazy var  recentActivitiesRow: FormRow = makeRecentActivitiesRow()
     
     private func makeFilterRowRow() -> FormRow {
         let model = TitleDropDownFilterModel(
@@ -96,50 +96,44 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
-        let leftCard = CardModel(
-            title: "Balance",
-            titleIcon: UIImage(systemName: "wallet.pass"),
-            description: "$1,240.00",
-            statusModel: StatusCardViewModel(
-                title: "200 percent",
-                image: .stockmarketArrowUp,
-                backgroundColor: .systemGreen.withAlphaComponent(0.1)
+        let config = DualCardCellConfig(
+            left: DualCardItemConfig(
+                title: "Spending",
+                titleIcon: UIImage(systemName: "chart.bar"),
+                subtitle: "This month",
+                status: CardStatusStyle(
+                    text: "On track",
+                    textColor: .systemGreen,
+                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "checkmark")
+                )
             ),
-            backgroundColor: .systemGreen.withAlphaComponent(0.1),
-            onTap: { [weak self] in
-               // self?.openBalance()
-            }
-        )
-        
-        let rightCard = CardModel(
-            title: "Transactions",
-            titleIcon: UIImage(systemName: "list.bullet"),
-            description: "View history",
-            statusModel: StatusCardViewModel(
-                title: "200 percent",
-                image: .stockmarketArrowDown,
-                backgroundColor: .systemRed.withAlphaComponent(0.1)
-            ),
-            backgroundColor: .systemOrange.withAlphaComponent(0.1),
-            onTap: { [weak self] in
-               // self?.openTransactions()
-            }
-        )
-        
-        let model = TwoCardsModel(
-            leftCard: leftCard,
-            rightCard: rightCard
+            right: DualCardItemConfig(
+                title: "Bills",
+                titleIcon: UIImage(systemName: "doc.text"),
+                subtitle: "2 due soon",
+                status: CardStatusStyle(
+                    text: "Action needed",
+                    textColor: .systemOrange,
+                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "exclamationmark.triangle")
+                )
+            )
         )
 
-        let row = TwoCardsFormRow(tag: Tags.Cells.financialSummary.rawValue, model: model)
+        let row = DualCardFormRow(
+            tag: 100,
+            config: config
+        )
+
         return row
     }
     
     private func makeQuickActionsRow() -> FormRow {
         let payBill = StatusCardViewModel(
-            title: "Pay Bills",
+            title: "Record Sale",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemBlue,
+            backgroundColor: .systemGreen,
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -147,9 +141,9 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         )
         
         let transfer = StatusCardViewModel(
-            title: "Pay Bills",
+            title: "Add Expense",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemBlue,
+            backgroundColor: .systemRed,
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -160,7 +154,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             tag: 200,
             model: TwoCardsSummaryViewModel(
                 title: "Quick Actions",
-                description: "Common things you can do",
+                description: "Common bookeeping tasks",
                 cards: TwoStatusCardsViewModel(
                     first: payBill,
                     second: transfer,
@@ -172,10 +166,44 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
     
     private func makeQuickNoTitleActionsRow() -> FormRow {
+
+            let quickAction1 = StatusCardViewModel(
+                title: "Manage Stock",
+                image: UIImage(systemName: "bolt.fill"),
+                backgroundColor: .systemBlue,
+                iconTintColor: .white,
+                textColor: .white,
+                iconSize: CGSize(width: 28, height: 28),
+                fixedHeight: 56
+            )
+            
+            let quickAction2 = StatusCardViewModel(
+                title: "View Reports",
+                image: UIImage(systemName: "bolt.fill"),
+                backgroundColor: .systemPurple,
+                iconTintColor: .white,
+                textColor: .white,
+                iconSize: CGSize(width: 28, height: 28),
+                fixedHeight: 80
+            )
+            
+            let row = TwoStatusCardsFormRow(
+                tag: 101,
+                model: TwoStatusCardsViewModel(
+                    first: quickAction1,
+                    second: quickAction2,
+                    layout: .horizontal
+                )
+            )
+            
+            return row
+    }
+    
+    private func makeBusinessMetricsRow() -> FormRow {
         let payBill = StatusCardViewModel(
-            title: "Pay Bills",
+            title: "Customers",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemRed,
+            backgroundColor: .purple,
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -183,9 +211,9 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         )
         
         let transfer = StatusCardViewModel(
-            title: "Pay Bills",
+            title: "Suppliers",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemGreen,
+            backgroundColor: .systemTeal,
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -195,6 +223,8 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let row = TwoCardsSummaryFormRow(
             tag: 200,
             model: TwoCardsSummaryViewModel(
+                title: "Business Management",
+                description: "Manage customers and suppliers",
                 cards: TwoStatusCardsViewModel(
                     first: payBill,
                     second: transfer,
@@ -205,57 +235,51 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         return row
     }
     
-    private func makeBusinessMetricsRow() -> FormRow {
+    private func makeRecentActivitiesRow() -> [FormRow] {
+        let sampleTransactions = [
+            Transaction(title: "Salary", description: "January Salary", amount: "$5000", isIncome: true, icon: UIImage(systemName: "dollarsign.circle")),
+            Transaction(title: "Rent", description: "Monthly rent", amount: "$1200", isIncome: false, icon: UIImage(systemName: "house")),
+            Transaction(title: "Groceries", description: nil, amount: "$320", isIncome: false, icon: UIImage(systemName: "cart"))
+        ]
+
+        let rows = makeTransactionRows(sampleTransactions)
         
-        let quickAction1 = StatusCardViewModel(
-            title: "Pay Bills",
-            image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemBlue,
-            iconTintColor: .white,
-            textColor: .white,
-            iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 56
-        )
-        
-        let quickAction2 = StatusCardViewModel(
-            title: "Pay Bills",
-            image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemBlue,
-            iconTintColor: .white,
-            textColor: .white,
-            iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 80
-        )
-        
-        let row = TwoStatusCardsFormRow(
-            tag: 101,
-            model: TwoStatusCardsViewModel(
-                first: quickAction1,
-                second: quickAction2,
-                layout: .horizontal
-            )
-        )
-        
-        return row
+        return rows
     }
     
-    private func makeRecentActivitiesRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .lightGray,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: {
-                
-            }
-        )
-        
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
-        return row
+    // Lazy factory that creates rows
+    
+    func makeTransactionRows(_ transactions: [Transaction]) -> [FormRow] {
+        transactions.enumerated().map { index, tx in
+            TransactionRow(
+                tag: index,
+                config: TransactionCellConfig(
+                    image: tx.icon,
+                    imageSize: .init(width: 36, height: 36),
+                    imageStyle: .init(
+                        shape: .circle,
+                        backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
+                        inset: 6
+                    ),
+                    title: tx.title,
+                    description: tx.description,
+                    amount: tx.amount,
+                    amountColor: tx.isIncome ? .systemGreen : .systemRed,
+                    spacing: 12,
+                    contentInsets: .init(top: 12, left: 16, bottom: 12, right: 16),
+                    onTap: {
+                        
+                    },
+                    isCardStyleEnabled: true,
+                    cardCornerRadius: 12,
+                    cardBackgroundColor: .systemBackground,
+                    cardBorderColor: .systemGray4,
+                    cardBorderWidth: 1
+                )
+            )
+        }
     }
+
 
 
     // MARK: - State
@@ -280,4 +304,13 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             
         }
     }
+}
+
+
+struct Transaction {
+    let title: String
+    let description: String?
+    let amount: String
+    let isIncome: Bool
+    let icon: UIImage?
 }
