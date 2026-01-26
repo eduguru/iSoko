@@ -7,13 +7,6 @@
 
 import UIKit
 
-public enum CardStyle {
-    case none
-    case border
-    case shadow
-    case borderAndShadow
-}
-
 public struct SimpleInputModel {
     public var text: String
     public var config: TextFieldConfig

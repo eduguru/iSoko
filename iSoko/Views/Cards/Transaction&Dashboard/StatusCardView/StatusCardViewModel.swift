@@ -12,7 +12,7 @@ struct StatusCardViewModel {
     let title: String?
     let image: UIImage?
 
-    // Existing styling
+    // Existing styling properties
     let backgroundColor: UIColor?
     let cornerRadius: CGFloat?
     let borderColor: UIColor?
@@ -29,6 +29,9 @@ struct StatusCardViewModel {
     let iconSize: CGSize?
     let fixedHeight: CGFloat?
 
+    // NEW: Callback closure
+    let onTapAction: (() -> Void)?
+
     init(
         title: String?,
         image: UIImage?,
@@ -44,7 +47,8 @@ struct StatusCardViewModel {
         textColor: UIColor? = nil,
         font: UIFont? = nil,
         iconSize: CGSize? = nil,
-        fixedHeight: CGFloat? = nil
+        fixedHeight: CGFloat? = nil,
+        onTapAction: (() -> Void)? = nil  // Added closure here
     ) {
         self.title = title
         self.image = image
@@ -61,5 +65,6 @@ struct StatusCardViewModel {
         self.font = font
         self.iconSize = iconSize
         self.fixedHeight = fixedHeight
+        self.onTapAction = onTapAction  // Store the callback
     }
 }

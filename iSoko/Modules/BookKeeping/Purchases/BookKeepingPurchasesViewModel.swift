@@ -56,20 +56,16 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
     private func makeFilterRowRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .white,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: { [weak self] in
-                self?.goToDetails?()
+        let model = ProfileInfoCellConfig(
+            name: "String",
+            phone: "String",
+            email: "String",
+            location: "String",
+            onEditTap: {
             }
         )
         
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
+        let row = ProfileInfoRow(tag: Tags.Cells.filter.rawValue, config: model)
         return row
     }
     

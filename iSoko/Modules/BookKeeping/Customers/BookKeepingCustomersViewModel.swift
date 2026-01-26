@@ -30,8 +30,8 @@ final class BookKeepingCustomersViewModel: FormViewModel {
 
     private func makeFilterSection() -> FormSection {
         FormSection(
-            id: Tags.Section.filter.rawValue,
-            cells: [filterRow]
+            id: Tags.Section.search.rawValue,
+            cells: [searchRow]
         )
     }
     
@@ -52,31 +52,29 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     // MARK: - Update Sections -
 
     // MARK: - Lazy Rows
-    private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
-    private func makeFilterRowRow() -> FormRow {
-        let model = TitleDropDownFilterModel(
-            title: "Finacial Overview",
-            description: nil,
-            filterTitle: "This Week",
-            filterIcon: .arrowDown,
-            backgroundColor: .white,
-            cornerRadius: 8,
-            isHidden: false,
-            onFilterTap: { [weak self] in
-                self?.goToDetails?()
-            }
+    private lazy var searchRow = makeSearchRow()
+    
+    private func makeSearchRow() -> FormRow {
+        SearchFormRow(
+            tag: Tags.Cells.search.rawValue,
+            model: SearchFormModel(
+                placeholder: "Search",
+                keyboardType: .default,
+                searchIcon: UIImage(systemName: "magnifyingglass"),
+                searchIconPlacement: .right,
+                filterIcon: nil,
+                didTapSearchIcon: { print("🔍 Search tapped") },
+                didTapFilterIcon: { print("⚙️ Filter tapped") }
+            )
         )
-        
-        let row = TitleDropDownFilterFormRow(tag: Tags.Cells.filter.rawValue, model: model)
-        return row
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Spending",
+                title: "Total Customers",
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "This month",
                 status: CardStatusStyle(
@@ -87,7 +85,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
                 )
             ),
             right: DualCardItemConfig(
-                title: "Bills",
+                title: "Active Buyers",
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "2 due soon",
                 status: CardStatusStyle(
@@ -156,14 +154,14 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
-            case filter = 0
+            case search = 0
             case financialSummary = 1
             case quickActions = 2
             case businessMetrics = 3
             case recentActivities = 4
         }
         enum Cells: Int {
-            case filter = 0
+            case search = 0
             case financialSummary = 1
             case quickActions = 2
             case businessMetrics = 3

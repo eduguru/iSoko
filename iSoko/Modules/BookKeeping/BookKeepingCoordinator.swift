@@ -19,7 +19,18 @@ public class BookKeepingCoordinator: BaseCoordinator {
     public func goToBookKeepingDashboard() {
         
         let model = BookKeepingDashboardViewModel()
+        
+        model.goToFilter = goToDetails
         model.goToDetails = goToDetails
+        
+        model.goToRecordSales = goToBookKeepingSalesPayments
+        model.goToAddExpense = goToBookKeepingExpenses
+        model.goToManageStock = goToBookKeepingStock
+        model.goToViewReports = goToBookKeepingReports
+        model.goToCusomers = goToBookKeepingCustomers
+        model.goToSuppliers = goToBookKeepingSupplies
+        model.goToSpending = goToBookKeepingPurchases
+        model.goToBills = goToBookKeepingExpenses
         
         let vc = BookKeepingDashboardViewController()
         vc.viewModel = model

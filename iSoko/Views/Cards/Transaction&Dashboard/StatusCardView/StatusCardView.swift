@@ -13,11 +13,14 @@ final class StatusCardView: UIView {
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
 
-    // NEW: Stored constraints (safe defaults)
+    // Store the model
+    private var model: StatusCardViewModel?
+
     private var iconWidthConstraint: NSLayoutConstraint!
     private var iconHeightConstraint: NSLayoutConstraint!
     private var heightConstraint: NSLayoutConstraint?
 
+    // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupUI()
@@ -29,7 +32,6 @@ final class StatusCardView: UIView {
     }
 
     private func setupUI() {
-        // IMPORTANT: outer view must be clear
         backgroundColor = .clear
         clipsToBounds = false
 
@@ -39,7 +41,6 @@ final class StatusCardView: UIView {
         layer.shadowRadius = 8
         layer.shadowOffset = CGSize(width: 0, height: 4)
 
-        // Content container
         contentView.translatesAutoresizingMaskIntoConstraints = false
         contentView.backgroundColor = .clear
         contentView.layer.cornerRadius = 14
@@ -53,19 +54,16 @@ final class StatusCardView: UIView {
             contentView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
 
-        // Icon
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconImageView.contentMode = .scaleAspectFit
         contentView.addSubview(iconImageView)
 
-        // Label
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.numberOfLines = 0
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         titleLabel.textColor = .label
         contentView.addSubview(titleLabel)
 
-        // Icon constraints (stored)
         iconWidthConstraint = iconImageView.widthAnchor.constraint(equalToConstant: 20)
         iconHeightConstraint = iconImageView.heightAnchor.constraint(equalToConstant: 20)
 
@@ -80,9 +78,22 @@ final class StatusCardView: UIView {
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
+
+        // Add gesture recognizer to detect tap
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCardTap))
+        addGestureRecognizer(tapGesture)
+        isUserInteractionEnabled = true  // Enable user interaction
     }
 
+    // MARK: - Handle tap event
+    @objc private func handleCardTap() {
+        // Invoke the callback if it's provided
+        model?.onTapAction?()
+    }
+
+    // MARK: - Configure
     func configure(with model: StatusCardViewModel) {
+        self.model = model  // Store the model
 
         // Content
         titleLabel.text = model.title
@@ -112,7 +123,7 @@ final class StatusCardView: UIView {
         titleLabel.textColor = model.textColor ?? .label
         titleLabel.font = model.font ?? .systemFont(ofSize: 16, weight: .medium)
 
-        // NEW: Icon size override
+        // Icon size override
         if let iconSize = model.iconSize {
             iconWidthConstraint.constant = iconSize.width
             iconHeightConstraint.constant = iconSize.height
@@ -121,7 +132,7 @@ final class StatusCardView: UIView {
             iconHeightConstraint.constant = 20
         }
 
-        // NEW: Fixed height (optional)
+        // Fixed height (optional)
         if let fixedHeight = model.fixedHeight {
             if heightConstraint == nil {
                 heightConstraint = heightAnchor.constraint(equalToConstant: fixedHeight)

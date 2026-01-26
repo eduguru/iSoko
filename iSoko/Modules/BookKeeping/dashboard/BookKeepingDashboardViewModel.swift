@@ -12,6 +12,17 @@ import UtilsKit
 final class BookKeepingDashboardViewModel: FormViewModel {
    var goToDetails: (() -> Void)? = { }
     
+    var goToFilter: (() -> Void)? = { }
+    var goToSpending: (() -> Void)? = { }
+    var goToBills: (() -> Void)? = { }
+    
+    var goToRecordSales: (() -> Void)? = { }
+    var goToAddExpense: (() -> Void)? = { }
+    var goToManageStock: (() -> Void)? = { }
+    var goToViewReports: (() -> Void)? = { }
+    var goToCusomers: (() -> Void)? = { }
+    var goToSuppliers: (() -> Void)? = { }
+    
     private var state = State()
 
     override init() {
@@ -40,7 +51,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeFinancialSummarySection() -> FormSection {
         FormSection(
             id: Tags.Section.financialSummary.rawValue,
-            cells: [financialSummaryRow]
+            cells: [financialSummaryRow, financialSummaryRow2]
         )
     }
     
@@ -70,6 +81,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     // MARK: - Lazy Rows
     private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    private lazy var  financialSummaryRow2: FormRow = makeFinancialSummaryRow2()
     
     private lazy var  quickActionsRow: FormRow = makeQuickActionsRow()
     private lazy var  quickActionsNoTitleRow: FormRow = makeQuickNoTitleActionsRow()
@@ -87,7 +99,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             cornerRadius: 8,
             isHidden: false,
             onFilterTap: { [weak self] in
-                self?.goToDetails?()
+                self?.goToFilter?()
             }
         )
         
@@ -98,7 +110,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Spending",
+                title: "Total Sales",
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "This month",
                 status: CardStatusStyle(
@@ -106,10 +118,13 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     textColor: .systemGreen,
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "checkmark")
-                )
+                ),
+                onTap: { [weak self] in
+                    self?.goToSpending?()
+                }
             ),
             right: DualCardItemConfig(
-                title: "Bills",
+                title: "Total Expenses",
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "2 due soon",
                 status: CardStatusStyle(
@@ -117,7 +132,50 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     textColor: .systemOrange,
                     backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "exclamationmark.triangle")
-                )
+                ),
+                onTap: { [weak self] in
+                    self?.goToBills?()
+                }
+            )
+        )
+
+        let row = DualCardFormRow(
+            tag: 100,
+            config: config
+        )
+
+        return row
+    }
+    
+    private func makeFinancialSummaryRow2() -> FormRow {
+        let config = DualCardCellConfig(
+            left: DualCardItemConfig(
+                title: "Total Products",
+                titleIcon: UIImage(systemName: "chart.bar"),
+                subtitle: "This month",
+                status: CardStatusStyle(
+                    text: "On track",
+                    textColor: .systemGreen,
+                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "checkmark")
+                ),
+                onTap: { [weak self] in
+                    self?.goToSpending?()
+                }
+            ),
+            right: DualCardItemConfig(
+                title: "Low Stock",
+                titleIcon: UIImage(systemName: "doc.text"),
+                subtitle: "2 due soon",
+                status: CardStatusStyle(
+                    text: "Action needed",
+                    textColor: .systemOrange,
+                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "exclamationmark.triangle")
+                ),
+                onTap: { [weak self] in
+                    self?.goToBills?()
+                }
             )
         )
 
@@ -137,7 +195,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 56
+            fixedHeight: 56,
+            onTapAction: { [weak self] in
+                self?.goToRecordSales?()
+            }
         )
         
         let transfer = StatusCardViewModel(
@@ -147,7 +208,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 80
+            fixedHeight: 80,
+            onTapAction: { [weak self] in
+                self?.goToAddExpense?()
+            }
         )
 
         let row = TwoCardsSummaryFormRow(
@@ -174,7 +238,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 iconTintColor: .white,
                 textColor: .white,
                 iconSize: CGSize(width: 28, height: 28),
-                fixedHeight: 56
+                fixedHeight: 56,
+                onTapAction: { [weak self] in
+                    self?.goToManageStock?()
+                }
             )
             
             let quickAction2 = StatusCardViewModel(
@@ -184,7 +251,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 iconTintColor: .white,
                 textColor: .white,
                 iconSize: CGSize(width: 28, height: 28),
-                fixedHeight: 80
+                fixedHeight: 80,
+                onTapAction: { [weak self] in
+                    self?.goToViewReports?()
+                }
             )
             
             let row = TwoStatusCardsFormRow(
@@ -207,9 +277,12 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 56
+            fixedHeight: 56,
+            onTapAction: { [weak self] in
+                self?.goToCusomers?()
+            }
         )
-        
+
         let transfer = StatusCardViewModel(
             title: "Suppliers",
             image: UIImage(systemName: "bolt.fill"),
@@ -217,7 +290,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
-            fixedHeight: 80
+            fixedHeight: 80,
+            onTapAction: { [weak self] in
+                self?.goToSuppliers?()
+            }
         )
 
         let row = TwoCardsSummaryFormRow(
@@ -232,6 +308,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 )
             )
         )
+        
         return row
     }
     
@@ -304,13 +381,4 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             
         }
     }
-}
-
-
-struct Transaction {
-    let title: String
-    let description: String?
-    let amount: String
-    let isIncome: Bool
-    let icon: UIImage?
 }
