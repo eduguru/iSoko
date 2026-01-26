@@ -5,6 +5,7 @@
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:isoko.africa</string>
+		<string>applinks:api.dev.isoko.africa</string>
 	</array>
 </dict>
 </plist>

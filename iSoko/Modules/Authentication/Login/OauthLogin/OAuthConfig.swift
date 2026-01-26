@@ -8,8 +8,31 @@
 import Foundation
 import CryptoKit
 
+struct OAuthConfig {
 
-// MARK: - PKCE Helper
+    static let clientId = "Mobile"
+    static let scope = "openid"
+
+    static let authorizationEndpoint = "https://api.dev.isoko.africa/v1/oauth2/authorize"
+    static let tokenEndpoint = "https://api.dev.isoko.africa/v1/oauth2/token"
+
+    static let redirectURI = "https://api.dev.isoko.africa/v1/oauth2/authorized"
+
+    static func authorizationURL(codeChallenge: String, state: String) -> URL? {
+        var components = URLComponents(string: authorizationEndpoint)
+        components?.queryItems = [
+            .init(name: "response_type", value: "code"),
+            .init(name: "client_id", value: clientId),
+            .init(name: "scope", value: scope),
+            .init(name: "redirect_uri", value: redirectURI),
+            .init(name: "state", value: state),
+            .init(name: "code_challenge", value: codeChallenge),
+            .init(name: "code_challenge_method", value: "S256")
+        ]
+        return components?.url
+    }
+}
+
 enum PKCE {
 
     static func generateCodeVerifier() -> String {
@@ -31,78 +54,9 @@ enum PKCE {
     }
 }
 
-// MARK: - OAuth Configuration
-//struct OAuthConfig {
-//
-//    static let clientId = "Mobile"
-//    static let responseType = "code"
-//    static let scope = "openid"
-//
-//    // ✅ New HTTPS redirect
-//    static let redirectURI = "https://api.dev.isoko.africa/v1/oauth2/authorized"
-//
-//    static let authorizationEndpoint = "https://api.dev.isoko.africa/v1/oauth2/authorize"
-//    static let tokenEndpoint = "https://api.dev.isoko.africa/v1/oauth2/token"
-//
-//    // PKCE (per request)
-//    static let state = UUID().uuidString
-//    static let codeVerifier = PKCE.generateCodeVerifier()
-//    static let codeChallenge = PKCE.codeChallenge(for: codeVerifier)
-//    static let codeChallengeMethod = "S256"
-//
-//    static var authorizationURL: URL? {
-//        var components = URLComponents(string: authorizationEndpoint)
-//        components?.queryItems = [
-//            .init(name: "response_type", value: responseType),
-//            .init(name: "client_id", value: clientId),
-//            .init(name: "scope", value: scope),
-//            .init(name: "redirect_uri", value: redirectURI),
-//            .init(name: "state", value: state),
-//            .init(name: "code_challenge", value: codeChallenge),
-//            .init(name: "code_challenge_method", value: codeChallengeMethod)
-//        ]
-//        return components?.url
-//    }
-//}
-
-struct OAuthConfig {
-
-    // MARK: - OAuth Client
-    static let clientId = "Mobile"
-    static let responseType = "code"
-    static let scope = "openid"
-
-    // MARK: - Redirect URI
-    static var redirectURI: String {
-        #if DEBUG
-        return "weru.isoko.app://auth" // custom scheme for dev
-        #else
-        return "https://api.dev.isoko.africa/v1/oauth2/authorized" // HTTPS for prod
-        #endif
-    }
-
-    // MARK: - Endpoints
-    static let authorizationEndpoint = "https://api.dev.isoko.africa/v1/oauth2/authorize"
-    static let tokenEndpoint = "https://api.dev.isoko.africa/v1/oauth2/token"
-
-    // MARK: - PKCE (per request)
-    static let state = UUID().uuidString
-    static let codeVerifier = PKCE.generateCodeVerifier()
-    static let codeChallenge = PKCE.codeChallenge(for: codeVerifier)
-    static let codeChallengeMethod = "S256"
-
-    // MARK: - Computed URL for authorization request
-    static var authorizationURL: URL? {
-        var components = URLComponents(string: authorizationEndpoint)
-        components?.queryItems = [
-            .init(name: "response_type", value: responseType),
-            .init(name: "client_id", value: clientId),
-            .init(name: "scope", value: scope),
-            .init(name: "redirect_uri", value: redirectURI),
-            .init(name: "state", value: state),
-            .init(name: "code_challenge", value: codeChallenge),
-            .init(name: "code_challenge_method", value: codeChallengeMethod)
-        ]
-        return components?.url
-    }
+enum OAuthError: Error {
+    case invalidAuthURL
+    case missingAuthorizationCode
+    case emptyResponse
+    case missingRefreshToken
 }

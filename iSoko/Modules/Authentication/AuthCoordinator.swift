@@ -12,6 +12,7 @@ import StorageKit
 
 class AuthCoordinator: BaseCoordinator {
     private var authSession: ASWebAuthenticationSession?
+    private var oauthService: OAuthService?
 
     override func start() {
         if AppStorage.hasShownInitialLoginOptions ?? false {
@@ -64,28 +65,23 @@ class AuthCoordinator: BaseCoordinator {
     }
 
     private func startOAuthFlow() {
-        let oauthService = OAuthService()
-        oauthService.startAuthorization { result in
+        oauthService = OAuthService()
+
+        oauthService?.startAuthorization { [weak self] result in
             switch result {
             case .success(let code):
-                print("Authorization code: \(code)")
-
-                let tokenService = OAuthTokenService()
-                tokenService.exchangeAuthorizationCode(code: code) { tokenResult in
+                self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
                     switch tokenResult {
                     case .success(let token):
-                        print("Access token: \(token.access_token)")
+                        print("Access token:", token.access_token)
                     case .failure(let error):
-                        print("Token exchange error: \(error)")
+                        print("Token error:", error)
                     }
                 }
-
             case .failure(let error):
-                print("Authorization error: \(error)")
+                print("Authorization error:", error)
             }
         }
-
-
     }
     
     public func goToLogin(makeRoot: Bool = false) {
