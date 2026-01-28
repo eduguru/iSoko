@@ -10,9 +10,10 @@ import AuthenticationServices
 import UtilsKit
 import StorageKit
 
+
 class AuthCoordinator: BaseCoordinator {
     private var authSession: ASWebAuthenticationSession?
-    private var oauthService: OAuthService?
+    public var oauthService: OAuthService?
 
     override func start() {
         if AppStorage.hasShownInitialLoginOptions ?? false {
@@ -73,8 +74,14 @@ class AuthCoordinator: BaseCoordinator {
                 self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
                     switch tokenResult {
                     case .success(let token):
+                        // Handle successful token exchange
                         print("Access token:", token.access_token)
+                        
+                        // You can now navigate to the main screen or do other tasks
+                        self?.goToMainTabs()
+
                     case .failure(let error):
+                        // Handle failure to exchange code for token
                         print("Token error:", error)
                     }
                 }
@@ -512,6 +519,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func goToMainTabs() {
+        
         let router = Router(navigationController: navigationController)
         let cordinator = MainCoordinator(router: router)
         addChild(cordinator)
