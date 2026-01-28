@@ -61,14 +61,3 @@ enum ConfigManager {
         return plist[key] as? String
     }
 }
-
-
-//authManager.signInWithGoogle(presentingVC: self) { result in
-//    switch result {
-//    case .success(let idToken):
-//        print("ID Token: \(idToken)")
-//        // Send to backend or use for Firebase Auth, etc.
-//    case .failure(let error):
-//        print("Sign-In Failed: \(error.localizedDescription)")
-//    }
-//}

@@ -519,11 +519,14 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func goToMainTabs() {
-        
-        let router = Router(navigationController: navigationController)
-        let cordinator = MainCoordinator(router: router)
-        addChild(cordinator)
-        cordinator.start()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let router = Router(navigationController: navigationController)
+            let cordinator = MainCoordinator(router: router)
+            addChild(cordinator)
+            cordinator.start()
+        }
     }
 }
 

@@ -15,6 +15,7 @@ final class AppConstants {
     
     enum GrantType: String {
         case login = "client_credentials"
+        case authorizationCode = "authorization_code"
         case token = "password"
         case refreshToken = "refresh_token"
     }

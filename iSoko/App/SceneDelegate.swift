@@ -48,6 +48,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
     }
     
+    private func fetchToken() async -> Bool {
+        do {
+            let token = try await certificateService.getToken(
+                grant_type: AppConstants.GrantType.login.rawValue,
+                client_id: ApiEnvironment.clientId,
+                client_secret: ApiEnvironment.clientSecret
+            )
+            
+            print("🔑 accessToken:", token.accessToken)
+            AppStorage.accessToken = token.accessToken
+            
+            return true
+        } catch let NetworkError.server(apiError) {
+            print("accessToken API error:", apiError.message ?? "")
+        } catch {
+            print("accessToken Unexpected error:", error)
+        }
+        return false
+    }
+    
     func sceneDidDisconnect(_ scene: UIScene) {
         // Called as the scene is being released by the system.
         // This occurs shortly after the scene enters the background, or when its session is discarded.
@@ -95,37 +115,17 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        }
 //    }
     
-    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        guard let url = URLContexts.first?.url else { return }
-        
-        if let url = URLContexts.first?.url {
-            print("Received URL: \(url)")
-        }
-
-
-        if let oauthService = (window?.rootViewController as? AuthCoordinator)?.oauthService {
-            oauthService.handleRedirect(url: url)  // Directly handle the URL here
-        }
-    }
-
-    private func fetchToken() async -> Bool {
-        do {
-            let token = try await certificateService.getToken(
-                grant_type: AppConstants.GrantType.login.rawValue,
-                client_id: ApiEnvironment.clientId,
-                client_secret: ApiEnvironment.clientSecret
-            )
-            
-            print("🔑 accessToken:", token.accessToken)
-            AppStorage.accessToken = token.accessToken
-            
-            return true
-        } catch let NetworkError.server(apiError) {
-            print("accessToken API error:", apiError.message ?? "")
-        } catch {
-            print("accessToken Unexpected error:", error)
-        }
-        return false
-    }
+//    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+//        guard let url = URLContexts.first?.url else { return }
+//        
+//        if let url = URLContexts.first?.url {
+//            print("Received URL: \(url)")
+//        }
+//
+//
+//        if let oauthService = (window?.rootViewController as? AuthCoordinator)?.oauthService {
+//            oauthService.handleRedirect(url: url)  // Directly handle the URL here
+//        }
+//    }
     
 }

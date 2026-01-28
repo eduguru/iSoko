@@ -26,25 +26,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
-
-    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
-        // Handle the redirect URL after authentication
-        if let oauthService = (window?.rootViewController as? AuthCoordinator)?.oauthService {
-            oauthService.handleRedirect(url: url)
-        }
-        return true
-    }
-
-    // Handle Universal Links here if needed (for older iOS versions)
-    func application(_ application: UIApplication, continue userActivity: NSUserActivity) -> Bool {
-        if let url = userActivity.webpageURL, url.host == "api.dev.isoko.africa" {
-            print("OAuth Redirect URL: \(url)")
-            // Process the URL (OAuth code exchange etc.)
-            return true
-        }
-        return false
-    }
-
 }
 
 extension AppDelegate {
