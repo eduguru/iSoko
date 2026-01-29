@@ -67,7 +67,7 @@ final class OAuthService: NSObject {
         completion(.success(code))
     }
 
-    func exchangeCodeForToken(authorizationCode: String, completion: @escaping (Result<OAuthTokenWithUserResponse, Error>) -> Void) {
+    func exchangeCodeForToken(authorizationCode: String, completion: @escaping (Result<GuestTokenResponse, Error>) -> Void) {
         OAuthTokenService().exchangeAuthorizationCode(
             code: authorizationCode,
             codeVerifier: verifier,
@@ -100,11 +100,5 @@ extension OAuthService: ASWebAuthenticationPresentationContextProviding {
             .compactMap { $0 as? UIWindowScene }
             .first?
             .keyWindow ?? ASPresentationAnchor()
-    }
-}
-
-extension UIWindowScene {
-    var keyWindow: UIWindow? {
-        windows.first { $0.isKeyWindow }
     }
 }

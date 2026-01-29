@@ -41,12 +41,11 @@ public final class AuthInterceptor: RequestInterceptor {
         Task {
             do {
                 let savedToken = try tokenProvider.currentToken()
-                let newToken = try await tokenProvider.refreshToken(
-                    grant_type: AppConstants.GrantType.refreshToken.rawValue,
-                    client_id: ApiEnvironment.clientId,
-                    client_secret: ApiEnvironment.clientSecret
-                )
-                tokenProvider.saveToken(newToken)
+                let newToken = try await tokenProvider.refreshToken()
+                if let token = newToken {
+                    tokenProvider.saveToken(token)
+                }
+                
                 completion(.retry)
             } catch {
                 completion(.doNotRetry)

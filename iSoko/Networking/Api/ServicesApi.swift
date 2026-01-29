@@ -22,7 +22,7 @@ public struct ServicesApi {
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.apiBaseURL,
+            baseURL: ApiEnvironment.baseURL,
             path: "api/market-service-category",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),

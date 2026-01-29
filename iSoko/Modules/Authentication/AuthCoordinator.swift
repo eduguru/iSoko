@@ -75,7 +75,7 @@ class AuthCoordinator: BaseCoordinator {
                     switch tokenResult {
                     case .success(let token):
                         // Handle successful token exchange
-                        print("Access token:", token.access_token)
+                        print("Access token:", token.accessToken)
                         
                         // You can now navigate to the main screen or do other tasks
                         self?.goToMainTabs()

@@ -12,7 +12,7 @@ final class OAuthTokenService {
     func exchangeAuthorizationCode(
         code: String,
         codeVerifier: String,
-        completion: @escaping (Result<OAuthTokenWithUserResponse, Error>) -> Void
+        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
     ) {
         requestToken(
             params: [
@@ -28,7 +28,7 @@ final class OAuthTokenService {
 
     func refreshToken(
         refreshToken: String,
-        completion: @escaping (Result<OAuthTokenWithUserResponse, Error>) -> Void
+        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
     ) {
         requestToken(
             params: [
@@ -43,7 +43,7 @@ final class OAuthTokenService {
 
     private func requestToken(
         params: [String: String],
-        completion: @escaping (Result<OAuthTokenWithUserResponse, Error>) -> Void
+        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
     ) {
         guard let url = URL(string: OAuthConfig.tokenEndpoint) else {
             completion(.failure(OAuthError.invalidAuthURL))
@@ -72,7 +72,7 @@ final class OAuthTokenService {
             }
 
             do {
-                let token = try JSONDecoder().decode(OAuthTokenWithUserResponse.self, from: data)
+                let token = try JSONDecoder().decode(GuestTokenResponse.self, from: data)
                 completion(.success(token))
             } catch {
                 completion(.failure(error))

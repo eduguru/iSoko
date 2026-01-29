@@ -18,7 +18,7 @@ public struct AuthenticationApi {
         client_secret: String,
         username: String,
         password: String
-    ) -> ValueResponseTarget<TokenModel> {
+    ) -> ValueResponseTarget<GuestTokenModel> {
         
         let headers = ["Content-Type": "application/x-www-form-urlencoded"]
         let parameters = [

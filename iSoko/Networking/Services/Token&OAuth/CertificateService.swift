@@ -9,8 +9,8 @@ import Foundation
 import NetworkingKit
 
 public protocol CertificateService {
-    func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> TokenModel
-    func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> TokenModel
+    func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestTokenModel
+    func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestTokenModel
 }
 
 
@@ -23,8 +23,8 @@ public final class CertificateServiceImpl: CertificateService {
         self.tokenProvider = tokenProvider
     }
     
-    public func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> TokenModel {
-        let token: TokenModel = try await manager.request(CertificateApi.getToken(
+    public func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestTokenModel {
+        let token: GuestTokenModel = try await manager.request(GuestTokenApi.getToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret)
@@ -34,8 +34,8 @@ public final class CertificateServiceImpl: CertificateService {
         return token
     }
     
-    public func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> TokenModel {
-        let token: TokenModel = try await manager.request(CertificateApi.getRefreshToken(
+    public func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestTokenModel {
+        let token: GuestTokenModel = try await manager.request(GuestTokenApi.getRefreshToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret, refresh_token: refresh_token)
