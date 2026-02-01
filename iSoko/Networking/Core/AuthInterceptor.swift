@@ -38,18 +38,18 @@ public final class AuthInterceptor: RequestInterceptor {
             completion(.doNotRetry)
             return
         }
-        Task {
-            do {
-                let savedToken = try tokenProvider.currentToken()
-                let newToken = try await tokenProvider.refreshToken()
-                if let token = newToken {
-                    tokenProvider.saveToken(token)
-                }
-                
-                completion(.retry)
-            } catch {
-                completion(.doNotRetry)
-            }
-        }
+//        Task {
+//            do {
+//                let savedToken = try tokenProvider.currentToken()
+//                let newToken = try await tokenProvider.refreshToken()
+//                if let token = newToken {
+//                    tokenProvider.saveToken(token)
+//                }
+//                
+//                completion(.retry)
+//            } catch {
+//                completion(.doNotRetry)
+//            }
+//        }
     }
 }

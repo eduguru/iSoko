@@ -28,10 +28,11 @@ class AuthCoordinator: BaseCoordinator {
         let vc = AuthViewController()
         vc.viewModel = viewModel
         
-        viewModel.gotoSignIn = { [weak self] in
-            self?.startOAuthFlow()
-            // self?.goToLogin(makeRoot: false)
+        viewModel.gotoSignIn = { [weak self] verifier in
+            self?.authenticate(verifier: verifier)
         }
+
+        viewModel.goToHome = goToMainTabs
         
         viewModel.gotoSignUp = goToSignupOptions
         viewModel.gotoForgotPassword = gotoForgotPassword
@@ -50,10 +51,11 @@ class AuthCoordinator: BaseCoordinator {
         let vc = AuthViewController()
         vc.viewModel = viewModel
         
-        viewModel.gotoSignIn = { [weak self] in
-            self?.startOAuthFlow()
-            // self?.goToLogin(makeRoot: false)
+        viewModel.gotoSignIn = { [weak self] verifier in
+            self?.authenticate(verifier: verifier)
         }
+        
+        viewModel.goToHome = goToMainTabs
         
         viewModel.gotoSignUp = goToSignupOptions
         viewModel.gotoForgotPassword = gotoForgotPassword
@@ -64,27 +66,87 @@ class AuthCoordinator: BaseCoordinator {
         vc.modalPresentationStyle = .fullScreen
         router.setRoot(vc, animated: true)
     }
+    
+    private func exchangeCodeForToken(verifier: String) {
+            oauthService = OAuthService()
 
-    private func startOAuthFlow() {
+            oauthService?.startAuthorization(verifier: verifier) { [weak self] result in
+                switch result {
+                case .success(let code):
+                    self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
+                        switch tokenResult {
+                        case .success(let token):
+                            // Handle successful token exchange
+                            print("Access token:", token.accessToken)
+                            
+                            // You can now navigate to the main screen or do other tasks
+                            self?.goToMainTabs()
+
+                        case .failure(let error):
+                            // Handle failure to exchange code for token
+                            print("Token error:", error)
+                        }
+                    }
+                case .failure(let error):
+                    print("Authorization error:", error)
+                }
+            }
+        }
+
+    private func startOAuth(
+        verifier: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         oauthService = OAuthService()
 
-        oauthService?.startAuthorization { [weak self] result in
-            switch result {
+        oauthService?.startAuthorization(verifier: verifier) { result in
+            completion(result)
+        }
+    }
+    
+    private func exchangeCode(
+        _ code: String,
+        completion: @escaping (Result<TokenResponse, Error>) -> Void
+    ) {
+        oauthService?.exchangeCodeForToken(authorizationCode: code) { result in
+            completion(result)
+        }
+    }
+
+    private func fetchUserDetails(
+        accessToken: String,
+        completion: @escaping (Result<UserDetails, Error>) -> Void
+    ) {
+        oauthService?.getUserDetails(accessToken: accessToken) { result in
+            completion(result)
+        }
+    }
+    
+    private func authenticate(verifier: String) {
+        startOAuth(verifier: verifier) { [weak self] authResult in
+            switch authResult {
             case .success(let code):
-                self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
+                self?.exchangeCode(code) { tokenResult in
                     switch tokenResult {
                     case .success(let token):
-                        // Handle successful token exchange
                         print("Access token:", token.accessToken)
-                        
-                        // You can now navigate to the main screen or do other tasks
-                        self?.goToMainTabs()
+
+                        self?.fetchUserDetails(accessToken: token.accessToken) { userResult in
+                            switch userResult {
+                            case .success(let user):
+                                print("User:", user)
+                                self?.goToMainTabs()
+
+                            case .failure(let error):
+                                print("User details error:", error)
+                            }
+                        }
 
                     case .failure(let error):
-                        // Handle failure to exchange code for token
-                        print("Token error:", error)
+                        print("Token exchange error:", error)
                     }
                 }
+
             case .failure(let error):
                 print("Authorization error:", error)
             }

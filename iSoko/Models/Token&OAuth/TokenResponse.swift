@@ -5,14 +5,21 @@
 //  Created by Edwin Weru on 19/08/2025.
 //
 
-struct TokenResponse: Decodable {
-    let accessToken: String
-    let tokenType: String
-    let expiresIn: Int
-    let scope: String
-    let refreshToken: String?
+import Foundation
+
+public struct TokenResponse: Codable {
+    public let accessToken: String
+    public let tokenType: String
+    public let expiresIn: Int
+    public let scope: String?
+    public let refreshToken: String?
     
-    init(accessToken: String, tokenType: String, expiresIn: Int, scope: String, refreshToken: String?) {
+    /// When token expires (now + expiresIn seconds)
+    public var expiryDate: Date {
+        Date().addingTimeInterval(TimeInterval(expiresIn))
+    }
+    
+    public init(accessToken: String, tokenType: String, expiresIn: Int, scope: String, refreshToken: String?) {
         self.accessToken = accessToken
         self.tokenType = tokenType
         self.expiresIn = expiresIn

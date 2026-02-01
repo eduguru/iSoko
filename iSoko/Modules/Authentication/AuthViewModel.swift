@@ -9,8 +9,13 @@ import DesignSystemKit
 import UIKit
 
 final class AuthViewModel: FormViewModel {
-    var gotoSignIn: (() -> Void)? = { }
+    var gotoSignIn: ((_ verifier: String) -> Void)?
+    var goToExchangeToken: ((_ code: String) -> Void)?
+    var goToGetUserDetails: (() -> Void)?
+
+    
     var gotoSignUp: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
+    var goToHome: (() -> Void)? = { }
     var gotoGuestSession: (() -> Void)? = { }
     var gotoForgotPassword: (() -> Void)? = { }
     
@@ -109,14 +114,15 @@ final class AuthViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoSignIn?()
+            // This block will be called when the user taps the "Sign in" button
+            self?.gotoSignIn?(self?.state?.verifier ?? "")
         }
         
         let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
         
         return buttonRow
     }
-    
+
     private func makeForgotPasswordButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
             title: "Forgot your Password",
@@ -201,6 +207,7 @@ final class AuthViewModel: FormViewModel {
     
     private struct State {
         var registrationBuilder: RegistrationBuilder = RegistrationBuilder()
+        var verifier = PKCE.generateCodeVerifier()
     }
     
     enum Tags {

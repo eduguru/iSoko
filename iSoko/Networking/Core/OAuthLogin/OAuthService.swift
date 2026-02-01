@@ -11,16 +11,32 @@ import AuthenticationServices
 import UIKit
 import UtilsKit
 
+extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        UIApplication.shared
+            .connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .keyWindow ?? ASPresentationAnchor()
+    }
+}
+
 final class OAuthService: NSObject {
 
     private var session: ASWebAuthenticationSession?
     private var verifier = ""
-    private var state = ""
+    public var state = ""
 
-    func startAuthorization(completion: @escaping (Result<String, Error>) -> Void) {
-        verifier = PKCE.generateCodeVerifier()
+    // MARK: - Authorization (Step 1)
+
+    func startAuthorization(
+        verifier: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        self.verifier = verifier
+        self.state = UUID().uuidString
+
         let challenge = PKCE.codeChallenge(for: verifier)
-        state = UUID().uuidString
 
         guard let authURL = OAuthConfig.authorizationURL(
             codeChallenge: challenge,
@@ -53,7 +69,12 @@ final class OAuthService: NSObject {
         session?.start()
     }
 
-    func handleRedirect(url: URL, completion: @escaping (Result<String, Error>) -> Void) {
+    // MARK: - Redirect handling
+
+    private func handleRedirect(
+        url: URL,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         guard
             let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
             let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
@@ -67,38 +88,74 @@ final class OAuthService: NSObject {
         completion(.success(code))
     }
 
-    func exchangeCodeForToken(authorizationCode: String, completion: @escaping (Result<GuestTokenResponse, Error>) -> Void) {
+    // MARK: - Token exchange (Step 2)
+
+    func exchangeCodeForToken(
+        authorizationCode: String,
+        completion: @escaping (Result<TokenResponse, Error>) -> Void
+    ) {
         OAuthTokenService().exchangeAuthorizationCode(
             code: authorizationCode,
             codeVerifier: verifier,
             completion: completion
         )
     }
-    
-    func handleOAuthFailure(error: Error) {
-        let alertController = UIAlertController(
-            title: "Authentication Failed",
-            message: error.localizedDescription,
-            preferredStyle: .alert
-        )
-        
-        alertController.addAction(UIAlertAction(title: "Retry", style: .default, handler: { [weak self] _ in
-            self?.startAuthorization { result in
-                // Handle retry success or failure here
-            }
-        }))
-        
-//        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-//        present(alertController, animated: true)
-    }
-}
 
-extension OAuthService: ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        UIApplication.shared
-            .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?
-            .keyWindow ?? ASPresentationAnchor()
+    // MARK: - User details (Step 3)
+
+    func getUserDetails(
+        accessToken: String,
+        completion: @escaping (Result<UserDetails, Error>) -> Void
+    ) {
+        guard let url = URL(string: OAuthConfig.userInfoEndpoint) else {
+            completion(.failure(OAuthError.invalidAuthURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue(
+            "Bearer \(accessToken)",
+            forHTTPHeaderField: "Authorization"
+        )
+
+        URLSession.shared.dataTask(with: request) { data, _, error in
+            if let error {
+                completion(.failure(error))
+                return
+            }
+
+            guard let data else {
+                completion(.failure(OAuthError.emptyResponse))
+                return
+            }
+
+            // 🔍 DEBUG: Print raw JSON
+            self.printJSON(data)
+
+            do {
+                let user = try JSONDecoder().decode(UserDetails.self, from: data)
+                completion(.success(user))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
     }
+
+    private func printJSON(_ data: Data) {
+        do {
+            let jsonObject = try JSONSerialization.jsonObject(with: data)
+            let prettyData = try JSONSerialization.data(
+                withJSONObject: jsonObject,
+                options: [.prettyPrinted]
+            )
+
+            if let jsonString = String(data: prettyData, encoding: .utf8) {
+                print("📦 User Details JSON:\n\(jsonString)")
+            }
+        } catch {
+            print("⚠️ Failed to print JSON:", error)
+        }
+    }
+
 }

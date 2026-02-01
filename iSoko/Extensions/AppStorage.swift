@@ -68,7 +68,7 @@ extension AppStorage {
     public static var isBiometricsEnabled: Bool?
     
     @KeychainStored(StorageKeys.Keychain.authToken)
-    public static var authToken: GuestTokenModel?
+    public static var authToken: TokenResponse?
     
     @KeychainStored(StorageKeys.Keychain.accessToken)
     public static var accessToken: String?

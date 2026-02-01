@@ -5,7 +5,7 @@
 //  Created by Edwin Weru on 29/01/2026.
 //
 
-public protocol AuthToken {
+public protocol AuthToken: Codable {
     var accessToken: String { get }
     var refreshToken: String? { get }
     var expiresIn: Int { get }

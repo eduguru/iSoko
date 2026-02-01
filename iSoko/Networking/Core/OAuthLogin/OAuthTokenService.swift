@@ -2,21 +2,25 @@
 //  OAuthTokenService.swift
 //  
 //
-//  Created by Edwin Weru on 28/01/2026.
+//  Created by Edwin Weru on 01/02/2026.
 //
 
 import Foundation
+import CryptoKit
+import AuthenticationServices
+import UIKit
+import UtilsKit
 
 final class OAuthTokenService {
 
     func exchangeAuthorizationCode(
         code: String,
         codeVerifier: String,
-        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
+        completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
         requestToken(
             params: [
-                "grant_type": AppConstants.GrantType.authorizationCode.rawValue,
+                "grant_type": "authorization_code",
                 "client_id": OAuthConfig.clientId,
                 "code": code,
                 "redirect_uri": OAuthConfig.redirectURI,
@@ -28,11 +32,11 @@ final class OAuthTokenService {
 
     func refreshToken(
         refreshToken: String,
-        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
+        completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
         requestToken(
             params: [
-                "grant_type": AppConstants.GrantType.refreshToken.rawValue,
+                "grant_type": "refresh_token",
                 "client_id": OAuthConfig.clientId,
                 "refresh_token": refreshToken,
                 "scope": OAuthConfig.scope
@@ -43,7 +47,7 @@ final class OAuthTokenService {
 
     private func requestToken(
         params: [String: String],
-        completion: @escaping (Result<GuestTokenResponse, Error>) -> Void
+        completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
         guard let url = URL(string: OAuthConfig.tokenEndpoint) else {
             completion(.failure(OAuthError.invalidAuthURL))
@@ -72,11 +76,36 @@ final class OAuthTokenService {
             }
 
             do {
-                let token = try JSONDecoder().decode(GuestTokenResponse.self, from: data)
+                let token = try JSONDecoder().decode(TokenResponse.self, from: data)
                 completion(.success(token))
             } catch {
                 completion(.failure(error))
             }
         }.resume()
+    }
+}
+
+extension OAuthService {
+    func handleRedirect(url: URL) {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
+              let returnedState = components.queryItems?.first(where: { $0.name == "state" })?.value,
+              returnedState == state else {
+            print("Invalid redirect URL or state mismatch")
+            return
+        }
+
+        // Handle the authorization code and exchange it for tokens
+        exchangeCodeForToken(authorizationCode: code) { result in
+            switch result {
+            case .success(let token):
+                
+                print("Access:", token)
+                print("Access token:", token.accessToken)
+                
+            case .failure(let error):
+                print("Error exchanging code for token:", error)
+            }
+        }
     }
 }

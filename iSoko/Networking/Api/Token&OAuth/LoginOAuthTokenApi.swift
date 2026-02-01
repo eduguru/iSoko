@@ -13,50 +13,95 @@ public struct LoginOAuthTokenApi {
     public static func exchangeAuthorizationCode(
         code: String,
         codeVerifier: String
-    ) -> ValueResponseTarget<GuestTokenResponse> {
+    ) -> ValueResponseTarget<TokenResponse> {
+        // Add the "scope" parameter if required by the server
         let parameters: [String: String] = [
             "grant_type": AppConstants.GrantType.authorizationCode.rawValue,
             "client_id": OAuthConfig.clientId,
             "code": code,
             "redirect_uri": OAuthConfig.redirectURI,
-            "code_verifier": codeVerifier
+            "code_verifier": codeVerifier,
+            "scope": "openid"  // Add scope if needed (or replace with the correct scope)
         ]
         
-        return requestToken(params: parameters)
+        
+        let headers = [
+            "Content-Type": "application/x-www-form-urlencoded",  // Correct content type
+            "Accept": "application/json"  // Expect JSON response
+        ]
+        
+        let baseURL = URL(string: "https://api.dev.isoko.africa/v1/")!
+        
+        // Here we are making the request with URL encoding in the body
+        let target = AnyTarget(
+            baseURL: baseURL,
+            path: "oauth2/token",
+            method: .post,
+            task: .requestParameters(
+                parameters: parameters,
+                encoding: URLEncoding.httpBody // Ensures parameters are URL-encoded in the body
+            ),
+            headers: headers,
+            authorizationType: .none // No auth header needed here
+        )
+
+        return ValueResponseTarget(target: target)
     }
     
-    public static func refreshToken(refreshToken: String) -> ValueResponseTarget<GuestTokenResponse> {
+    public static func refreshToken(refreshToken: String) -> ValueResponseTarget<TokenResponse> {
         let parameters: [String: String] = [
             "grant_type": AppConstants.GrantType.refreshToken.rawValue,
             "client_id": OAuthConfig.clientId,
             "refresh_token": refreshToken,
-            "scope": OAuthConfig.scope
+            "scope": OAuthConfig.scope  // Ensure the scope is included for refresh token
         ]
         
-        return requestToken(params: parameters)
-    }
-    
-    
-    
-    public static func requestToken(params: [String: String]) -> ValueResponseTarget<GuestTokenResponse> {
         
-        let headers = ["Content-Type": "application/x-www-form-urlencoded"]
-        let parameters = params
+        let headers = [
+            "Content-Type": "application/x-www-form-urlencoded",  // Correct content type
+            "Accept": "application/json"  // Expect JSON response
+        ]
         
-        let baseURL = URL(string: OAuthConfig.tokenEndpoint)!
+        let baseURL = URL(string: "https://api.dev.isoko.africa/v1/")!
         
-        let t = AnyTarget(
+        // Here we are making the request with URL encoding in the body
+        let target = AnyTarget(
             baseURL: baseURL,
-            path: "",
+            path: "oauth2/token",
             method: .post,
             task: .requestParameters(
                 parameters: parameters,
-                encoding: URLEncoding.httpBody
+                encoding: URLEncoding.httpBody // Ensures parameters are URL-encoded in the body
             ),
             headers: headers,
-            authorizationType: .none
+            authorizationType: .none // No auth header needed here
         )
 
-        return ValueResponseTarget(target: t)
+        return ValueResponseTarget(target: target)
+    }
+    
+    public static func requestToken(params: [String: String]) -> ValueResponseTarget<TokenResponse> {
+        
+        let headers = [
+            "Content-Type": "application/x-www-form-urlencoded",  // Correct content type
+            "Accept": "application/json"  // Expect JSON response
+        ]
+        
+        let baseURL = URL(string: "https://api.dev.isoko.africa/v1/")!
+        
+        // Here we are making the request with URL encoding in the body
+        let target = AnyTarget(
+            baseURL: baseURL,
+            path: "oauth2/token",
+            method: .post,
+            task: .requestParameters(
+                parameters: params,
+                encoding: URLEncoding.httpBody // Ensures parameters are URL-encoded in the body
+            ),
+            headers: headers,
+            authorizationType: .none // No auth header needed here
+        )
+
+        return ValueResponseTarget(target: target)
     }
 }

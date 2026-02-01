@@ -10,7 +10,7 @@ import Foundation
 import NetworkingKit
 
 public struct GuestTokenApi {
-    public static func getToken(grant_type: String, client_id: String, client_secret: String) -> ValueResponseTarget<GuestTokenModel> {
+    public static func getToken(grant_type: String, client_id: String, client_secret: String) -> ValueResponseTarget<GuestToken> {
         let headers = ["Content-Type": "application/x-www-form-urlencoded"]
         let parameters = [
             "grant_type": grant_type,
@@ -33,7 +33,7 @@ public struct GuestTokenApi {
         return ValueResponseTarget(target: t)
     }
 
-    public static func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) -> ValueResponseTarget<GuestTokenModel> {
+    public static func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) -> ValueResponseTarget<GuestToken> {
         return getToken(grant_type: grant_type, client_id: client_id, client_secret: client_secret)
     }
 }

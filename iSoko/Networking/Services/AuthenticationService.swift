@@ -16,7 +16,7 @@ public protocol AuthenticationService {
         client_secret: String,
         username: String,
         password: String
-    ) async throws -> GuestTokenModel
+    ) async throws -> TokenResponse
     
     func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
@@ -36,8 +36,8 @@ public final class AuthenticationServiceImp: AuthenticationService {
         self.tokenProvider = tokenProvider
     }
     
-    public func login(grant_type: String, client_id: String, client_secret: String, username: String, password: String) async throws -> GuestTokenModel {
-        let token: GuestTokenModel = try await manager.request(AuthenticationApi.login(
+    public func login(grant_type: String, client_id: String, client_secret: String, username: String, password: String) async throws -> TokenResponse {
+        let token: TokenResponse = try await manager.request(AuthenticationApi.login(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret, username: username, password: password)

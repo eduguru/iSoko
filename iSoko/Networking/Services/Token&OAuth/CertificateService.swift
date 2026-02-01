@@ -9,8 +9,8 @@ import Foundation
 import NetworkingKit
 
 public protocol CertificateService {
-    func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestTokenModel
-    func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestTokenModel
+    func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestToken
+    func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestToken
 }
 
 
@@ -23,25 +23,41 @@ public final class CertificateServiceImpl: CertificateService {
         self.tokenProvider = tokenProvider
     }
     
-    public func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestTokenModel {
-        let token: GuestTokenModel = try await manager.request(GuestTokenApi.getToken(
+    public func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestToken {
+        let response: GuestToken = try await manager.request(GuestTokenApi.getToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret)
         )
         
+        let token = TokenResponse.init(
+            accessToken: response.accessToken,
+            tokenType: "",
+            expiresIn: response.expiresIn,
+            scope: "",
+            refreshToken: response.refreshToken
+        )
+        
         tokenProvider.saveToken(token)
-        return token
+        return response
     }
     
-    public func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestTokenModel {
-        let token: GuestTokenModel = try await manager.request(GuestTokenApi.getRefreshToken(
+    public func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestToken {
+        let response: GuestToken = try await manager.request(GuestTokenApi.getRefreshToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret, refresh_token: refresh_token)
         )
         
+        let token = TokenResponse.init(
+            accessToken: response.accessToken,
+            tokenType: "",
+            expiresIn: response.expiresIn,
+            scope: "",
+            refreshToken: response.refreshToken
+        )
+        
         tokenProvider.saveToken(token)
-        return token
+        return response
     }
 }

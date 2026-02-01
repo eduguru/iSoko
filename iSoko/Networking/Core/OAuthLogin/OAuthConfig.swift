@@ -30,6 +30,8 @@ enum PKCE {
 
 
 struct OAuthConfig {
+    // to be moved to a separate file
+    static let userInfoEndpoint = "https://api.dev.isoko.africa/v1/oauth2/user-info"
 
     static let clientId = "Mobile"
     static let scope = "openid"
