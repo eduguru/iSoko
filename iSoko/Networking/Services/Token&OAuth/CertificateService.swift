@@ -24,7 +24,7 @@ public final class CertificateServiceImpl: CertificateService {
     }
     
     public func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestToken {
-        let response: GuestToken = try await manager.request(GuestTokenApi.getToken(
+        let response: GuestToken = try await manager.request(CertificateApi.getToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret)
@@ -43,7 +43,7 @@ public final class CertificateServiceImpl: CertificateService {
     }
     
     public func getRefreshToken(grant_type: String, client_id: String, client_secret: String, refresh_token: String) async throws -> GuestToken {
-        let response: GuestToken = try await manager.request(GuestTokenApi.getRefreshToken(
+        let response: GuestToken = try await manager.request(CertificateApi.getRefreshToken(
             grant_type: grant_type,
             client_id: client_id,
             client_secret: client_secret, refresh_token: refresh_token)

@@ -1,5 +1,5 @@
 //
-//  GuestTokenApi.swift
+//  CertificateApi.swift
 //  iSoko
 //
 //  Created by Edwin Weru on 15/08/2025.
@@ -9,7 +9,7 @@ import Moya
 import Foundation
 import NetworkingKit
 
-public struct GuestTokenApi {
+public struct CertificateApi {
     public static func getToken(grant_type: String, client_id: String, client_secret: String) -> ValueResponseTarget<GuestToken> {
         let headers = ["Content-Type": "application/x-www-form-urlencoded"]
         let parameters = [

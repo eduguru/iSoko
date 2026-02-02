@@ -12,7 +12,7 @@ import UIKit
 import UtilsKit
 
 extension OAuthService: ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         UIApplication.shared
             .connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -21,7 +21,7 @@ extension OAuthService: ASWebAuthenticationPresentationContextProviding {
     }
 }
 
-final class OAuthService: NSObject {
+public final class OAuthService: NSObject {
 
     private var session: ASWebAuthenticationSession?
     private var verifier = ""
