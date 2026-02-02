@@ -329,7 +329,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     private struct State {
         var registrationType: RegistrationType
         var builder: RegistrationBuilder
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
 
         var phoneNumber: String?
         var password: String?

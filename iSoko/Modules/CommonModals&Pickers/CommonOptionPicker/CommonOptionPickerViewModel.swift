@@ -247,7 +247,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
 
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
-        var accessToken: String = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
 
         init(commonUtilityOption: CommonUtilityOption, options: [CommonIdNameModel] = []) {
             self.commonUtilityOption = commonUtilityOption

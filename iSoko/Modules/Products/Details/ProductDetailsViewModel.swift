@@ -336,7 +336,7 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         var isLoggedIn: Bool = true
         var product: ProductResponse
         var similarProduct: [ProductResponse] = []

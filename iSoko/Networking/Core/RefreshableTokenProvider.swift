@@ -29,10 +29,6 @@ public final class AppTokenProvider: RefreshableTokenProvider {
     // MARK: - Save Token & Start Refresh Task
     public func saveToken(_ token: TokenResponse) {
         AppStorage.authToken = token
-        AppStorage.accessToken = token.accessToken
-        AppStorage.refreshToken = token.refreshToken
-        AppStorage.tokenExpiry = Date().addingTimeInterval(TimeInterval(token.expiresIn))
-
         // Cancel existing refresh task and reschedule
         // refreshTask?.cancel()
         // startRefreshTask(expiresIn: token.expiresIn)

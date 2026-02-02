@@ -13,9 +13,6 @@ public extension StorageKeys.Keychain {
     static let userResponseObject = "\(AppStorage.prefix)userResponseObject"
     
     static let authToken = "\(AppStorage.prefix)authToken"
-    static let accessToken = "\(AppStorage.prefix)accessToken"
-    static let refreshToken = "\(AppStorage.prefix)refreshToken"
-    static let tokenExpiry = "\(AppStorage.prefix)tokenExpiry"
 }
 
 public extension StorageKeys.UserDefaults {
@@ -25,6 +22,7 @@ public extension StorageKeys.UserDefaults {
     static let selectedRegionCode = "\(AppStorage.prefix)selectedRegionCode"
     static let selectedCountryCode = "\(AppStorage.prefix)selectedCountryCode"
     
+    static let hasLoggedIn = "\(AppStorage.prefix)hasLoggedIn"
     static let hasSelectedLanguage = "\(AppStorage.prefix)hasSelectedLanguage"
     static let hasSelectedRegion = "\(AppStorage.prefix)hasSelectedRegion"
     static let hasViewedWalkthrough = "\(AppStorage.prefix)hasViewedWalkthrough"
@@ -35,7 +33,8 @@ extension AppStorage {
     
     //MARK: KeychainStored
     @KeychainStored(StorageKeys.Keychain.userProfile)
-    public static var userProfile: String?
+    public static var userProfile: UserDetails?
+    
     @KeychainStored(StorageKeys.Keychain.userResponseObject)
     public static var userResponseObject: UserV1Response?
     
@@ -55,6 +54,9 @@ extension AppStorage {
     @UserDefault(StorageKeys.UserDefaults.hasSelectedLanguage)
     public static var hasSelectedLanguage: Bool?
     
+    @UserDefault(StorageKeys.UserDefaults.hasLoggedIn)
+    public static var hasLoggedIn: Bool?
+    
     @UserDefault(StorageKeys.UserDefaults.hasSelectedRegion)
     public static var hasSelectedRegion: Bool?
     
@@ -69,13 +71,4 @@ extension AppStorage {
     
     @KeychainStored(StorageKeys.Keychain.authToken)
     public static var authToken: TokenResponse?
-    
-    @KeychainStored(StorageKeys.Keychain.accessToken)
-    public static var accessToken: String?
-    
-    @KeychainStored(StorageKeys.Keychain.refreshToken)
-    public static var refreshToken: String?
-    
-    @UserDefault(StorageKeys.Keychain.tokenExpiry)
-    public static var tokenExpiry: Date?
 }

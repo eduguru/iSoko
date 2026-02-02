@@ -57,7 +57,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             )
             
             print("🔑 accessToken:", token.accessToken)
-            AppStorage.accessToken = token.accessToken
+            AppStorage.authToken = .init(
+                accessToken: token.accessToken,
+                tokenType: token.tokenType ?? "",
+                expiresIn: token.expiresIn,
+                scope: token.scope ?? "",
+                refreshToken: token.refreshToken)
             
             return true
         } catch let NetworkError.server(apiError) {

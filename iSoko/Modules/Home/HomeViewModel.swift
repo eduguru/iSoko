@@ -16,16 +16,15 @@ final class HomeViewModel: FormViewModel {
     var onTapMoreProduct: (() -> Void)?
     var onTapProduct: ((ProductResponse) -> Void)?
     var onFavoriteProductToggle: ((Bool, ProductResponse) -> Void)?
-    
+
     var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
     var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
-    
+
     var onTapMoreProductCategories: (() -> Void)?
     var onTapMoreServiceCategories: (() -> Void)?
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
     var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
-
 
     // MARK: - Services
     private let productsService = NetworkEnvironment.shared.productsService
@@ -44,48 +43,24 @@ final class HomeViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
+
         Task {
-            let categoriesSuccess = await fetchCategories()
-            let featuredSuccess = await fetchFeaturedItems()
+            async let _ = fetchDataType(.featuredProducts)
+            async let _ = fetchDataType(.featuredServices)
+            async let _ = fetchDataType(.productCategories)
+            async let _ = fetchDataType(.serviceCategories)
 
-            if !categoriesSuccess {
-                print("⚠️ Failed to fetch one or more category types.")
-            }
-
-            if !featuredSuccess {
-                print("⚠️ Failed to fetch one or more featured item types.")
-            }
+            _ = await ((), (), (), ())
 
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateProductCategoriesSection()
-                self.updateServiceCategoriesSection()
-                self.updateTrendingProductsSection()
-                self.updateTrendingServicesSection()
-                
-                self.hideLoader()
+                self?.hideLoader()
             }
         }
     }
 
-    private func fetchCategories() async -> Bool {
-        async let productCategories = fetchData(type: .productCategories)
-        async let serviceCategories = fetchData(type: .serviceCategories)
-
-        let results = await [productCategories, serviceCategories]
-        return results.allSatisfy { $0 }
-    }
-
-    private func fetchFeaturedItems() async -> Bool {
-        async let featuredProducts = fetchData(type: .featuredProducts)
-        async let featuredServices = fetchData(type: .featuredServices)
-
-        let results = await [featuredProducts, featuredServices]
-        return results.allSatisfy { $0 }
-    }
-
+    // MARK: - Fetch Helper
     @discardableResult
-    private func fetchData(type: HomeDataType) async -> Bool {
+    private func fetchDataType(_ type: HomeDataType) async -> Bool {
         do {
             switch type {
             case .featuredProducts:
@@ -94,24 +69,42 @@ final class HomeViewModel: FormViewModel {
                 self.state?.featuredProducts = response
                 print("✅ Fetched Featured Products")
 
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateTrendingProductsSection()
+                }
+
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.featuredServices = response
                 print("✅ Fetched Featured Services")
 
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateTrendingServicesSection()
+                }
+
             case .productCategories:
                 let response = try await commonUtilitiesService.getCommodityCategory(
-                    page: 1, count: 20, module: "<regulation | trade-documents | standards>", accessToken: state?.accessToken ?? "")
+                    page: 1, count: 20, module: "<regulation | trade-documents | standards>",
+                    accessToken: state?.accessToken ?? "")
                 self.state?.productCategories = response
                 print("✅ Fetched Product Categories")
+
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateProductCategoriesSection()
+                }
 
             case .serviceCategories:
                 let response = try await servicesService.getAllTradeServiceCategories(
                     page: 1, count: 20, accessToken: state?.accessToken ?? "")
                 self.state?.serviceCategories = response
                 print("✅ Fetched Service Categories")
+
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateServiceCategoriesSection()
+                }
             }
+
             return true
 
         } catch let NetworkError.server(apiError) {
@@ -191,7 +184,6 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - Update Sections
-
     private func updateProductCategoriesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.categories.rawValue }) else {
             return
@@ -253,7 +245,6 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - Form Rows
-
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
@@ -314,7 +305,6 @@ final class HomeViewModel: FormViewModel {
     )
 
     // MARK: - Grid Item Builders
-
     private func makeProductCategoryItems() -> [QuickActionItem] {
         let count = min(state?.productCategories.count ?? 0, 5)
         return (0..<count).compactMap { index in
@@ -390,9 +380,8 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - State
-
     private struct State {
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         var featuredProducts: [ProductResponse] = []
         var featuredServices: [TradeServiceResponse] = []
         var productCategories: [CommodityCategoryResponse] = []
@@ -400,7 +389,6 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - Tags
-
     enum Tags {
         enum Section: Int {
             case categories = 0
@@ -422,7 +410,6 @@ final class HomeViewModel: FormViewModel {
     }
 
     // MARK: - Data Types
-
     private enum HomeDataType: CustomStringConvertible {
         case featuredProducts
         case featuredServices

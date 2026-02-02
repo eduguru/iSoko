@@ -276,7 +276,7 @@ final class ProductListingsViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         var products: [ProductResponse] = []
         var filteredProducts: [ProductResponse] = []
         var currentPage: Int = 1

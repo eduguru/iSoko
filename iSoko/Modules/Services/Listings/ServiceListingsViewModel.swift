@@ -274,7 +274,7 @@ final class ServiceListingsViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         var products: [TradeServiceResponse] = []
         var filteredProducts: [TradeServiceResponse] = []
         var currentPage: Int = 1

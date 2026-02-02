@@ -387,7 +387,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         var isUsingPhone: Bool = false
         var email: String?
         var phoneNumber: String?
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?

@@ -198,7 +198,7 @@ final class ServicesViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var accessToken = AppStorage.accessToken ?? ""
+        var accessToken = AppStorage.authToken?.accessToken ?? ""
         var similarProduct: [ProductResponse] = []
         var moreOwnerProducts: [ProductResponse] = []
     }
