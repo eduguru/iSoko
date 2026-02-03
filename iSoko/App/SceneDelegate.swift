@@ -9,68 +9,91 @@ import UIKit
 import StorageKit
 import GoogleSignIn
 
-class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+
     var window: UIWindow?
     var appCoordinator: AppCoordinator?
-    
-    let certificateService = NetworkEnvironment.shared.certificateService
-    
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        guard let windowScene = (scene as? UIWindowScene) else { return }
+
+    private let tokenProvider = AppTokenProvider()
+    private let certificateService = NetworkEnvironment.shared.certificateService
+
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        guard let windowScene = scene as? UIWindowScene else { return }
 
         let window = UIWindow(windowScene: windowScene)
         self.window = window
-        
-        // ✅ Set region default immediately
+
+        // Bootstrap (region, env, etc.)
         AppBootstrap.setup()
 
-        // ✅ Show splash screen immediately
-        let splashVC = SplashScreenViewController()
-        window.rootViewController = splashVC
+        // Splash immediately
+        window.rootViewController = SplashScreenViewController()
         window.makeKeyAndVisible()
 
-        // ✅ Start async task in background
         Task {
-            let success = await fetchToken()
-
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-
-                if success {
-                    // ✅ Now start the app coordinator
-                    self.appCoordinator = AppCoordinator(window: window)
-                    self.appCoordinator?.start()
-                } else {
-                    // Optional: Show error or retry
-                    print("❌ Failed to fetch token. Consider showing retry UI.")
-                }
-            }
+            await bootstrapApp(window: window)
         }
     }
-    
-    private func fetchToken() async -> Bool {
+
+    @MainActor
+    private func startApp(window: UIWindow) {
+        appCoordinator = AppCoordinator(window: window)
+        appCoordinator?.start()
+    }
+
+    private func bootstrapApp(window: UIWindow) async {
+        do {
+            // If we already have a token, try refresh (logged-in or guest)
+            if AppStorage.authToken != nil {
+                _ = try await tokenProvider.refreshToken()
+            } else {
+                // First launch / cold start (guest)
+                let success = await fetchGuestToken()
+                
+                guard success else {
+                    print("❌ Failed to obtain initial token")
+                    return
+                }
+            }
+
+            await MainActor.run {
+                self.startApp(window: window)
+            }
+
+        } catch OAuthError.unauthorized {
+            print("🚪 Unauthorized — logging out")
+
+        } catch {
+            print("❌ Bootstrap failed:", error)
+        }
+    }
+
+    private func fetchGuestToken() async -> Bool {
         do {
             let token = try await certificateService.getToken(
                 grant_type: AppConstants.GrantType.login.rawValue,
                 client_id: ApiEnvironment.clientId,
                 client_secret: ApiEnvironment.clientSecret
             )
-            
-            print("🔑 accessToken:", token.accessToken)
-            AppStorage.authToken = .init(
+
+            AppStorage.authToken = TokenResponse(
                 accessToken: token.accessToken,
                 tokenType: token.tokenType ?? "",
                 expiresIn: token.expiresIn,
                 scope: token.scope ?? "",
-                refreshToken: token.refreshToken)
-            
+                refreshToken: token.refreshToken
+            )
+
             return true
-        } catch let NetworkError.server(apiError) {
-            print("accessToken API error:", apiError.message ?? "")
+
         } catch {
-            print("accessToken Unexpected error:", error)
+            print("❌ Guest token fetch failed:", error)
+            return false
         }
-        return false
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {
@@ -100,37 +123,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
     }
-    
-//    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-//        guard let url = URLContexts.first?.url else { return }
-//
-//        print("📥 Received OAuth redirect: \(url)")
-//
-//        if url.scheme == "weru.isoko.app", url.host == "auth" {
-//            if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-//               let code = components.queryItems?.first(where: { $0.name == "code" })?.value {
-//                print("🔐 Authorization Code from deep link: \(code)")
-//
-//                // 👉 You can now exchange the code for tokens
-//            }
-//        }
-//        
-//        if GIDSignIn.sharedInstance.handle(url) {
-//            return
-//        }
-//    }
-    
-//    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-//        guard let url = URLContexts.first?.url else { return }
-//        
-//        if let url = URLContexts.first?.url {
-//            print("Received URL: \(url)")
-//        }
-//
-//
-//        if let oauthService = (window?.rootViewController as? AuthCoordinator)?.oauthService {
-//            oauthService.handleRedirect(url: url)  // Directly handle the URL here
-//        }
-//    }
-    
 }

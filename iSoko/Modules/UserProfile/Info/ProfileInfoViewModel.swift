@@ -8,6 +8,7 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class ProfileInfoViewModel: FormViewModel {
     
@@ -61,7 +62,7 @@ final class ProfileInfoViewModel: FormViewModel {
     private lazy var firstNameRow = TitleDescriptionFormRow(
         tag: Tags.Cells.firstName.rawValue,
         title: "First Name",
-        description: "Enter your first name",
+        description: state.userProfile?.name ?? "Enter your first name",
         maxTitleLines: 2,
         maxDescriptionLines: 0,
         titleEllipsis: .none,
@@ -97,7 +98,7 @@ final class ProfileInfoViewModel: FormViewModel {
     private lazy var emailRow = TitleDescriptionFormRow(
         tag: Tags.Cells.email.rawValue,
         title: "Email Address",
-        description: "Enter your email",
+        description: state.userProfile?.email ?? "Enter your email",
         maxTitleLines: 2,
         maxDescriptionLines: 0,
         titleEllipsis: .none,
@@ -109,7 +110,7 @@ final class ProfileInfoViewModel: FormViewModel {
     private lazy var phoneNumberRow = TitleDescriptionFormRow(
         tag: Tags.Cells.phoneNumber.rawValue,
         title: "Phone Number",
-        description: "Enter your phone number",
+        description: state.userProfile?.phoneNumber ?? "Enter your phone number",
         maxTitleLines: 2,
         maxDescriptionLines: 0,
         titleEllipsis: .none,
@@ -121,7 +122,8 @@ final class ProfileInfoViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var isLoggedIn: Bool = true
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
     }
 
     // MARK: - Tags

@@ -7,12 +7,6 @@
 
 import Foundation
 
-public enum GuestTokenApiError: Error {
-    case httpStatus(code: Int, message: String)
-    case decoding(Error)
-    case unknown
-}
-
 public struct GuestTokenService {
 
     private static var baseURL: URL {
@@ -36,62 +30,72 @@ public struct GuestTokenService {
             "client_secret": client_secret
         ]
 
-        let bodyString = params
+        request.httpBody = params
             .map { "\($0.key)=\($0.value)" }
             .joined(separator: "&")
-        request.httpBody = bodyString.data(using: .utf8)
+            .data(using: .utf8)
 
-        // Retry logic
         let maxRetries = 2
         var attempt = 0
 
-        while attempt <= maxRetries {
+        while true {
             do {
                 let (data, response) = try await URLSession.shared.data(for: request)
 
-                guard let httpResponse = response as? HTTPURLResponse else {
+                guard let http = response as? HTTPURLResponse else {
                     throw GuestTokenApiError.unknown
                 }
 
-                // Handle HTTP errors
-                guard (200...299).contains(httpResponse.statusCode) else {
-                    let raw = String(data: data, encoding: .utf8) ?? "No body"
+                // 🔴 401 handling (NO retry)
+                if http.statusCode == 401 {
+                    let authHeader = http.allHeaderFields["WWW-Authenticate"] as? String
+                    print("🚫 Guest token 401 — invalid credentials")
 
-                    // If 401, you can log or handle differently
-                    if httpResponse.statusCode == 401 {
-                        print("❌ Guest token request returned 401")
-                    }
-
-                    throw GuestTokenApiError.httpStatus(code: httpResponse.statusCode, message: raw)
+                    throw GuestTokenApiError.unauthorized(reason: authHeader)
                 }
 
-                // Decode response
+                // 🔴 Other non-2xx
+                guard (200...299).contains(http.statusCode) else {
+                    let raw = String(data: data, encoding: .utf8)
+                    throw GuestTokenApiError.httpStatus(
+                        code: http.statusCode,
+                        message: raw ?? "No body"
+                    )
+                }
+
+                // ✅ Decode success
                 do {
-                    let token = try JSONDecoder().decode(GuestToken.self, from: data)
-                    return token
+                    return try JSONDecoder().decode(GuestToken.self, from: data)
                 } catch {
                     throw GuestTokenApiError.decoding(error)
                 }
 
-            } catch {
-                attempt += 1
+            } catch let error as GuestTokenApiError {
+                // 🚫 Never retry auth failures
+                if case .unauthorized = error {
+                    throw error
+                }
 
-                // If exceeded retries, rethrow
+                attempt += 1
                 if attempt > maxRetries {
                     throw error
                 }
 
-                // Exponential backoff
-                let backoff = UInt64(pow(2.0, Double(attempt))) * 1_000_000_000
-                try await Task.sleep(nanoseconds: backoff)
+                await backoff(attempt)
+                print("🔁 Retrying guest token (attempt \(attempt))")
 
-                print("🔁 Retrying guest token request (attempt \(attempt))")
+            } catch {
+                attempt += 1
+                if attempt > maxRetries {
+                    throw GuestTokenApiError.transport(error)
+                }
+
+                await backoff(attempt)
+                print("🔁 Retrying guest token (attempt \(attempt))")
             }
         }
-
-        throw GuestTokenApiError.unknown
     }
-
+    
     public static func getRefreshToken(
         grant_type: String,
         client_id: String,
@@ -103,5 +107,10 @@ public struct GuestTokenService {
             client_id: client_id,
             client_secret: client_secret
         )
+    }
+
+    private static func backoff(_ attempt: Int) async {
+        let delay = UInt64(pow(2.0, Double(attempt))) * 1_000_000_000
+        try? await Task.sleep(nanoseconds: delay)
     }
 }

@@ -74,12 +74,3 @@ struct OAuthConfig {
         return components?.url
     }
 }
-
-
-enum OAuthError: Error {
-    case invalidAuthURL
-    case missingAuthorizationCode
-    case emptyResponse
-    case missingRefreshToken
-    case invalidRedirect
-}
