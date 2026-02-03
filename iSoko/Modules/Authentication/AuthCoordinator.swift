@@ -274,8 +274,9 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
         viewModel.gotoVerify = goToOtpVerification
         viewModel.goToLogin = { [weak self] in
-            // self?.goToLogin(makeRoot: true)
-            self?.goToMainTabs()
+            var verifier = PKCE.generateCodeVerifier()
+            self?.authenticate(verifier: verifier)
+            // self?.goToMainTabs() // self?.goToLogin(makeRoot: true)
         }
         
         let vc = BasicProfileViewController()

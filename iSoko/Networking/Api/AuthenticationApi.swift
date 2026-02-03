@@ -124,42 +124,8 @@ public struct AuthenticationApi {
 
 //MARK: - New Registration
 public extension AuthenticationApi {
-    /// Register a user (individual or organization)
-//    public static func register(request: RegistrationRequest, accessToken: String) {
-//    let userDict: [String: Any] = [
-//        "userTypeId": 1,
-//        "middleName": "Simons",
-//        "lastName": "Malacia",
-////            "referralCode": "",
-//        "locationId": 1,
-//        "roleId": 1,
-//        "countryId": 1,
-//        "phoneNumber": "+254700340678",
-//        "firstName": "Gregory",
-//        "ageGroupId": 1,
-//        "password": "P@ssw0rd!",
-//        "email": "user610@example.co",
-//        "genderId": 1
-//    ]
-//
-//        let jsonData = try! JSONSerialization.data(withJSONObject: userDict)
-//
-//        // Upload user with profile image
-//        // let profileImage = UIImage(named: "profile.jpg")
-//
-//        AuthenticationApi.uploadUser(userJSON: jsonData, profileImage: nil) { result in
-//            switch result {
-//            case .success(let user):
-//                print("User created:", user)
-//            case .failure(let error):
-//                print("Error:", error)
-//            }
-//        }
-//
-//    }
-    
     //MARK: - pre validation
-    static func register(_ request: RegistrationRequest, accessToken: String) -> BasicResponseTarget {
+    static func register(_ request: RegistrationRequest, accessToken: String) -> ValueResponseTarget<UserRegistrationResponse> {
         let userDict: [String: Any] = request.mapToCreateUserRequest().asDictionary
         let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
 
@@ -183,11 +149,11 @@ public extension AuthenticationApi {
             requiresAuth: false
         )
 
-        return BasicResponseTarget(target: t.asAnyTarget())
+        return ValueResponseTarget(target: t.asAnyTarget())
     }
 
 //MARK: - Password Reset
-    public static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
+    static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",

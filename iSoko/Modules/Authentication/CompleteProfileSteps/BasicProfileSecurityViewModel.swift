@@ -300,7 +300,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
                 // let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
 
                 await MainActor.run { // ✅ Success path (status == 200 guaranteed) // Proceed
-                    // self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
+                    self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
                 }
 
             } catch let NetworkError.server(response) { // ❌ Backend error
