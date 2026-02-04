@@ -128,8 +128,8 @@ public final class AuthInterceptor: RequestInterceptor {
         refreshTask = nil
 
         // Clear stored token
-        AppStorage.authToken = nil
-        AppStorage.hasLoggedIn = false
+//        AppStorage.authToken = nil
+//        AppStorage.hasLoggedIn = false
 
         // Optional: notify app
         NotificationCenter.default.post(

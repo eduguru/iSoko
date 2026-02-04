@@ -8,37 +8,118 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class TradeAssociationListingsViewModel: FormViewModel {
-    var goToMoreDetails: (() -> Void)? = { }
-    var goToButtonAction: ((String, String, @escaping(Bool) -> Void) -> Void)? = { _, _, _ in }
-    
 
-    private var state: State
+    // MARK: - Navigation
+    var goToMoreDetails: (() -> Void)?
+    var goToButtonAction: ((String, String, @escaping (Bool) -> Void) -> Void)?
 
+    // MARK: - Services
+    private let associationsService = NetworkEnvironment.shared.associationsService
+
+    // MARK: - State
+    private var state = State()
+
+    // MARK: - Init
     override init() {
-        self.state = State()
         super.init()
         self.sections = makeSections()
     }
 
-    // MARK: - Make sections
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
-            FormSection(id: Tags.Section.header.rawValue, cells: [segmentedOptions]),
-            FormSection(id: Tags.Section.body.rawValue, cells: makeImageRows(for: state.selectedSegmentIndex))
+            FormSection(
+                id: Tags.Section.header.rawValue,
+                cells: [segmentedOptions]
+            ),
+            FormSection(
+                id: Tags.Section.body.rawValue,
+                cells: makeImageRows()
+            )
         ]
     }
 
-    // MARK: - Lazy Segment Row
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            await fetchAssociations(for: .approved, reset: true)
+            await fetchAssociations(for: .pending, reset: true)
+            await fetchAssociations(for: .discover, reset: true)
+        }
+    }
+
+    // MARK: - Unified Fetch Logic
+    private func fetchAssociations(
+        for segment: AssociationSegment,
+        reset: Bool
+    ) async {
+
+        guard var feed = state.feeds[segment], !feed.isLoading else { return }
+
+        feed.isLoading = true
+        state.feeds[segment] = feed
+
+        do {
+            let response: [AssociationResponse]
+
+            switch segment {
+            case .approved:
+                response = try await associationsService.getApprovedssociations(
+                    page: feed.currentPage,
+                    count: state.itemsPerPage,
+                    accessToken: state.accessToken
+                )
+
+            case .pending:
+                response = try await associationsService.getAllPendingAssociations(
+                    page: feed.currentPage,
+                    count: state.itemsPerPage,
+                    accessToken: state.accessToken
+                )
+
+            case .discover:
+                response = try await associationsService.getAllAssociations(
+                    page: feed.currentPage,
+                    count: state.itemsPerPage,
+                    accessToken: state.accessToken
+                )
+            }
+
+            if reset {
+                feed.items = response
+                feed.currentPage = 1
+            } else {
+                feed.items.append(contentsOf: response)
+            }
+
+            feed.hasMorePages = response.count == state.itemsPerPage
+            feed.currentPage += 1
+            feed.isLoading = false
+            state.feeds[segment] = feed
+
+            DispatchQueue.main.async { [weak self] in
+                self?.reloadBodySection()
+            }
+
+        } catch {
+            feed.isLoading = false
+            state.feeds[segment] = feed
+            showError(error.localizedDescription)
+        }
+    }
+
+    // MARK: - Segmented Control
     private lazy var segmentedOptions = makeOptionsSegmentFormRow()
 
     private func makeOptionsSegmentFormRow() -> FormRow {
-        let styledSegmentRow = SegmentedFormRow(
+        SegmentedFormRow(
             model: SegmentedFormModel(
                 title: nil,
                 segments: ["Your Associations", "Requested", "Discover"],
-                selectedIndex: state.selectedSegmentIndex,
+                selectedIndex: state.selectedSegment.rawValue,
                 tag: 2001,
                 tintColor: .gray,
                 selectedSegmentTintColor: .app(.primary),
@@ -46,133 +127,135 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 titleTextColor: .darkGray,
                 segmentTextColor: .lightGray,
                 selectedSegmentTextColor: .white,
-                onSelectionChanged: { [weak self] selectedIndex in
-                    guard let self = self else { return }
-                    self.state.selectedSegmentIndex = selectedIndex
+                onSelectionChanged: { [weak self] index in
+                    guard let self,
+                          let segment = AssociationSegment(rawValue: index)
+                    else { return }
+
+                    self.state.selectedSegment = segment
                     self.reloadBodySection()
                 }
             )
         )
-        return styledSegmentRow
     }
 
-    // MARK: - Body Reload Logic
+    // MARK: - Body Reload
     private func reloadBodySection() {
-        // Replace the "body" section with updated rows
-        var updatedSections = sections
-
-        let newBodyRows = makeImageRows(for: state.selectedSegmentIndex)
-        let newBodySection = FormSection(id: Tags.Section.body.rawValue, cells: newBodyRows)
-
-        if updatedSections.count > 1 {
-            updatedSections[1] = newBodySection
-        } else {
-            updatedSections.append(newBodySection)
-        }
-
-        // Trigger UI reload automatically through didSet
-        self.sections = updatedSections
-
-        // Optionally, if you want a fade animation on the body section:
+        sections[1] = FormSection(
+            id: Tags.Section.body.rawValue,
+            cells: makeImageRows()
+        )
         onReloadSection?(Tags.Section.body.rawValue)
     }
 
-    // MARK: - Generate Rows
-    private func makeImageTitleDescriptionRow(from item: RowItemModel, tag: Int) -> FormRow {
-        ImageTitleDescriptionBottomRow(
-            tag: tag,
-            config: .init(
-                image: item.image,
-                title: item.title,
-                description: item.description,
-                bottomLabelText: item.bottomLabelText,
-                bottomButtonTitle: item.bottomButtonTitle,
-                bottomButtonStyle: item.bottomButtonStyle ?? .plain,
-                onBottomButtonTap: item.onBottomButtonTap,
-                accessoryType: .chevron,
-                onTap: item.onTap,
-                isCardStyleEnabled: true
+    // MARK: - Data Source
+    private func currentItems() -> [AssociationResponse] {
+        state.feeds[state.selectedSegment]?.items ?? []
+    }
+
+    // MARK: - Row Builders
+    private func discoverRows() -> [RowItemModel] {
+        currentItems().map {
+            RowItemModel(
+                title: $0.name ?? "",
+                description: $0.description ?? "",
+                image: .questionCircleIcon,
+                bottomButtonTitle: "Join",
+                bottomButtonStyle: .primary,
+                onBottomButtonTap: { [weak self] in
+                    self?.goToButtonAction?("", "") { _ in }
+                },
+                onTap: { [weak self] in self?.goToMoreDetails?() }
             )
-        )
-    }
-
-    // MARK: - Segment-based Row Items
-    private func makeRowItemsArray(for segmentIndex: Int) -> [RowItemModel] {
-        var items: [RowItemModel] = []
-
-        switch segmentIndex {
-        case 0: // Your Associations — bottom label
-            for i in 1...5 {
-                items.append(
-                    RowItemModel(
-                        title: "Association \(i)",
-                        description: "You are a verified member.",
-                        image: .settingsGearIcon,
-                        bottomLabelText: "Member since 20\(15 + i)",
-                        onTap: { [weak self] in self?.goToMoreDetails?() }
-                    )
-                )
-            }
-
-        case 1: // Requested — secondary cancel button
-            for i in 1...5 {
-                items.append(
-                    RowItemModel(
-                        title: "Pending Request \(i)",
-                        description: "Awaiting approval.",
-                        image: .legalIcon,
-                        bottomButtonTitle: "Cancel",
-                        bottomButtonStyle: .secondary,
-                        onBottomButtonTap: { [weak self] in
-                            self?.goToButtonAction?("", "") { _ in
-                                
-                            }
-                            print("Cancel request \(i) tapped")
-                        },
-                        onTap: { [weak self] in self?.goToMoreDetails?() }
-                    )
-                )
-            }
-
-        case 2: // Discover — primary join button
-            for i in 1...5 {
-                items.append(
-                    RowItemModel(
-                        title: "Discover Association \(i)",
-                        description: "Explore new trade opportunities.",
-                        image: .questionCircleIcon,
-                        bottomButtonTitle: "Join",
-                        bottomButtonStyle: .primary,
-                        onBottomButtonTap: { [weak self] in
-                            self?.goToButtonAction?("", "") { _ in
-                                
-                            }
-                            print("Join association \(i) tapped")
-                        },
-                        onTap: { [weak self] in self?.goToMoreDetails?() }
-                    )
-                )
-            }
-
-        default:
-            break
         }
-
-        return items
     }
 
-    // MARK: - Convert to Rows
-    private func makeImageRows(for segmentIndex: Int) -> [FormRow] {
-        let items = makeRowItemsArray(for: segmentIndex)
-        return items.enumerated().map { index, item in
-            makeImageTitleDescriptionRow(from: item, tag: 2000 + index)
+    private func approvedRows() -> [RowItemModel] {
+        currentItems().map {
+            RowItemModel(
+                title: $0.name ?? "",
+                description: $0.registrationStatus ?? "",
+                image: .settingsGearIcon,
+                bottomLabelText: "Member since \($0.foundedIn ?? "")",
+                onTap: { [weak self] in self?.goToMoreDetails?() }
+            )
+        }
+    }
+
+    private func pendingRows() -> [RowItemModel] {
+        currentItems().map {
+            RowItemModel(
+                title: $0.name ?? "",
+                description: "Awaiting approval",
+                image: .legalIcon,
+                bottomButtonTitle: "Cancel",
+                bottomButtonStyle: .secondary,
+                onBottomButtonTap: { [weak self] in
+                    self?.goToButtonAction?("", "") { _ in }
+                },
+                onTap: { [weak self] in self?.goToMoreDetails?() }
+            )
+        }
+    }
+
+    // MARK: - Segment Mapping
+    private func makeRowItemsArray() -> [RowItemModel] {
+        switch state.selectedSegment {
+        case .approved:
+            return approvedRows()
+        case .pending:
+            return pendingRows()
+        case .discover:
+            return discoverRows()
+        }
+    }
+
+    // MARK: - Rows
+    private func makeImageRows() -> [FormRow] {
+        makeRowItemsArray().enumerated().map { index, item in
+            ImageTitleDescriptionBottomRow(
+                tag: 2000 + index,
+                config: .init(
+                    image: item.image,
+                    title: item.title,
+                    description: item.description,
+                    bottomLabelText: item.bottomLabelText,
+                    bottomButtonTitle: item.bottomButtonTitle,
+                    bottomButtonStyle: item.bottomButtonStyle ?? .plain,
+                    onBottomButtonTap: item.onBottomButtonTap,
+                    accessoryType: .chevron,
+                    onTap: item.onTap,
+                    isCardStyleEnabled: true
+                )
+            )
+        }
+    }
+
+    // MARK: - Load More
+    func loadMoreIfNeeded(at index: Int) {
+        guard
+            let feed = state.feeds[state.selectedSegment],
+            index >= feed.items.count - 3,
+            feed.hasMorePages,
+            !feed.isLoading
+        else { return }
+
+        Task {
+            await fetchAssociations(for: state.selectedSegment, reset: false)
         }
     }
 
     // MARK: - State
     private struct State {
-        var isLoggedIn: Bool = true
-        var selectedSegmentIndex: Int = 0
+        var selectedSegment: AssociationSegment = .approved
+        var accessToken: String = AppStorage.authToken?.accessToken ?? ""
+        let itemsPerPage: Int = 20
+
+        var feeds: [AssociationSegment: FeedState] = [
+            .approved: FeedState(),
+            .pending: FeedState(),
+            .discover: FeedState()
+        ]
     }
 
     // MARK: - Tags
@@ -182,4 +265,18 @@ final class TradeAssociationListingsViewModel: FormViewModel {
             case body = 1
         }
     }
+    
+    enum AssociationSegment: Int {
+        case approved = 0
+        case pending = 1
+        case discover = 2
+    }
+
+    struct FeedState {
+        var items: [AssociationResponse] = []
+        var currentPage: Int = 1
+        var hasMorePages: Bool = true
+        var isLoading: Bool = false
+    }
+
 }

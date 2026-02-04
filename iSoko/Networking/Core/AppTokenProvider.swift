@@ -30,8 +30,7 @@ public final class AppTokenProvider: RefreshableTokenProvider {
         print("🔁 Attempting token refresh...")
 
         return try await withCheckedThrowingContinuation { continuation in
-            if AppStorage.hasLoggedIn == true {
-                // Logged-in user refresh
+            if AppStorage.hasLoggedIn == true { // Logged-in user refresh
                 let authToken = AppStorage.authToken
                 OAuthTokenService().refreshToken(refreshToken: authToken?.refreshToken ?? "") { [weak self] resp in
                     switch resp {
@@ -45,8 +44,7 @@ public final class AppTokenProvider: RefreshableTokenProvider {
                     }
                 }
 
-            } else {
-                // Guest refresh (async call inside a Task)
+            } else { // Guest refresh (async call inside a Task)
                 Task {
                     do {
                         let response = try await GuestTokenService.getToken(
@@ -100,32 +98,3 @@ public final class AppTokenProvider: RefreshableTokenProvider {
         }
     }
 }
-
-
-//public final class AppTokenProvider: RefreshableTokenProvider {
-//    // private var refreshTask: Task<Void, Never>?
-//
-//    public init() {
-//
-//    }
-//
-//    // MARK: - Current Token
-//    public func currentToken() -> TokenResponse? {
-//        AppStorage.authToken
-//    }
-//
-//    // MARK: - Save Token & Start Refresh Task
-//    public func saveToken(_ token: TokenResponse) {
-//        AppStorage.authToken = token
-//        // Cancel existing refresh task and reschedule
-//        // refreshTask?.cancel()
-//        // startRefreshTask(expiresIn: token.expiresIn)
-//        // startRefreshTask(expiresIn: 30)
-//    }
-//
-//    // MARK: - Refresh Token
-//    public func refreshToken() async -> TokenResponse? {
-//        print("perform refresh token here")
-//        return nil
-//    }
-//}

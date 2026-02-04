@@ -14,7 +14,6 @@ public class ModalCoordinator: BaseCoordinator {
     public override func start() { }
 
     // MARK: - Country Selection
-
     public func goToCountrySelection(completion: @escaping (Country) -> Void) {
         let model = CountryPickerViewModel()
         model.confirmSelection = { [weak self] country in
@@ -31,7 +30,6 @@ public class ModalCoordinator: BaseCoordinator {
     }
 
     // MARK: - Language Selection
-
     public func goToLanguageSelection(completion: @escaping (Language) -> Void) {
         let model = LanguagePickerViewModel()
         model.confirmSelection = { [weak self] language in
@@ -46,21 +44,6 @@ public class ModalCoordinator: BaseCoordinator {
         }
 
         router.push(vc)
-    }
-
-    // MARK: - Generic Modal Presentation
-
-    public func presentModal() {
-        let modalVC = UIViewController()
-        modalVC.view.backgroundColor = .systemPurple
-        modalVC.title = "Modal Flow"
-        modalVC.modalPresentationStyle = .fullScreen
-
-        presentModal(modalVC)
-    }
-
-    public func dismiss() {
-        dismissModal()
     }
 
     public func goToOtpVerification( type: OTPVerificationType, onSuccess: (() -> Void)? = nil ) {
@@ -88,5 +71,19 @@ public class ModalCoordinator: BaseCoordinator {
 
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    // MARK: - Generic Modal Presentation
+    public func presentModal() {
+        let modalVC = UIViewController()
+        modalVC.view.backgroundColor = .systemPurple
+        modalVC.title = "Modal Flow"
+        modalVC.modalPresentationStyle = .fullScreen
+
+        presentModal(modalVC)
+    }
+
+    public func dismiss() {
+        dismissModal()
     }
 }

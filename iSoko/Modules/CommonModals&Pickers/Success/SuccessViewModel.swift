@@ -1,24 +1,16 @@
 //
-//  AuthViewModel.swift
-//  iSoko
+//  SuccessViewModel.swift
+//  
 //
-//  Created by Edwin Weru on 04/08/2025.
+//  Created by Edwin Weru on 03/02/2026.
 //
 
 import DesignSystemKit
 import UIKit
-import StorageKit
 
-final class AuthViewModel: FormViewModel {
-    var gotoSignIn: ((_ verifier: String) -> Void)?
-    var goToExchangeToken: ((_ code: String) -> Void)?
-    var goToGetUserDetails: (() -> Void)?
-
-    
-    var gotoSignUp: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
-    var goToHome: (() -> Void)? = { }
-    var gotoGuestSession: (() -> Void)? = { }
-    var gotoForgotPassword: (() -> Void)? = { }
+final class SuccessViewModel: FormViewModel {
+    var goToDone: (() -> Void)?
+    var goToComplete: (() -> Void)? = { }
     
     private var state: State?
     
@@ -34,7 +26,7 @@ final class AuthViewModel: FormViewModel {
         var sections: [FormSection] = []
         
         sections.append(makeHeaderSection())
-        sections.append(makeCredentialsSection())
+        sections.append(makeBodySection())
         
         return sections
     }
@@ -45,14 +37,14 @@ final class AuthViewModel: FormViewModel {
             title: nil,
             cells: [
                 SpacerFormRow(tag: 1001),
-//                makeHeaderImageCell(),
+                makeHeaderImageCell(),
                 makeHeaderTitleRow(),
                 SpacerFormRow(tag: 1001),
             ]
         )
     }
     
-    private func makeCredentialsSection() -> FormSection {
+    private func makeBodySection() -> FormSection {
         FormSection(
             id: Tags.Section.credentials.rawValue,
             title: nil,
@@ -60,16 +52,10 @@ final class AuthViewModel: FormViewModel {
                 font: .systemFont(ofSize: 18, weight: .semibold),
                 color: .app(.textOnBackground)
             ),
-            actionTitle: "View More",
-            onActionTapped: {
-                print("👀 View More tapped for credentials section")
-            },
             cells: [
                 SpacerFormRow(tag: 1001),
-                makeLoginButtonRow(),
-                makeForgotPasswordButtonRow(),
-                makeSignUpButtonRow(),
-                makeGuestButtonRow()
+                makePrimaryButtonRow(),
+                // makeSecondaryButtonRow()
             ]
         )
         
@@ -91,7 +77,7 @@ final class AuthViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Sign in",
+            title: "Success",
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -106,44 +92,26 @@ final class AuthViewModel: FormViewModel {
         return row
     }
     
-    private func makeLoginButtonRow() -> FormRow {
+    private func makePrimaryButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Sign in",
+            title: "Done",
             style: .primary,
             size: .medium,
             icon: UIImage(systemName: "email.fill"),
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            // This block will be called when the user taps the "Sign in" button
-            self?.gotoSignIn?(self?.state?.verifier ?? "")
+            self?.goToDone?()
         }
         
-        let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
-        
-        return buttonRow
-    }
-
-    private func makeForgotPasswordButtonRow() -> FormRow {
-        let buttonModel = ButtonFormModel(
-            title: "Forgot your Password",
-            style: .plain,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            self?.gotoForgotPassword?()
-        }
-
         let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
         
         return buttonRow
     }
     
-    private func makeSignUpButtonRow() -> FormRow {
+    private func makeSecondaryButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Create an Account",
+            title: "Share",
             style: .custom(
                 backgroundColor: .white,
                 textColor: .app(.primary),
@@ -155,7 +123,7 @@ final class AuthViewModel: FormViewModel {
             hapticsEnabled: true,
             action: { [weak self] in
                 guard let self, let state else { return }
-                self.gotoSignUp?(state.registrationBuilder)
+                self.goToComplete?()
             }
         )
         
@@ -164,22 +132,6 @@ final class AuthViewModel: FormViewModel {
         return buttonRow
     }
     
-    private func makeGuestButtonRow() -> FormRow {
-        let buttonModel = ButtonFormModel(
-            title: "Guest Mode",
-            style: .secondary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            self?.gotoGuestSession?()
-        }
-        
-        let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
-        
-        return buttonRow
-    }
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -207,8 +159,6 @@ final class AuthViewModel: FormViewModel {
     
     
     private struct State {
-        var registrationBuilder: RegistrationBuilder = RegistrationBuilder()
-        var verifier = AppStorage.verifier ?? ""
     }
     
     enum Tags {

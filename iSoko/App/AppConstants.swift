@@ -26,6 +26,9 @@ struct AppBootstrap {
     static func setup() {
         let selectedRegionCode = AppStorage.selectedRegionCode
         
+        var verifier: String { PKCE.generateCodeVerifier() }
+        AppStorage.verifier = verifier
+        
         if selectedRegionCode == nil {
             let buildCountry = Bundle.main.object( forInfoDictionaryKey: "DEFAULT_COUNTRY_CODE" ) as? String ?? "tz"
             AppStorage.selectedRegionCode = buildCountry.lowercased()

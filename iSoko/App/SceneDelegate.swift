@@ -46,12 +46,14 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func bootstrapApp(window: UIWindow) async {
+        let authToken = AppStorage.authToken
+        let loggedIn = AppStorage.hasLoggedIn ?? false
+        
         do {
             // If we already have a token, try refresh (logged-in or guest)
-            if AppStorage.authToken != nil {
+            if authToken != nil && loggedIn {
                 _ = try await tokenProvider.refreshToken()
-            } else {
-                // First launch / cold start (guest)
+            } else { // First launch / cold start (guest)
                 let success = await fetchGuestToken()
                 
                 guard success else {

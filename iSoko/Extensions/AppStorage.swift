@@ -22,6 +22,7 @@ public extension StorageKeys.UserDefaults {
     static let selectedRegionCode = "\(AppStorage.prefix)selectedRegionCode"
     static let selectedCountryCode = "\(AppStorage.prefix)selectedCountryCode"
     
+    static let verifier = "\(AppStorage.prefix)verifier"
     static let hasLoggedIn = "\(AppStorage.prefix)hasLoggedIn"
     static let hasSelectedLanguage = "\(AppStorage.prefix)hasSelectedLanguage"
     static let hasSelectedRegion = "\(AppStorage.prefix)hasSelectedRegion"
@@ -37,6 +38,12 @@ extension AppStorage {
     
     @KeychainStored(StorageKeys.Keychain.userResponseObject)
     public static var userResponseObject: UserV1Response?
+    
+    @KeychainStored(StorageKeys.Keychain.authToken)
+    public static var authToken: TokenResponse?
+}
+
+extension AppStorage {
     
     //MARK: UserDefault
     @UserDefault(StorageKeys.UserDefaults.selectedLanguage)
@@ -69,6 +76,6 @@ extension AppStorage {
     @UserDefault(StorageKeys.UserDefaults.isBiometricsEnabled)
     public static var isBiometricsEnabled: Bool?
     
-    @KeychainStored(StorageKeys.Keychain.authToken)
-    public static var authToken: TokenResponse?
+    @UserDefault(StorageKeys.UserDefaults.verifier)
+    public static var verifier: String?
 }

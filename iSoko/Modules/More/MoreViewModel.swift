@@ -139,9 +139,6 @@ final class MoreViewModel: FormViewModel {
                 RowItemModel(title: "Profile Information", description: "Manage your account details", image: .profile, onTap: { [weak self] in
                     self?.gotoProfile?()
                 }),
-                RowItemModel(title: "Organisations", description: "Caption organisation benefits", image: .orgIcon, onTap: { [weak self] in
-                    self?.gotoOrganisations?()
-                }),
                 RowItemModel(title: "Trade Associations", description: "Caption about association", image: .tradeIcon, onTap: { [weak self] in
                     self?.gotoTradeAssociations?()
                 }),

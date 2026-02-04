@@ -37,18 +37,18 @@ public struct RegistrationRequest: Codable {
     
     public func mapToCreateUserRequest() -> CreateUserRequestDto {
         return CreateUserRequestDto(
-            ageGroupId: ageGroup.id,
-            countryId: country.id,
+            ageGroupId: ageGroup.id ?? 0,
+            countryId: country.id ?? 0,
             email: email,
             firstName: firstName,
             genderId: 1,
             middleName: middleName,
             lastName: lastName,
-            locationId: location.id,
+            locationId: location.id ?? "",
             password: password,
             phoneNumber: phoneNumber,
             referralCode: referralCode,
-            roleId: role.id
+            roleId: role.id ?? 0
             )
     }
 }

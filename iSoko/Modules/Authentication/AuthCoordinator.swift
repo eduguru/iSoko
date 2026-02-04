@@ -129,8 +129,9 @@ class AuthCoordinator: BaseCoordinator {
                 self?.exchangeCode(code) { tokenResult in
                     switch tokenResult {
                     case .success(let token):
-                        print("Access token:", token.accessToken)
+                        print("authenticate Access token:", token.accessToken)
                         AppStorage.authToken = token
+                        AppStorage.hasLoggedIn = true
 
                         self?.fetchUserDetails(accessToken: token.accessToken) { userResult in
                             switch userResult {
@@ -274,7 +275,7 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
         viewModel.gotoVerify = goToOtpVerification
         viewModel.goToLogin = { [weak self] in
-            var verifier = PKCE.generateCodeVerifier()
+            let verifier = AppStorage.verifier ?? ""
             self?.authenticate(verifier: verifier)
             // self?.goToMainTabs() // self?.goToLogin(makeRoot: true)
         }

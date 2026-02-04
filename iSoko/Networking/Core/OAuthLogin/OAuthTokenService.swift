@@ -10,6 +10,7 @@ import CryptoKit
 import AuthenticationServices
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class OAuthTokenService {
 
@@ -36,12 +37,12 @@ final class OAuthTokenService {
         refreshToken: String,
         completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
+        
+        
         requestToken(
             params: [
                 "grant_type": "refresh_token",
-                "client_id": OAuthConfig.clientId,
-                "refresh_token": refreshToken,
-                "scope": OAuthConfig.scope
+                "refresh_token": refreshToken
             ],
             completion: completion
         )
