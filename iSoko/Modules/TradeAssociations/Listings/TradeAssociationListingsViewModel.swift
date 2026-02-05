@@ -13,7 +13,7 @@ import StorageKit
 final class TradeAssociationListingsViewModel: FormViewModel {
 
     // MARK: - Navigation
-    var goToMoreDetails: (() -> Void)?
+    var goToMoreDetails: ((AssociationResponse) -> Void)? = { _ in }
     var goToButtonAction: ((String, String, @escaping (Bool) -> Void) -> Void)?
 
     // MARK: - Services
@@ -155,45 +155,50 @@ final class TradeAssociationListingsViewModel: FormViewModel {
 
     // MARK: - Row Builders
     private func discoverRows() -> [RowItemModel] {
-        currentItems().map {
+        currentItems().map { item in
             RowItemModel(
-                title: $0.name ?? "",
-                description: $0.description ?? "",
+                title: item.name ?? "",
+                description: item.description ?? "",
                 image: .questionCircleIcon,
                 bottomButtonTitle: "Join",
                 bottomButtonStyle: .primary,
                 onBottomButtonTap: { [weak self] in
                     self?.goToButtonAction?("", "") { _ in }
                 },
-                onTap: { [weak self] in self?.goToMoreDetails?() }
+                onTap: { [weak self] in
+                    self?.goToMoreDetails?(item)
+                }
             )
         }
     }
 
+
     private func approvedRows() -> [RowItemModel] {
-        currentItems().map {
+        currentItems().map { item in
             RowItemModel(
-                title: $0.name ?? "",
-                description: $0.registrationStatus ?? "",
+                title: item.name ?? "",
+                description: item.registrationStatus ?? "",
                 image: .settingsGearIcon,
-                bottomLabelText: "Member since \($0.foundedIn ?? "")",
-                onTap: { [weak self] in self?.goToMoreDetails?() }
+                bottomLabelText: "Member since \(item.foundedIn ?? "")",
+                onTap: { [weak self] in
+                    self?.goToMoreDetails?(item)
+                }
             )
         }
     }
 
     private func pendingRows() -> [RowItemModel] {
-        currentItems().map {
+        currentItems().map { item in
             RowItemModel(
-                title: $0.name ?? "",
-                description: "Awaiting approval",
+                title: item.name ?? "",
+                description: item.status ?? "Awaiting approval",
                 image: .legalIcon,
                 bottomButtonTitle: "Cancel",
                 bottomButtonStyle: .secondary,
                 onBottomButtonTap: { [weak self] in
                     self?.goToButtonAction?("", "") { _ in }
                 },
-                onTap: { [weak self] in self?.goToMoreDetails?() }
+                onTap: { [weak self] in self?.goToMoreDetails?(item) }
             )
         }
     }

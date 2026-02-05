@@ -110,7 +110,7 @@ public class MoreCoordinator: BaseCoordinator {
     private func gotoTradeAssociations() {
         let viewModel = TradeAssociationListingsViewModel()
         viewModel.goToMoreDetails = { [weak self] in
-            self?.gotoTradeAssociationDetails()
+            self?.gotoTradeAssociationDetails($0)
         }
         
         viewModel.goToButtonAction = showConfirmationBottomSheet
@@ -129,8 +129,8 @@ public class MoreCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func gotoTradeAssociationDetails() {
-        let viewModel = TradeAssociationDetailsViewModel()
+    private func gotoTradeAssociationDetails(_ data: AssociationResponse) {
+        let viewModel = TradeAssociationDetailsViewModel(data)
         viewModel.goToNewsDetails = goToNewsDetails
         
         let vc = TradeAssociationDetailsViewController()

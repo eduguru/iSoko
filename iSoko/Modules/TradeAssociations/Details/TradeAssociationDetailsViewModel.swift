@@ -12,9 +12,11 @@ import UtilsKit
 final class TradeAssociationDetailsViewModel: FormViewModel {
     var goToNewsDetails: (() -> Void)? = { }
     
-    private var state = State()
+    private var state: State
 
-    override init() {
+    init(_ data: AssociationResponse) {
+        state = State(data: data)
+        
         super.init()
         self.sections = makeSections()
         reloadBodySection(animated: false)
@@ -106,9 +108,9 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         AssociationHeaderFormRow(
             tag: 001001,
             model: AssociationHeaderModel(
-                title: "Baraka Womens Football Club",
-                subtitle: "Founded in 2025",
-                desc: "12 Members",
+                title: state.data.name ?? "",
+                subtitle: "Founded in " + (state.data.foundedIn ?? "00"),
+                desc: "\(state.data.members ?? 0)" + " Members",
                 icon: .activate,
                 cardBackgroundColor: .white,
                 cardRadius: 0
@@ -123,19 +125,19 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 2001,
                 image: .link,
-                title: "www.association-website.com",
+                title: state.data.emailAddress ?? "email",
                 description: ""
             ),
             makeImageTitleDescriptionRow(
                 tag: 2002,
                 image: .activate,
-                title: "+254 738 789 333",
+                title: state.data.phoneNumber ?? "phoneNumber",
                 description: ""
             ),
             makeImageTitleDescriptionRow(
                 tag: 2003,
                 image: .location,
-                title: "Nairobi, Kenya",
+                title: state.data.physicalAddress ?? "physicalAddress",
                 description: ""
             )
         ]
@@ -193,6 +195,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
 
     private struct State {
         var selectedSegmentIndex: Int = 0
+        var data: AssociationResponse
     }
 
     // MARK: - Tags
