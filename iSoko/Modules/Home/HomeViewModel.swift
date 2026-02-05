@@ -65,7 +65,7 @@ final class HomeViewModel: FormViewModel {
             switch type {
             case .featuredProducts:
                 let response = try await productsService.getFeaturedProducts(
-                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.featuredProducts = response
                 print("✅ Fetched Featured Products")
 
@@ -75,7 +75,7 @@ final class HomeViewModel: FormViewModel {
 
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
-                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.featuredServices = response
                 print("✅ Fetched Featured Services")
 
@@ -86,7 +86,7 @@ final class HomeViewModel: FormViewModel {
             case .productCategories:
                 let response = try await commonUtilitiesService.getCommodityCategory(
                     page: 1, count: 20, module: "<regulation | trade-documents | standards>",
-                    accessToken: state?.accessToken ?? "")
+                    accessToken: state?.guestToken ?? "")
                 self.state?.productCategories = response
                 print("✅ Fetched Product Categories")
 
@@ -96,7 +96,7 @@ final class HomeViewModel: FormViewModel {
 
             case .serviceCategories:
                 let response = try await servicesService.getAllTradeServiceCategories(
-                    page: 1, count: 20, accessToken: state?.accessToken ?? "")
+                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.serviceCategories = response
                 print("✅ Fetched Service Categories")
 
@@ -381,7 +381,11 @@ final class HomeViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var featuredProducts: [ProductResponse] = []
         var featuredServices: [TradeServiceResponse] = []
         var productCategories: [CommodityCategoryResponse] = []

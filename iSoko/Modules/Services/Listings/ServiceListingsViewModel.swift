@@ -202,14 +202,14 @@ final class ServiceListingsViewModel: FormViewModel {
                     page: state.currentPage,
                     count: state.itemsPerPage,
                     categoryId: categoryId,
-                    accessToken: state.accessToken
+                    accessToken: state.guestToken
                 )
             } else {
                 print("📦 Fetching all trade services, page \(state.currentPage)")
                 response = try await servicesService.getAllTradeServices(
                     page: state.currentPage,
                     count: state.itemsPerPage,
-                    accessToken: state.accessToken
+                    accessToken: state.guestToken
                 )
             }
 
@@ -274,7 +274,11 @@ final class ServiceListingsViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var products: [TradeServiceResponse] = []
         var filteredProducts: [TradeServiceResponse] = []
         var currentPage: Int = 1

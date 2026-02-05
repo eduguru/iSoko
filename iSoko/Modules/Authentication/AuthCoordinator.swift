@@ -130,7 +130,7 @@ class AuthCoordinator: BaseCoordinator {
                     switch tokenResult {
                     case .success(let token):
                         print("authenticate Access token:", token.accessToken)
-                        AppStorage.authToken = token
+                        AppStorage.oauthToken = token
                         AppStorage.hasLoggedIn = true
 
                         self?.fetchUserDetails(accessToken: token.accessToken) { userResult in

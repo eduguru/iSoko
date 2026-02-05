@@ -13,13 +13,25 @@ public final class AppTokenProvider: RefreshableTokenProvider {
     private var refreshTask: Task<Void, Never>?
 
     public init() {}
-
-    public func currentToken() -> TokenResponse? {
-        AppStorage.authToken
+    
+    public func currentOAuthToken() -> TokenResponse? {
+        AppStorage.oauthToken
     }
+    
+    public func currentGuestToken() -> TokenResponse? {
+        AppStorage.guestToken
+    }
+    
+    public func saveOAuthToken(_ token: TokenResponse) {
+        AppStorage.oauthToken = token
 
-    public func saveToken(_ token: TokenResponse) {
-        AppStorage.authToken = token
+        // Cancel existing refresh task and reschedule
+        refreshTask?.cancel()
+        startRefreshTask(expiresIn: token.expiresIn)
+    }
+    
+    public func saveGuestToken(_ token: TokenResponse) {
+        AppStorage.guestToken = token
 
         // Cancel existing refresh task and reschedule
         refreshTask?.cancel()
@@ -31,11 +43,11 @@ public final class AppTokenProvider: RefreshableTokenProvider {
 
         return try await withCheckedThrowingContinuation { continuation in
             if AppStorage.hasLoggedIn == true { // Logged-in user refresh
-                let authToken = AppStorage.authToken
+                let authToken = AppStorage.oauthToken
                 OAuthTokenService().refreshToken(refreshToken: authToken?.refreshToken ?? "") { [weak self] resp in
                     switch resp {
                     case .success(let token):
-                        self?.saveToken(token)
+                        self?.saveOAuthToken(token)
                         continuation.resume(returning: token)
 
                     case .failure(let error):
@@ -61,7 +73,7 @@ public final class AppTokenProvider: RefreshableTokenProvider {
                             refreshToken: response.refreshToken ?? ""
                         )
 
-                        self.saveToken(token)
+                        self.saveGuestToken(token)
                         continuation.resume(returning: token)
 
                     } catch {
@@ -88,7 +100,7 @@ public final class AppTokenProvider: RefreshableTokenProvider {
                 do {
                     let token = try await self.refreshToken()
                     if let token = token {
-                        self.saveToken(token)
+                        // self.saveToken(token)
                     }
                 } catch {
                     print("❌ Token refresh failed:", error)

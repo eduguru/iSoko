@@ -43,7 +43,7 @@ public final class AuthenticationServiceImp: AuthenticationService {
             client_secret: client_secret, username: username, password: password)
         )
         
-        tokenProvider.saveToken(token)
+        tokenProvider.saveOAuthToken(token)
         return token
     }
     

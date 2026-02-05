@@ -38,7 +38,7 @@ public final class CertificateServiceImpl: CertificateService {
             refreshToken: response.refreshToken
         )
         
-        tokenProvider.saveToken(token)
+        tokenProvider.saveGuestToken(token)
         return response
     }
     
@@ -57,7 +57,7 @@ public final class CertificateServiceImpl: CertificateService {
             refreshToken: response.refreshToken
         )
         
-        tokenProvider.saveToken(token)
+        tokenProvider.saveGuestToken(token)
         return response
     }
 }

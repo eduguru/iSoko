@@ -297,13 +297,13 @@ final class ServiceDetailsViewModel: FormViewModel {
             switch type {
             case .moreOwnerProducts:
                 let traderId = state.product.categoryId ?? 0
-                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.accessToken)
+                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
                 self.state.moreOwnerProducts = response
                 print("✅ Fetched Featured Products")
 
             case .similarProduct:
                 let traderId = state.product.categoryId ?? 0
-                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.accessToken)
+                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
                 self.state.similarProduct = response
                 print("✅ Fetched Featured Services")
             }
@@ -335,7 +335,11 @@ final class ServiceDetailsViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var isLoggedIn: Bool = true
         var product: TradeServiceResponse
         var similarProduct: [TradeServiceResponse] = []

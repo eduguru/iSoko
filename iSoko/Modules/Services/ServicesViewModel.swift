@@ -198,7 +198,11 @@ final class ServicesViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var similarProduct: [ProductResponse] = []
         var moreOwnerProducts: [ProductResponse] = []
     }

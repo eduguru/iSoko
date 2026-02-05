@@ -247,7 +247,10 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
 
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
         init(commonUtilityOption: CommonUtilityOption, options: [CommonIdNameModel] = []) {
             self.commonUtilityOption = commonUtilityOption
@@ -277,19 +280,19 @@ extension CommonOptionPickerViewModel {
     func fetchCommonUtility(option: CommonUtilityOption) async throws -> [Any] {
         switch option {
         case let .userRoles(page, count):
-            return try await commonUtilitiesService.getUserRoles(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getUserRoles(page: page, count: count, accessToken: state.guestToken)
         case let .userTypes(page, count):
-            return try await commonUtilitiesService.getUserTypes(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getUserTypes(page: page, count: count, accessToken: state.guestToken)
         case let .userGender(page, count):
-            return try await commonUtilitiesService.getUserGender(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getUserGender(page: page, count: count, accessToken: state.guestToken)
         case let .organisationType(page, count):
-            return try await commonUtilitiesService.getOrganisationType(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getOrganisationType(page: page, count: count, accessToken: state.guestToken)
         case let .organisationSize(page, count):
-            return try await commonUtilitiesService.getOrganisationSize(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getOrganisationSize(page: page, count: count, accessToken: state.guestToken)
         case .ageGroups:
-            return try await commonUtilitiesService.getUserAgeGroups(accessToken: state.accessToken)
+            return try await commonUtilitiesService.getUserAgeGroups(accessToken: state.guestToken)
         case let .locations(page, count):
-            return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.accessToken)
+            return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken)
         }
     }
 }

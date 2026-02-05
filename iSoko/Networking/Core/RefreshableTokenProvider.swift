@@ -9,7 +9,9 @@ import Foundation
 import StorageKit
 
 public protocol RefreshableTokenProvider {
-    func currentToken() -> TokenResponse?
-    func saveToken(_ token: TokenResponse)
+    func currentOAuthToken() -> TokenResponse?
+    func currentGuestToken() -> TokenResponse?
+    func saveOAuthToken(_ token: TokenResponse)
+    func saveGuestToken(_ token: TokenResponse)
     func refreshToken() async throws -> TokenResponse?
 }

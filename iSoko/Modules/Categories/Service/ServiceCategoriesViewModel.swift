@@ -211,7 +211,7 @@ final class ServiceCategoriesViewModel: FormViewModel {
     private func loadProducts(reset: Bool) async -> Bool {
         do {
             let response = try await servicesService.getAllTradeServiceCategories(
-                page: state.currentPage, count: state.itemsPerPage, accessToken: state.accessToken)
+                page: state.currentPage, count: state.itemsPerPage, accessToken: state.guestToken)
 
             if reset {
                 state.products = response
@@ -277,7 +277,11 @@ final class ServiceCategoriesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var products: [TradeServiceCategoryResponse] = []
         var filteredProducts: [TradeServiceCategoryResponse] = [] // Store filtered products separately
         var currentPage: Int = 1

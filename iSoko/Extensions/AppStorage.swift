@@ -12,7 +12,8 @@ public extension StorageKeys.Keychain {
     static let userProfile = "\(AppStorage.prefix)userProfile"
     static let userResponseObject = "\(AppStorage.prefix)userResponseObject"
     
-    static let authToken = "\(AppStorage.prefix)authToken"
+    static let oauthToken = "\(AppStorage.prefix)authToken"
+    static let guestToken = "\(AppStorage.prefix)guestToken"
 }
 
 public extension StorageKeys.UserDefaults {
@@ -39,8 +40,11 @@ extension AppStorage {
     @KeychainStored(StorageKeys.Keychain.userResponseObject)
     public static var userResponseObject: UserV1Response?
     
-    @KeychainStored(StorageKeys.Keychain.authToken)
-    public static var authToken: TokenResponse?
+    @KeychainStored(StorageKeys.Keychain.oauthToken)
+    public static var oauthToken: TokenResponse?
+    
+    @KeychainStored(StorageKeys.Keychain.guestToken)
+    public static var guestToken: TokenResponse?
 }
 
 extension AppStorage {

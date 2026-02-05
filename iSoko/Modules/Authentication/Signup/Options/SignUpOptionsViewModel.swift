@@ -303,7 +303,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             do {
                 let response = try await authenticationService.preValidatePhone(
                     phone,
-                    accessToken: state.accessToken
+                    accessToken: state.guestToken
                 )
 
                 // ✅ Success path (status == 200 guaranteed)
@@ -346,7 +346,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             do {
                 let response = try await authenticationService.preValidateEmail(
                     email,
-                    accessToken: state.accessToken
+                    accessToken: state.guestToken
                 )
 
                 // ✅ Success (status == 200 guaranteed)
@@ -387,7 +387,10 @@ final class SignUpOptionsViewModel: FormViewModel {
         var isUsingPhone: Bool = false
         var email: String?
         var phoneNumber: String?
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+         
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?

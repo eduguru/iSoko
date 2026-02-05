@@ -70,21 +70,21 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 response = try await associationsService.getApprovedssociations(
                     page: feed.currentPage,
                     count: state.itemsPerPage,
-                    accessToken: state.accessToken
+                    accessToken: state.oauthToken
                 )
 
             case .pending:
                 response = try await associationsService.getAllPendingAssociations(
                     page: feed.currentPage,
                     count: state.itemsPerPage,
-                    accessToken: state.accessToken
+                    accessToken: state.oauthToken
                 )
 
             case .discover:
                 response = try await associationsService.getAllAssociations(
                     page: feed.currentPage,
                     count: state.itemsPerPage,
-                    accessToken: state.accessToken
+                    accessToken: state.oauthToken
                 )
             }
 
@@ -248,7 +248,11 @@ final class TradeAssociationListingsViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var selectedSegment: AssociationSegment = .approved
-        var accessToken: String = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         let itemsPerPage: Int = 20
 
         var feeds: [AssociationSegment: FeedState] = [

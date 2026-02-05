@@ -33,7 +33,10 @@ public final class AuthInterceptor: RequestInterceptor {
         completion: @escaping (Result<URLRequest, Error>) -> Void
     ) {
         var request = urlRequest
-        if requiresAuth, let token = tokenProvider.currentToken()?.accessToken {
+        var token: TokenResponse? = AppStorage.hasLoggedIn ?? false ? tokenProvider.currentOAuthToken() : tokenProvider.currentGuestToken()
+        
+        
+        if requiresAuth, let token = token?.accessToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
         completion(.success(request))
@@ -78,8 +81,9 @@ public final class AuthInterceptor: RequestInterceptor {
         refreshTask = Task {
             print("🔁 401 received — refreshing token...")
             let token = try await tokenProvider.refreshToken()
+            
             if let token {
-                tokenProvider.saveToken(token)
+                // tokenProvider.saveToken(token)
             }
             return token
         }

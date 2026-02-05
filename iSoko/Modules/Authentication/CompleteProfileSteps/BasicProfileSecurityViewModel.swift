@@ -296,7 +296,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             guard let self = self else { return }
 
             do {
-                let response = try await authenticationService.register(state.builder.build(), accessToken: state.accessToken)
+                let response = try await authenticationService.register(state.builder.build(), accessToken: state.guestToken)
                 // let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
 
                 await MainActor.run { // ✅ Success path (status == 200 guaranteed) // Proceed
@@ -329,7 +329,10 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     private struct State {
         var registrationType: RegistrationType
         var builder: RegistrationBuilder
-        var accessToken = AppStorage.authToken?.accessToken ?? ""
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
         var phoneNumber: String?
         var password: String?

@@ -46,7 +46,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func bootstrapApp(window: UIWindow) async {
-        let authToken = AppStorage.authToken
+        let authToken = AppStorage.oauthToken
         let loggedIn = AppStorage.hasLoggedIn ?? false
         
         do {
@@ -82,7 +82,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 client_secret: ApiEnvironment.clientSecret
             )
 
-            AppStorage.authToken = TokenResponse(
+            AppStorage.guestToken = TokenResponse(
                 accessToken: token.accessToken,
                 tokenType: token.tokenType ?? "",
                 expiresIn: token.expiresIn,
