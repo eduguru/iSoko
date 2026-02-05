@@ -15,7 +15,6 @@ import StorageKit
 final class OAuthTokenService {
 
     // MARK: - Public API
-
     func exchangeAuthorizationCode(
         code: String,
         codeVerifier: String,
@@ -37,7 +36,6 @@ final class OAuthTokenService {
         refreshToken: String,
         completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
-        
         
         requestToken(
             params: [
@@ -117,6 +115,9 @@ final class OAuthTokenService {
             // ✅ Decode success
             do {
                 let token = try JSONDecoder().decode(TokenResponse.self, from: data)
+                AppStorage.hasLoggedIn = true
+                AppStorage.oauthToken = token
+                
                 completion(.success(token))
             } catch {
                 completion(.failure(error))

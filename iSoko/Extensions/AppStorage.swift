@@ -39,15 +39,15 @@ extension AppStorage {
     
     @KeychainStored(StorageKeys.Keychain.userResponseObject)
     public static var userResponseObject: UserV1Response?
-    
-    @KeychainStored(StorageKeys.Keychain.oauthToken)
-    public static var oauthToken: TokenResponse?
-    
-    @KeychainStored(StorageKeys.Keychain.guestToken)
-    public static var guestToken: TokenResponse?
 }
 
 extension AppStorage {
+    
+    @UserDefault(StorageKeys.Keychain.oauthToken)
+    public static var oauthToken: TokenResponse?
+    
+    @UserDefault(StorageKeys.Keychain.guestToken)
+    public static var guestToken: TokenResponse?
     
     //MARK: UserDefault
     @UserDefault(StorageKeys.UserDefaults.selectedLanguage)

@@ -10,102 +10,92 @@ import StorageKit
 
 public final class AppTokenProvider: RefreshableTokenProvider {
 
-    private var refreshTask: Task<Void, Never>?
+    private var oauthRefreshTask: Task<Void, Never>?
 
     public init() {}
-    
+
+    // MARK: - Current tokens
+
     public func currentOAuthToken() -> TokenResponse? {
         AppStorage.oauthToken
     }
-    
+
     public func currentGuestToken() -> TokenResponse? {
         AppStorage.guestToken
     }
-    
+
+    // MARK: - Save tokens
+
     public func saveOAuthToken(_ token: TokenResponse) {
         AppStorage.oauthToken = token
 
-        // Cancel existing refresh task and reschedule
-        refreshTask?.cancel()
-        startRefreshTask(expiresIn: token.expiresIn)
+        oauthRefreshTask?.cancel()
+        startOAuthRefreshTask(expiresIn: token.expiresIn)
     }
-    
+
     public func saveGuestToken(_ token: TokenResponse) {
         AppStorage.guestToken = token
-
-        // Cancel existing refresh task and reschedule
-        refreshTask?.cancel()
-        startRefreshTask(expiresIn: token.expiresIn)
+        // ❗️No refresh scheduling for guest tokens
     }
 
-    public func refreshToken() async throws -> TokenResponse? {
-        print("🔁 Attempting token refresh...")
+    // MARK: - OAuth refresh ONLY
+
+    public func refreshOAuthToken() async throws -> TokenResponse {
+        guard let refreshToken = AppStorage.oauthToken?.refreshToken else {
+            throw OAuthError.unauthorized(reason: "Missing refresh token")
+        }
 
         return try await withCheckedThrowingContinuation { continuation in
-            if AppStorage.hasLoggedIn == true { // Logged-in user refresh
-                let authToken = AppStorage.oauthToken
-                OAuthTokenService().refreshToken(refreshToken: authToken?.refreshToken ?? "") { [weak self] resp in
-                    switch resp {
-                    case .success(let token):
-                        self?.saveOAuthToken(token)
-                        continuation.resume(returning: token)
+            OAuthTokenService().refreshToken(refreshToken: refreshToken) { [weak self] result in
+                switch result {
+                case .success(let token):
+                    self?.saveOAuthToken(token)
+                    continuation.resume(returning: token)
 
-                    case .failure(let error):
-                        print("❌ Refresh token failed (logged-in):", error)
-                        continuation.resume(throwing: error)
-                    }
-                }
-
-            } else { // Guest refresh (async call inside a Task)
-                Task {
-                    do {
-                        let response = try await GuestTokenService.getToken(
-                            grant_type: "client_credentials",
-                            client_id: ApiEnvironment.clientId,
-                            client_secret: ApiEnvironment.clientSecret
-                        )
-
-                        let token = TokenResponse(
-                            accessToken: response.accessToken,
-                            tokenType: response.tokenType ?? "",
-                            expiresIn: response.expiresIn,
-                            scope: response.scope ?? "",
-                            refreshToken: response.refreshToken ?? ""
-                        )
-
-                        self.saveGuestToken(token)
-                        continuation.resume(returning: token)
-
-                    } catch {
-                        print("❌ Refresh token failed (guest):", error)
-                        continuation.resume(throwing: error)
-                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
         }
     }
-    
-    private func startRefreshTask(expiresIn: Int) {
-        refreshTask?.cancel()
 
-        refreshTask = Task { [weak self] in
+    // MARK: - Guest token fetch (NOT refresh)
+
+    public func fetchGuestToken() async throws -> TokenResponse {
+        let response = try await GuestTokenService.getToken(
+            grant_type: "client_credentials",
+            client_id: ApiEnvironment.clientId,
+            client_secret: ApiEnvironment.clientSecret
+        )
+
+        let token = TokenResponse(
+            accessToken: response.accessToken,
+            tokenType: response.tokenType ?? "",
+            expiresIn: response.expiresIn,
+            scope: response.scope ?? "",
+            refreshToken: "" // guests do NOT use refresh tokens
+        )
+
+        return token
+    }
+
+    // MARK: - OAuth auto refresh loop
+
+    private func startOAuthRefreshTask(expiresIn: Int) {
+        oauthRefreshTask?.cancel()
+
+        oauthRefreshTask = Task { [weak self] in
             guard let self = self else { return }
 
-            while !Task.isCancelled {
-                let refreshInterval = max(expiresIn - 60, 30)
-                try? await Task.sleep(nanoseconds: UInt64(refreshInterval) * 1_000_000_000)
+            let refreshInterval = max(expiresIn - 60, 30)
+            try? await Task.sleep(nanoseconds: UInt64(refreshInterval) * 1_000_000_000)
 
-                if Task.isCancelled { break }
+            if Task.isCancelled { return }
 
-                do {
-                    let token = try await self.refreshToken()
-                    if let token = token {
-                        // self.saveToken(token)
-                    }
-                } catch {
-                    print("❌ Token refresh failed:", error)
-                    try? await Task.sleep(nanoseconds: 10 * 1_000_000_000)
-                }
+            do {
+                _ = try await self.refreshOAuthToken()
+            } catch {
+                print("❌ OAuth auto-refresh failed:", error)
             }
         }
     }

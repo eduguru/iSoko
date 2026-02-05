@@ -14,35 +14,45 @@ public final class AuthInterceptor: RequestInterceptor {
     private let tokenProvider: RefreshableTokenProvider
     private var requiresAuth: Bool
 
-    // Prevent multiple refresh calls
-    private var refreshTask: Task<TokenResponse?, Error>?
-
-    public init(tokenProvider: RefreshableTokenProvider, requiresAuth: Bool = true) {
-        self.tokenProvider = tokenProvider
-        self.requiresAuth = requiresAuth
-    }
-
+    private var refreshTask: Task<TokenResponse, Error>?
+    
     public func setRequiresAuth(_ requiresAuth: Bool) {
         self.requiresAuth = requiresAuth
     }
 
+    public init(
+        tokenProvider: RefreshableTokenProvider,
+        requiresAuth: Bool = true
+    ) {
+        self.tokenProvider = tokenProvider
+        self.requiresAuth = requiresAuth
+    }
+
     // MARK: - Adapt
+
     public func adapt(
         _ urlRequest: URLRequest,
         for session: Session,
         completion: @escaping (Result<URLRequest, Error>) -> Void
     ) {
         var request = urlRequest
-        var token: TokenResponse? = AppStorage.hasLoggedIn ?? false ? tokenProvider.currentOAuthToken() : tokenProvider.currentGuestToken()
-        
-        
-        if requiresAuth, let token = token?.accessToken {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+
+//        let token = AppStorage.hasLoggedIn == true
+//            ? tokenProvider.currentOAuthToken()
+//            : tokenProvider.currentGuestToken()
+
+//        if requiresAuth, let accessToken = token?.accessToken {
+//            request.setValue(
+//                "Bearer \(accessToken)",
+//                forHTTPHeaderField: "Authorization"
+//            )
+//        }
+
         completion(.success(request))
     }
 
     // MARK: - Retry
+
     public func retry(
         _ request: Request,
         for session: Session,
@@ -50,6 +60,8 @@ public final class AuthInterceptor: RequestInterceptor {
         completion: @escaping (RetryResult) -> Void
     ) {
         guard
+            requiresAuth,
+            AppStorage.hasLoggedIn == true,
             let response = request.response,
             response.statusCode == 401
         else {
@@ -57,14 +69,12 @@ public final class AuthInterceptor: RequestInterceptor {
             return
         }
 
-        // 🚫 Never retry more than once
         if request.retryCount > 0 {
-            handleHardLogoutIfNeeded(response: response)
+            forceLogout()
             completion(.doNotRetry)
             return
         }
 
-        // If refresh already in progress → wait
         if let task = refreshTask {
             Task {
                 do {
@@ -77,65 +87,32 @@ public final class AuthInterceptor: RequestInterceptor {
             return
         }
 
-        // Start refresh ONCE
         refreshTask = Task {
-            print("🔁 401 received — refreshing token...")
-            let token = try await tokenProvider.refreshToken()
-            
-            if let token {
-                // tokenProvider.saveToken(token)
-            }
-            return token
+            try await tokenProvider.refreshOAuthToken()
         }
 
         Task {
             do {
-                let token = try await refreshTask!.value
+                _ = try await refreshTask!.value
                 refreshTask = nil
-
-                if token != nil {
-                    completion(.retry)
-                } else {
-                    handleHardLogoutIfNeeded(response: response)
-                    completion(.doNotRetry)
-                }
+                completion(.retry)
             } catch {
                 refreshTask = nil
-                print("❌ Token refresh failed:", error)
-                handleHardLogoutIfNeeded(response: response)
+                forceLogout()
                 completion(.doNotRetry)
             }
         }
     }
 
-    // MARK: - Logout Logic
-    private func handleHardLogoutIfNeeded(response: HTTPURLResponse) {
-        let headers = response.allHeaderFields
-
-        // Check WWW-Authenticate header
-        if let authHeader = headers["WWW-Authenticate"] as? String {
-            if authHeader.contains("invalid_token") ||
-               authHeader.contains("expired") {
-                print("🚪 Invalid token detected — logging out")
-                forceLogout()
-                return
-            }
-        }
-
-        // Fallback: second 401 is always fatal
-        print("🚪 Repeated 401 — logging out")
-        forceLogout()
-    }
+    // MARK: - Logout
 
     private func forceLogout() {
         refreshTask?.cancel()
         refreshTask = nil
 
-        // Clear stored token
-//        AppStorage.authToken = nil
-//        AppStorage.hasLoggedIn = false
+//        AppStorage.oauthToken = nil
+        // AppStorage.hasLoggedIn = false
 
-        // Optional: notify app
         NotificationCenter.default.post(
             name: .didLogoutDueToAuthFailure,
             object: nil
@@ -154,4 +131,139 @@ extension Notification.Name {
 //    queue: .main
 //) { _ in
 //    // Navigate to login / reset app state
+//}
+
+
+//public final class AuthInterceptor: RequestInterceptor {
+//
+//    private let tokenProvider: RefreshableTokenProvider
+//    private var requiresAuth: Bool
+//
+//    // Prevent multiple refresh calls
+//    private var refreshTask: Task<TokenResponse?, Error>?
+//
+//    public init(tokenProvider: RefreshableTokenProvider, requiresAuth: Bool = true) {
+//        self.tokenProvider = tokenProvider
+//        self.requiresAuth = requiresAuth
+//    }
+//
+//    public func setRequiresAuth(_ requiresAuth: Bool) {
+//        self.requiresAuth = requiresAuth
+//    }
+//
+//    // MARK: - Adapt
+//    public func adapt(
+//        _ urlRequest: URLRequest,
+//        for session: Session,
+//        completion: @escaping (Result<URLRequest, Error>) -> Void
+//    ) {
+//        var request = urlRequest
+//        var token: TokenResponse? = AppStorage.hasLoggedIn ?? false ? tokenProvider.currentOAuthToken() : tokenProvider.currentGuestToken()
+//
+//
+//        if requiresAuth, let token = token?.accessToken {
+//            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+//        }
+//        completion(.success(request))
+//    }
+//
+//    // MARK: - Retry
+//    public func retry(
+//        _ request: Request,
+//        for session: Session,
+//        dueTo error: Error,
+//        completion: @escaping (RetryResult) -> Void
+//    ) {
+//        guard
+//            let response = request.response,
+//            response.statusCode == 401
+//        else {
+//            completion(.doNotRetry)
+//            return
+//        }
+//
+//        // 🚫 Never retry more than once
+//        if request.retryCount > 0 {
+//            handleHardLogoutIfNeeded(response: response)
+//            completion(.doNotRetry)
+//            return
+//        }
+//
+//        // If refresh already in progress → wait
+//        if let task = refreshTask {
+//            Task {
+//                do {
+//                    _ = try await task.value
+//                    completion(.retry)
+//                } catch {
+//                    completion(.doNotRetry)
+//                }
+//            }
+//            return
+//        }
+//
+//        // Start refresh ONCE
+//        refreshTask = Task {
+//            print("🔁 401 received — refreshing token...")
+//            let token = try await tokenProvider.refreshToken()
+//
+//            if let token {
+//                // tokenProvider.saveToken(token)
+//            }
+//            return token
+//        }
+//
+//        Task {
+//            do {
+//                let token = try await refreshTask!.value
+//                refreshTask = nil
+//
+//                if token != nil {
+//                    completion(.retry)
+//                } else {
+//                    handleHardLogoutIfNeeded(response: response)
+//                    completion(.doNotRetry)
+//                }
+//            } catch {
+//                refreshTask = nil
+//                print("❌ Token refresh failed:", error)
+//                handleHardLogoutIfNeeded(response: response)
+//                completion(.doNotRetry)
+//            }
+//        }
+//    }
+//
+//    // MARK: - Logout Logic
+//    private func handleHardLogoutIfNeeded(response: HTTPURLResponse) {
+//        let headers = response.allHeaderFields
+//
+//        // Check WWW-Authenticate header
+//        if let authHeader = headers["WWW-Authenticate"] as? String {
+//            if authHeader.contains("invalid_token") ||
+//               authHeader.contains("expired") {
+//                print("🚪 Invalid token detected — logging out")
+//                forceLogout()
+//                return
+//            }
+//        }
+//
+//        // Fallback: second 401 is always fatal
+//        print("🚪 Repeated 401 — logging out")
+//        forceLogout()
+//    }
+//
+//    private func forceLogout() {
+//        refreshTask?.cancel()
+//        refreshTask = nil
+//
+//        // Clear stored token
+////        AppStorage.authToken = nil
+////        AppStorage.hasLoggedIn = false
+//
+//        // Optional: notify app
+//        NotificationCenter.default.post(
+//            name: .didLogoutDueToAuthFailure,
+//            object: nil
+//        )
+//    }
 //}

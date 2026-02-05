@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StorageKit
 
 public struct GuestTokenService {
 
@@ -65,7 +66,16 @@ public struct GuestTokenService {
 
                 // ✅ Decode success
                 do {
-                    return try JSONDecoder().decode(GuestToken.self, from: data)
+                    let response = try JSONDecoder().decode(GuestToken.self, from: data)
+                    
+                    AppStorage.guestToken = .init(
+                        accessToken: response.accessToken,
+                        tokenType: response.tokenType ?? "",
+                        expiresIn: response.expiresIn,
+                        scope: response.scope ?? "",
+                        refreshToken: response.refreshToken)
+                    
+                    return response
                 } catch {
                     throw GuestTokenApiError.decoding(error)
                 }

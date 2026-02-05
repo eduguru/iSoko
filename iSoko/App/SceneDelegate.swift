@@ -27,10 +27,8 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         self.window = window
 
-        // Bootstrap (region, env, etc.)
         AppBootstrap.setup()
 
-        // Splash immediately
         window.rootViewController = SplashScreenViewController()
         window.makeKeyAndVisible()
 
@@ -46,20 +44,26 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func bootstrapApp(window: UIWindow) async {
-        let authToken = AppStorage.oauthToken
         let loggedIn = AppStorage.hasLoggedIn ?? false
-        
+        print("🚀 Booting app. loggedIn=\(loggedIn)")
+
         do {
-            // If we already have a token, try refresh (logged-in or guest)
-            if authToken != nil && loggedIn {
-                _ = try await tokenProvider.refreshToken()
-            } else { // First launch / cold start (guest)
-                let success = await fetchGuestToken()
-                
-                guard success else {
-                    print("❌ Failed to obtain initial token")
-                    return
+            try await withThrowingTaskGroup(of: Void.self) { group in
+
+                group.addTask {
+                    let token = try await self.fetchGuestToken()
+                    self.tokenProvider.saveGuestToken(token)
+                    print("✅ Guest token saved")
                 }
+
+                if loggedIn {
+                    group.addTask {
+                        let token = try await self.tokenProvider.refreshOAuthToken()
+                        print("✅ OAuth token refreshed: \(token.accessToken.prefix(6))...")
+                    }
+                }
+
+                try await group.waitForAll()
             }
 
             await MainActor.run {
@@ -68,61 +72,28 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         } catch OAuthError.unauthorized {
             print("🚪 Unauthorized — logging out")
+            AppStorage.hasLoggedIn = false
+            // show login screen
 
         } catch {
             print("❌ Bootstrap failed:", error)
+            // show error screen / retry
         }
     }
 
-    private func fetchGuestToken() async -> Bool {
-        do {
-            let token = try await certificateService.getToken(
-                grant_type: AppConstants.GrantType.login.rawValue,
-                client_id: ApiEnvironment.clientId,
-                client_secret: ApiEnvironment.clientSecret
-            )
+    private func fetchGuestToken() async throws -> TokenResponse {
+        let token = try await certificateService.getToken(
+            grant_type: AppConstants.GrantType.login.rawValue,
+            client_id: ApiEnvironment.clientId,
+            client_secret: ApiEnvironment.clientSecret
+        )
 
-            AppStorage.guestToken = TokenResponse(
-                accessToken: token.accessToken,
-                tokenType: token.tokenType ?? "",
-                expiresIn: token.expiresIn,
-                scope: token.scope ?? "",
-                refreshToken: token.refreshToken
-            )
-
-            return true
-
-        } catch {
-            print("❌ Guest token fetch failed:", error)
-            return false
-        }
-    }
-    
-    func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
-    }
-    
-    func sceneDidBecomeActive(_ scene: UIScene) {
-        // Called when the scene has moved from an inactive state to an active state.
-        // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
-    }
-    
-    func sceneWillResignActive(_ scene: UIScene) {
-        // Called when the scene will move from an active state to an inactive state.
-        // This may occur due to temporary interruptions (ex. an incoming phone call).
-    }
-    
-    func sceneWillEnterForeground(_ scene: UIScene) {
-        // Called as the scene transitions from the background to the foreground.
-        // Use this method to undo the changes made on entering the background.
-    }
-    
-    func sceneDidEnterBackground(_ scene: UIScene) {
-        // Called as the scene transitions from the foreground to the background.
-        // Use this method to save data, release shared resources, and store enough scene-specific state information
-        // to restore the scene back to its current state.
+        return TokenResponse(
+            accessToken: token.accessToken,
+            tokenType: token.tokenType ?? "",
+            expiresIn: token.expiresIn,
+            scope: token.scope ?? "",
+            refreshToken: token.refreshToken
+        )
     }
 }

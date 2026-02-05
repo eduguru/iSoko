@@ -7,6 +7,7 @@
 
 import Foundation
 import NetworkingKit
+import StorageKit
 
 public protocol CertificateService {
     func getToken(grant_type: String, client_id: String, client_secret: String) async throws -> GuestToken
@@ -30,15 +31,13 @@ public final class CertificateServiceImpl: CertificateService {
             client_secret: client_secret)
         )
         
-        let token = TokenResponse.init(
+        AppStorage.guestToken = .init(
             accessToken: response.accessToken,
-            tokenType: "",
+            tokenType: response.tokenType ?? "",
             expiresIn: response.expiresIn,
-            scope: "",
-            refreshToken: response.refreshToken
-        )
+            scope: response.scope ?? "",
+            refreshToken: response.refreshToken)
         
-        tokenProvider.saveGuestToken(token)
         return response
     }
     
@@ -57,7 +56,6 @@ public final class CertificateServiceImpl: CertificateService {
             refreshToken: response.refreshToken
         )
         
-        tokenProvider.saveGuestToken(token)
         return response
     }
 }

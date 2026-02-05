@@ -35,7 +35,6 @@ final class LoginViewModel: FormViewModel {
                     )
 
                 print("🔑 Logged in with token:", token.accessToken)
-                AppStorage.guestToken = token
                 
                 let response = try await userDetailsService.getUserDetails(accessToken: token.accessToken)
                 if let response = response {

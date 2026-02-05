@@ -127,18 +127,18 @@ class AuthCoordinator: BaseCoordinator {
             switch authResult {
             case .success(let code):
                 self?.exchangeCode(code) { tokenResult in
+                    
                     switch tokenResult {
                     case .success(let token):
+                        
                         print("authenticate Access token:", token.accessToken)
-                        AppStorage.oauthToken = token
-                        AppStorage.hasLoggedIn = true
 
                         self?.fetchUserDetails(accessToken: token.accessToken) { userResult in
                             switch userResult {
                             case .success(let user):
+                                
                                 print("User:", user)
                                 AppStorage.userProfile = user
-                                AppStorage.hasLoggedIn = true
                                 self?.goToMainTabs()
 
                             case .failure(let error):
