@@ -63,7 +63,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
     private lazy var imageRow = ImageFormRow(
         tag: 1001,
         config: .init(
-            image: UIImage(named: "logo"),
+            image: UIImage(named: "blank_rectangle"),
             height: 120
         )
     )

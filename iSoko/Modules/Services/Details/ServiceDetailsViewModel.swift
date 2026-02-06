@@ -242,7 +242,7 @@ final class ServiceDetailsViewModel: FormViewModel {
         return state.moreOwnerProducts.map { product in
             GridItemModel(
                 id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: product.primaryImage ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderName ?? "",
@@ -264,7 +264,7 @@ final class ServiceDetailsViewModel: FormViewModel {
         return state.similarProduct.map { product in
             GridItemModel(
                 id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: product.primaryImage ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderName ?? "",

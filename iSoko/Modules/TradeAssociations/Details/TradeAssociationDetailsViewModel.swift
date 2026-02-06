@@ -8,18 +8,57 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class TradeAssociationDetailsViewModel: FormViewModel {
-    var goToNewsDetails: (() -> Void)? = { }
-    
+
+    var goToNewsDetails: ((AssociationNewsItem) -> Void)? = { _ in }
+
     private var state: State
+    private let directusService = DirectusTokenService()
 
     init(_ data: AssociationResponse) {
         state = State(data: data)
-        
         super.init()
         self.sections = makeSections()
         reloadBodySection(animated: false)
+    }
+
+    override func fetchData() {
+        Task {
+            do {
+                try await directusService.login(
+                    email: "admin@isoko.twcc-tz.org",
+                    password: "s^k2HIza)KpdER5b"
+                )
+
+                let id: Int = state.data.id ?? 0
+                let news = try await directusService.fetchAssociationNews(associationId: "\(id)")
+
+                state.newsItems = news
+                updateSection(at: Tags.Section.body.rawValue)
+
+            } catch {
+                print("❌ Directus flow failed:", error)
+            }
+        }
+    }
+
+    // MARK: - Update Section
+
+    private func updateSection(at index: Int) {
+        guard index >= 0 && index < sections.count else { return }
+
+        switch state.selectedSegmentIndex {
+        case 0:
+            sections[index].cells = makeAboutCells()
+        case 1:
+            sections[index].cells = makeNewsCells()
+        default:
+            sections[index].cells = []
+        }
+
+        reloadSection(index)
     }
 
     // MARK: - Sections
@@ -55,22 +94,16 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             $0.id == Tags.Section.body.rawValue
         }) else { return }
 
-        let newCells: [FormRow]
-
         switch state.selectedSegmentIndex {
         case 0:
-            newCells = makeAboutCells()
+            sections[index].cells = makeAboutCells()
         case 1:
-            newCells = makeInfoCells()
+            sections[index].cells = makeNewsCells()
         default:
-            newCells = []
+            sections[index].cells = []
         }
 
-        sections[index].cells = newCells
-
-        animated
-        ? reloadSection(index)
-        : reloadSection(index)
+        reloadSection(index)
     }
 
     // MARK: - Lazy Rows
@@ -111,7 +144,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
                 title: state.data.name ?? "",
                 subtitle: "Founded in " + (state.data.foundedIn ?? "00"),
                 desc: "\(state.data.members ?? 0)" + " Members",
-                icon: .activate,
+                icon: .blankRectangle,
                 cardBackgroundColor: .white,
                 cardRadius: 0
             )
@@ -145,29 +178,39 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
 
     // MARK: - News
 
-    private func makeInfoCells() -> [FormRow] {
-        (0..<9).map { i in
-            InfoListingFormRow(
-                tag: 9000 + i,
+    private func makeNewsCells() -> [FormRow] {
+        state.newsItems.enumerated().map { index, item in
+            
+            // Parse createdOn ISO string into Date
+            let createdDate: Date? = {
+                guard let createdOn = item.createdOn else { return nil }
+                return parseDirectusDate(createdOn)
+            }()
+            
+            // Format the date for display
+            let createdOnText = createdDate.map { formatNewsDate($0) } ?? "No Date"
+
+            return InfoListingFormRow(
+                tag: 9000 + index,
                 model: InfoListingModel(
-                    title: "Finance \(i)",
-                    subtitle: "Updated Test cases",
-                    desc: "10:00 AM",
-                    icon: .addPhoto,
+                    title: item.newsTitle ?? "No Title",
+                    subtitle: item.newsCategory ?? "",
+                    desc: createdOnText,
+                    icon: .blankRectangle,
                     cardBackgroundColor: .white,
                     cardRadius: 0,
                     onTap: { [weak self] in
-                        self?.handleInfoTap(index: i)
+                        self?.handleNewsTap(index: index)
                     }
                 )
             )
         }
     }
 
-    private func handleInfoTap(index: Int) {
-        print("Tapped item at index: \(index)")
-        goToNewsDetails?()
-        // navigation / analytics / routing here
+    private func handleNewsTap(index: Int) {
+        guard state.newsItems.indices.contains(index) else { return }
+        let item = state.newsItems[index]
+        goToNewsDetails?(item)
     }
 
     // MARK: - Shared Row Builder
@@ -191,11 +234,28 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         )
     }
 
+    private func parseDirectusDate(_ isoString: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter.date(from: isoString)
+    }
+
+    private func formatNewsDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd MMM yyyy, hh:mm a"
+        formatter.locale = Locale.current
+        formatter.timeZone = TimeZone.current
+        return formatter.string(from: date)
+    }
+
+    
     // MARK: - State
 
     private struct State {
         var selectedSegmentIndex: Int = 0
         var data: AssociationResponse
+        var newsItems: [AssociationNewsItem] = []
     }
 
     // MARK: - Tags

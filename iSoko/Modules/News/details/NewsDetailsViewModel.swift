@@ -13,9 +13,11 @@ final class NewsDetailsViewModel: FormViewModel {
 
     private var state = State()
 
-    override init() {
+    init(_ item: AssociationNewsItem) {
+        state.newsItem = item
         super.init()
         self.sections = makeSections()
+        // reloadBodySection(animated: false)
     }
 
     // MARK: - Sections
@@ -30,7 +32,7 @@ final class NewsDetailsViewModel: FormViewModel {
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: Tags.Section.header.rawValue,
-            cells: [headerImage, headerTitle]
+            cells: [headerImage, headerTitle, headerMeta]
         )
     }
 
@@ -44,82 +46,96 @@ final class NewsDetailsViewModel: FormViewModel {
     // MARK: - Lazy Rows
     private lazy var headerImage: FormRow = makeHeaderImageRow()
     private lazy var headerTitle: FormRow = makeHeaderTitleRow()
+    private lazy var headerMeta: FormRow = makeHeaderMetaRow()
     private lazy var bodyText: FormRow = makeBodyTextRow()
-    
+
+    // MARK: - Header Image
+
     private func makeHeaderImageRow() -> FormRow {
-        let imageRow = ImageFormRow(
+        let imageURL = state.newsItem?.featuredImage?.filenameDisk
+        let image = imageURL.flatMap { DirectusImageHelper.url(for: $0) }
+
+        return ImageFormRow(
             tag: 1,
             config: .init(
-                image: UIImage(named: "logo"),
-                height: 150,
+                image: .blankRectangle,
+                height: 200,
                 fillWidth: true,
                 aspectRatio: 16 / 9
             )
         )
-        
-        return imageRow
     }
-    
+
+    // MARK: - Title
+
     private func makeHeaderTitleRow() -> FormRow {
-        let row = TitleDescriptionFormRow(
+        TitleDescriptionFormRow(
             tag: 101,
-            title: "Welcome to the app, Welcome to the app, Welcome to the app",
+            title: state.newsItem?.newsTitle ?? "No Title",
             description: "",
             maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
-            titleEllipsis: .none,
+            maxDescriptionLines: 0,
+            titleEllipsis: .tail,
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
         )
-        
-        return row
     }
-    
+
+    // MARK: - Meta (date + category)
+
+    private func makeHeaderMetaRow() -> FormRow {
+        let dateText = state.newsItem?.createdOn.flatMap { formatDirectusDate($0) } ?? "No date"
+        let category = state.newsItem?.newsCategory ?? "Uncategorized"
+
+        return TitleDescriptionFormRow(
+            tag: 102,
+            title: category,
+            description: dateText,
+            maxTitleLines: 1,
+            maxDescriptionLines: 1,
+            titleEllipsis: .tail,
+            descriptionEllipsis: .tail,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left
+        )
+    }
+
+    // MARK: - Body
+
     private func makeBodyTextRow() -> FormRow {
         RichDescriptionFormRow(
             tag: 3001,
             model: RichDescriptionModel(
-                title: "Breaking News",
-                htmlDescription: """
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-<p>This is a simple paragraph of text. It demonstrates the basic use of the 'p' tag, which helps structure content into readable blocks. All text within the opening and closing tags will be treated as a single paragraph.</p>
-
-""",
+                title: "",
+                htmlDescription: state.newsItem?.newsContent ?? "",
                 textAlignment: .left
             )
         )
     }
 
-    // MARK: - Header
+    // MARK: - Date formatting helpers
 
-    private func makeAssociationsHeaderFormRow() -> FormRow {
-        AssociationHeaderFormRow(
-            tag: 001001,
-            model: AssociationHeaderModel(
-                title: "Baraka Womens Football Club",
-                subtitle: "Founded in 2025",
-                desc: "12 Members",
-                icon: .activate,
-                cardBackgroundColor: .white,
-                cardRadius: 0
-            )
-        )
+    private func formatDirectusDate(_ isoString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
+        guard let date = formatter.date(from: isoString) else {
+            return isoString
+        }
+
+        let display = DateFormatter()
+        display.dateFormat = "dd MMM yyyy, hh:mm a"
+        display.locale = Locale.current
+        display.timeZone = TimeZone.current
+        return display.string(from: date)
     }
 
     // MARK: - State
 
     private struct State {
-        var selectedSegmentIndex: Int = 0
+        var newsItem: AssociationNewsItem?
     }
 
     // MARK: - Tags
@@ -129,5 +145,13 @@ final class NewsDetailsViewModel: FormViewModel {
             case header = 0
             case body = 1
         }
+    }
+}
+
+struct DirectusImageHelper {
+    static let baseURL = URL(string: "http://directus.dev.isoko.africa")!
+
+    static func url(for filename: String) -> URL {
+        return baseURL.appendingPathComponent("/assets/\(filename)")
     }
 }

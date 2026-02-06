@@ -14,6 +14,7 @@ public extension StorageKeys.Keychain {
     
     static let oauthToken = "\(AppStorage.prefix)authToken"
     static let guestToken = "\(AppStorage.prefix)guestToken"
+    static let directusToken = "\(AppStorage.prefix)directusToken"
 }
 
 public extension StorageKeys.UserDefaults {
@@ -48,6 +49,9 @@ extension AppStorage {
     
     @UserDefault(StorageKeys.Keychain.guestToken)
     public static var guestToken: TokenResponse?
+    
+    @UserDefault(StorageKeys.Keychain.directusToken)
+    public static var directusToken: TokenResponse?
     
     //MARK: UserDefault
     @UserDefault(StorageKeys.UserDefaults.selectedLanguage)

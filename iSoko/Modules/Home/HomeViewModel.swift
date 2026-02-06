@@ -119,9 +119,9 @@ final class HomeViewModel: FormViewModel {
     private func makeSections() -> [FormSection] {
         return [
             FormSection(id: Tags.Section.search.rawValue, title: nil, cells: [searchRow]),
+            makeBannerSection(),
             makeCategoriesQuickActionsSection(),
             makeServicesQuickActionsSection(),
-            makeBannerSection(),
             makeTrendingProductsSection(),
             makeTrendingServicesSection()
         ]
@@ -130,7 +130,7 @@ final class HomeViewModel: FormViewModel {
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
-            title: "Explore Categories",
+            title: "Product Categories",
             actionTitle: "See All",
             onActionTapped: { [weak self] in
                 self?.onTapMoreProductCategories?()
@@ -142,7 +142,7 @@ final class HomeViewModel: FormViewModel {
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
-            title: "Explore Service Categories",
+            title: "Service Categories",
             actionTitle: "See All",
             onActionTapped: { [weak self] in
                 self?.onTapMoreServiceCategories?()
@@ -311,7 +311,7 @@ final class HomeViewModel: FormViewModel {
             guard let category = state?.productCategories[index] else { return nil }
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
                 title: category.name ?? "",
@@ -328,7 +328,7 @@ final class HomeViewModel: FormViewModel {
             guard let category = state?.serviceCategories[index] else { return nil }
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
                 title: category.name ?? "",
@@ -343,7 +343,7 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredProducts.map { product in
             GridItemModel(
                 id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: product.primaryImage ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderName ?? "",
@@ -363,7 +363,7 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredServices.map { service in
             GridItemModel(
                 id: "\(service.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage(named: "blank_rectangle"),
                 imageUrl: service.primaryImage ?? "",
                 title: service.name ?? "Unnamed Service",
                 subtitle: service.traderName ?? "",

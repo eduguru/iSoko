@@ -239,8 +239,8 @@ public class MoreCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func goToNewsDetails() {
-        let viewModel = NewsDetailsViewModel()
+    private func goToNewsDetails(_ item: AssociationNewsItem) {
+        let viewModel = NewsDetailsViewModel(item)
         
         let vc = NewsDetailsViewController()
         vc.viewModel = viewModel
