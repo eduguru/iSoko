@@ -1,6 +1,6 @@
 //
 //  NewTradeAssociationViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 12/11/2025.
 //
@@ -10,21 +10,28 @@ import UIKit
 import UtilsKit
 
 final class NewTradeAssociationViewModel: FormViewModel {
-
-    // MARK: - Navigation Callbacks
-    var gotoSelectFoundedYear: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)? = nil
+    // OUTPUT
+    var foundedYear: Int?
+    var billingMonth: Date?
+    var birthDate: Date?
+    
+    // MARK: - Navigation Callbacks // INPUT (callbacks)
+    var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
+    var selectBillingMonth: ((_ completion: @escaping (Date?) -> Void) -> Void)?
+    var selectBirthDate: ((_ completion: @escaping (Date?) -> Void) -> Void)?
+    
     var gotoSelectMemberCount: ((_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)? = nil
     var gotoConfirm: (() -> Void)?
-
+    
     // MARK: - Internal State
     private var state = State()
-
+    
     // MARK: - Init
     override init() {
         super.init()
         sections = makeSections()
     }
-
+    
     // MARK: - Section Builder
     private func makeSections() -> [FormSection] {
         [
@@ -44,15 +51,15 @@ final class NewTradeAssociationViewModel: FormViewModel {
             )
         ]
     }
-
+    
     // MARK: - Form Rows
-
+    
     // Step indicator at top
     private lazy var stepIndicatorRow = StepStripFormRow(
         tag: CellTag.steps.rawValue,
         model: StepStripModel(totalSteps: 2, currentStep: 1)
     )
-
+    
     // Header title
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
@@ -64,7 +71,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         titleFontStyle: .title,
         descriptionFontStyle: .headline
     )
-
+    
     // Association name input
     private lazy var associationNameRow = SimpleInputFormRow(
         tag: CellTag.associationName.rawValue,
@@ -79,7 +86,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
             useCardStyle: true
         )
     )
-
+    
     // Description input (multiline)
     private lazy var associationDescriptionRow = LongInputDescriptionFormRow(
         tag: CellTag.description.rawValue,
@@ -108,7 +115,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
             }
         )
     )
-
+    
     // Member count dropdown
     private lazy var memberCountRow = DropdownFormRow(
         tag: CellTag.memberCount.rawValue,
@@ -122,13 +129,13 @@ final class NewTradeAssociationViewModel: FormViewModel {
             }
         )
     )
-
+    
     // Founded year dropdown
     private lazy var foundedYearRow = DropdownFormRow(
         tag: CellTag.foundedYear.rawValue,
         config: DropdownFormConfig(
             title: "Founded Year",
-            placeholder: state.foundedYear?.name ?? "Select founded year",
+            placeholder: "\(state.foundedYear ?? 0000)",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -136,7 +143,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
             }
         )
     )
-
+    
     // Continue button
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
@@ -171,12 +178,12 @@ final class NewTradeAssociationViewModel: FormViewModel {
         spacing: 10,
         contentInsets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16)
     )
-
+    
     // Initialize your RequirementsListRow
     lazy var requirementsListRow = RequirementsListRow(tag: 1, config: config)
-
+    
     // MARK: - Selection Handlers
-
+    
     private func handleMemberCountSelection() {
         gotoSelectMemberCount?(state.memberCountOptions) { [weak self] value in
             guard let self, let value else { return }
@@ -185,18 +192,18 @@ final class NewTradeAssociationViewModel: FormViewModel {
             reloadRow(withTag: memberCountRow.tag)
         }
     }
-
+    
     private func handleFoundedYearSelection() {
-        gotoSelectFoundedYear? { [weak self] value in
+        selectFoundedYear? { [weak self] value in
             guard let self, let value else { return }
             state.foundedYear = value
-            foundedYearRow.config.placeholder = value.name
+            foundedYearRow.config.placeholder = "\(value)"
             reloadRow(withTag: foundedYearRow.tag)
         }
     }
-
+    
     // MARK: - Helpers
-
+    
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -205,9 +212,9 @@ final class NewTradeAssociationViewModel: FormViewModel {
             }
         }
     }
-
+    
     // MARK: - State
-
+    
     private struct State {
         var memberCountOptions: [CommonIdNameModel] = [
             CommonIdNameModel(id: 1, name: "1–50 members"),
@@ -215,15 +222,15 @@ final class NewTradeAssociationViewModel: FormViewModel {
             CommonIdNameModel(id: 3, name: "200+ members")
         ]
         var memberCount: CommonIdNameModel?
-        var foundedYear: CommonIdNameModel?
+        var foundedYear: Int?
     }
-
+    
     // MARK: - Tags
-
+    
     private enum SectionTag: Int {
         case main = 0
     }
-
+    
     private enum CellTag: Int {
         case header = 1
         case steps = 2

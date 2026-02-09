@@ -87,3 +87,65 @@ public class ModalCoordinator: BaseCoordinator {
         dismissModal()
     }
 }
+
+// ModalCoordinator+DatePicker.swift
+extension ModalCoordinator {
+
+    func goToDatePicker(
+        config: DatePickerConfig,
+        completion: @escaping (Date?) -> Void
+    ) {
+
+        let viewModel = DatePickerViewModel(config: config)
+
+        viewModel.onConfirm = { [weak self] date in
+            completion(date)
+        }
+
+        let vc = DatePickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            completion(nil)
+        }
+
+        vc.modalPresentationStyle = .pageSheet
+        router.present(vc)
+    }
+}
+
+extension ModalCoordinator {
+
+    func goToCalendarPicker(
+        mode: CalendarPickerMode,
+        min: Date? = nil,
+        max: Date? = nil,
+        initial: Date? = nil,
+        completion: @escaping (Date?) -> Void
+    ) {
+
+        let picker = CalendarPickerFactory.makePicker()
+
+        picker.configure(
+            mode: mode,
+            minDate: min,
+            maxDate: max,
+            initialDate: initial
+        )
+
+        picker.onConfirm = { [weak self] date in
+            completion(date)
+            self?.dismissModal()
+        }
+
+        picker.onCancel = { [weak self] in
+            completion(nil)
+            self?.dismissModal()
+        }
+
+        let nav = UINavigationController(rootViewController: picker)
+        nav.modalPresentationStyle = .pageSheet
+        nav.modalTransitionStyle = .coverVertical
+
+        router.present(nav)
+    }
+}

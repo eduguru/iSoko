@@ -84,7 +84,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = ProfileEditViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -145,6 +145,9 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     private func gotoCreateTradeAssociations() {
+        let modalCoordinator = ModalCoordinator(router: router)  // coordinator.delegate = self
+        addChild(modalCoordinator)
+        
         let viewModel = NewTradeAssociationViewModel()
         viewModel.gotoConfirm = { [weak self] in
             self?.gotoCompleteCreateTradeAssociations()
@@ -152,6 +155,15 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = NewTradeAssociationViewController()
         vc.viewModel = viewModel
+
+        viewModel.selectFoundedYear = { [weak self] completion in
+            modalCoordinator.goToCalendarPicker(
+                mode: .year,
+                min: Date.from(year: 1900)
+            ) { date in
+                completion(date?.yearComponent)
+            }
+        }
         
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
@@ -179,7 +191,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = MyOrdersViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -192,7 +204,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -205,7 +217,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = LegalViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -218,7 +230,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = SettingsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
@@ -231,7 +243,7 @@ public class MoreCoordinator: BaseCoordinator {
         
         let vc = HelpFeedbackViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
         
