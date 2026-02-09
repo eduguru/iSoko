@@ -11,6 +11,10 @@ import UtilsKit
 
 final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
+    // MARK: - Upload
+    var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
+    private var pickedCertificate: PickedFile?
+
     // MARK: - Navigation
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     var gotoConfirm: (() -> Void)?
@@ -26,6 +30,27 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     override init() {
         super.init()
         sections = makeSections()
+
+        uploadCertificateRow.modelDidUpdate = { [weak self] result in
+            switch result {
+            case .pick:
+                self?.pickFile? { picked in
+                    guard let picked else { return }
+                    self?.uploadCertificateRow.selectedDocumentName = picked.fileName
+                    self?.uploadCertificateRow.selectedImage = nil
+                    self?.pickedCertificate = picked
+                    self?.reloadRow(withTag: self?.uploadCertificateRow.tag ?? 0)
+                }
+
+            case .selected(let image, let url):
+                // not used here
+                break
+
+            case .selectedDocument(let name, let url):
+                // not used here
+                break
+            }
+        }
     }
 
     // MARK: - Section Builder
@@ -36,12 +61,13 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 cells: [
                     headerRow,
                     stepIndicatorRow,
-                    phoneDropDownRow,            // 📞 Phone number now added here
+                    phoneDropDownRow,
                     websiteInputRow,
                     instagramInputRow,
                     linkedinInputRow,
                     xInputRow,
                     locationDropdownRow,
+                    uploadCertificateRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
                 ]
@@ -67,7 +93,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         descriptionFontStyle: .headline
     )
 
-    // MARK: - 📞 Phone Number Field
     private lazy var phoneDropDownRow = PhoneDropDownFormRow(
         tag: CellTag.phone.rawValue,
         model: PhoneDropDownModel(
@@ -104,8 +129,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         phoneDropDownRow.model = model
         reloadRow(withTag: phoneDropDownRow.tag)
     }
-
-    // MARK: - Other Input Fields
 
     private lazy var websiteInputRow = SimpleInputFormRow(
         tag: CellTag.website.rawValue,
@@ -176,7 +199,20 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         )
     )
 
-    // MARK: - Continue Button
+    public lazy var uploadCertificateRow = UploadFormRow(
+        tag: CellTag.certificate.rawValue,
+        config: UploadFormRowConfig(
+            style: .dashed,
+            title: "Upload Certificate",
+            subtitle: ".png, .jpg, .jpeg, .pdf files each up to 5MB",
+            icon: UIImage(systemName: "square.and.arrow.up"),
+            borderColor: .lightGray,
+            backgroundColor: .clear,
+            cornerRadius: 12,
+            height: 120
+        )
+    )
+
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
@@ -190,7 +226,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     )
 
-    // MARK: - Selection Handler
     private func handleLocationSelection() {
         gotoSelectLocation? { [weak self] value in
             guard let self, let value else { return }
@@ -200,7 +235,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Helpers
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -210,12 +244,10 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     }
 
-    // MARK: - State
     private struct State {
         var businessLocation: CommonIdNameModel?
     }
 
-    // MARK: - Tags
     private enum SectionTag: Int {
         case main = 0
     }
@@ -230,5 +262,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         case xURL = 7
         case location = 8
         case continueButton = 9
+        case certificate = 10
     }
 }

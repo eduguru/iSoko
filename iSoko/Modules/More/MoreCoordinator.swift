@@ -175,8 +175,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoCompleteCreateTradeAssociations() {
         let viewModel = CompleteNewTradeAssociationViewModel()
-        
-        let vc = NewTradeAssociationViewController()
+        let vc = CompleteNewTradeAssociationViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
