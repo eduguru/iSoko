@@ -11,15 +11,13 @@ import UtilsKit
 
 final class CompleteNewTradeAssociationViewController: FormViewController {
 
-    private let filePicker = FilePickerHelper()
-    private var uploadRow: UploadFormRow!
-
     var makeRoot: Bool = false
+    private let pickerCoordinator = FilePickerBottomSheetCoordinator()
+    private var uploadRow: UploadFormRow!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Cast here
         guard let vm = viewModel as? CompleteNewTradeAssociationViewModel else {
             fatalError("Expected CompleteNewTradeAssociationViewModel")
         }
@@ -29,23 +27,14 @@ final class CompleteNewTradeAssociationViewController: FormViewController {
         vm.pickFile = { [weak self] completion in
             guard let self else { return }
 
-            self.filePicker.presentPicker(
-                from: self,
-                source: .documents,
-                selectionLimit: 1,
-                allowedTypes: [.pdf, .png, .jpeg, .jpeg],
-                completion: { result in
-                    switch result {
-                    case .success(let files):
-                        completion(files.first)
-                    case .failure:
-                        completion(nil)
-                    }
-                }
-            )
+            self.pickerCoordinator.present(from: self,
+                                           selectionLimit: 1,
+                                           allowedTypes: [.pdf, .png, .jpeg, .jpeg]) { pickedFile in
+                completion(pickedFile)
+            }
         }
     }
-
+    
     @objc func close() {
         closeAction?()
     }
