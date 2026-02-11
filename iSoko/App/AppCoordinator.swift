@@ -8,6 +8,7 @@
 import RouterKit
 import UIKit
 import UIKit
+import StorageKit
 
 @MainActor
 class AppCoordinator: BaseCoordinator {
@@ -32,6 +33,7 @@ class AppCoordinator: BaseCoordinator {
 
     override func start() {
         showWelcomeFlow()
+        observeAuthLogout()
     }
     
     private func showWelcomeFlow() {
@@ -89,4 +91,41 @@ extension AppCoordinator: CoordinatorDelegate {
             showHomeFlow()
         }
     }
+
+    
+    //MARK: - for logout listening flow -
+    private func observeAuthLogout() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLogoutNotification),
+            name: .authTokenExpired,
+            object: nil
+        )
+    }
+
+    @objc private func handleLogoutNotification() {
+        Task { @MainActor in
+            logoutAndResetApp()
+        }
+    }
+    
+    @MainActor
+    private func logoutAndResetApp() {
+        print("🚪 Global logout")
+
+        // 1️⃣ Clear coordinators
+        childCoordinators.removeAll()
+
+        // 2️⃣ Reset root navigation
+        let newNav = BaseNavigationController()
+        window.rootViewController = newNav
+        window.makeKeyAndVisible()
+
+        // 3️⃣ Start Auth flow
+        let router = Router(navigationController: newNav)
+        let authCoordinator = AuthCoordinator(router: router)
+        addChild(authCoordinator)
+        authCoordinator.start()
+    }
+
 }

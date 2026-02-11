@@ -32,7 +32,6 @@ public final class LocalizationManager {
     private static let defaultLanguage = "en"
     
     // MARK: - Notification
-    public static let languageDidChangeNotification = Notification.Name("LocalizationManager.languageDidChange")
     
     // MARK: - Persisted or fallback language
     private static var _language: String = defaultLanguage
@@ -48,7 +47,7 @@ public final class LocalizationManager {
         set {
             guard newValue != currentLanguage else { return } // Only trigger if changed
             AppStorage.selectedLanguage = newValue
-            NotificationCenter.default.post(name: languageDidChangeNotification, object: nil)
+            NotificationCenter.default.post(name: .languageDidChangeNotification, object: nil)
         }
     }
     

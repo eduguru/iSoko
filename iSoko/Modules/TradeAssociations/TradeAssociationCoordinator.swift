@@ -24,58 +24,31 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
     }
     
     override func start() {
+        gotoTradeAssociations()
+    }
+    
+    private func gotoTradeAssociations() {
         let viewModel = TradeAssociationListingsViewModel()
         viewModel.goToMoreDetails = { [weak self] in
             self?.gotoTradeAssociationDetails($0)
         }
-
+        
         viewModel.goToButtonAction = showConfirmationBottomSheet
-
+        
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
-
+        
         vc.goToCreateAction = { [weak self] in
             self?.gotoCreateTradeAssociations()
         }
+        
         vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
+            self?.router.dismiss(animated: true)
+            // self?.router.pop(animated: true)
         }
-
+        
         router.push(vc, animated: true)
     }
-    
-    //    private func gotoTradeAssociationDetails(_ data: AssociationResponse) {
-    //        let viewModel = TradeAssociationDetailsViewModel(data)
-    //        let vc = TradeAssociationDetailsViewController()
-    //        vc.viewModel = viewModel
-    //        vc.closeAction = { [weak self] in
-    //            self?.router.pop(animated: true)
-    //        }
-    //
-    //        router.push(vc, animated: true)
-    //    }
-    
-    //    private func gotoTradeAssociations() {
-    //        let viewModel = TradeAssociationListingsViewModel()
-    //        viewModel.goToMoreDetails = { [weak self] in
-    //            self?.gotoTradeAssociationDetails($0)
-    //        }
-    //
-    //        viewModel.goToButtonAction = showConfirmationBottomSheet
-    //
-    //        let vc = TradeAssociationListingsViewController()
-    //        vc.viewModel = viewModel
-    //
-    //        vc.goToCreateAction = { [weak self] in
-    //            self?.gotoCreateTradeAssociations()
-    //        }
-    //        vc.closeAction = { [weak self] in
-    //            self?.router.pop(animated: true)
-    //        }
-    //
-    //        router.navigationControllerInstance?.navigationBar.isHidden = false
-    //        router.push(vc, animated: true)
-    //    }
     
     private func gotoTradeAssociationDetails(_ data: AssociationResponse) {
         let viewModel = TradeAssociationDetailsViewModel(data)
