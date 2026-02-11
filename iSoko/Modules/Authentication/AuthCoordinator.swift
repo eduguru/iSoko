@@ -24,28 +24,17 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     public func popLogginFlow() {
-        let viewModel = AuthViewModel()
-        let vc = AuthViewController()
-        vc.viewModel = viewModel
-        
-        viewModel.gotoSignIn = { [weak self] verifier in
-            self?.authenticate(verifier: verifier)
-        }
+        let nav = BaseNavigationController()
+        let newRouter = Router(navigationController: nav)
 
-        viewModel.goToHome = goToMainTabs
-        
-        viewModel.gotoSignUp = goToSignupOptions
-        viewModel.gotoForgotPassword = gotoForgotPassword
-        viewModel.gotoGuestSession = goToMainTabs
-        
-        AppStorage.hasShownInitialLoginOptions = true
-        
-        // Use router to set root
-        vc.modalPresentationStyle = .fullScreen
-        router.present(vc, animated: true)
+        let coordinator = AuthCoordinator(router: newRouter)
+        addChild(coordinator)
+        coordinator.start()
+
+        nav.modalPresentationStyle = .fullScreen
+        router.present(nav, animated: true)
     }
 
-    
     private func goToAuthOptions() {
         let viewModel = AuthViewModel()
         let vc = AuthViewController()
@@ -54,8 +43,6 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.gotoSignIn = { [weak self] verifier in
             self?.authenticate(verifier: verifier)
         }
-        
-        viewModel.goToHome = goToMainTabs
         
         viewModel.gotoSignUp = goToSignupOptions
         viewModel.gotoForgotPassword = gotoForgotPassword
@@ -139,6 +126,8 @@ class AuthCoordinator: BaseCoordinator {
                                 
                                 print("User:", user)
                                 AppStorage.userProfile = user
+                                AppStorage.hasLoggedIn = true
+                                
                                 self?.goToMainTabs()
 
                             case .failure(let error):
@@ -277,7 +266,6 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.goToLogin = { [weak self] in
             let verifier = AppStorage.verifier ?? ""
             self?.authenticate(verifier: verifier)
-            // self?.goToMainTabs() // self?.goToLogin(makeRoot: true)
         }
         
         let vc = BasicProfileViewController()

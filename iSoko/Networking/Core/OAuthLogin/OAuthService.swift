@@ -10,6 +10,7 @@ import CryptoKit
 import AuthenticationServices
 import UIKit
 import UtilsKit
+import StorageKit
 
 extension OAuthService: ASWebAuthenticationPresentationContextProviding {
     public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
@@ -135,6 +136,9 @@ public final class OAuthService: NSObject {
 
             do {
                 let user = try JSONDecoder().decode(UserDetails.self, from: data)
+                AppStorage.hasLoggedIn = true
+                RuntimeSession.authState = .authenticated
+                
                 completion(.success(user))
             } catch {
                 completion(.failure(error))

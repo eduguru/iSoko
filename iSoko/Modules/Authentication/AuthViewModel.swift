@@ -16,7 +16,6 @@ final class AuthViewModel: FormViewModel {
 
     
     var gotoSignUp: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
-    var goToHome: (() -> Void)? = { }
     var gotoGuestSession: (() -> Void)? = { }
     var gotoForgotPassword: (() -> Void)? = { }
     

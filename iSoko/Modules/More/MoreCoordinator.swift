@@ -52,10 +52,16 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func showLoginFlow() {
         AppStorage.hasShownInitialLoginOptions = false
-        let router = Router(navigationController: navigationController)
-        let cordinator = AuthCoordinator(router: router)
-        addChild(cordinator)
-        cordinator.popLogginFlow()
+
+        let nav = BaseNavigationController()
+        let router = Router(navigationController: nav)
+        let coordinator = AuthCoordinator(router: router)
+
+        addChild(coordinator)
+        coordinator.start()
+
+        nav.modalPresentationStyle = .fullScreen
+        self.router.present(nav, animated: true)
     }
     
     private func gotoSignOut() {
