@@ -10,16 +10,18 @@ import UIKit
 import UtilsKit
 
 final class CompleteNewTradeAssociationViewModel: FormViewModel {
-
+    
     // MARK: - Upload
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
+
     private var pickedCertificate: PickedFile?
+    private var pickedLogo: PickedFile?
 
     // MARK: - Navigation
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     var gotoConfirm: (() -> Void)?
 
-    // MARK: - Country Picker (for phone)
+    // MARK: - Country Picker
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     private let countryHelper = CountryHelper()
 
@@ -30,27 +32,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     override init() {
         super.init()
         sections = makeSections()
-
-        uploadCertificateRow.modelDidUpdate = { [weak self] result in
-            switch result {
-            case .pick:
-                self?.pickFile? { picked in
-                    guard let picked else { return }
-                    self?.uploadCertificateRow.selectedDocumentName = picked.fileName
-                    self?.uploadCertificateRow.selectedImage = nil
-                    self?.pickedCertificate = picked
-                    self?.reloadRow(withTag: self?.uploadCertificateRow.tag ?? 0)
-                }
-
-            case .selected(let image, let url):
-                // not used here
-                break
-
-            case .selectedDocument(let name, let url):
-                // not used here
-                break
-            }
-        }
+        configureUploadHandlers()
     }
 
     // MARK: - Section Builder
@@ -68,6 +50,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                     xInputRow,
                     locationDropdownRow,
                     uploadCertificateRow,
+                    uploadLogoRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
                 ]
@@ -75,7 +58,64 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         ]
     }
 
-    // MARK: - UI Rows
+    // MARK: - Upload Handlers
+
+    private func configureUploadHandlers() {
+
+        // Certificate Upload
+        uploadCertificateRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+
+            switch result {
+            case .pick:
+                self.pickFile? { picked in
+                    guard let picked else { return }
+
+                    self.pickedCertificate = picked
+                    self.uploadCertificateRow.selectedDocumentName = picked.fileName
+                    self.uploadCertificateRow.selectedImage = nil
+
+                    self.reloadRow(withTag: self.uploadCertificateRow.tag)
+                }
+
+            default:
+                break
+            }
+        }
+
+        uploadLogoRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+
+            switch result {
+            case .pick:
+                self.pickFile? { picked in
+                    guard let picked else { return }
+
+                    self.pickedLogo = picked
+
+                    // Try to create UIImage from data
+                    if let data = picked.fileData,
+                       let image = UIImage(data: data) {
+
+                        self.uploadLogoRow.selectedImage = image
+                        self.uploadLogoRow.selectedDocumentName = nil
+
+                    } else {
+                        self.uploadLogoRow.selectedDocumentName = picked.fileName
+                        self.uploadLogoRow.selectedImage = nil
+                    }
+
+                    self.reloadRow(withTag: self.uploadLogoRow.tag)
+                }
+
+            default:
+                break
+            }
+        }
+
+    }
+
+    // MARK: - Rows
 
     private lazy var stepIndicatorRow = StepStripFormRow(
         tag: CellTag.steps.rawValue,
@@ -107,19 +147,13 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 errorMessageRequired: "Phone number is required",
                 errorMessageLength: "Phone number length is invalid"
             ),
-            onPhoneChanged: { new in
-                print("Phone changed: \(new)")
-            },
+            onPhoneChanged: { _ in },
             onCountryTapped: { [weak self] in
                 self?.showCountryPicker? { selectedCountry in
                     self?.updatePhoneCountry(selectedCountry)
                 }
             },
-            onValidationError: { err in
-                if let err = err {
-                    print("Validation error: \(err)")
-                }
-            }
+            onValidationError: { _ in }
         )
     )
 
@@ -130,61 +164,45 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         reloadRow(withTag: phoneDropDownRow.tag)
     }
 
-    private lazy var websiteInputRow = SimpleInputFormRow(
+    private lazy var websiteInputRow = makeURLInputRow(
         tag: CellTag.website.rawValue,
-        model: SimpleInputModel(
-            text: "",
-            config: TextFieldConfig(
-                placeholder: "Enter website URL",
-                keyboardType: .URL
-            ),
-            validation: ValidationConfiguration(isRequired: false),
-            titleText: "Website URL (Optional)",
-            useCardStyle: true
-        )
+        title: "Website URL (Optional)",
+        placeholder: "Enter website URL"
     )
 
-    private lazy var instagramInputRow = SimpleInputFormRow(
+    private lazy var instagramInputRow = makeURLInputRow(
         tag: CellTag.instagram.rawValue,
-        model: SimpleInputModel(
-            text: "",
-            config: TextFieldConfig(
-                placeholder: "Enter Instagram URL",
-                keyboardType: .URL
-            ),
-            validation: ValidationConfiguration(isRequired: false),
-            titleText: "Instagram URL (Optional)",
-            useCardStyle: true
-        )
+        title: "Instagram URL (Optional)",
+        placeholder: "Enter Instagram URL"
     )
 
-    private lazy var linkedinInputRow = SimpleInputFormRow(
+    private lazy var linkedinInputRow = makeURLInputRow(
         tag: CellTag.linkedin.rawValue,
-        model: SimpleInputModel(
-            text: "",
-            config: TextFieldConfig(
-                placeholder: "Enter LinkedIn URL",
-                keyboardType: .URL
-            ),
-            validation: ValidationConfiguration(isRequired: false),
-            titleText: "LinkedIn URL (Optional)",
-            useCardStyle: true
-        )
+        title: "LinkedIn URL (Optional)",
+        placeholder: "Enter LinkedIn URL"
     )
 
-    private lazy var xInputRow = SimpleInputFormRow(
+    private lazy var xInputRow = makeURLInputRow(
         tag: CellTag.xURL.rawValue,
-        model: SimpleInputModel(
-            text: "",
-            config: TextFieldConfig(
-                placeholder: "Enter X (Twitter) URL",
-                keyboardType: .URL
-            ),
-            validation: ValidationConfiguration(isRequired: false),
-            titleText: "X URL (Optional)",
-            useCardStyle: true
-        )
+        title: "X URL (Optional)",
+        placeholder: "Enter X (Twitter) URL"
     )
+
+    private func makeURLInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+        SimpleInputFormRow(
+            tag: tag,
+            model: SimpleInputModel(
+                text: "",
+                config: TextFieldConfig(
+                    placeholder: placeholder,
+                    keyboardType: .URL
+                ),
+                validation: ValidationConfiguration(isRequired: false),
+                titleText: title,
+                useCardStyle: true
+            )
+        )
+    }
 
     private lazy var locationDropdownRow = DropdownFormRow(
         tag: CellTag.location.rawValue,
@@ -203,9 +221,23 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.certificate.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Upload Certificate",
-            subtitle: ".png, .jpg, .jpeg, .pdf files each up to 5MB",
+            title: "Upload Certificate (Optional)",
+            subtitle: ".png, .jpg, .jpeg, .pdf up to 5MB",
             icon: UIImage(systemName: "square.and.arrow.up"),
+            borderColor: .lightGray,
+            backgroundColor: .clear,
+            cornerRadius: 12,
+            height: 120
+        )
+    )
+
+    public lazy var uploadLogoRow = UploadFormRow(
+        tag: CellTag.logo.rawValue,
+        config: UploadFormRowConfig(
+            style: .dashed,
+            title: "Upload Logo (Optional)",
+            subtitle: ".png, .jpg, .jpeg up to 5MB",
+            icon: UIImage(systemName: "photo"),
             borderColor: .lightGray,
             backgroundColor: .clear,
             cornerRadius: 12,
@@ -226,14 +258,19 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     )
 
+    // MARK: - Location
+
     private func handleLocationSelection() {
         gotoSelectLocation? { [weak self] value in
             guard let self, let value else { return }
+
             state.businessLocation = value
             locationDropdownRow.config.placeholder = value.name
             reloadRow(withTag: locationDropdownRow.tag)
         }
     }
+
+    // MARK: - Reload
 
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
@@ -243,6 +280,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             }
         }
     }
+
+    // MARK: - State
 
     private struct State {
         var businessLocation: CommonIdNameModel?
@@ -263,5 +302,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         case location = 8
         case continueButton = 9
         case certificate = 10
+        case logo = 11
     }
 }
