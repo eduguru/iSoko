@@ -12,26 +12,6 @@ import NetworkingKit
 // MARK: - Network Manager
 public final class NetworkManager<T: TargetType> {
     private let provider: MoyaProvider<T>
-
-    // Initializer now accepts tokenProvider and allows validation of status codes
-//    public init(tokenProvider: RefreshableTokenProvider, validateStatusCodes: Bool = false) {
-//        let interceptor = AuthInterceptor(tokenProvider: tokenProvider)
-//
-//        // Configure Alamofire session with the given interceptor
-//        let session: Session
-//        if validateStatusCodes {
-//            // Validate status codes if true
-//            session = Session(interceptor: interceptor)
-//        } else {
-//            // Disable automatic status code validation (for custom 401/403 handling)
-//            let configuration = URLSessionConfiguration.default
-//            configuration.httpAdditionalHeaders = Session.default.sessionConfiguration.httpAdditionalHeaders
-//            session = Session(configuration: configuration, interceptor: interceptor)
-//        }
-//
-//        let logger = NetworkLoggerPlugin(level: NetworkConfig.logLevel)
-//        self.provider = MoyaProvider<T>(session: session, plugins: [logger], trackInflights: false)
-//    }
     
     public init(tokenProvider: RefreshableTokenProvider) {
         let interceptor = AuthInterceptor(tokenProvider: tokenProvider)
@@ -184,3 +164,24 @@ public extension NetworkManager where T == UploadTarget {
         return try await request(envelope.target)
     }
 }
+
+
+// Initializer now accepts tokenProvider and allows validation of status codes
+//    public init(tokenProvider: RefreshableTokenProvider, validateStatusCodes: Bool = false) {
+//        let interceptor = AuthInterceptor(tokenProvider: tokenProvider)
+//
+//        // Configure Alamofire session with the given interceptor
+//        let session: Session
+//        if validateStatusCodes {
+//            // Validate status codes if true
+//            session = Session(interceptor: interceptor)
+//        } else {
+//            // Disable automatic status code validation (for custom 401/403 handling)
+//            let configuration = URLSessionConfiguration.default
+//            configuration.httpAdditionalHeaders = Session.default.sessionConfiguration.httpAdditionalHeaders
+//            session = Session(configuration: configuration, interceptor: interceptor)
+//        }
+//
+//        let logger = NetworkLoggerPlugin(level: NetworkConfig.logLevel)
+//        self.provider = MoyaProvider<T>(session: session, plugins: [logger], trackInflights: false)
+//    }

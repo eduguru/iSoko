@@ -6,6 +6,7 @@
 //
 
 import NetworkingKit
+import UtilsKit
 
 public protocol AssociationsService {
     //MARK: -
@@ -13,7 +14,13 @@ public protocol AssociationsService {
     func getAllPendingAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
     func getApprovedssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
     
-    func register(_ request: [String: Any], accessToken: String) async throws -> AssociationResponse?
+    func register(
+        association: [String: Any],
+        logo: PickedFile?,
+        certificate: PickedFile?,
+        accessToken: String
+    ) async throws -> AssociationResponse?
+    
     func update(associationId: Int, _ request: [String: Any], accessToken: String) async throws -> AssociationResponse?
     func review(associationId: Int, _ request: [String: Any], accessToken: String) async throws -> AssociationResponse?
     func getAssociationById(associationId: Int, accessToken: String) async throws -> AssociationResponse?
@@ -52,8 +59,13 @@ public final class AssociationsServiceImpl: AssociationsService {
         return response.data
     }
     
-    public func register(_ request: [String : Any], accessToken: String) async throws -> AssociationResponse? {
-        try await manager.request(AssociationsApi.register(request, accessToken: accessToken))
+    public func register(
+        association: [String: Any],
+        logo: PickedFile?,
+        certificate: PickedFile?,
+        accessToken: String
+    ) async throws -> AssociationResponse? {
+        try await manager.request(AssociationsApi.register(association: association, logo: logo, certificate: certificate, accessToken: accessToken))
     }
     
     public func update(associationId: Int, _ request: [String : Any], accessToken: String) async throws -> AssociationResponse? {

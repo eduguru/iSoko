@@ -8,14 +8,12 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class CompleteNewTradeAssociationViewModel: FormViewModel {
-    
+
     // MARK: - Upload
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-
-    private var pickedCertificate: PickedFile?
-    private var pickedLogo: PickedFile?
 
     // MARK: - Navigation
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
@@ -24,6 +22,9 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     // MARK: - Country Picker
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     private let countryHelper = CountryHelper()
+
+    // MARK: - Services
+    private let associationsService = NetworkEnvironment.shared.associationsService
 
     // MARK: - Internal State
     private var state = State()
@@ -59,7 +60,6 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     }
 
     // MARK: - Upload Handlers
-
     private func configureUploadHandlers() {
 
         // Certificate Upload
@@ -71,18 +71,17 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 self.pickFile? { picked in
                     guard let picked else { return }
 
-                    self.pickedCertificate = picked
+                    self.state.certificate = picked
                     self.uploadCertificateRow.selectedDocumentName = picked.fileName
                     self.uploadCertificateRow.selectedImage = nil
-
                     self.reloadRow(withTag: self.uploadCertificateRow.tag)
                 }
-
             default:
                 break
             }
         }
 
+        // Logo Upload
         uploadLogoRow.modelDidUpdate = { [weak self] result in
             guard let self else { return }
 
@@ -91,15 +90,12 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 self.pickFile? { picked in
                     guard let picked else { return }
 
-                    self.pickedLogo = picked
+                    self.state.logo = picked
 
-                    // Try to create UIImage from data
                     if let data = picked.fileData,
                        let image = UIImage(data: data) {
-
                         self.uploadLogoRow.selectedImage = image
                         self.uploadLogoRow.selectedDocumentName = nil
-
                     } else {
                         self.uploadLogoRow.selectedDocumentName = picked.fileName
                         self.uploadLogoRow.selectedImage = nil
@@ -107,12 +103,10 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
                     self.reloadRow(withTag: self.uploadLogoRow.tag)
                 }
-
             default:
                 break
             }
         }
-
     }
 
     // MARK: - Rows
@@ -147,7 +141,9 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 errorMessageRequired: "Phone number is required",
                 errorMessageLength: "Phone number length is invalid"
             ),
-            onPhoneChanged: { _ in },
+            onPhoneChanged: { [weak self] newPhone in
+                self?.state.phoneNumber = newPhone
+            },
             onCountryTapped: { [weak self] in
                 self?.showCountryPicker? { selectedCountry in
                     self?.updatePhoneCountry(selectedCountry)
@@ -158,6 +154,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     )
 
     private func updatePhoneCountry(_ newCountry: Country) {
+        state.phoneCountry = newCountry
+
         var model = phoneDropDownRow.model
         model.selectedCountry = newCountry
         phoneDropDownRow.model = model
@@ -199,7 +197,23 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 ),
                 validation: ValidationConfiguration(isRequired: false),
                 titleText: title,
-                useCardStyle: true
+                useCardStyle: true,
+                onTextChanged: { [weak self] newText in
+                    guard let self else { return }
+
+                    switch tag {
+                    case CellTag.website.rawValue:
+                        self.state.website = newText
+                    case CellTag.instagram.rawValue:
+                        self.state.instagram = newText
+                    case CellTag.linkedin.rawValue:
+                        self.state.linkedin = newText
+                    case CellTag.xURL.rawValue:
+                        self.state.xURL = newText
+                    default:
+                        break
+                    }
+                }
             )
         )
     }
@@ -254,24 +268,24 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoConfirm?()
+            Task {
+                await self?.submit()
+            }
         }
     )
 
     // MARK: - Location
-
     private func handleLocationSelection() {
         gotoSelectLocation? { [weak self] value in
             guard let self, let value else { return }
 
-            state.businessLocation = value
-            locationDropdownRow.config.placeholder = value.name
-            reloadRow(withTag: locationDropdownRow.tag)
+            self.state.businessLocation = value
+            self.locationDropdownRow.config.placeholder = value.name
+            self.reloadRow(withTag: self.locationDropdownRow.tag)
         }
     }
 
     // MARK: - Reload
-
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -281,10 +295,88 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     }
 
-    // MARK: - State
+    // MARK: - Submit
+    private func submit() async {
 
+        let params: [String: Any] = [
+            "foundedIn": 2010,
+            "name": "Wheat Farmers Association",
+            "code": "WFA",
+            "countryId": 1,
+            "instagram": state.instagram,
+            "phoneNumber": state.phoneNumber,
+            "x": state.xURL,
+            "emailAddress": "wfa@gmail.com",
+            "members": 150,
+            "website": state.website,
+            "description": "An association of wheat farmers",
+            "physicalAddress": "123 Wheat St, Nairobi",
+            "linkedin": state.linkedin,
+            "locationId": "1"
+        ]
+
+        do {
+            let response = try await associationsService.register(
+                association: params,
+                logo: state.logo,
+                certificate: state.certificate,
+                accessToken: state.oauthToken
+            )
+
+            gotoConfirm?()
+
+        } catch let NetworkError.server(response) {
+
+            print("🚫 Server error:", response.message ?? "Unknown")
+
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+        } catch {
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+        }
+    }
+    
+//    private func applyFieldErrors() {
+//        state.fieldErrors?.forEach { error in
+//            switch error.field {
+//            case "phoneNumber":
+//                // phoneDropDownRow.showValidationError(error.message)
+//            case "website":
+//                // websiteInputRow.showValidationError(error.message)
+//            default:
+//                break
+//            }
+//        }
+//    }
+
+
+
+    // MARK: - State
     private struct State {
         var businessLocation: CommonIdNameModel?
+
+        var phoneNumber: String = ""
+        var phoneCountry: Country = CountryHelper().country(forISO: "KE")!
+
+        var website: String = ""
+        var instagram: String = ""
+        var linkedin: String = ""
+        var xURL: String = ""
+
+        var logo: PickedFile?
+        var certificate: PickedFile?
+
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
     private enum SectionTag: Int {

@@ -8,6 +8,7 @@
 import Moya
 import Foundation
 import NetworkingKit
+import UtilsKit
 
 public struct AssociationsApi {
     
@@ -79,32 +80,62 @@ public struct AssociationsApi {
         return NewPagedResponseTarget(target: target)
     }
     
-    static func register(_ request: [String: Any], accessToken: String) -> ValueResponseTarget<AssociationResponse> {
-        let userDict: [String: Any] = request
-        let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
+    static func register(
+        association: [String: Any],
+        logo: PickedFile?,
+        certificate: PickedFile?,
+        accessToken: String
+    ) -> ValueResponseTarget<AssociationResponse> {
 
-//        let imageFile = profileImage.flatMap {
-//            UploadFile(
-//                data: $0.jpegData(compressionQuality: 0.8)!,
-//                name: "profileImage",
-//                fileName: "profile.jpg",
-//                mimeType: "image/jpeg"
-//            )
-//        }
-//
-//        let files = imageFile.map { [$0] } ?? []
+        let associationJSON = try? JSONSerialization.data(withJSONObject: association)
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
 
-        let t = MultipartUploadTarget(
+        var files: [UploadFile] = []
+
+        if let logo,
+           let data = logo.fileData,
+           !data.isEmpty {
+            files.append(
+                UploadFile(
+                    data: data,
+                    name: "logo",
+                    fileName: logo.fileName,
+                    mimeType: Helpers.mimeType(for: logo.fileExtension)
+                )
+            )
+        }
+
+        if let certificate,
+           let data = certificate.fileData,
+           !data.isEmpty {
+            files.append(
+                UploadFile(
+                    data: data,
+                    name: "certificate",
+                    fileName: certificate.fileName,
+                    mimeType: Helpers.mimeType(for: certificate.fileExtension)
+                )
+            )
+        }
+
+        let target = MultipartUploadTarget(
             baseURL: URL(string: "https://api.dev.isoko.africa/")!,
             path: "v1/associations",
-            jsonPartName: "uslogoer",
-            jsonData: userJSON,
-            files: [],
+            method: .post,
+            jsonPartName: "association",
+            jsonData: associationJSON,
+            files: files,
+            headers: headers,
             requiresAuth: false
         )
 
-        return ValueResponseTarget(target: t.asAnyTarget())
+        return ValueResponseTarget(target: target.asAnyTarget())
     }
+
     
     static func update(associationId: Int, _ request: [String: Any], accessToken: String) -> ValueResponseTarget<AssociationResponse> {
         let userDict: [String: Any] = request
