@@ -70,11 +70,17 @@ final class FeaturedDealsGridTableViewCell: UITableViewCell {
         self.columns = columns
         self.minimumItemWidth = minimumItemWidth
 
+        // Reload the data and force layout recalculation
         collectionView.reloadData()
+
+        // Force the layout pass immediately
         collectionView.layoutIfNeeded()
 
-        collectionHeightConstraint.constant =
-            collectionView.collectionViewLayout.collectionViewContentSize.height
+        // Update collection height constraint based on content size
+        collectionHeightConstraint.constant = collectionView.collectionViewLayout.collectionViewContentSize.height
+
+        // Invalidate layout if needed (useful if item sizes or layout are dynamically changing)
+        collectionView.collectionViewLayout.invalidateLayout()
     }
 }
 
@@ -121,14 +127,11 @@ UICollectionViewDelegateFlowLayout {
             - insets.left
             - insets.right
 
-        // -------------------------------
-        // 👇 Determine columns correctly
-        // -------------------------------
         let columnCount: Int
         if let c = columns, c > 0 {
             columnCount = c
         } else if let minW = minimumItemWidth, minW > 0 {
-            columnCount = max(2, Int((availableWidth - spacing) / (minW + spacing))) // Adjusted to subtract spacing
+            columnCount = max(2, Int((availableWidth - spacing) / (minW + spacing)))
         } else {
             columnCount = 2
         }
