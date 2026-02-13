@@ -127,6 +127,7 @@ final class HomeViewModel: FormViewModel {
             makeServicesQuickActionsSection(),
             makeTopDealsSection(),
             makeExportCardsSection(),
+            makeOpportunitySection(),
             makeTrendingProductsSection(),
             makeTrendingServicesSection()
         ]
@@ -257,20 +258,23 @@ final class HomeViewModel: FormViewModel {
     }
 
     private func updateTrendingProductsSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingProducts.rawValue }) else {
-            return
-        }
-        let updatedRow = GridFormRow(
+        guard let sectionIndex = sections.firstIndex(
+            where: { $0.id == Tags.Section.trendingProducts.rawValue }
+        ) else { return }
+
+        let updatedRow = FeaturedDealsGridFormRow(
             tag: Tags.Cells.trendingProducts.rawValue,
             items: makeTrendingProductItems(),
-            numberOfColumns: 2,
-            useCollectionView: false
+            columns: 2
         )
+
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
+
         reloadSection(sectionIndex)
     }
+
 
     private func updateTrendingServicesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingServices.rawValue }) else {
@@ -339,11 +343,10 @@ final class HomeViewModel: FormViewModel {
         items: makeServiceCategoryItems()
     )
 
-    lazy var trendingProducts = GridFormRow(
+    lazy var trendingProducts = FeaturedDealsGridFormRow(
         tag: Tags.Cells.trendingProducts.rawValue,
         items: makeTrendingProductItems(),
-        numberOfColumns: 2,
-        useCollectionView: false
+        columns: 2
     )
 
     lazy var trendingServices = GridFormRow(
@@ -388,20 +391,25 @@ final class HomeViewModel: FormViewModel {
         }
     }
 
-    private func makeTrendingProductItems() -> [GridItemModel] {
+    private func makeTrendingProductItems() -> [FeaturedDealItem] {
+
         return state?.featuredProducts.map { product in
-            GridItemModel(
+
+            FeaturedDealItem(
                 id: "\(product.id ?? 0)",
+                imageUrl: product.primaryImage,
                 image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
+                badgeText: nil,
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderName ?? "",
-                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
+                priceText: product.price != nil
+                    ? "$\(String(format: "%.2f", product.price!))"
+                    : "Price on request",
                 isFavorite: false,
                 onTap: { [weak self] in
                     self?.onTapProduct?(product)
                 },
-                onToggleFavorite: { [weak self] isFav in
+                onFavoriteToggle: { [weak self] isFav in
                     self?.onFavoriteProductToggle?(isFav, product)
                 }
             )
@@ -495,6 +503,42 @@ final class HomeViewModel: FormViewModel {
         tag: 99,
         items: makeExportCardsItems()
     )
+    
+    private func makeOpportunityItems() -> [OpportunityItem] {
+        return [
+            OpportunityItem(
+                id: "op1",
+                image: UIImage(named: "op1"),
+                title: "Fursa ya mafunzo na mitaji kutoka Stanbic Bank",
+                subtitle: "Partner Association",
+                location: "Region, Kenya",
+                category: "Finance",
+                onTap: { print("Op 1 tapped") }
+            ),
+            OpportunityItem(
+                id: "op2",
+                image: UIImage(named: "op2"),
+                title: "Fursa ya mafunzo na mitaji kutoka Stanbic Bank",
+                subtitle: "Partner Association",
+                location: "Region, Kenya",
+                category: "Finance",
+                onTap: { print("Op 2 tapped") }
+            )
+        ]
+    }
+
+    lazy var opportunityRow = OpportunityFormRow(tag: 99, items: makeOpportunityItems())
+
+    private func makeOpportunitySection() -> FormSection {
+        FormSection(
+            id: Tags.Section.opportunities.rawValue,
+            title: "Opportunities",
+            actionTitle: "See All",
+            onActionTapped: { print("See All") },
+            cells: [opportunityRow]
+        )
+    }
+
 
     // MARK: - State
     private struct State {
@@ -519,6 +563,7 @@ final class HomeViewModel: FormViewModel {
             case exportCards = 8
             case trendingProducts = 6
             case trendingServices = 7
+            case opportunities = 9
             case search = 3001
         }
 
@@ -530,6 +575,7 @@ final class HomeViewModel: FormViewModel {
             case exportCards = 8
             case trendingProducts = 6
             case trendingServices = 7
+            case opportunities = 9
             case search = 3001
         }
     }
