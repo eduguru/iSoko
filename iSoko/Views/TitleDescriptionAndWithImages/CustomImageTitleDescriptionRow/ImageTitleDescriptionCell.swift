@@ -10,7 +10,7 @@ import UIKit
 public final class ImageTitleDescriptionCell: UITableViewCell {
 
     private let containerView = UIView()
-    private let iconContainerView = UIView()  // New container for icon with padding
+    private let iconContainerView = UIView()
     private let iconImageView = UIImageView()
     private let titleLabel = UILabel()
     private let descriptionLabel = UILabel()
