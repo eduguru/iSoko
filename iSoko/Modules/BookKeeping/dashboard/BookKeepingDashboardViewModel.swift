@@ -123,6 +123,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "checkmark")
                 ),
+                backgroundColor: .app(.hex("#ECFDF5")),
                 onTap: { [weak self] in
                     self?.goToTotalSales?()
                 }
@@ -137,6 +138,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "exclamationmark.triangle")
                 ),
+                backgroundColor: .app(.hex("#FEF2F2")),
                 onTap: { [weak self] in
                     self?.goToTotalExpense?()
                 }
@@ -163,6 +165,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "checkmark")
                 ),
+                backgroundColor: .app(.hex("#EFF6FF")),
                 onTap: { [weak self] in
                     self?.goToTotalProducts?()
                 }
@@ -177,6 +180,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "exclamationmark.triangle")
                 ),
+                backgroundColor: .app(.hex("#FFF7ED")),
                 onTap: { [weak self] in
                     self?.goToLowStock?()
                 }
@@ -195,7 +199,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let payBill = StatusCardViewModel(
             title: "Record Sale",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemGreen,
+            backgroundColor: .app(.hex("#22C55E")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -208,7 +212,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let transfer = StatusCardViewModel(
             title: "Add Expense",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemRed,
+            backgroundColor: .app(.hex("#EF4444")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -238,7 +242,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let quickAction1 = StatusCardViewModel(
             title: "Manage Stock",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemBlue,
+            backgroundColor: .app(.hex("#3B82F6")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -251,7 +255,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let quickAction2 = StatusCardViewModel(
             title: "View Reports",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemPurple,
+            backgroundColor: .app(.hex("#6366F1")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -277,7 +281,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let payBill = StatusCardViewModel(
             title: "Customers",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .purple,
+            backgroundColor: .app(.hex("#A855F7")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
@@ -290,7 +294,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let transfer = StatusCardViewModel(
             title: "Suppliers",
             image: UIImage(systemName: "bolt.fill"),
-            backgroundColor: .systemTeal,
+            backgroundColor: .app(.hex("#14B8A6")),
             iconTintColor: .white,
             textColor: .white,
             iconSize: CGSize(width: 28, height: 28),
