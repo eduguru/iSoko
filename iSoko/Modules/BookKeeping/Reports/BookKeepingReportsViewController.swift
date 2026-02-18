@@ -14,6 +14,7 @@ class BookKeepingReportsViewController: FormViewController, CloseableViewControl
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "Reports"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         

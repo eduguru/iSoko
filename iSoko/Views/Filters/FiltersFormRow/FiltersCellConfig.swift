@@ -10,10 +10,7 @@ import UIKit
 public struct FiltersCellConfig {
 
     public let title: String?
-
-    public let layout: FiltersLayout
-    public let leftFilter: FilterFieldConfig
-    public let rightFilter: FilterFieldConfig?
+    public let rows: [[FilterFieldConfig]]
 
     public let message: String?
     public let messageColor: UIColor
@@ -24,9 +21,7 @@ public struct FiltersCellConfig {
 
     public init(
         title: String? = nil,
-        layout: FiltersLayout = .double,
-        leftFilter: FilterFieldConfig,
-        rightFilter: FilterFieldConfig? = nil,
+        rows: [[FilterFieldConfig]],
         message: String? = nil,
         messageColor: UIColor = .secondaryLabel,
         showsCard: Bool = true,
@@ -34,9 +29,7 @@ public struct FiltersCellConfig {
         cardCornerRadius: CGFloat = 12
     ) {
         self.title = title
-        self.layout = layout
-        self.leftFilter = leftFilter
-        self.rightFilter = rightFilter
+        self.rows = rows
         self.message = message
         self.messageColor = messageColor
         self.showsCard = showsCard

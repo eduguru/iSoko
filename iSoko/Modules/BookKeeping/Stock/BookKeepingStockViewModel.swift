@@ -30,7 +30,7 @@ final class BookKeepingStockViewModel: FormViewModel {
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
-            cells: [searchRow]
+            cells: [searchRow, filterFormRow]
         )
     }
 
@@ -46,6 +46,7 @@ final class BookKeepingStockViewModel: FormViewModel {
     // MARK: - Lazy Rows
     
     private lazy var searchRow = makeSearchRow()
+    private lazy var filterFormRow: FormRow = makeFilterFormRow()
     
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
@@ -60,6 +61,48 @@ final class BookKeepingStockViewModel: FormViewModel {
                 didTapFilterIcon: { print("⚙️ Filter tapped") }
             )
         )
+    }
+    
+    private func makeFilterFormRow() -> FormRow {
+        let row = FiltersFormRow(
+            tag: 1,
+            config: FiltersCellConfig(
+                title: "Filters",
+                rows: [
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Region",
+                            selectedValue: nil,
+                            iconSystemName: "mappin.and.ellipse",
+                            onTap: {
+                                print("Region tapped")
+                            }
+                        )
+                    ],
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Sale Type",
+                            selectedValue: nil,
+                            iconSystemName: "tag",
+                            onTap: {
+                                print("Sale Type tapped")
+                            }
+                        ),
+                        FilterFieldConfig(
+                            placeholder: "Time Period",
+                            selectedValue: nil,
+                            iconSystemName: "calendar",
+                            onTap: {
+                                print("Time Period tapped")
+                            }
+                        )
+                    ]
+                ],
+                message: "Select filters to refine your results"
+            )
+        )
+
+        return row
     }
     
     // Lazy factory that creates rows

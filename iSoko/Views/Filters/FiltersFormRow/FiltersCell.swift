@@ -13,11 +13,8 @@ public final class FiltersCell: UITableViewCell {
     private let messageLabel = UILabel()
 
     private let containerView = UIView()
-    private let filtersRow = UIStackView()
     private let contentStack = UIStackView()
-
-    private let leftFilterView = FilterFieldView()
-    private let rightFilterView = FilterFieldView()
+    private let filtersContainerStack = UIStackView()
 
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -39,19 +36,15 @@ public final class FiltersCell: UITableViewCell {
         messageLabel.font = .preferredFont(forTextStyle: .footnote)
         messageLabel.numberOfLines = 0
 
-        filtersRow.axis = .horizontal
-        filtersRow.spacing = 12
-        filtersRow.distribution = .fillEqually
-
-        filtersRow.addArrangedSubview(leftFilterView)
-        filtersRow.addArrangedSubview(rightFilterView)
+        filtersContainerStack.axis = .vertical
+        filtersContainerStack.spacing = 12
 
         contentStack.axis = .vertical
         contentStack.spacing = 8
         contentStack.translatesAutoresizingMaskIntoConstraints = false
 
         contentStack.addArrangedSubview(titleLabel)
-        contentStack.addArrangedSubview(filtersRow)
+        contentStack.addArrangedSubview(filtersContainerStack)
         contentStack.addArrangedSubview(messageLabel)
 
         containerView.translatesAutoresizingMaskIntoConstraints = false
@@ -64,10 +57,11 @@ public final class FiltersCell: UITableViewCell {
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
+            // ✅ Proper internal card padding
             contentStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
             contentStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
-            contentStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
-            contentStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor)
+            contentStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            contentStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
         ])
     }
 
@@ -76,21 +70,35 @@ public final class FiltersCell: UITableViewCell {
         titleLabel.text = config.title
         titleLabel.isHidden = config.title == nil
 
-        leftFilterView.configure(with: config.leftFilter)
-
-        if config.layout == .double, let right = config.rightFilter {
-            rightFilterView.configure(with: right)
-            rightFilterView.isHidden = false
-            filtersRow.distribution = .fillEqually
-        } else {
-            rightFilterView.isHidden = true
-            filtersRow.distribution = .fill
-        }
-
         messageLabel.text = config.message
         messageLabel.textColor = config.messageColor
         messageLabel.isHidden = config.message == nil
 
+        // Remove old rows (important for reuse)
+        filtersContainerStack.arrangedSubviews.forEach {
+            filtersContainerStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+
+        // Build rows dynamically
+        for row in config.rows {
+
+            let rowStack = UIStackView()
+            rowStack.axis = .horizontal
+            rowStack.spacing = 12
+            rowStack.alignment = .fill
+            rowStack.distribution = row.count > 1 ? .fillEqually : .fill
+
+            for fieldConfig in row {
+                let fieldView = FilterFieldView()
+                fieldView.configure(with: fieldConfig)
+                rowStack.addArrangedSubview(fieldView)
+            }
+
+            filtersContainerStack.addArrangedSubview(rowStack)
+        }
+
+        // Card styling
         if config.showsCard {
             containerView.backgroundColor = config.cardBackgroundColor
             containerView.layer.cornerRadius = config.cardCornerRadius
@@ -99,5 +107,4 @@ public final class FiltersCell: UITableViewCell {
             containerView.layer.cornerRadius = 0
         }
     }
-
 }

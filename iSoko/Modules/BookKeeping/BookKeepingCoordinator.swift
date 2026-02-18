@@ -23,14 +23,20 @@ public class BookKeepingCoordinator: BaseCoordinator {
         model.goToFilter = goToDetails
         model.goToDetails = goToDetails
         
-        model.goToRecordSales = goToBookKeepingSalesPayments
-        model.goToAddExpense = goToBookKeepingExpenses
+        model.goToTotalSales =  goToBookKeepingSalesPayments
+        model.goToTotalProducts = goToBookKeepingPurchases
+        model.goToTotalExpense = goToBookKeepingExpenses
+        model.goToLowStock = goToBookKeepingStock
+        
+        model.goToLowStock = goToBookKeepingLowStock
+        model.goToRecordSales = goToBookKeepingRecordSales
+        model.goToAddExpense = goToBookKeepingAddExpense
+        
         model.goToManageStock = goToBookKeepingStock
         model.goToViewReports = goToBookKeepingReports
-        model.goToCusomers = goToBookKeepingCustomers
+        
+        model.goToCustomers = goToBookKeepingCustomers
         model.goToSuppliers = goToBookKeepingSupplies
-        model.goToSpending = goToBookKeepingPurchases
-        model.goToBills = goToBookKeepingExpenses
         
         let vc = BookKeepingDashboardViewController()
         vc.viewModel = model
@@ -53,6 +59,42 @@ public class BookKeepingCoordinator: BaseCoordinator {
     
     public func goToDetails() {
         goToBookKeepingPurchases()
+    }
+ 
+    public func goToBookKeepingLowStock() {
+        let model = LowBookKeepingStockViewModel()
+        
+        let vc = LowBookKeepingStockViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToBookKeepingRecordSales() {
+        let model = AddBookKeepingSalesViewModel()
+        
+        let vc = AddBookKeepingSalesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToBookKeepingAddExpense() {
+        let model = AddBookKeepingExpensesViewModel()
+        
+        let vc = AddBookKeepingExpensesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
     }
     
     public func goToBookKeepingCustomers() {

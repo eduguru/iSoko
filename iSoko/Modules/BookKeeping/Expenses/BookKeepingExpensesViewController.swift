@@ -15,6 +15,7 @@ class BookKeepingExpensesViewController: FormViewController, CloseableViewContro
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        title = "Expenses"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
     }

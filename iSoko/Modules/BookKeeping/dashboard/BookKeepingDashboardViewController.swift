@@ -14,6 +14,7 @@ class BookKeepingDashboardViewController: FormViewController, CloseableViewContr
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "Book Keeping"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         

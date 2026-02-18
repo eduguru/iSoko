@@ -1,6 +1,6 @@
 //
 //  BookKeepingDashboardViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/01/2026.
 //
@@ -10,26 +10,30 @@ import UIKit
 import UtilsKit
 
 final class BookKeepingDashboardViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
-    
+    var goToDetails: (() -> Void)? = { }
     var goToFilter: (() -> Void)? = { }
-    var goToSpending: (() -> Void)? = { }
-    var goToBills: (() -> Void)? = { }
+    
+    var goToTotalSales: (() -> Void)? = { }
+    var goToTotalProducts: (() -> Void)? = { }
+    var goToTotalExpense: (() -> Void)? = { }
+    var goToLowStock: (() -> Void)? = { }
     
     var goToRecordSales: (() -> Void)? = { }
     var goToAddExpense: (() -> Void)? = { }
+    
     var goToManageStock: (() -> Void)? = { }
     var goToViewReports: (() -> Void)? = { }
-    var goToCusomers: (() -> Void)? = { }
+    
+    var goToCustomers: (() -> Void)? = { }
     var goToSuppliers: (() -> Void)? = { }
     
     private var state = State()
-
+    
     override init() {
         super.init()
         self.sections = makeSections()
     }
-
+    
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
@@ -40,7 +44,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             makeRecentActivitiesSection()
         ]
     }
-
+    
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.filter.rawValue,
@@ -77,7 +81,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
     
     // MARK: - Update Sections -
-
+    
     // MARK: - Lazy Rows
     private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
@@ -120,7 +124,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     icon: UIImage(systemName: "checkmark")
                 ),
                 onTap: { [weak self] in
-                    self?.goToSpending?()
+                    self?.goToTotalSales?()
                 }
             ),
             right: DualCardItemConfig(
@@ -134,16 +138,16 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     icon: UIImage(systemName: "exclamationmark.triangle")
                 ),
                 onTap: { [weak self] in
-                    self?.goToBills?()
+                    self?.goToTotalExpense?()
                 }
             )
         )
-
+        
         let row = DualCardFormRow(
             tag: 100,
             config: config
         )
-
+        
         return row
     }
     
@@ -160,7 +164,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     icon: UIImage(systemName: "checkmark")
                 ),
                 onTap: { [weak self] in
-                    self?.goToSpending?()
+                    self?.goToTotalProducts?()
                 }
             ),
             right: DualCardItemConfig(
@@ -174,16 +178,16 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     icon: UIImage(systemName: "exclamationmark.triangle")
                 ),
                 onTap: { [weak self] in
-                    self?.goToBills?()
+                    self?.goToLowStock?()
                 }
             )
         )
-
+        
         let row = DualCardFormRow(
             tag: 100,
             config: config
         )
-
+        
         return row
     }
     
@@ -213,7 +217,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 self?.goToAddExpense?()
             }
         )
-
+        
         let row = TwoCardsSummaryFormRow(
             tag: 200,
             model: TwoCardsSummaryViewModel(
@@ -230,43 +234,43 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
     
     private func makeQuickNoTitleActionsRow() -> FormRow {
-
-            let quickAction1 = StatusCardViewModel(
-                title: "Manage Stock",
-                image: UIImage(systemName: "bolt.fill"),
-                backgroundColor: .systemBlue,
-                iconTintColor: .white,
-                textColor: .white,
-                iconSize: CGSize(width: 28, height: 28),
-                fixedHeight: 56,
-                onTapAction: { [weak self] in
-                    self?.goToManageStock?()
-                }
+        
+        let quickAction1 = StatusCardViewModel(
+            title: "Manage Stock",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemBlue,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 56,
+            onTapAction: { [weak self] in
+                self?.goToManageStock?()
+            }
+        )
+        
+        let quickAction2 = StatusCardViewModel(
+            title: "View Reports",
+            image: UIImage(systemName: "bolt.fill"),
+            backgroundColor: .systemPurple,
+            iconTintColor: .white,
+            textColor: .white,
+            iconSize: CGSize(width: 28, height: 28),
+            fixedHeight: 80,
+            onTapAction: { [weak self] in
+                self?.goToViewReports?()
+            }
+        )
+        
+        let row = TwoStatusCardsFormRow(
+            tag: 101,
+            model: TwoStatusCardsViewModel(
+                first: quickAction1,
+                second: quickAction2,
+                layout: .horizontal
             )
-            
-            let quickAction2 = StatusCardViewModel(
-                title: "View Reports",
-                image: UIImage(systemName: "bolt.fill"),
-                backgroundColor: .systemPurple,
-                iconTintColor: .white,
-                textColor: .white,
-                iconSize: CGSize(width: 28, height: 28),
-                fixedHeight: 80,
-                onTapAction: { [weak self] in
-                    self?.goToViewReports?()
-                }
-            )
-            
-            let row = TwoStatusCardsFormRow(
-                tag: 101,
-                model: TwoStatusCardsViewModel(
-                    first: quickAction1,
-                    second: quickAction2,
-                    layout: .horizontal
-                )
-            )
-            
-            return row
+        )
+        
+        return row
     }
     
     private func makeBusinessMetricsRow() -> FormRow {
@@ -279,10 +283,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             iconSize: CGSize(width: 28, height: 28),
             fixedHeight: 56,
             onTapAction: { [weak self] in
-                self?.goToCusomers?()
+                self?.goToCustomers?()
             }
         )
-
+        
         let transfer = StatusCardViewModel(
             title: "Suppliers",
             image: UIImage(systemName: "bolt.fill"),
@@ -295,7 +299,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 self?.goToSuppliers?()
             }
         )
-
+        
         let row = TwoCardsSummaryFormRow(
             tag: 200,
             model: TwoCardsSummaryViewModel(
@@ -318,7 +322,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             Transaction(title: "Rent", description: "Monthly rent", amount: "$1200", isIncome: false, icon: UIImage(systemName: "house")),
             Transaction(title: "Groceries", description: nil, amount: "$320", isIncome: false, icon: UIImage(systemName: "cart"))
         ]
-
+        
         let rows = makeTransactionRows(sampleTransactions)
         
         return rows
@@ -356,13 +360,13 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             )
         }
     }
-
-
-
+    
+    
+    
     // MARK: - State
     private struct State {
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {

@@ -7,13 +7,16 @@
 
 import UIKit
 
-final class FilterFieldView: UIView {
+final class FilterFieldView: UIControl {
 
+    private let iconImageView = UIImageView()
     private let label = UILabel()
     private let chevron = UIImageView()
     private let clearButton = UIButton(type: .system)
 
     private let stack = UIStackView()
+    private let spacer = UIView()
+
     private var onTap: (() -> Void)?
     private var onClear: (() -> Void)?
 
@@ -31,22 +34,35 @@ final class FilterFieldView: UIView {
         backgroundColor = .systemBackground
         layer.cornerRadius = 10
 
+        // Icon
+        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.tintColor = .secondaryLabel
+        iconImageView.setContentHuggingPriority(.required, for: .horizontal)
+        iconImageView.isHidden = true
+
+        // Label
         label.font = .preferredFont(forTextStyle: .body)
 
+        // Chevron
         chevron.image = UIImage(systemName: "chevron.down")
         chevron.tintColor = .secondaryLabel
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
 
+        // Clear button
         clearButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
         clearButton.tintColor = .secondaryLabel
         clearButton.addTarget(self, action: #selector(clearTapped), for: .touchUpInside)
+        clearButton.setContentHuggingPriority(.required, for: .horizontal)
 
+        // Stack
         stack.axis = .horizontal
         stack.spacing = 8
         stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
 
+        stack.addArrangedSubview(iconImageView)
         stack.addArrangedSubview(label)
-        stack.addArrangedSubview(UIView())
+        stack.addArrangedSubview(spacer)
         stack.addArrangedSubview(clearButton)
         stack.addArrangedSubview(chevron)
 
@@ -59,18 +75,24 @@ final class FilterFieldView: UIView {
             stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14)
         ])
 
-        addGestureRecognizer(
-            UITapGestureRecognizer(target: self, action: #selector(tapped))
-        )
+        addTarget(self, action: #selector(tapped), for: .touchUpInside)
     }
 
     func configure(with config: FilterFieldConfig) {
+
         if let value = config.selectedValue {
             label.text = value
             label.textColor = .label
         } else {
             label.text = config.placeholder
             label.textColor = .secondaryLabel
+        }
+
+        if let iconName = config.iconSystemName {
+            iconImageView.image = UIImage(systemName: iconName)
+            iconImageView.isHidden = false
+        } else {
+            iconImageView.isHidden = true
         }
 
         clearButton.isHidden = !config.showsClearButton || config.selectedValue == nil
