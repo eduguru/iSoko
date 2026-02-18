@@ -30,10 +30,10 @@ final class BookKeepingStockViewModel: FormViewModel {
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
-            cells: [searchRow, filterFormRow]
+            cells: [searchRow]
         )
     }
-
+    
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
@@ -44,9 +44,7 @@ final class BookKeepingStockViewModel: FormViewModel {
     // MARK: - Update Sections -
 
     // MARK: - Lazy Rows
-    
     private lazy var searchRow = makeSearchRow()
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
     
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
@@ -63,48 +61,6 @@ final class BookKeepingStockViewModel: FormViewModel {
         )
     }
     
-    private func makeFilterFormRow() -> FormRow {
-        let row = FiltersFormRow(
-            tag: 1,
-            config: FiltersCellConfig(
-                title: "Filters",
-                rows: [
-                    [
-                        FilterFieldConfig(
-                            placeholder: "Region",
-                            selectedValue: nil,
-                            iconSystemName: "mappin.and.ellipse",
-                            onTap: {
-                                print("Region tapped")
-                            }
-                        )
-                    ],
-                    [
-                        FilterFieldConfig(
-                            placeholder: "Sale Type",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: {
-                                print("Sale Type tapped")
-                            }
-                        ),
-                        FilterFieldConfig(
-                            placeholder: "Time Period",
-                            selectedValue: nil,
-                            iconSystemName: "calendar",
-                            onTap: {
-                                print("Time Period tapped")
-                            }
-                        )
-                    ]
-                ],
-                message: "Select filters to refine your results"
-            )
-        )
-
-        return row
-    }
-    
     // Lazy factory that creates rows
     func makeTransactionActionRows() -> [FormRow] {
         (0..<10).map { index in
@@ -112,18 +68,18 @@ final class BookKeepingStockViewModel: FormViewModel {
             let hasActions = index.isMultiple(of: 2)
 
             let config = TransactionActionsCellConfig(
-                title: "Transaction \(index + 1)",
-                subtitle: hasActions ? "Requires action" : "No actions available",
+                title: "Paper Cups \(index + 1)",
+                subtitle: "\(index + 1) packs available",
                 amount: "$\(Int.random(in: 10...250)).00",
                 amountColor: .label,
                 status: "",
-                statusColor: hasActions ? .systemOrange : .systemGreen,
+                statusColor: .app(.hex("#717171")),
                 primaryAction: hasActions
                     ? ActionCardConfig(
-                        title: "Pay",
+                        title: "View details",
                         icon: UIImage(systemName: "creditcard"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .systemBlue,
+                        textColor: .app(.hex("#656C7A")),
                         onTap: {
                             print("Pay tapped on row \(index)")
                         }
@@ -170,5 +126,4 @@ final class BookKeepingStockViewModel: FormViewModel {
         }
     }
 }
-
 

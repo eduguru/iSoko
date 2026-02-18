@@ -75,24 +75,24 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
                 title: "Total Suppliers",
-                titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
+                titleIcon: nil,
+                subtitle: "36",
                 status: CardStatusStyle(
-                    text: "On track",
+                    text: "24% since last week",
                     textColor: .systemGreen,
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "checkmark")
+                    icon: .stockmarketArrowUp
                 )
             ),
             right: DualCardItemConfig(
                 title: "Active Suppliers",
-                titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
+                titleIcon: nil,
+                subtitle: "2",
                 status: CardStatusStyle(
-                    text: "Action needed",
+                    text: "24% since last week",
                     textColor: .systemOrange,
                     backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "exclamationmark.triangle")
+                    icon: .stockmarketArrowDown
                 )
             )
         )
@@ -112,16 +112,16 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
             let hasActions = index.isMultiple(of: 2)
 
             let config = TransactionActionsCellConfig(
-                title: "Transaction \(index + 1)",
-                subtitle: hasActions ? "Requires action" : "No actions available",
+                title: "ABC Company \(index + 1)",
+                subtitle:  "0712345678",
                 amount: "$\(Int.random(in: 10...250)).00",
                 amountColor: .label,
-                status: hasActions ? "Pending" : "Completed",
-                statusColor: hasActions ? .systemOrange : .systemGreen,
+                status: "3 items supplied ",
+                statusColor: .darkGray,
                 primaryAction: hasActions
                     ? ActionCardConfig(
-                        title: "Pay",
-                        icon: UIImage(systemName: "creditcard"),
+                        title: "View Details",
+                        icon: UIImage(systemName: "eye"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                         textColor: .systemBlue,
                         onTap: {

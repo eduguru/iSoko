@@ -75,24 +75,24 @@ final class BookKeepingCustomersViewModel: FormViewModel {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
                 title: "Total Customers",
-                titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
+                titleIcon: nil,
+                subtitle: "140",
                 status: CardStatusStyle(
-                    text: "On track",
+                    text: "24% since last week",
                     textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "checkmark")
+                    backgroundColor: .app(.hex("#F0FFE5")),
+                    icon: .stockmarketArrowUp
                 )
             ),
             right: DualCardItemConfig(
                 title: "Active Buyers",
-                titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
+                titleIcon: nil,
+                subtitle: "23",
                 status: CardStatusStyle(
-                    text: "Action needed",
+                    text: "13% since last week",
                     textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "exclamationmark.triangle")
+                    backgroundColor: .app(.hex("#FFE5E6")),
+                    icon: .stockmarketArrowDown
                 )
             )
         )
@@ -112,18 +112,18 @@ final class BookKeepingCustomersViewModel: FormViewModel {
             let hasActions = index.isMultiple(of: 2)
 
             let config = TransactionActionsCellConfig(
-                title: "Transaction \(index + 1)",
-                subtitle: hasActions ? "Requires action" : "No actions available",
+                title: "Customer \(index + 1)",
+                subtitle: "070480011\(index + 1)",
                 amount: "$\(Int.random(in: 10...250)).00",
                 amountColor: .label,
-                status: hasActions ? "Pending" : "Completed",
-                statusColor: hasActions ? .systemOrange : .systemGreen,
+                status: hasActions ? "4 Purchases" : "10 Purchases",
+                statusColor: .app(.hex("#717171")),
                 primaryAction: hasActions
                     ? ActionCardConfig(
-                        title: "Pay",
+                        title: "View History",
                         icon: UIImage(systemName: "creditcard"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .systemBlue,
+                        textColor: .app(.hex("#656C7A")),
                         onTap: {
                             print("Pay tapped on row \(index)")
                         }
