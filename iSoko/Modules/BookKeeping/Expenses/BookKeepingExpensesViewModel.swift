@@ -172,7 +172,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .systemBlue,
+                    backgroundColor: .app(.hex("#F0FFE5")),
                     textColor: .white
                 ),
                 secondaryAction: InlineActionConfig(
