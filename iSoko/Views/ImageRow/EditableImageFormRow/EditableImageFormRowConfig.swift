@@ -7,10 +7,11 @@
 
 import UIKit
 
+public enum Alignment {
+    case left, right, center
+}
+
 public struct EditableImageFormRowConfig {
-    public enum Alignment {
-        case left, right, center
-    }
 
     public var image: UIImage?
     public var editButtonImage: UIImage?

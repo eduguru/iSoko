@@ -84,9 +84,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         FormSection(
             id: SectionTag.summary.rawValue,
             title: "Summary",
-            cells: [
-                SpacerFormRow(tag: 20)
-            ]
+            cells: summaryRows
         )
     }
     
@@ -102,6 +100,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Rows
     private lazy var segmentedOptions = makeOptionsSegmentFormRow()
+    private lazy var summaryRows = makeSummaryRows()
+    
 
     private lazy var customerNameInputRow = makeInputRow(
         tag: CellTag.customerName.rawValue,
@@ -265,6 +265,33 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             CartItemFormRow(tag: 2, viewModel: milk),
             SpacerFormRow(tag: -000),
             addItemButtonRow
+        ]
+    }
+    
+    private func makeSummaryRows() -> [FormRow] {
+        return [
+        KeyValueFormRow(
+            tag: 1,
+            leftText: "Subtotal",
+            rightText: "$120",
+            usesMonospacedDigits: true
+        ),
+
+        KeyValueFormRow(
+            tag: 2,
+            leftText: "Tax",
+            rightText: "$12",
+            usesMonospacedDigits: true
+        ),
+
+        KeyValueFormRow(
+            tag: 3,
+            leftText: "Total",
+            rightText: "$132",
+            showsTopDivider: true,
+            isEmphasized: true,
+            usesMonospacedDigits: true
+        )
         ]
     }
 
