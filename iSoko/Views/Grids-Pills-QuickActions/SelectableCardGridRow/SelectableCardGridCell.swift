@@ -77,7 +77,6 @@ final class SelectableCardGridCell: UITableViewCell {
     }
 }
 
-// MARK: - CollectionView Datasource & Delegate
 extension SelectableCardGridCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -102,6 +101,8 @@ extension SelectableCardGridCell: UICollectionViewDataSource, UICollectionViewDe
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let previouslySelected = selectedIndices
+
         if allowsMultiple {
             if selectedIndices.contains(indexPath.item) {
                 selectedIndices.remove(indexPath.item)
@@ -109,10 +110,20 @@ extension SelectableCardGridCell: UICollectionViewDataSource, UICollectionViewDe
                 selectedIndices.insert(indexPath.item)
             }
         } else {
-            selectedIndices = [indexPath.item]
+            // Single selection mode: only one selected, toggle selection on tap
+            if selectedIndices.contains(indexPath.item) {
+                selectedIndices.remove(indexPath.item)  // Deselect if tapped again
+            } else {
+                selectedIndices = [indexPath.item]       // Select new one, deselect old
+            }
         }
 
-        collectionView.reloadItems(at: [indexPath])
+        // Reload all cells whose selection state changed
+        let changedIndices = previouslySelected.symmetricDifference(selectedIndices)
+        let indexPathsToReload = changedIndices.map { IndexPath(item: $0, section: 0) }
+        collectionView.reloadItems(at: indexPathsToReload)
+
+        // Callback to ViewModel or handler
         items[indexPath.item].onTap?(indexPath.item)
     }
 
@@ -134,6 +145,6 @@ extension SelectableCardGridCell: UICollectionViewDataSource, UICollectionViewDe
         let totalSpacing = spacing * CGFloat(columns - 1)
         let width = (availableWidth - totalSpacing) / CGFloat(columns)
 
-        return CGSize(width: floor(width), height: 120) // Adjust height as needed
+        return CGSize(width: floor(width), height: 120) // Adjust height if needed
     }
 }

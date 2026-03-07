@@ -42,7 +42,9 @@ final class SelectableCardItemCell: UICollectionViewCell {
                            subtitle: item.subtitle,
                            icon: item.icon,
                            iconTintColor: iconTintColor,
-                           selected: selected)
+                           selected: selected,
+                           alignment: Alignment.left
+        )
     }
 
     private func getTintColor(for title: String) -> UIColor {

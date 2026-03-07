@@ -10,11 +10,32 @@ import UIKit
 // MARK: - SelectableDualCardView
 final class SelectableDualCardView: UIView {
 
+    // Add this
+    public var alignment: Alignment = .center {
+        didSet {
+            updateAlignment()
+        }
+    }
+
+    // Existing views...
     private let containerView = UIView()
     private let iconView = UIImageView()
     private let titleLabel = UILabel()
     private let subtitleLabel = UILabel()
     private let checkmarkView = UIImageView()
+
+    // Constraints that change depending on alignment
+    private var iconCenterXConstraint: NSLayoutConstraint?
+    private var iconLeadingConstraint: NSLayoutConstraint?
+    private var iconTrailingConstraint: NSLayoutConstraint?
+
+    private var titleCenterXConstraint: NSLayoutConstraint?
+    private var titleLeadingConstraint: NSLayoutConstraint?
+    private var titleTrailingConstraint: NSLayoutConstraint?
+
+    private var subtitleCenterXConstraint: NSLayoutConstraint?
+    private var subtitleLeadingConstraint: NSLayoutConstraint?
+    private var subtitleTrailingConstraint: NSLayoutConstraint?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -29,7 +50,6 @@ final class SelectableDualCardView: UIView {
     private func setupViews() {
         backgroundColor = .clear
 
-        // Container with rounded corners, border & background
         containerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.layer.cornerRadius = 12
         containerView.layer.borderWidth = 1
@@ -38,34 +58,33 @@ final class SelectableDualCardView: UIView {
         containerView.clipsToBounds = true
         addSubview(containerView)
 
-        // Icon
         iconView.translatesAutoresizingMaskIntoConstraints = false
         iconView.contentMode = .scaleAspectFit
         containerView.addSubview(iconView)
 
-        // Title
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = UIFont.boldSystemFont(ofSize: 16)
         titleLabel.textColor = .label
+
+        // We'll change alignment dynamically, start centered
         titleLabel.textAlignment = .center
         containerView.addSubview(titleLabel)
 
-        // Subtitle
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         subtitleLabel.font = UIFont.systemFont(ofSize: 13)
         subtitleLabel.textColor = .secondaryLabel
         subtitleLabel.numberOfLines = 2
+
         subtitleLabel.textAlignment = .center
         containerView.addSubview(subtitleLabel)
 
-        // Checkmark (top-right)
         checkmarkView.translatesAutoresizingMaskIntoConstraints = false
         checkmarkView.image = UIImage(systemName: "checkmark.circle.fill")
         checkmarkView.tintColor = UIColor.systemGreen
         checkmarkView.isHidden = true
         containerView.addSubview(checkmarkView)
 
-        // Layout constraints
+        // Setup constraints for icon, title, subtitle with all possible constraints:
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: topAnchor),
             containerView.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -73,17 +92,12 @@ final class SelectableDualCardView: UIView {
             containerView.trailingAnchor.constraint(equalTo: trailingAnchor),
 
             iconView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
-            iconView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             iconView.widthAnchor.constraint(equalToConstant: 32),
             iconView.heightAnchor.constraint(equalToConstant: 32),
 
             titleLabel.topAnchor.constraint(equalTo: iconView.bottomAnchor, constant: 8),
-            titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
-            titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
 
             subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            subtitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 8),
-            subtitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -8),
             subtitleLabel.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -16),
 
             checkmarkView.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 8),
@@ -91,14 +105,75 @@ final class SelectableDualCardView: UIView {
             checkmarkView.widthAnchor.constraint(equalToConstant: 20),
             checkmarkView.heightAnchor.constraint(equalToConstant: 20),
         ])
+
+        // Horizontal constraints stored for toggling:
+        iconCenterXConstraint = iconView.centerXAnchor.constraint(equalTo: containerView.centerXAnchor)
+        iconLeadingConstraint = iconView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16)
+        iconTrailingConstraint = iconView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
+
+        titleCenterXConstraint = titleLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor)
+        titleLeadingConstraint = titleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12)
+        titleTrailingConstraint = titleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12)
+
+        subtitleCenterXConstraint = subtitleLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor)
+        subtitleLeadingConstraint = subtitleLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12)
+        subtitleTrailingConstraint = subtitleLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12)
+
+        updateAlignment()
+    }
+
+    private func updateAlignment() {
+        // Deactivate all first
+        iconCenterXConstraint?.isActive = false
+        iconLeadingConstraint?.isActive = false
+        iconTrailingConstraint?.isActive = false
+
+        titleCenterXConstraint?.isActive = false
+        titleLeadingConstraint?.isActive = false
+        titleTrailingConstraint?.isActive = false
+
+        subtitleCenterXConstraint?.isActive = false
+        subtitleLeadingConstraint?.isActive = false
+        subtitleTrailingConstraint?.isActive = false
+
+        // Reset text alignments and activate appropriate constraints
+        switch alignment {
+        case .center:
+            iconCenterXConstraint?.isActive = true
+            titleCenterXConstraint?.isActive = true
+            subtitleCenterXConstraint?.isActive = true
+
+            titleLabel.textAlignment = .center
+            subtitleLabel.textAlignment = .center
+
+        case .left:
+            iconLeadingConstraint?.isActive = true
+            titleLeadingConstraint?.isActive = true
+            subtitleLeadingConstraint?.isActive = true
+
+            titleLabel.textAlignment = .left
+            subtitleLabel.textAlignment = .left
+
+        case .right:
+            iconTrailingConstraint?.isActive = true
+            titleTrailingConstraint?.isActive = true
+            subtitleTrailingConstraint?.isActive = true
+
+            titleLabel.textAlignment = .right
+            subtitleLabel.textAlignment = .right
+        }
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 
     func configure(title: String,
                    subtitle: String?,
                    icon: UIImage?,
                    iconTintColor: UIColor?,
-                   selected: Bool) {
+                   selected: Bool,
+                   alignment: Alignment = .center) {
 
+        self.alignment = alignment
         titleLabel.text = title
         subtitleLabel.text = subtitle
         subtitleLabel.isHidden = subtitle == nil
