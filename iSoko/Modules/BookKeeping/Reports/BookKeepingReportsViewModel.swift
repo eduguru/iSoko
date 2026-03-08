@@ -11,12 +11,30 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingReportsViewModel: FormViewModel {
-    var gotoConfirm: (() -> Void)?
 
-    // MARK: -
+    // MARK: - Navigation Callbacks
+    var gotoConfirm: ((ReportSelectionPayload) -> Void)? = { _ in }
+    var onStartDateTap: (() -> Void)?
+    var onEndDateTap: (() -> Void)?
+    var onCustomTimeframeTap: (() -> Void)?
+
+    // MARK: - Available Timeframes
+    private let availableTimeframes: [Timeframe] = [
+        .today,
+        .yesterday,
+        .last7Days,
+        .last30Days,
+        .lastMonth,
+        .last3Months,
+        .last6Months,
+        .thisMonth,
+        .custom
+    ]
+
+    // MARK: - Internal State
     private var state = State()
 
-    // MARK: -
+    // MARK: - Init
     override init() {
         super.init()
         sections = makeSections()
@@ -25,99 +43,151 @@ final class BookKeepingReportsViewModel: FormViewModel {
     // MARK: - Section Builder
     private func makeSections() -> [FormSection] {
         [
-            FormSection(
-                id: SectionTag.main.rawValue,
-                cells: [
-                    selectionInputRow,
-                    SpacerFormRow(tag: 20),
-                    timeFrameRow,
-                    filterFormRow
-                ]
-            )
+            makeSelectionSection(),
+            makeSpacerSection(),
+            makeTimeFrameSection(),
+            makeActionSection()
         ]
     }
 
+    private func makeSelectionSection() -> FormSection {
+        FormSection(
+            id: SectionTag.selection.rawValue,
+            cells: [
+                titleDescriptionFormRow,
+                selectionInputRow
+            ]
+        )
+    }
+
+    private func makeSpacerSection() -> FormSection {
+        FormSection(
+            id: SectionTag.spacer.rawValue,
+            cells: [
+                SpacerFormRow(tag: 20)
+            ]
+        )
+    }
+
+    private func makeTimeFrameSection() -> FormSection {
+        FormSection(
+            id: SectionTag.timeFrame.rawValue,
+            title: "Select Time Frame",
+            cells: [
+                timeFrameRow,
+                filterFormRow
+            ]
+        )
+    }
+
+    private func makeActionSection() -> FormSection {
+        FormSection(
+            id: SectionTag.action.rawValue,
+            cells: [
+                continueButtonRow
+            ]
+        )
+    }
+
     // MARK: - Rows
-    private lazy var selectionInputRow = makeSelectionGrid()
-    private lazy var timeFrameRow = makeTimeFrameGrid()
+
+    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow()
+    private lazy var selectionInputRow: FormRow = makeSelectionGrid()
+    private lazy var timeFrameRow: FormRow = makeTimeFrameGrid()
     private lazy var filterFormRow: FormRow = makeFilterFormRow()
-    
+
+    private func makeTitleRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: CellTag.reportTitle.rawValue,
+            title: "Select Report Type",
+            description: "Choose a report to view your business performance",
+            maxTitleLines: 2,
+            maxDescriptionLines: 0,
+            titleEllipsis: .none,
+            descriptionEllipsis: .none,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .subheadline,
+            descriptionFontStyle: .body
+        )
+    }
+
     private func makeSelectionGrid() -> FormRow {
-        
+
         SelectableCardGridRow(
-            tag: 1,
+            tag: CellTag.category.rawValue,
             config: .init(
                 items: [
-                    .init(title: "Sales", subtitle: "Track revenue", icon: UIImage(systemName:"chart.line.uptrend.xyaxis"), onTap: {_ in }),
-                    .init(title: "Expenses", subtitle: "Monitor spending", icon: UIImage(systemName:"calendar")),
-                    .init(title: "Stock", subtitle: "Inventory levels", icon: UIImage(systemName:"archivebox")),
-                    .init(title: "Profit & Loss", subtitle: "Financial performance", icon: UIImage(systemName:"chart.bar")),
-                    .init(title: "Customers", subtitle: "Top buyers", icon: UIImage(systemName:"person.2")),
-                    .init(title: "Suppliers", subtitle: "Vendors", icon: UIImage(systemName:"truck.box"))
+                    .init(title: "Sales", subtitle: "Track revenue", icon: UIImage(systemName:"chart.line.uptrend.xyaxis"), onTap: { [weak self] _ in self?.state.selectedReport = .sales }),
+                    .init(title: "Expenses", subtitle: "Monitor spending", icon: UIImage(systemName:"calendar"), onTap: { [weak self] _ in self?.state.selectedReport = .expenses }),
+                    .init(title: "Stock", subtitle: "Inventory levels", icon: UIImage(systemName:"archivebox"), onTap: { [weak self] _ in self?.state.selectedReport = .stock }),
+                    .init(title: "Profit & Loss", subtitle: "Financial performance", icon: UIImage(systemName:"chart.bar"), onTap: { [weak self] _ in self?.state.selectedReport = .profitLoss }),
+                    .init(title: "Customers", subtitle: "Top buyers", icon: UIImage(systemName:"person.2"), onTap: { [weak self] _ in self?.state.selectedReport = .customers }),
+                    .init(title: "Suppliers", subtitle: "Vendors", icon: UIImage(systemName:"truck.box"), onTap: { [weak self] _ in self?.state.selectedReport = .suppliers })
                 ],
                 allowsMultipleSelection: false
             )
         )
     }
-    
-    private func makeTimeFrameGrid() -> FormRow {
-        // MARK: - Define your options
-        let timeframeOptions = [
-            TimeframeOption(title: "Today"),
-            TimeframeOption(title: "Yesterday"),
-            TimeframeOption(title: "Last 7 Days"),
-            TimeframeOption(title: "Last 30 Days"),
-            TimeframeOption(title: "This Month"),
-            TimeframeOption(title: "Custom") // This will trigger custom callback
-        ]
 
-        // MARK: - Create the config
-        let timeframeConfig = TimeframeSelectorConfig(
+    private func makeTimeFrameGrid() -> FormRow {
+
+        let timeframeOptions = availableTimeframes.map {
+            TimeframeOption(title: $0.title)
+        }
+
+        let config = TimeframeSelectorConfig(
             options: timeframeOptions,
             allowsMultipleSelection: false,
             selectedIndex: 0
         )
 
-        // MARK: - Create the FormRow
-        let timeframeRow = TimeframeSelectorRow(
+        let row = TimeframeSelectorRow(
             tag: 101,
-            config: timeframeConfig
+            config: config
         )
 
-        // MARK: - Assign callbacks
-        timeframeRow.onSelectionChanged = { selectedIndex in
-            print("Selected timeframe index: \(selectedIndex)")
-            print("Selected timeframe title: \(timeframeOptions[selectedIndex].title)")
+        row.onSelectionChanged = { [weak self] index in
+            guard let self else { return }
+
+            let timeframe = self.availableTimeframes[index]
+            self.state.timeframe = timeframe
+
+            let range = DateFormatters.dateRange(for: timeframe)
+            self.state.startDate = range.start
+            self.state.endDate = range.end
         }
 
-        timeframeRow.onCustomSelected = {
-            print("Custom timeframe tapped! Show date picker or custom view here.")
+        row.onCustomSelected = { [weak self] in
+            self?.state.timeframe = .custom
+            self?.onCustomTimeframeTap?()
         }
-        
-        return timeframeRow
+
+        return row
     }
-    
+
     private func makeFilterFormRow() -> FormRow {
+
         let row = FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: "",
+                title: "Custom Range",
                 rows: [
                     [
                         FilterFieldConfig(
                             placeholder: "Start Date",
                             selectedValue: nil,
                             iconSystemName: "calendar",
-                            onTap: {
-                                print("Start tapped")
+                            onTap: { [weak self] in
+                                self?.onStartDateTap?()
                             }
                         ),
                         FilterFieldConfig(
                             placeholder: "End Date",
                             selectedValue: nil,
                             iconSystemName: "calendar",
-                            onTap: {
-                                print("End tapped")
+                            onTap: { [weak self] in
+                                self?.onEndDateTap?()
                             }
                         )
                     ]
@@ -129,44 +199,67 @@ final class BookKeepingReportsViewModel: FormViewModel {
         return row
     }
 
-    // MARK: - handle selections
-    
-
-    // MARK: - Reload
-    private func reloadRow(withTag tag: Int) {
-        for (sectionIndex, section) in sections.enumerated() {
-            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
-                break
+    private lazy var continueButtonRow = ButtonFormRow(
+        tag: CellTag.continueButton.rawValue,
+        model: ButtonFormModel(
+            title: "Continue",
+            style: .primary,
+            size: .medium,
+            fontStyle: .headline,
+            hapticsEnabled: true
+        ) { [weak self] in
+            Task {
+                await self?.submit()
             }
         }
-    }
+    )
 
     // MARK: - Submit
+    @MainActor
     private func submit() async {
 
+        guard let report = state.selectedReport else {
+            print("No report selected")
+            return
+        }
+
+        let payload = ReportSelectionPayload(
+            report: report,
+            timeframe: state.timeframe,
+            startDate: state.startDate,
+            endDate: state.endDate
+        )
+
+        gotoConfirm?(payload)
     }
 
     // MARK: - State
     private struct State {
-        
+
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
+
+        var selectedReport: ReportType?
+        var timeframe: Timeframe = .today
+        var startDate: Date?
+        var endDate: Date?
+
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
+    // MARK: - Enums
     private enum SectionTag: Int {
-        case main = 0
-        case timeFrame = 1
+        case selection = 0
+        case spacer
+        case timeFrame
+        case action
     }
 
     private enum CellTag: Int {
+        case reportTitle = 1
         case category = 4
         case continueButton = 9
     }
 }
-
-

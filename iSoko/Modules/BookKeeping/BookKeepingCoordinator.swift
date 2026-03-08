@@ -8,6 +8,7 @@
 import RouterKit
 import UtilsKit
 import UIKit
+import DesignSystemKit
 
 public class BookKeepingCoordinator: BaseCoordinator {
     
@@ -171,6 +172,7 @@ public class BookKeepingCoordinator: BaseCoordinator {
     
     public func goToBookKeepingReports() {
         let model = BookKeepingReportsViewModel()
+        model.gotoConfirm = goToReportTypes
         
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
@@ -200,5 +202,46 @@ public class BookKeepingCoordinator: BaseCoordinator {
     private func finish() {
         dismissModal() // will call router.dismiss()
         parentCoordinator?.removeChild(self)
+    }
+}
+
+extension BookKeepingCoordinator {
+    
+    @MainActor
+    public func goToReportTypes(_ payload: ReportSelectionPayload) {
+        
+        let model: FormViewModel
+        
+        switch payload.report {
+        case .sales: model = SalesReportsViewModel()
+        case .expenses: model = ExpensesReportsViewModel()
+        case .stock: model = StockReportsViewModel()
+        case .profitLoss: model = ProfitLossReportsViewModel()
+        case .customers: model = CustomersReportsViewModel()
+        case .suppliers: model = SuppliersReportsViewModel()
+        }
+        
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+        router.push(vc)
+    }
+    
+    public func goToSalesReport() {
+    }
+    
+    public func goToExpensesReport() {
+    }
+    
+    public func goToStockReport() {
+    }
+    
+    public func goToProfitLossReport() {
+    }
+    
+    public func goToCustomersReport() {
+    }
+    
+    public func goToSuppliersReport() {
     }
 }
