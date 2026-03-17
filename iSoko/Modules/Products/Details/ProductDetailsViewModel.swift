@@ -18,7 +18,7 @@ final class ProductDetailsViewModel: FormViewModel {
     private let productsService = NetworkEnvironment.shared.productsService
     
     
-    init(_ product: ProductResponse) {
+    init(_ product: ProductResponseV1) {
         self.state = State(product: product)
         super.init()
         
@@ -97,29 +97,26 @@ final class ProductDetailsViewModel: FormViewModel {
     
     // MARK: - Image Preparation
     private func prepareProductImages() -> [ProductImage] {
-        var imageSet: [ProductImage] = []
-        
-        // Add primary image if valid
-        if let primary = state.product.primaryImage,
-           let primaryUrl = URL(string: primary) {
-            imageSet.append(ProductImage(url: primaryUrl, isFeatured: true))
+        guard let images = state.product.images else {
+            return placeholderImages()
         }
-        
-        // Add other images (excluding duplicates and primary)
-        let otherImages = (state.product.images ?? [])
-            .compactMap { URL(string: $0) }
-            .filter { url in
-                // Avoid duplicates (basic check)
-                !imageSet.contains(where: { $0.url == url })
-            }
-            .map { url in
-                ProductImage(url: url, isFeatured: false)
-            }
-        
-        imageSet.append(contentsOf: otherImages)
-        
-        // Fallback to placeholder if none exist
-        return imageSet.isEmpty ? placeholderImages() : imageSet
+
+        let mapped = images.compactMap { image -> ProductImage? in
+            guard
+                image.active == true,
+                let urlString = image.url,
+                let url = URL(string: urlString)
+            else { return nil }
+
+            return ProductImage(
+                url: url,
+                isFeatured: image.primary ?? false
+            )
+        }
+
+        let sorted = mapped.sorted { $0.isFeatured && !$1.isFeatured }
+
+        return sorted.isEmpty ? placeholderImages() : sorted
     }
     
     private func placeholderImages() -> [ProductImage] {
@@ -151,7 +148,7 @@ final class ProductDetailsViewModel: FormViewModel {
     }
     
     private func makeStoreProfileRow() -> FormRow {
-        let traderName = state.product.traderName ?? "Seller"
+        let traderName = state.product.traderFullName ?? "Seller"
         
         return StoreProfileCardRow(
             tag: 400,
@@ -231,7 +228,7 @@ final class ProductDetailsViewModel: FormViewModel {
     private func makePriceRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.price.rawValue,
-            title: "Price: \(state.product.price ?? 0.0) / \(state.product.measurementUnit ?? "unit")",
+            title: "Price: \(state.product.price ?? 0.0) / \(state.product.measurementUnit?.name ?? "unit")",
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
@@ -369,13 +366,13 @@ final class ProductDetailsViewModel: FormViewModel {
         do {
             switch type {
             case .moreOwnerProducts:
-                let traderId = state.product.categoryId ?? 0
+                let traderId = state.product.category?.id ?? 0
                 let response = try await productsService.getProductsByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
                 self.state.moreOwnerProducts = response
                 print("✅ Fetched Featured Products")
                 
             case .similarProduct:
-                let traderId = state.product.categoryId ?? 0
+                let traderId = state.product.category?.id ?? 0
                 let response = try await productsService.getProductsByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
                 self.state.similarProduct = response
                 print("✅ Fetched Featured Services")
@@ -414,7 +411,7 @@ final class ProductDetailsViewModel: FormViewModel {
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
         var isLoggedIn: Bool = true
-        var product: ProductResponse
+        var product: ProductResponseV1
         var similarProduct: [ProductResponse] = []
         var moreOwnerProducts: [ProductResponse] = []
     }

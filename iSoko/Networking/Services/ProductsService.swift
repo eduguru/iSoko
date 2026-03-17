@@ -10,7 +10,9 @@ import NetworkingKit
 public protocol ProductsService {
     // MARK: - Listings
     func getAllProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse]
-    func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse]
+    // func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponseV1]
+    func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]>
+    
     func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [ProductResponse]
     func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse]
     func getProductDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductResponse?
@@ -39,8 +41,25 @@ public final class ProductsServiceImpl: ProductsService {
         try await manager.request(ProductsApi.getAllProducts(page: page, count: count, accessToken: accessToken)) ?? []
     }
 
-    public func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse] {
-        try await manager.request(ProductsApi.getFeaturedProducts(page: page, count: count, accessToken: accessToken)) ?? []
+//    public func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponseV1] {
+//        try await manager.request(ProductsApi.getFeaturedProducts(page: page, count: count, accessToken: accessToken)) ?? []
+//    }
+    
+    public func getFeaturedProducts(
+        page: Int,
+        count: Int,
+        accessToken: String
+    ) async throws -> PagedResult<[ProductResponseV1]> {
+
+        let envelope = try await manager.request(
+            ProductsApi.getFeaturedProducts(
+                page: page,
+                count: count,
+                accessToken: accessToken
+            )
+        )
+
+        return envelope.toPagedResult()
     }
 
     public func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [ProductResponse] {

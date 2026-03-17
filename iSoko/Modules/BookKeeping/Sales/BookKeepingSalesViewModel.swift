@@ -123,14 +123,16 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 amountColor: .green,
                 dateText: "Oct 27, 2025",
                 saleTypeText: "Cash Sale",
-                saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .green,
+                saleTypeTextColor: .app(.hex("#35A458")),
+                saleTypeBackgroundColor: .app(.hex("#F0FFE5")),
                 itemsCountText: "3 items",
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .systemBlue,
-                    textColor: .white
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Edit",
@@ -148,14 +150,16 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 amountColor: .blue,
                 dateText: "Nov 15, 2025",
                 saleTypeText: "Credit Sale",
-                saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .blue,
+                saleTypeTextColor: .app(.hex("#CA391C")),
+                saleTypeBackgroundColor: .app(.hex("#FFE5E5")),
                 itemsCountText: "2 items",
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .systemPurple,
-                    textColor: .white
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Delete",

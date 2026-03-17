@@ -12,6 +12,8 @@ public struct ActionCardConfig {
     public let icon: UIImage?
     public let backgroundColor: UIColor
     public let textColor: UIColor
+    public let borderColor: UIColor?
+    public let borderWidth: CGFloat
     public let onTap: (() -> Void)?
 
     public init(
@@ -19,15 +21,20 @@ public struct ActionCardConfig {
         icon: UIImage?,
         backgroundColor: UIColor = .systemGray6,
         textColor: UIColor = .label,
+        borderColor: UIColor? = nil,
+        borderWidth: CGFloat = 0,
         onTap: (() -> Void)? = nil
     ) {
         self.title = title
         self.icon = icon
         self.backgroundColor = backgroundColor
         self.textColor = textColor
+        self.borderColor = borderColor
+        self.borderWidth = borderWidth
         self.onTap = onTap
     }
 }
+
 
 public struct InlineActionConfig {
     public let title: String

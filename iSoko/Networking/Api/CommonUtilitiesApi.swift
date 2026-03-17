@@ -248,22 +248,24 @@ public struct CommonUtilitiesApi {
         let parameters: [String: Any] = [
             "page": page,
             "count": count,
-            "module": module
-        ]
+            "size": count,
+            "status": "active",
+            // "module": module
+        ] //https://api.dev.isoko.africa/v1/commodity-categories?page=1&size=100&status=active
         
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/commodity-category",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "commodity-categories", //"api/commodity-category",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
         return OptionalObjectResponseTarget(target: target)

@@ -129,3 +129,99 @@ final class ProfitLossReportsViewModel: FormViewModel {
         case continueButton = 1
     }
 }
+
+//extension ProfitLossReportsViewModel {
+//    private lazy var financialCards: [FinancialCardData] = [
+//        FinancialCardData(
+//            title: "Available Stock",
+//            icon: "chart.bar",
+//            subtitle: "This month",
+//            statusText: "On track",
+//            statusColor: .systemGreen,
+//            statusIcon: "checkmark",
+//            backgroundColor: .app(.hex("#E7E9ED")),
+//            action: { [weak self] in }
+//        ),
+//        FinancialCardData(
+//            title: "Total Stock",
+//            icon: "doc.text",
+//            subtitle: "2 due soon",
+//            statusText: "Action needed",
+//            statusColor: .systemOrange,
+//            statusIcon: "exclamationmark.triangle",
+//            backgroundColor: .app(.hex("#E7E9ED")),
+//            action: { [weak self] in }
+//        ),
+//        FinancialCardData(
+//            title: "Estimated Profit",
+//            icon: "chart.bar",
+//            subtitle: "This month",
+//            statusText: "On track",
+//            statusColor: .systemGreen,
+//            statusIcon: "checkmark",
+//            backgroundColor: .app(.hex("#E7E9ED")),
+//            action: { [weak self] in  }
+//        ),
+//        FinancialCardData(
+//            title: "Total Stock Intake",
+//            icon: "doc.text",
+//            subtitle: "2 due soon",
+//            statusText: "Action needed",
+//            statusColor: .systemOrange,
+//            statusIcon: "exclamationmark.triangle",
+//            backgroundColor: .app(.hex("#E7E9ED")),
+//            action: { [weak self] in  }
+//        )
+//    ]
+//    
+//    private func makeFinancialItem(_ data: FinancialCardData) -> DualCardItemConfig {
+//        DualCardItemConfig(
+//            title: data.title,
+//            titleIcon: UIImage(systemName: data.icon),
+//            subtitle: data.subtitle,
+//            status: CardStatusStyle(
+//                text: data.statusText,
+//                textColor: data.statusColor,
+//                backgroundColor: data.statusColor.withAlphaComponent(0.15),
+//                icon: UIImage(systemName: data.statusIcon)
+//            ),
+//            backgroundColor: data.backgroundColor,
+//            onTap: data.action
+//        )
+//    }
+//    
+//    private func makeFinancialRow(
+//        _ left: FinancialCardData,
+//        _ right: FinancialCardData,
+//        tag: Int
+//    ) -> FormRow {
+//
+//        DualCardFormRow(
+//            tag: tag,
+//            config: DualCardCellConfig(
+//                left: makeFinancialItem(left),
+//                right: makeFinancialItem(right)
+//            )
+//        )
+//    }
+//    
+//    private func makeFinancialSummarySection() -> FormSection {
+//
+//        let row1 = makeFinancialRow(
+//            financialCards[0],
+//            financialCards[1],
+//            tag: 100
+//        )
+//
+//        let row2 = makeFinancialRow(
+//            financialCards[2],
+//            financialCards[3],
+//            tag: 101
+//        )
+//
+//        return FormSection(
+//            id: Tags.Section.financialSummary.rawValue,
+//            cells: [row1, row2]
+//        )
+//    }
+//}

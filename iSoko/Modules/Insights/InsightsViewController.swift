@@ -15,6 +15,7 @@ class InsightsViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        title = "Insights"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
     }
     

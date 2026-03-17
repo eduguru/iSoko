@@ -12,218 +12,286 @@ import StorageKit
 
 final class ServicesViewModel: FormViewModel {
 
-    private var state: State
+    // MARK: - Callbacks
+    var onTapMoreServices: (() -> Void)?
+    var onTapService: ((TradeServiceResponse) -> Void)?
 
     // MARK: - Services
-    private let productsService = NetworkEnvironment.shared.productsService
-    
+    private let servicesService = NetworkEnvironment.shared.servicesService
+
+    // MARK: - State
+    private var state = State()
+
     override init() {
-        self.state = State()
         super.init()
-        
         self.sections = makeSections()
+        reloadBodySection(animated: false)
     }
-    
+
     // MARK: - Fetch
     override func fetchData() {
+        showLoader()
+
         Task {
-            let productsSuccess = await fetchProductItems()
-            
-            if !productsSuccess {
-                print("⚠️ Failed to fetch one or product types.")
-            }
-            
+            async let featured = fetchDataType(.featuredServices)
+            async let types = fetchDataType(.serviceProviderTypes)
+            async let providers = fetchDataType(.serviceProviders)
+            async let logistics = fetchDataType(.logisticsServiceProviders)
+
+            _ = await [featured, types, providers, logistics]
+
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateMoreProductsFromSellerSection()
-                self.updateSimilarProductsSection()
+                self?.reloadBodySection()
+                self?.hideLoader()
             }
         }
     }
 
-    // MARK: - makeSections
-    
-    private func makeSections() -> [FormSection] {
-        return [
-            moreProductsFromSellerSection(),
-            similarProductsSection()
-        ]
-    }
-    
-    private func moreProductsFromSellerSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.moreFromThisSeller.rawValue,
-            title: "More From This Seller",
-            cells: [moreFromThisSellerFormRow]
-        )
-    }
-    
-    private func similarProductsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.similarProducts.rawValue,
-            title: "Similar Products",
-            cells: [similarProductsFormRow]
-        )
-    }
-    
-    private func updateMoreProductsFromSellerSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.moreFromThisSeller.rawValue }) else {
-            return
-        }
-
-        let updatedRow = HorizontalGridFormRow(
-            tag: Tags.Section.moreFromThisSeller.rawValue,
-            items: makeMoreFromSellerGridItems()
-        )
-
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-
-    private func updateSimilarProductsSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.similarProducts.rawValue }) else {
-            return
-        }
-
-        let updatedRow = HorizontalGridFormRow(
-            tag: Tags.Section.similarProducts.rawValue,
-            items: makeSimilarProductsGridItems()
-        )
-
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-    
-    // MARK: - Lazy Rows
-    private lazy var moreFromThisSellerFormRow = HorizontalGridFormRow(tag: 300,items: [])
-    private lazy var similarProductsFormRow = HorizontalGridFormRow(tag: 300, items: [])
-    
-    // MARK: - Builders
-
-    private func makeMoreFromSellerGridItems() -> [GridItemModel] {
-        return state.moreOwnerProducts.map { product in
-            GridItemModel(
-                id: "\(product.id ?? 0)",
-                image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
-                isFavorite: false,
-                onTap: { [weak self] in
-                    guard let self = self else { return }
-                },
-                onToggleFavorite: { isFav in
-                }
-            )
-        }
-    }
-
-    private func makeSimilarProductsGridItems() -> [GridItemModel] {
-        return state.similarProduct.map { product in
-            GridItemModel(
-                id: "\(product.id ?? 0)",
-                image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
-                isFavorite: false,
-                onTap: { [weak self] in
-                    guard let self = self else { return }
-                    print("Tapped similar product: \(product.name ?? "")")
-                },
-                onToggleFavorite: { isFav in
-                    print("Favorite toggled (\(isFav)) for similar product: \(product.name ?? "")")
-                }
-            )
-        }
-    }
-
-    
-    //MARK: - Network Calls -
-    private func fetchProductItems() async -> Bool {
-        async let moreOwnerProducts = fetchData(type: .moreOwnerProducts)
-        async let similarProduct = fetchData(type: .similarProduct)
-
-        let results = await [moreOwnerProducts, similarProduct]
-        return results.allSatisfy { $0 }
-    }
-    
+    // MARK: - Fetch Helper
     @discardableResult
-    private func fetchData(type: RequestDataType) async -> Bool {
+    private func fetchDataType(_ type: FetchDataType) async -> Bool {
         do {
-//            switch type {
-//            case .moreOwnerProducts:
-//                let traderId = state.product.categoryId ?? 0
-//                let response = try await productsService.getProductsByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.accessToken)
-//                self.state.moreOwnerProducts = response
-//                print("✅ Fetched Featured Products")
-//
-//            case .similarProduct:
-//                let traderId = state.product.categoryId ?? 0
-//                let response = try await productsService.getProductsByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.accessToken)
-//                self.state.similarProduct = response
-//                print("✅ Fetched Featured Services")
-//            }
-            
+            switch type {
+
+            case .featuredServices:
+                let response = try await servicesService.getFeaturedTradeServices(
+                    page: 1,
+                    count: 20,
+                    accessToken: state.guestToken
+                )
+                state.featuredServices = response
+
+            case .serviceProviderTypes:
+                let response = try await servicesService.getServiceProviderTypes(
+                    accessToken: state.guestToken
+                )
+                state.serviceProviderTypes = response
+
+            case .serviceProviders:
+                let response = try await servicesService.getServiceProviders(
+                    page: 1,
+                    count: 20,
+                    productId: "",
+                    accessToken: state.guestToken
+                )
+                state.serviceProviders = response
+
+            case .logisticsServiceProviders:
+                let response = try await servicesService.getLogisticsServiceProviders(
+                    page: 1,
+                    count: 20,
+                    productId: "",
+                    accessToken: state.guestToken
+                )
+                state.logisticsServiceProviders = response
+            }
+
+            print("✅ Fetched \(type)")
             return true
 
-        } catch let NetworkError.server(apiError) {
-            print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
-            print("❌ Unexpected Error in \(type):", error)
+            print("❌ Error in \(type): \(error)")
+            return false
         }
-        return false
     }
-    
-    // MARK: - Data Types
 
-    private enum RequestDataType: CustomStringConvertible {
-        case similarProduct
-        case moreOwnerProducts
+    // MARK: - Sections
 
-        var description: String {
-            switch self {
-            case .similarProduct: return "Logistics Services"
-            case .moreOwnerProducts: return "Service Providers"
-            }
+    private func makeSections() -> [FormSection] {
+        [
+            makeHeaderSection(),
+            makeBodySection()
+        ]
+    }
+
+    private func makeHeaderSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.header.rawValue,
+            cells: [
+                searchRow,
+                segmentedRow
+            ]
+        )
+    }
+
+    private func makeBodySection() -> FormSection {
+        FormSection(
+            id: Tags.Section.body.rawValue,
+            cells: []
+        )
+    }
+
+    // MARK: - Body Switching
+
+    private func reloadBodySection(animated: Bool = true) {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.body.rawValue
+        }) else { return }
+
+        let newCells: [FormRow]
+
+        switch state.selectedSegmentIndex {
+        case 0:
+            newCells = makeServiceProvidersCells()
+        case 1:
+            newCells = makeLogisticsCells()
+        default:
+            newCells = []
         }
+
+        sections[index].cells = newCells
+        reloadSection(index)
+    }
+
+    // MARK: - Rows
+
+    private lazy var searchRow = SearchFormRow(
+        tag: Tags.Cells.search.rawValue,
+        model: SearchFormModel(
+            placeholder: "Search services",
+            keyboardType: .default,
+            searchIcon: UIImage(systemName: "magnifyingglass"),
+            searchIconPlacement: .right,
+            filterIcon: nil,
+            didTapSearchIcon: { print("Search tapped") },
+            didTapFilterIcon: { print("Filter tapped") }
+        )
+    )
+
+    private lazy var segmentedRow = makeSegmentedRow()
+
+    private func makeSegmentedRow() -> FormRow {
+        SegmentedFormRow(
+            model: SegmentedFormModel(
+                title: nil,
+                segments: ["Services Providers", "Logistics"],
+                selectedIndex: state.selectedSegmentIndex,
+                tag: Tags.Cells.segment.rawValue,
+                tintColor: .gray,
+                selectedSegmentTintColor: .app(.primary),
+                backgroundColor: .white,
+                titleTextColor: .darkGray,
+                segmentTextColor: .lightGray,
+                selectedSegmentTextColor: .white,
+                onSelectionChanged: { [weak self] index in
+                    guard let self else { return }
+                    self.state.selectedSegmentIndex = index
+                    self.reloadBodySection()
+                }
+            )
+        )
+    }
+
+    // MARK: - Grid Builders (ALL SEGMENTS)
+
+    private func makeFeaturedServicesCells() -> [FormRow] {
+        [makeGridRow(items: state.featuredServices.map { service in
+            GridItemModel(
+                id: "\(service.id ?? 0)",
+                image: UIImage(named: "blank_rectangle"),
+                imageUrl: service.primaryImage ?? "",
+                title: service.name ?? "Unnamed",
+                subtitle: service.traderName ?? "",
+                price: service.price != nil
+                    ? "$\(String(format: "%.2f", service.price!))"
+                    : nil,
+                isFavorite: false,
+                onTap: { [weak self] in
+                    self?.onTapService?(service)
+                },
+                onToggleFavorite: { _ in }
+            )
+        })]
+    }
+
+    private func makeServiceProvidersCells() -> [FormRow] {
+        [makeGridRow(items: state.serviceProviders.map { provider in
+            GridItemModel(
+                id: "\(provider.id ?? 0)",
+                image: UIImage(named: "blank_rectangle"),
+                imageUrl: provider.profileImageUrl ?? "",
+                title: provider.organization ?? "Provider",
+                subtitle: provider.description ?? "",
+                price: nil,
+                isFavorite: false,
+                onTap: {
+                    print("Tapped provider")
+                },
+                onToggleFavorite: { _ in }
+            )
+        })]
+    }
+
+    private func makeLogisticsCells() -> [FormRow] {
+        [makeGridRow(items: state.logisticsServiceProviders.map { provider in
+            GridItemModel(
+                id: "\(provider.id ?? 0)",
+                image: UIImage(named: "blank_rectangle"),
+                imageUrl: provider.displayImage ?? "",
+                title: provider.providerName ?? "Logistics",
+                subtitle: provider.locationName ?? "",
+                price: nil,
+                isFavorite: false,
+                onTap: {
+                    print("Tapped logistics")
+                },
+                onToggleFavorite: { _ in }
+            )
+        })]
+    }
+
+    // MARK: - Shared Grid Row
+
+    private func makeGridRow(items: [GridItemModel]) -> FormRow {
+        GridFormRow(
+            tag: 999,
+            items: items,
+            numberOfColumns: 2,
+            useCollectionView: false
+        )
     }
 
     // MARK: - State
 
     private struct State {
-        
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
-        var similarProduct: [ProductResponse] = []
-        var moreOwnerProducts: [ProductResponse] = []
+        var selectedSegmentIndex: Int = 0
+
+        var featuredServices: [TradeServiceResponse] = []
+        var serviceProviderTypes: [ServiceProviderTypesResponse] = []
+        var serviceProviders: [ServiceProviderResponse] = []
+        var logisticsServiceProviders: [LogisitcisServiceProviderResponse] = []
     }
 
     // MARK: - Tags
 
     enum Tags {
         enum Section: Int {
-            case productImages = 0
-            case titleAndDescription = 1
-            case price = 2
-            case categories = 3
-            case similarProducts = 5
-            case moreFromThisSeller = 6
+            case header = 0
+            case body = 1
         }
 
         enum Cells: Int {
-            case productImages = 0
-            case titleAndDescription = 1
-            case price = 2
-            case categories = 3
+            case search = 100
+            case segment = 101
+        }
+    }
+
+    // MARK: - Data Types
+
+    private enum FetchDataType: CustomStringConvertible {
+        case featuredServices
+        case serviceProviderTypes
+        case serviceProviders
+        case logisticsServiceProviders
+
+        var description: String {
+            switch self {
+            case .featuredServices: return "Featured Services"
+            case .serviceProviderTypes: return "Service Provider Types"
+            case .serviceProviders: return "Service Providers"
+            case .logisticsServiceProviders: return "Logistics Providers"
+            }
         }
     }
 }

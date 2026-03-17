@@ -172,8 +172,10 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .app(.hex("#F0FFE5")),
-                    textColor: .white
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Edit",
@@ -197,8 +199,10 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .systemPurple,
-                    textColor: .white
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Delete",

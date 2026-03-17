@@ -246,12 +246,29 @@ final class DirectusTokenService {
 
     // MARK: - Fetch News
 
+    // MARK: - Fetch News
+
     func fetchNews() async throws -> [DirectusNewsItem] {
-        let url = baseURL.appendingPathComponent("/items/News")
+
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("/items/News"),
+            resolvingAgainstBaseURL: false
+        )
+
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "*.*"),
+            URLQueryItem(name: "sort", value: "-created_on")
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
         let (data, _) = try await authorizedRequest(request)
+
         return try JSONDecoder()
             .decode(DirectusResponse<DirectusNewsItem>.self, from: data)
             .data

@@ -165,15 +165,21 @@ final class SelectableDualCardView: UIView {
         setNeedsLayout()
         layoutIfNeeded()
     }
-
-    func configure(title: String,
-                   subtitle: String?,
-                   icon: UIImage?,
-                   iconTintColor: UIColor?,
-                   selected: Bool,
-                   alignment: Alignment = .center) {
+    
+    func configure(
+        title: String,
+        subtitle: String?,
+        icon: UIImage?,
+        iconTintColor: UIColor? = nil,
+        selected: Bool,
+        alignment: Alignment = .center,
+        showsSelection: Bool = true,
+        selectionColor: UIColor = .systemGreen,
+        selectionImage: UIImage? = UIImage(systemName: "checkmark.circle.fill")
+    ) {
 
         self.alignment = alignment
+
         titleLabel.text = title
         subtitleLabel.text = subtitle
         subtitleLabel.isHidden = subtitle == nil
@@ -182,9 +188,20 @@ final class SelectableDualCardView: UIView {
         iconView.tintColor = iconTintColor ?? .label
         iconView.isHidden = icon == nil
 
+        checkmarkView.image = selectionImage
+        checkmarkView.tintColor = selectionColor
+
+        guard showsSelection else {
+            // Action-only cards (no selection state)
+            containerView.backgroundColor = .white
+            containerView.layer.borderColor = UIColor.systemGray4.cgColor
+            checkmarkView.isHidden = true
+            return
+        }
+
         if selected {
-            containerView.backgroundColor = UIColor.systemGreen.withAlphaComponent(0.15)
-            containerView.layer.borderColor = UIColor.systemGreen.cgColor
+            containerView.backgroundColor = selectionColor.withAlphaComponent(0.15)
+            containerView.layer.borderColor = selectionColor.cgColor
             checkmarkView.isHidden = false
         } else {
             containerView.backgroundColor = .white

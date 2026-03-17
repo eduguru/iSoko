@@ -286,3 +286,79 @@ public struct ServicesApi {
         return OptionalObjectResponseTarget(target: target)
     }
 }
+
+
+public extension ServicesApi {
+    
+    static func getServiceProviderTypes(accessToken: String) -> OptionalObjectResponseTarget<[ServiceProviderTypesResponse]> {
+        let parameters: [String: Any] = ["": ""]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/service-providers-type/all",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return OptionalObjectResponseTarget(target: target)
+    }
+    
+    static func getServiceProviders(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[ServiceProviderResponse]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "size": count,
+            "count": count
+        ]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/service-providers/all",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return OptionalObjectResponseTarget(target: target)
+    }
+    
+    static func getLogisticsServiceProviders(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LogisitcisServiceProviderResponse]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "size": count,
+            "count": count
+        ]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/logistics-provider",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return OptionalObjectResponseTarget(target: target)
+    }
+    
+}

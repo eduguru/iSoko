@@ -14,8 +14,8 @@ final class HomeViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var onTapMoreProduct: (() -> Void)?
-    var onTapProduct: ((ProductResponse) -> Void)?
-    var onFavoriteProductToggle: ((Bool, ProductResponse) -> Void)?
+    var onTapProduct: ((ProductResponseV1) -> Void)?
+    var onFavoriteProductToggle: ((Bool, ProductResponseV1) -> Void)?
 
     var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
@@ -67,14 +67,28 @@ final class HomeViewModel: FormViewModel {
         do {
             switch type {
             case .featuredProducts:
-                let response = try await productsService.getFeaturedProducts(
-                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
-                self.state?.featuredProducts = response
-                print("✅ Fetched Featured Products")
+//                let response = try await productsService.getFeaturedProducts(
+//                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
+//                self.state?.featuredProducts = response
+//                print("✅ Fetched Featured Products")
+//
+//                DispatchQueue.main.async { [weak self] in
+//                    self?.updateTrendingProductsSection()
+//                }
+                
+                let result = try await productsService.getFeaturedProducts(
+                        page: 1,
+                        count: 20,
+                        accessToken: state?.guestToken ?? ""
+                    )
 
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateTrendingProductsSection()
-                }
+                    self.state?.featuredProducts = result.data
+
+                    print("✅ Fetched Featured Products")
+
+                    DispatchQueue.main.async { [weak self] in
+                        self?.updateTrendingProductsSection()
+                    }
 
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
@@ -125,9 +139,9 @@ final class HomeViewModel: FormViewModel {
             makeBannerSection(),
             makeCategoriesQuickActionsSection(),
             makeServicesQuickActionsSection(),
-            makeTopDealsSection(),
-            makeExportCardsSection(),
-            makeOpportunitySection(),
+            // makeTopDealsSection(),
+            // makeExportCardsSection(),
+            // makeOpportunitySection(),
             makeTrendingProductsSection(),
             makeTrendingServicesSection()
         ]
@@ -394,14 +408,16 @@ final class HomeViewModel: FormViewModel {
     private func makeTrendingProductItems() -> [FeaturedDealItem] {
 
         return state?.featuredProducts.map { product in
+            
+            let imageUrl = product.primaryImageURL ?? ""
 
-            FeaturedDealItem(
+            return FeaturedDealItem(
                 id: "\(product.id ?? 0)",
-                imageUrl: product.primaryImage,
+                imageUrl: imageUrl,
                 image: UIImage(named: "blank_rectangle"),
                 badgeText: nil,
                 title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
+                subtitle: product.description ?? "",
                 priceText: product.price != nil
                     ? "$\(String(format: "%.2f", product.price!))"
                     : "Price on request",
@@ -547,7 +563,9 @@ final class HomeViewModel: FormViewModel {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
-        var featuredProducts: [ProductResponse] = []
+        //var featuredProducts: [ProductResponse] = []
+        var featuredProducts: [ProductResponseV1] = []
+        
         var featuredServices: [TradeServiceResponse] = []
         var productCategories: [CommodityCategoryResponse] = []
         var serviceCategories: [TradeServiceCategoryResponse] = []

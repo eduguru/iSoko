@@ -28,8 +28,17 @@ final class SalesReportsViewModel: FormViewModel {
     private func makeSections() -> [FormSection] {
         [
             makeTitleSection(),
+            makeFilterSection(),
+            makeRecentActivitiesSection(),
             makeActionSection()
         ]
+    }
+
+    private func makeFilterSection() -> FormSection {
+        FormSection(
+            id: SectionTag.filterSection.rawValue,
+            cells: [filterFormRow]
+        )
     }
     
     private func makeTitleSection() -> FormSection {
@@ -41,6 +50,13 @@ final class SalesReportsViewModel: FormViewModel {
         )
     }
     
+    private func makeRecentActivitiesSection() -> FormSection {
+        FormSection(
+            id: SectionTag.recentActivities.rawValue,
+            cells: generateTransactionRows()
+        )
+    }
+    
     private func makeActionSection() -> FormSection {
         FormSection(
             id: SectionTag.action.rawValue,
@@ -49,6 +65,9 @@ final class SalesReportsViewModel: FormViewModel {
             ]
         )
     }
+    
+    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Sales Report", description: "Track your revenue performance")
+    private lazy var filterFormRow: FormRow = makeFilterFormRow()
     
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
@@ -81,8 +100,141 @@ final class SalesReportsViewModel: FormViewModel {
             }
         }
     )
+    
+    private func makeFilterFormRow() -> FormRow {
+        let row = FiltersFormRow(
+            tag: 1,
+            config: FiltersCellConfig(
+                title: nil,
+                rows: [
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Sales Type",
+                            selectedValue: nil,
+                            iconSystemName: "mappin.and.ellipse",
+                            onTap: {
+                                print("tapped")
+                            }
+                        )
+                    ],
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Product",
+                            selectedValue: nil,
+                            iconSystemName: "tag",
+                            onTap: {
+                                print("Sale Type tapped")
+                            }
+                        ),
+                        FilterFieldConfig(
+                            placeholder: "Payment Method",
+                            selectedValue: nil,
+                            iconSystemName: "calendar",
+                            onTap: {
+                                print("Time Period tapped")
+                            }
+                        )
+                    ],
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Start Date",
+                            selectedValue: nil,
+                            iconSystemName: "tag",
+                            onTap: {
+                                print("Sale Type tapped")
+                            }
+                        ),
+                        FilterFieldConfig(
+                            placeholder: "End Date",
+                            selectedValue: nil,
+                            iconSystemName: "calendar",
+                            onTap: {
+                                print("Time Period tapped")
+                            }
+                        )
+                    ]
+                    
+                ],
+                message: ""
+            )
+        )
 
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Sales Report", description: "Track your revenue performance")
+        return row
+    }
+    
+    // Lazy factory that creates rows
+   
+    func generateTransactionData(from configs: [TransactionSummaryCellConfig]) -> [FormRow] {
+        return configs.enumerated().map { index, config in
+            // Create a new row for each config
+            return TransactionSummaryRow(tag: index, config: config)
+        }
+    }
+    
+    private func generateTransactionRows() -> [FormRow] {
+        // Example of multiple configurations with actions included
+        let configs: [TransactionSummaryCellConfig] = [
+            TransactionSummaryCellConfig(
+                title: "John Doe",
+                amount: "Ksh. 12,987",
+                amountColor: .green,
+                dateText: "Oct 27, 2025",
+                saleTypeText: "Cash Sale",
+                saleTypeTextColor: .app(.hex("#35A458")),
+                saleTypeBackgroundColor: .app(.hex("#F0FFE5")),
+                itemsCountText: "3 items",
+                primaryAction: ActionCardConfig(
+                    title: "View Details",
+                    icon: UIImage(systemName: "eye.fill"),
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
+                ),
+                secondaryAction: InlineActionConfig(
+                    title: "Edit",
+                    icon: UIImage(systemName: "pencil"),
+                    onTap: { print("Edit tapped!") }
+                ),
+                cardBackgroundColor: .white,
+                cardBorderColor: .systemGray4,
+                cardBorderWidth: 1,
+                cardCornerRadius: 12
+            ),
+            TransactionSummaryCellConfig(
+                title: "Jane Smith",
+                amount: "Ksh. 8,500",
+                amountColor: .blue,
+                dateText: "Nov 15, 2025",
+                saleTypeText: "Credit Sale",
+                saleTypeTextColor: .app(.hex("#CA391C")),
+                saleTypeBackgroundColor: .app(.hex("#FFE5E5")),
+                itemsCountText: "2 items",
+                primaryAction: ActionCardConfig(
+                    title: "View Details",
+                    icon: UIImage(systemName: "creditcard"),
+                    backgroundColor: .white,
+                    textColor: .label,
+                    borderColor: .systemGray4,
+                    borderWidth: 1
+                ),
+                secondaryAction: InlineActionConfig(
+                    title: "Delete",
+                    icon: UIImage(systemName: "trash"),
+                    onTap: { print("Delete tapped!") }
+                ),
+                cardBackgroundColor: .white,
+                cardBorderColor: .systemGray4,
+                cardBorderWidth: 1,
+                cardCornerRadius: 12
+            )
+        ]
+
+        // Generate rows
+        let rows: [FormRow] = generateTransactionData(from: configs)
+        return rows
+
+    }
     
     // MARK: - Submit
     private func submit() async {
@@ -121,6 +273,9 @@ final class SalesReportsViewModel: FormViewModel {
     // MARK: - Enums
     private enum SectionTag: Int {
         case title = 0
+        case filterSection
+        case recentActivities
+        
         case action
     }
 

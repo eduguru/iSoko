@@ -48,6 +48,32 @@ public enum UnifiedPagedEnvelope<Payload: Decodable>: Decodable {
 }
 
 
+public extension UnifiedPagedEnvelope {
+
+    func toPagedResult() -> PagedResult<Payload> {
+        switch self {
+
+        case .old(let data):
+            return PagedResult(
+                data: data,
+                page: nil,
+                size: nil,
+                totalPages: nil,
+                totalElements: nil
+            )
+
+        case .new(let data, let page, _):
+            return PagedResult(
+                data: data,
+                page: page.number,
+                size: page.size,
+                totalPages: page.totalPages,
+                totalElements: page.totalElements
+            )
+        }
+    }
+}
+
 public struct PagedResult<Data> {
     public let data: Data
     public let page: Int?

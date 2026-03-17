@@ -54,7 +54,7 @@ final class ActionCardView: UIView {
             action: #selector(tap)
         ))
     }
-
+    
     func configure(with config: ActionCardConfig) {
         titleLabel.text = config.title
         titleLabel.textColor = config.textColor
@@ -62,6 +62,9 @@ final class ActionCardView: UIView {
         iconView.isHidden = config.icon == nil
         backgroundColor = config.backgroundColor
         onTap = config.onTap
+
+        layer.borderWidth = config.borderWidth
+        layer.borderColor = config.borderColor?.cgColor
     }
 
     @objc private func tap() {

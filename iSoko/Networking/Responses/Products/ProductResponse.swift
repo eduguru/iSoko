@@ -44,3 +44,76 @@ public struct ProductResponse: Decodable {
     let isActive:  Bool?
     let images: [String]?
 }
+
+
+public struct ProductResponseV1: Decodable {
+    let id: Int?
+    let name: String?
+    let description: String?
+    
+    let category: CategoryV1?
+    let commodity: CommodityV1?
+    let measurementUnit: MeasurementUnitV1?
+    
+    let price: Double?
+    let minimumOrderQuantity: Int?
+    
+    let inStock: Bool?
+    let published: Bool?
+    let featured: Bool?
+    let active: Bool?
+    
+    let trader: TraderV1?
+    let images: [ProductImageV1]?
+}
+
+// MARK: - Category
+public struct CategoryV1: Decodable {
+    let id: Int?
+    let name: String?
+}
+
+// MARK: - Commodity
+public struct CommodityV1: Decodable {
+    let id: Int?
+    let name: String?
+}
+
+// MARK: - Measurement Unit
+public struct MeasurementUnitV1: Decodable {
+    let id: Int?
+    let name: String?
+}
+
+// MARK: - Trader
+public struct TraderV1: Decodable {
+    let id: Int?
+    let email: String?
+    let firstName: String?
+    let lastName: String?
+}
+
+// MARK: - Product Image
+public struct ProductImageV1: Decodable {
+    let id: Int?
+    let url: String?
+    let primary: Bool?
+    let active: Bool?
+    let approved: Bool?
+}
+
+extension ProductResponseV1 {
+    
+    var traderFullName: String? {
+        guard let first = trader?.firstName, let last = trader?.lastName else { return nil }
+        return "\(first) \(last)"
+    }
+    
+    var primaryImageURL: String? {
+        images?.first(where: { $0.primary == true })?.url
+    }
+    
+    var categoryName: String? {
+        category?.name
+    }
+}

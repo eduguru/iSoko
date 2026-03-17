@@ -36,11 +36,15 @@ public protocol ServicesService {
     
     func updateTradeServiceStatus(status: String, productId: String, accessToken: String) async throws -> TradeServiceResponse?
     
+    
+    func getServiceProviderTypes(accessToken: String) async throws -> [ServiceProviderTypesResponse]
+    func getServiceProviders(page: Int, count: Int, productId: String, accessToken: String) async throws -> [ServiceProviderResponse]
+    func getLogisticsServiceProviders(page: Int, count: Int, productId: String, accessToken: String) async throws -> [LogisitcisServiceProviderResponse]
+    
 }
 
 
 public final class ServicesServiceImpl: ServicesService {
-    
     private let manager: NetworkManager<AnyTarget>
     private let tokenProvider: RefreshableTokenProvider
     
@@ -126,4 +130,27 @@ public final class ServicesServiceImpl: ServicesService {
         
         return response
     }
+}
+
+
+public extension ServicesServiceImpl {
+    
+    func getServiceProviderTypes(accessToken: String) async throws -> [ServiceProviderTypesResponse] {
+        let response: [ServiceProviderTypesResponse] = try await manager.request(ServicesApi.getServiceProviderTypes(accessToken: accessToken)) ?? []
+        
+        return response
+    }
+    
+    func getServiceProviders(page: Int, count: Int, productId: String, accessToken: String) async throws -> [ServiceProviderResponse] {
+        let response: [ServiceProviderResponse] = try await manager.request(ServicesApi.getServiceProviders(page: page, count: count, accessToken: accessToken)) ?? []
+        
+        return response
+    }
+    
+    func getLogisticsServiceProviders(page: Int, count: Int, productId: String, accessToken: String) async throws -> [LogisitcisServiceProviderResponse] {
+        let response: [LogisitcisServiceProviderResponse] = try await manager.request(ServicesApi.getLogisticsServiceProviders(page: page, count: count, accessToken: accessToken)) ?? []
+        
+        return response
+    }
+    
 }

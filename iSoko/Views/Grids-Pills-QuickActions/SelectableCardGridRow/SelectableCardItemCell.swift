@@ -35,15 +35,19 @@ final class SelectableCardItemCell: UICollectionViewCell {
     }
 
     func configure(item: SelectableCardItemConfig, selected: Bool) {
-        // Pass color per icon or category (you'll need to add color info in your model)
+
         let iconTintColor = getTintColor(for: item.title)
 
-        cardView.configure(title: item.title,
-                           subtitle: item.subtitle,
-                           icon: item.icon,
-                           iconTintColor: iconTintColor,
-                           selected: selected,
-                           alignment: Alignment.left
+        cardView.configure(
+            title: item.title,
+            subtitle: item.subtitle,
+            icon: item.icon,
+            iconTintColor: iconTintColor,
+            selected: item.showsSelection ? selected : false,
+            alignment: Alignment.left,
+            showsSelection: item.showsSelection,
+            selectionColor: item.selectionColor,
+            selectionImage: item.selectionImage
         )
     }
 
