@@ -19,7 +19,6 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
 
     private var onTap: (() -> Void)?
 
-    // Padding inside the card
     private var internalPadding: UIEdgeInsets = .init(top: 12, left: 12, bottom: 12, right: 12)
     private var spacing: CGFloat = 12
 
@@ -42,26 +41,23 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
         containerView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(containerView)
 
-        // Setup icon container view
         iconContainerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(iconContainerView)
 
-        // Setup icon image view
         iconImageView.contentMode = .scaleAspectFit
-        iconImageView.clipsToBounds = true
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconContainerView.addSubview(iconImageView)
 
-        titleLabel.font = .preferredFont(forTextStyle: .body)
+        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
 
-        descriptionLabel.font = .preferredFont(forTextStyle: .subheadline)
+        descriptionLabel.font = .systemFont(ofSize: 14, weight: .regular)
         descriptionLabel.textColor = .secondaryLabel
-        descriptionLabel.numberOfLines = 0
+        descriptionLabel.numberOfLines = 2
 
         textStack.axis = .vertical
-        textStack.spacing = 8
+        textStack.spacing = 4
         textStack.translatesAutoresizingMaskIntoConstraints = false
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(descriptionLabel)
@@ -84,23 +80,20 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
     public func configure(with config: ImageTitleDescriptionConfig) {
         onTap = config.onTap
 
-        // Padding setup
-        internalPadding = config.isCardStyleEnabled ? config.contentInsets : UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+        internalPadding = config.isCardStyleEnabled
+        ? config.contentInsets
+        : UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
+
         spacing = config.spacing
 
-        // Text setup
         titleLabel.text = config.title
         descriptionLabel.text = config.description
         descriptionLabel.isHidden = config.description == nil
 
-        // Clear old accessory
         accessory?.removeFromSuperview()
         accessory = nil
-
-        // Apply new accessory
         applyAccessory(config.accessoryType)
 
-        // Clear subviews before adding
         containerView.subviews.forEach { $0.removeFromSuperview() }
         containerView.addSubview(iconContainerView)
         containerView.addSubview(textStack)
@@ -108,7 +101,13 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
             containerView.addSubview(accessory)
         }
 
-        // Setup iconContainerView size (fixed size with padding inside)
+        // Icon container styling (NEW)
+        iconContainerView.backgroundColor = config.iconBackgroundColor ?? .clear
+        let radius = config.iconCornerRadius ?? (config.imageSize.height / 2)
+        iconContainerView.layer.cornerRadius = radius
+        iconContainerView.clipsToBounds = true
+
+        // Icon container constraints
         NSLayoutConstraint.activate([
             iconContainerView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: internalPadding.left),
             iconContainerView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
@@ -116,20 +115,20 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
             iconContainerView.heightAnchor.constraint(equalToConstant: config.imageSize.height)
         ])
 
-        // iconImageView with inset inside container (1 or 2 px padding)
+        // Icon image inset
+        let inset: CGFloat = 8
         NSLayoutConstraint.activate([
-            iconImageView.topAnchor.constraint(equalTo: iconContainerView.topAnchor, constant: 1),
-            iconImageView.bottomAnchor.constraint(equalTo: iconContainerView.bottomAnchor, constant: -1),
-            iconImageView.leadingAnchor.constraint(equalTo: iconContainerView.leadingAnchor, constant: 1),
-            iconImageView.trailingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: -1)
+            iconImageView.topAnchor.constraint(equalTo: iconContainerView.topAnchor, constant: inset),
+            iconImageView.bottomAnchor.constraint(equalTo: iconContainerView.bottomAnchor, constant: -inset),
+            iconImageView.leadingAnchor.constraint(equalTo: iconContainerView.leadingAnchor, constant: inset),
+            iconImageView.trailingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: -inset)
         ])
 
         iconImageView.image = config.image
-        iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? (config.imageSize.height / 2) - 1 : 0
-        iconImageView.layer.masksToBounds = true
-        iconImageView.contentMode = .scaleAspectFit
+        iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? (config.imageSize.height / 2) - inset : 0
+        iconImageView.clipsToBounds = true
 
-        // Setup textStack constraints
+        // Text constraints
         NSLayoutConstraint.activate([
             textStack.leadingAnchor.constraint(equalTo: iconContainerView.trailingAnchor, constant: spacing),
             textStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: internalPadding.top),
@@ -149,7 +148,7 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
             ])
         }
 
-        // Card style
+        // Card styling
         if config.isCardStyleEnabled {
             containerView.layer.cornerRadius = config.cardCornerRadius
             containerView.layer.borderWidth = config.cardBorderWidth
@@ -168,22 +167,24 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
     private func applyAccessory(_ type: ImageTitleDescriptionConfig.AccessoryType) {
         switch type {
         case .none:
-            accessoryType = .none
-            accessoryView = nil
+            accessory = nil
 
         case .chevron:
-            accessoryType = .disclosureIndicator
-            accessoryView = nil
+            let imageView = UIImageView(image: UIImage(systemName: "chevron.right"))
+            imageView.tintColor = .tertiaryLabel
+            imageView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                imageView.widthAnchor.constraint(equalToConstant: 16),
+                imageView.heightAnchor.constraint(equalToConstant: 16)
+            ])
+            accessory = imageView
 
         case .custom(let view):
-            accessoryType = .none
-            accessoryView = view
             accessory = view
 
         case .image(let image):
             let imageView = UIImageView(image: image.withRenderingMode(.alwaysTemplate))
-            imageView.tintColor = UIColor.app(.primary)
-            imageView.contentMode = .scaleAspectFit
+            imageView.tintColor = .tertiaryLabel
             imageView.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
                 imageView.widthAnchor.constraint(equalToConstant: 24),

@@ -9,6 +9,7 @@
 import UIKit
 
 public struct ImageTitleDescriptionConfig {
+
     public enum AccessoryType {
         case none
         case chevron
@@ -36,31 +37,41 @@ public struct ImageTitleDescriptionConfig {
     public var isEnabled: Bool
     public var onTap: (() -> Void)?
 
-    // ✅ New card-style appearance properties
+    // Card styling
     public var isCardStyleEnabled: Bool
     public var cardCornerRadius: CGFloat
     public var cardBackgroundColor: UIColor
     public var cardBorderColor: UIColor
     public var cardBorderWidth: CGFloat
 
+    // ✅ NEW (icon container control)
+    public var iconBackgroundColor: UIColor?
+    public var iconCornerRadius: CGFloat?
+
     public init(
         image: UIImage? = nil,
-        imageSize: CGSize = CGSize(width: 36, height: 36),
+        imageSize: CGSize = CGSize(width: 44, height: 44),
         imageStyle: ImageStyle = .rounded,
+
         title: String,
         description: String? = nil,
+
         accessoryType: AccessoryType = .chevron,
+
         spacing: CGFloat = 12,
-        contentInsets: UIEdgeInsets = UIEdgeInsets(top: 12, left: 16, bottom: 12, right: 16),
+        contentInsets: UIEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16),
+
         isEnabled: Bool = true,
         onTap: (() -> Void)? = nil,
 
-        // ✅ Default values for card-style layout
         isCardStyleEnabled: Bool = false,
-        cardCornerRadius: CGFloat = 12,
+        cardCornerRadius: CGFloat = 16,
         cardBackgroundColor: UIColor = .systemBackground,
         cardBorderColor: UIColor = .systemGray4,
-        cardBorderWidth: CGFloat = 1
+        cardBorderWidth: CGFloat = 0,
+
+        iconBackgroundColor: UIColor? = UIColor.systemGray5,
+        iconCornerRadius: CGFloat? = nil
     ) {
         self.image = image
         self.imageSize = imageSize
@@ -78,5 +89,8 @@ public struct ImageTitleDescriptionConfig {
         self.cardBackgroundColor = cardBackgroundColor
         self.cardBorderColor = cardBorderColor
         self.cardBorderWidth = cardBorderWidth
+
+        self.iconBackgroundColor = iconBackgroundColor
+        self.iconCornerRadius = iconCornerRadius
     }
 }

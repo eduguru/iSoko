@@ -40,6 +40,9 @@ final class BusinessViewModel: FormViewModel {
                 id: Tags.Section.header.rawValue,
                 cells: [
                     headerTitleRow,
+                    SpacerFormRow(tag: -0098),
+                    bookKeepingRow,
+                    businessHubRow
                 ]
             )
         )
@@ -55,6 +58,53 @@ final class BusinessViewModel: FormViewModel {
     }
     
     // MARK: - Lazy or Computed Rows
+    private lazy var bookKeepingRow: FormRow = {
+        return makeImageTitleDescriptionRow(
+            tag: Tags.Cells.bookkeeping.rawValue,
+            image: UIImage(systemName: "book.fill")!,
+            title: "Book Keeping",
+            description: "Manage your finances and bookkeeping",
+            onTap: { [weak self] in
+                self?.goToBookKeeping?()
+            }
+        )
+        
+    }()
+    
+    private lazy var businessHubRow: FormRow = {
+        HubCardRow(
+            tag: 1,
+            config: HubCardConfig(
+                icon: UIImage(systemName: "bag"),
+                iconBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                title: "Marketplace Hub",
+                subtitle: "Manage your online store and orders",
+                actions: [
+                    .init(
+                        id: "products",
+                        icon: UIImage(systemName: "archivebox"),
+                        title: "Products",
+                        onTap: {
+                        print("onTap ")
+                    }),
+                    .init(
+                        id: "services",
+                        icon: UIImage(systemName: "wrench"),
+                        title: "Services",
+                        onTap: {
+                            print("onTap ")
+                        }),
+                    .init(
+                        id: "orders",
+                        icon: UIImage(systemName: "doc.text"),
+                        title: "Orders",
+                        onTap: {
+                            print("onTap ")
+                        })
+                ]
+            )
+        )
+    }()
     
     private lazy var headerTitleRow: FormRow = {
         return TitleDescriptionFormRow(
@@ -70,7 +120,7 @@ final class BusinessViewModel: FormViewModel {
         )
     }()
     
-    /// Generates a reusable ImageTitleDescriptionRow
+    // Generates a reusable ImageTitleDescriptionRow
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage,
@@ -98,27 +148,27 @@ final class BusinessViewModel: FormViewModel {
         var items: [RowItemModel] = []
         
         items.append(contentsOf: [
-            RowItemModel(title: "My Products", description: "", image: .legalIcon, onTap: { [weak self] in
-                self?.goToMyProducts?()
-            }),
-            RowItemModel(title: "My Services", description: "", image: .settingsGearIcon, onTap: { [weak self] in
-                self?.goToMyServices?()
-            }),
-            RowItemModel(title: "My Orders", description: "", image: .questionCircleIcon, onTap: { [weak self] in
-                self?.goToMyOrders?()
+            RowItemModel(
+                title: "Currency Exchange",
+                description: "Convert between East african and International currencies",
+                image: .bagAddIcon,
+                onTap: { [weak self] in
+                    self?.goToCurrencyExchange?()
             }),
             
-            RowItemModel(title: "Reports", description: "", image: .profile, onTap: { [weak self] in
-                self?.goToReports?()
+            RowItemModel(
+                title: "Analytics",
+                description: "View analytics for your business",
+                image: .profile,
+                onTap: { [weak self] in
+                    self?.goToReports?()
             }),
-            RowItemModel(title: "Book Keeping", description: "", image: .orgIcon, onTap: { [weak self] in
-                self?.goToBookKeeping?()
-            }),
-            RowItemModel(title: "Tax Calculator", description: "", image: .tradeIcon, onTap: { [weak self] in
-                self?.goToTaxCalculator?()
-            }),
-            RowItemModel(title: "Currency Exchange", description: "", image: .bagAddIcon, onTap: { [weak self] in
-                self?.goToCurrencyExchange?()
+            RowItemModel(
+                title: "Tax Calculator",
+                description: "Calculate value of your Taxable goods",
+                image: .tradeIcon,
+                onTap: { [weak self] in
+                    self?.goToTaxCalculator?()
             })
         ])
         
@@ -156,6 +206,7 @@ final class BusinessViewModel: FormViewModel {
         enum Cells: Int {
             case headerImage = 0
             case headerTitle = 1
+            case bookkeeping = 2
         }
     }
 }
