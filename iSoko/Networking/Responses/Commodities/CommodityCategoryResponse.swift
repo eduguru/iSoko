@@ -10,4 +10,6 @@ public struct CommodityCategoryResponse: Decodable {
     let name: String?
     let description: String?
     let imageUrl: String?
+    let url: String?
+    let active: Bool?
 }

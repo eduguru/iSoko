@@ -13,7 +13,7 @@ public protocol ProductsService {
     // func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponseV1]
     func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]>
     
-    func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [ProductResponse]
+    func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> //[ProductResponse]
     func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse]
     func getProductDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductResponse?
     func getProductOwnerDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductOwnerResponse?
@@ -62,8 +62,17 @@ public final class ProductsServiceImpl: ProductsService {
         return envelope.toPagedResult()
     }
 
-    public func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [ProductResponse] {
-        try await manager.request(ProductsApi.getProductsByCategory(page: page, count: count, categoryId: categoryId, accessToken: accessToken)) ?? []
+    public func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> {
+        let envelope = try await manager.request(
+            ProductsApi.getProductsByCategory(
+                page: page,
+                count: count,
+                categoryId: categoryId,
+                accessToken: accessToken
+            )
+        )
+
+        return envelope.toPagedResult()
     }
 
     public func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse] {

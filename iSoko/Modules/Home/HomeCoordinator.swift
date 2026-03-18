@@ -65,9 +65,9 @@ public class HomeCoordinator: BaseCoordinator {
     
     private func goToAllProduct() {
         let viewModel = ProductListingsViewModel()
-//        viewModel.onTapProduct = { [weak self] in
-//            self?.goToProduct($0)
-//        }
+        viewModel.onTapProduct = { [weak self] in
+            self?.goToProduct($0)
+        }
         
         let vc = ProductListingsViewController()
         vc.viewModel = viewModel
@@ -95,13 +95,11 @@ public class HomeCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func  onTapProductCategory(_ item: CommodityCategoryResponse) {
-        let id = item.id ?? 0
-        
-        let viewModel = ProductListingsViewModel(categoryId: "\(id)")
-//        viewModel.onTapProduct = { [weak self] in
-//            self?.goToProduct($0)
-//        }
+    private func  onTapProductCategory(_ item: CommodityCategoryResponse) {        
+        let viewModel = ProductListingsViewModel(category: item)
+        viewModel.onTapProduct = { [weak self] in
+            self?.goToProduct($0)
+        }
         
         let vc = ProductListingsViewController()
         vc.viewModel = viewModel

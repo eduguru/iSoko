@@ -110,7 +110,26 @@ extension ProductResponseV1 {
     }
     
     var primaryImageURL: String? {
-        images?.first(where: { $0.primary == true })?.url
+        
+        // Only valid images
+        let validImages = images?.filter {
+            $0.active == true && $0.url != nil
+        }
+
+        // 1. (primary)
+        if let primary = validImages?.first(where: { $0.primary == true })?.url {
+            return primary
+        }
+
+        // 2. fallback
+        return validImages?.first?.url
+    }
+    
+    var allImageURLs: [String] {
+        images?
+            .filter { $0.active == true }
+            .compactMap { $0.url }
+        ?? []
     }
     
     var categoryName: String? {

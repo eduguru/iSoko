@@ -191,8 +191,8 @@ final class ProductCategoriesViewModel: FormViewModel {
         return productsToShow.map { product in
             ImageTitleGridItemModel(
                 id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
-                imageUrl: product.imageUrl ?? "",
+                image: UIImage.blankRectangle,
+                imageUrl: product.imageUrl ?? product.url,
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.description ?? "",
                 onTap: { [weak self] in

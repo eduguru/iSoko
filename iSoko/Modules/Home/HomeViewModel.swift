@@ -11,16 +11,16 @@ import UtilsKit
 import StorageKit
 
 final class HomeViewModel: FormViewModel {
-
+    
     // MARK: - Callbacks
     var onTapMoreProduct: (() -> Void)?
     var onTapProduct: ((ProductResponseV1) -> Void)?
     var onFavoriteProductToggle: ((Bool, ProductResponseV1) -> Void)?
-
+    
     var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
     var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
-
+    
     var onTapMoreProductCategories: (() -> Void)?
     var onTapMoreServiceCategories: (() -> Void)?
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
@@ -28,102 +28,120 @@ final class HomeViewModel: FormViewModel {
     
     var onTapTopDeal: ((TopDealItem) -> Void)?
     var onFavoriteTopDealToggle: ((Bool, TopDealItem) -> Void)?
-
+    
     // MARK: - Services
     private let productsService = NetworkEnvironment.shared.productsService
     private let servicesService = NetworkEnvironment.shared.servicesService
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
-
+    private let associationsService = NetworkEnvironment.shared.associationsService
+    
     // MARK: - State
     private var state: State?
-
+    
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
     }
-
+    
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
-
+        
+        // MARK: - Fetch
         Task {
             async let _ = fetchDataType(.featuredProducts)
             async let _ = fetchDataType(.featuredServices)
             async let _ = fetchDataType(.productCategories)
             async let _ = fetchDataType(.serviceCategories)
-
-            _ = await ((), (), (), ())
-
+            async let _ = fetchDataType(.associations)   // 👈 NEW
+            
+            _ = await ((), (), (), (), ())
+            
             DispatchQueue.main.async { [weak self] in
                 self?.hideLoader()
             }
         }
     }
-
+    
     // MARK: - Fetch Helper
     @discardableResult
     private func fetchDataType(_ type: HomeDataType) async -> Bool {
         do {
             switch type {
             case .featuredProducts:
-//                let response = try await productsService.getFeaturedProducts(
-//                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
-//                self.state?.featuredProducts = response
-//                print("✅ Fetched Featured Products")
-//
-//                DispatchQueue.main.async { [weak self] in
-//                    self?.updateTrendingProductsSection()
-//                }
+                //                let response = try await productsService.getFeaturedProducts(
+                //                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
+                //                self.state?.featuredProducts = response
+                //                print("✅ Fetched Featured Products")
+                //
+                //                DispatchQueue.main.async { [weak self] in
+                //                    self?.updateTrendingProductsSection()
+                //                }
                 
                 let result = try await productsService.getFeaturedProducts(
-                        page: 1,
-                        count: 20,
-                        accessToken: state?.guestToken ?? ""
-                    )
-
-                    self.state?.featuredProducts = result.data
-
-                    print("✅ Fetched Featured Products")
-
-                    DispatchQueue.main.async { [weak self] in
-                        self?.updateTrendingProductsSection()
-                    }
-
+                    page: 1,
+                    count: 20,
+                    accessToken: state?.guestToken ?? ""
+                )
+                
+                self.state?.featuredProducts = result.data
+                
+                print("✅ Fetched Featured Products")
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateTrendingProductsSection()
+                }
+                
             case .featuredServices:
                 let response = try await servicesService.getFeaturedTradeServices(
                     page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.featuredServices = response
                 print("✅ Fetched Featured Services")
-
+                
                 DispatchQueue.main.async { [weak self] in
                     self?.updateTrendingServicesSection()
                 }
-
+                
             case .productCategories:
                 let response = try await commonUtilitiesService.getCommodityCategory(
                     page: 1, count: 20, module: "<regulation | trade-documents | standards>",
                     accessToken: state?.guestToken ?? "")
                 self.state?.productCategories = response
                 print("✅ Fetched Product Categories")
-
+                
                 DispatchQueue.main.async { [weak self] in
                     self?.updateProductCategoriesSection()
                 }
-
+                
             case .serviceCategories:
                 let response = try await servicesService.getAllTradeServiceCategories(
                     page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.serviceCategories = response
                 print("✅ Fetched Service Categories")
-
+                
                 DispatchQueue.main.async { [weak self] in
                     self?.updateServiceCategoriesSection()
                 }
+                
+            case .associations:
+                let response = try await associationsService.getAllAssociations(
+                    page: 1,
+                    count: 10,
+                    accessToken: state?.oauthToken ?? ""
+                )
+                
+                self.state?.associations = response
+                
+                print("✅ Fetched Associations")
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateExportCardsSection()
+                }
             }
-
+            
             return true
-
+            
         } catch let NetworkError.server(apiError) {
             print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
@@ -131,7 +149,7 @@ final class HomeViewModel: FormViewModel {
         }
         return false
     }
-
+    
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         return [
@@ -140,13 +158,13 @@ final class HomeViewModel: FormViewModel {
             makeCategoriesQuickActionsSection(),
             makeServicesQuickActionsSection(),
             // makeTopDealsSection(),
-            // makeExportCardsSection(),
+            makeExportCardsSection(),
             // makeOpportunitySection(),
             makeTrendingProductsSection(),
             makeTrendingServicesSection()
         ]
     }
-
+    
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
@@ -158,7 +176,7 @@ final class HomeViewModel: FormViewModel {
             cells: [productCategoriesFormRow]
         )
     }
-
+    
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
@@ -170,7 +188,7 @@ final class HomeViewModel: FormViewModel {
             cells: [tradeServiceCategoriesFormRow]
         )
     }
-
+    
     private func makeBannerSection() -> FormSection {
         return FormSection(
             id: Tags.Section.banner.rawValue,
@@ -178,7 +196,7 @@ final class HomeViewModel: FormViewModel {
             cells: [bannerRow]
         )
     }
-
+    
     private func makeTrendingProductsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
@@ -190,7 +208,7 @@ final class HomeViewModel: FormViewModel {
             cells: [trendingProducts]
         )
     }
-
+    
     private func makeTrendingServicesSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingServices.rawValue,
@@ -214,34 +232,36 @@ final class HomeViewModel: FormViewModel {
             cells: [topDealsRow]
         )
     }
-
+    
     private func makeExportCardsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.exportCards.rawValue,
-            title: "Export Councils",
+            title: "Featured Associations",
             actionTitle: "See All",
-            onActionTapped: { print("See All Export Councils") },
+            onActionTapped: {
+                print("See All Export Councils")
+            },
             cells: [exportCardsRow]
         )
     }
-
+    
     private func updateTopDealsSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.topDeals.rawValue }) else {
             return
         }
-
+        
         let updatedRow = TopDealsFormRow(
             tag: Tags.Cells.topDeals.rawValue,
             items: makeTopDealItems()
         )
-
+        
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
         reloadSection(sectionIndex)
     }
-
-
+    
+    
     // MARK: - Update Sections
     private func updateProductCategoriesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.categories.rawValue }) else {
@@ -256,7 +276,7 @@ final class HomeViewModel: FormViewModel {
         sections[sectionIndex] = updatedSection
         reloadSection(sectionIndex)
     }
-
+    
     private func updateServiceCategoriesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.serviceCategories.rawValue }) else {
             return
@@ -270,26 +290,26 @@ final class HomeViewModel: FormViewModel {
         sections[sectionIndex] = updatedSection
         reloadSection(sectionIndex)
     }
-
+    
     private func updateTrendingProductsSection() {
         guard let sectionIndex = sections.firstIndex(
             where: { $0.id == Tags.Section.trendingProducts.rawValue }
         ) else { return }
-
+        
         let updatedRow = FeaturedDealsGridFormRow(
             tag: Tags.Cells.trendingProducts.rawValue,
             items: makeTrendingProductItems(),
             columns: 2
         )
-
+        
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
-
+        
         reloadSection(sectionIndex)
     }
-
-
+    
+    
     private func updateTrendingServicesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingServices.rawValue }) else {
             return
@@ -305,13 +325,30 @@ final class HomeViewModel: FormViewModel {
         sections[sectionIndex] = updatedSection
         reloadSection(sectionIndex)
     }
-
+    
+    private func updateExportCardsSection() {
+        guard let sectionIndex = sections.firstIndex(where: {
+            $0.id == Tags.Section.exportCards.rawValue
+        }) else { return }
+        
+        let updatedRow = ExportCardsFormRow(
+            tag: Tags.Cells.exportCards.rawValue,
+            items: makeExportCardsItems()
+        )
+        
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        
+        reloadSection(sectionIndex)
+    }
+    
     // MARK: - Form Rows
     lazy var topDealsRow = TopDealsFormRow(
         tag: Tags.Cells.topDeals.rawValue,
         items: makeTopDealItems()
     )
-
+    
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
@@ -327,7 +364,7 @@ final class HomeViewModel: FormViewModel {
             onTextChanged: { text in print("Search text changed: \(text)") }
         )
     )
-
+    
     lazy var bannerRow = CarouselRow(
         tag: Tags.Section.banner.rawValue,
         model: CarouselModel(
@@ -346,39 +383,45 @@ final class HomeViewModel: FormViewModel {
             pageDotColor: .lightGray
         )
     )
-
+    
     lazy var productCategoriesFormRow = QuickActionsFormRow(
         tag: 1,
         items: makeProductCategoryItems()
     )
-
+    
     lazy var tradeServiceCategoriesFormRow = QuickActionsFormRow(
         tag: 2,
         items: makeServiceCategoryItems()
     )
-
+    
     lazy var trendingProducts = FeaturedDealsGridFormRow(
         tag: Tags.Cells.trendingProducts.rawValue,
         items: makeTrendingProductItems(),
         columns: 2
     )
-
+    
     lazy var trendingServices = GridFormRow(
         tag: Tags.Cells.trendingServices.rawValue,
         items: makeTrendingServiceItems(),
         numberOfColumns: 2,
         useCollectionView: false
     )
-
+    
     // MARK: - Item Builders
+
     private func makeProductCategoryItems() -> [QuickActionItem] {
         let count = min(state?.productCategories.count ?? 0, 5)
+
         return (0..<count).compactMap { index in
             guard let category = state?.productCategories[index] else { return nil }
+            
+            print("📦 Category:", category.name ?? "")
+            print("🖼 Image URL:", category.imageUrl ?? "nil")
+
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
                 image: UIImage(named: "blank_rectangle"),
-                imageUrl: category.imageUrl ?? "",
+                imageUrl: category.imageUrl?.isEmpty == false ? category.imageUrl : category.url,
                 imageShape: .circle,
                 title: category.name ?? "",
                 onTap: { [weak self] in
@@ -387,7 +430,7 @@ final class HomeViewModel: FormViewModel {
             )
         }
     }
-
+    
     private func makeServiceCategoryItems() -> [QuickActionItem] {
         let count = min(state?.serviceCategories.count ?? 0, 5)
         return (0..<count).compactMap { index in
@@ -404,13 +447,13 @@ final class HomeViewModel: FormViewModel {
             )
         }
     }
-
+    
     private func makeTrendingProductItems() -> [FeaturedDealItem] {
-
+        
         return state?.featuredProducts.map { product in
             
             let imageUrl = product.primaryImageURL ?? ""
-
+            
             return FeaturedDealItem(
                 id: "\(product.id ?? 0)",
                 imageUrl: imageUrl,
@@ -419,8 +462,8 @@ final class HomeViewModel: FormViewModel {
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.description ?? "",
                 priceText: product.price != nil
-                    ? "$\(String(format: "%.2f", product.price!))"
-                    : "Price on request",
+                ? "$\(String(format: "%.2f", product.price!))"
+                : "Price on request",
                 isFavorite: false,
                 onTap: { [weak self] in
                     self?.onTapProduct?(product)
@@ -431,7 +474,7 @@ final class HomeViewModel: FormViewModel {
             )
         } ?? []
     }
-
+    
     private func makeTrendingServiceItems() -> [GridItemModel] {
         return state?.featuredServices.map { service in
             GridItemModel(
@@ -453,7 +496,7 @@ final class HomeViewModel: FormViewModel {
     }
     
     private func makeTopDealItems() -> [TopDealItem] {
-
+        
         let dummyTitles = [
             "Kitenge Fashion",
             "Hand-Carved Stool",
@@ -461,7 +504,7 @@ final class HomeViewModel: FormViewModel {
             "Organic Honey",
             "Handwoven Basket"
         ]
-
+        
         return (0..<5).map { index in
             TopDealItem(
                 id: "\(index)",
@@ -486,35 +529,35 @@ final class HomeViewModel: FormViewModel {
     }
     
     private func makeExportCardsItems() -> [ExportCardItem] {
-
-        let dummyImages: [UIImage?] = [
-            UIImage(named: "export1"),
-            UIImage(named: "export2"),
-            UIImage(named: "export3"),
-            UIImage(named: "export4")
-        ]
-
-        return [
-            ExportCardItem(
-                id: "export_kenya",
-                title: "Kenya Export Council",
-                subtitle: "Promoting exports from Kenya",
-                icon: UIImage(named: "kenya_icon") ?? UIImage(systemName: "globe"),
-                images: Array(dummyImages.prefix(4)),
-                onTap: { print("Kenya Export tapped") }
-            ),
-
-            ExportCardItem(
-                id: "export_rwanda",
-                title: "Rwanda Trade Council",
-                subtitle: "Trade facilitation & support",
-                icon: UIImage(named: "rwanda_icon"),
-                images: Array(dummyImages.prefix(2)), // only 2 images -> placeholders fill the rest
-                onTap: { print("Rwanda Export tapped") }
+        
+        guard let associations = state?.associations else { return [] }
+        
+        return associations.prefix(10).map { association in
+            
+            let images: [UIImage?] = association.documents?
+                .compactMap { doc in
+                    guard let urlString = doc.document else { return nil }
+                    return UIImage(named: "blank_rectangle") // placeholder (replace with async loading if needed)
+                } ?? []
+            
+            let managerName: String = {
+                guard let manager = association.manager else { return "Unknown" }
+                return "\(manager.firstName ?? "") \(manager.lastName ?? "")"
+            }()
+            
+            return ExportCardItem(
+                id: "\(association.id ?? 0)",
+                title: association.name ?? "Unnamed Association",
+                subtitle: managerName,
+                icon: nil,
+                images: Array(images.prefix(4)),
+                onTap: {
+                    print("Tapped association: \(association.name ?? "")")
+                }
             )
-        ]
+        }
     }
-
+    
     lazy var exportCardsRow = ExportCardsFormRow(
         tag: 99,
         items: makeExportCardsItems()
@@ -542,9 +585,9 @@ final class HomeViewModel: FormViewModel {
             )
         ]
     }
-
+    
     lazy var opportunityRow = OpportunityFormRow(tag: 99, items: makeOpportunityItems())
-
+    
     private func makeOpportunitySection() -> FormSection {
         FormSection(
             id: Tags.Section.opportunities.rawValue,
@@ -554,8 +597,8 @@ final class HomeViewModel: FormViewModel {
             cells: [opportunityRow]
         )
     }
-
-
+    
+    
     // MARK: - State
     private struct State {
         
@@ -569,8 +612,10 @@ final class HomeViewModel: FormViewModel {
         var featuredServices: [TradeServiceResponse] = []
         var productCategories: [CommodityCategoryResponse] = []
         var serviceCategories: [TradeServiceCategoryResponse] = []
+        
+        var associations: [AssociationResponse] = []
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
@@ -584,7 +629,7 @@ final class HomeViewModel: FormViewModel {
             case opportunities = 9
             case search = 3001
         }
-
+        
         enum Cells: Int {
             case categories = 0
             case serviceCategories = 1
@@ -597,20 +642,24 @@ final class HomeViewModel: FormViewModel {
             case search = 3001
         }
     }
-
+    
     // MARK: - Data Types
     private enum HomeDataType: CustomStringConvertible {
         case featuredProducts
         case featuredServices
         case productCategories
         case serviceCategories
-
+        case associations
+        
+        
         var description: String {
             switch self {
             case .featuredProducts: return "Featured Products"
             case .featuredServices: return "Featured Services"
             case .productCategories: return "Product Categories"
             case .serviceCategories: return "Service Categories"
+            case .associations:
+                return "Associations"
             }
         }
     }

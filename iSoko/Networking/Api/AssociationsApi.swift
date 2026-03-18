@@ -14,12 +14,12 @@ public struct AssociationsApi {
     
     //MARK: -
     public static func getAllAssociations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
-
+        // https://api.dev.isoko.africa/v1/associations?page=1&size=10
         let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()

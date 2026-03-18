@@ -42,9 +42,13 @@ final class ExportCardCell: UICollectionViewCell {
         iconView.clipsToBounds = true
         iconView.backgroundColor = .systemGray5
 
-        titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
+        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        titleLabel.numberOfLines = 2     // ✅ MULTILINE
+        
         subtitleLabel.font = .systemFont(ofSize: 14)
         subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 2     // ✅ MULTILINE
+        subtitleLabel.lineBreakMode = .byTruncatingTail
 
         let headerStack = UIStackView(arrangedSubviews: [iconView, titleLabel])
         headerStack.axis = .horizontal
@@ -104,22 +108,92 @@ final class ExportCardCell: UICollectionViewCell {
             imageViews[2].heightAnchor.constraint(equalTo: imageViews[2].widthAnchor)
         ])
     }
-
+    
+//    func configure(with item: ExportCardItem) {
+//        currentItem = item
+//
+//        iconView.image = item.icon ?? UIImage(systemName: "globe")
+//        titleLabel.text = item.title
+//        subtitleLabel.text = item.subtitle
+//
+//        let placeholder = UIImage.blankRectangle
+//
+//        for i in 0..<4 {
+//
+//            // Priority: URL → UIImage → placeholder
+//            if i < item.imageUrls.count {
+//                imageViews[i].loadImage(
+//                    from: item.imageUrls[i],
+//                    placeholder: placeholder
+//                )
+//
+//            } else if i < item.images.count {
+//                imageViews[i].image = item.images[i] ?? placeholder
+//
+//            } else {
+//                imageViews[i].image = placeholder
+//            }
+//        }
+//    }
+    
     func configure(with item: ExportCardItem) {
         currentItem = item
+        let placeholder = UIImage.blankRectangle
 
-        iconView.image = item.icon ?? UIImage(systemName: "globe")
+        iconView.image = item.icon ?? placeholder// UIImage(systemName: "globe")
         titleLabel.text = item.title
         subtitleLabel.text = item.subtitle
 
-        let placeholder = UIImage.blankRectangle
-
         for i in 0..<4 {
-            if i < item.images.count {
+
+            if i < item.imageUrls.count,
+               let url = URL(string: item.imageUrls[i]) {
+
+                imageViews[i].kf.setImage(
+                    with: url,
+                    placeholder: placeholder,
+                    options: [
+                        .transition(.fade(0.2)),
+                        .cacheOriginalImage
+                    ]
+                )
+
+            } else if i < item.images.count {
                 imageViews[i].image = item.images[i] ?? placeholder
             } else {
                 imageViews[i].image = placeholder
             }
         }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+
+        imageViews.forEach {
+            $0.image = UIImage.blankRectangle
+        }
+    }
+}
+
+
+extension UIImageView {
+
+    func loadImage(
+        from urlString: String?,
+        placeholder: UIImage?
+    ) {
+        self.image = placeholder
+
+        guard let urlString,
+              let url = URL(string: urlString) else { return }
+
+        URLSession.shared.dataTask(with: url) { [weak self] data, _, _ in
+            guard let data,
+                  let image = UIImage(data: data) else { return }
+
+            DispatchQueue.main.async {
+                self?.image = image
+            }
+        }.resume()
     }
 }

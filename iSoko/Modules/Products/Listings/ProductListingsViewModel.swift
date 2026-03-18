@@ -13,8 +13,8 @@ import StorageKit
 final class ProductListingsViewModel: FormViewModel {
 
     // MARK: - Callbacks
-    var onTapProduct: ((ProductResponse) -> Void)?
-    var onToggleFavorite: ((Bool, ProductResponse) -> Void)?
+    var onTapProduct: ((ProductResponseV1) -> Void)?
+    var onFavoriteProductToggle: ((Bool, ProductResponseV1) -> Void)?
 
     // MARK: - Services
     private let productService = NetworkEnvironment.shared.productsService
@@ -26,9 +26,10 @@ final class ProductListingsViewModel: FormViewModel {
     private var searchDebounceTask: Task<Void, Never>? = nil
 
     // MARK: - Init
-    init(categoryId: String? = nil) { // ✅ Changed to match service signature
+    init(category: CommodityCategoryResponse? = nil) {
         super.init()
-        self.state.categoryId = categoryId
+        self.state.category = category
+        
         self.sections = makeSections()
         setupSearchCallbacks()
     }
@@ -50,9 +51,8 @@ final class ProductListingsViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Refresh (Pull-to-Refresh)
+    // MARK: - Refresh
     override func refresh() {
-        print("🔄 Refresh triggered")
         state.currentPage = 1
         state.hasMorePages = true
         state.products.removeAll()
@@ -61,9 +61,11 @@ final class ProductListingsViewModel: FormViewModel {
         fetchData()
     }
 
-    // MARK: - Pagination (Load More)
+    // MARK: - Pagination
     override func loadMoreIfNeeded() {
-        guard state.hasMorePages, !state.isLoadingMore, state.searchText.isEmpty else { return }
+        guard state.hasMorePages,
+              !state.isLoadingMore,
+              state.searchText.isEmpty else { return }
 
         state.isLoadingMore = true
         state.currentPage += 1
@@ -82,22 +84,10 @@ final class ProductListingsViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Search handling
+    // MARK: - Search
     private func setupSearchCallbacks() {
         searchRow.model.onTextChanged = { [weak self] newText in
             self?.handleSearchTextChanged(newText)
-        }
-        searchRow.model.didStartEditing = { text in
-            print("Started editing search with: \(text)")
-        }
-        searchRow.model.didEndEditing = { text in
-            print("Ended editing search with: \(text)")
-        }
-        searchRow.model.didTapSearchIcon = {
-            print("Search icon tapped")
-        }
-        searchRow.model.didTapFilterIcon = {
-            print("Filter icon tapped")
         }
     }
 
@@ -114,19 +104,18 @@ final class ProductListingsViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Local Filter (async)
     private func applyLocalFilter(with searchText: String) async {
         if searchText.isEmpty {
             await MainActor.run { self.refreshProductListSection() }
             return
         }
 
-        let lowercasedSearch = searchText.lowercased()
+        let lower = searchText.lowercased()
+
         let filtered = await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let results = self.state.products.filter { product in
-                    (product.name?.lowercased().contains(lowercasedSearch) ?? false) ||
-                    (product.traderName?.lowercased().contains(lowercasedSearch) ?? false)
+                let results = self.state.products.filter {
+                    ($0.name?.lowercased().contains(lower) ?? false)
                 }
                 continuation.resume(returning: results)
             }
@@ -142,20 +131,20 @@ final class ProductListingsViewModel: FormViewModel {
     private func refreshProductListSection() {
         updateSearchRowText()
 
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.productList.rawValue }) else {
-            return
-        }
+        guard let sectionIndex = sections.firstIndex(where: {
+            $0.id == SectionTag.productList.rawValue
+        }) else { return }
 
-        let updatedRow = GridFormRow(
+        let updatedRow = FeaturedDealsGridFormRow(
             tag: CellTag.productList.rawValue,
-            items: makeProductGridItems(),
-            numberOfColumns: 2,
-            useCollectionView: false
+            items: makeProductItems(),
+            columns: 2
         )
 
         var section = sections[sectionIndex]
         section.cells = [updatedRow]
         sections[sectionIndex] = section
+
         reloadSection(sectionIndex)
     }
 
@@ -168,51 +157,50 @@ final class ProductListingsViewModel: FormViewModel {
     }
 
     // MARK: - Builders
-    private func makeProductGridItems() -> [GridItemModel] {
-        let productsToShow = state.searchText.isEmpty ? state.products : state.filteredProducts
+    private func makeProductItems() -> [FeaturedDealItem] {
+        
+        let productsToShow = state.searchText.isEmpty
+            ? state.products
+            : state.filteredProducts
 
         return productsToShow.map { product in
-            GridItemModel(
+            
+            let imageUrl = product.primaryImageURL ?? ""
+
+            return FeaturedDealItem(
                 id: "\(product.id ?? 0)",
+                imageUrl: imageUrl,
                 image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
+                badgeText: nil,
                 title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: formattedPrice(for: product),
+                subtitle: product.description ?? "",
+                priceText: product.price != nil
+                    ? "$\(String(format: "%.2f", product.price!))"
+                    : "Price on request",
                 isFavorite: false,
                 onTap: { [weak self] in
                     self?.onTapProduct?(product)
                 },
-                onToggleFavorite: { [weak self] isFav in self?.onToggleFavorite?(isFav, product) }
+                onFavoriteToggle: { [weak self] isFav in
+                    self?.onFavoriteProductToggle?(isFav, product)
+                }
             )
         }
     }
 
-    private func formattedPrice(for product: ProductResponse) -> String? {
-        guard let price = product.price else { return nil }
-        return "$\(String(format: "%.2f", price))"
-    }
-
-    // MARK: - API Call
+    // MARK: - API
     private func loadProducts(reset: Bool) async -> Bool {
         do {
-            let response: [ProductResponse]
+            var response: [ProductResponseV1] = []
 
-            if let categoryId = state.categoryId { // ✅ Now using your service signature
-                print("📦 Fetching products for categoryId: \(categoryId), page \(state.currentPage)")
-                response = try await productService.getProductsByCategory(
+            if let categoryId = state.category?.id {
+                let result = try await productService.getProductsByCategory(
                     page: state.currentPage,
                     count: state.itemsPerPage,
-                    categoryId: categoryId,
+                    categoryId: "\(categoryId)",
                     accessToken: state.guestToken
                 )
-            } else {
-                print("📦 Fetching all products, page \(state.currentPage)")
-                response = try await productService.getAllProducts(
-                    page: state.currentPage,
-                    count: state.itemsPerPage,
-                    accessToken: state.guestToken
-                )
+                response = result.data
             }
 
             if reset {
@@ -223,17 +211,12 @@ final class ProductListingsViewModel: FormViewModel {
             }
 
             state.hasMorePages = response.count >= state.itemsPerPage
-            print("✅ Fetched page \(state.currentPage) (\(response.count) items)")
             return true
 
-        } catch let NetworkError.server(apiError) {
-            print("❌ Server error:", apiError.message ?? "")
-            showError(apiError.message ?? "Unknown server error")
         } catch {
-            print("❌ Unexpected error:", error.localizedDescription)
             showError(error.localizedDescription)
+            return false
         }
-        return false
     }
 
     // MARK: - Sections
@@ -245,7 +228,8 @@ final class ProductListingsViewModel: FormViewModel {
     }
 
     private func makeProductListSection() -> FormSection {
-        let title = state.categoryId == nil ? "All Products" : "Products in Category"
+        let title = state.category?.name ?? "All Products"
+
         return FormSection(
             id: SectionTag.productList.rawValue,
             title: title,
@@ -261,34 +245,30 @@ final class ProductListingsViewModel: FormViewModel {
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,
-            filterIcon: UIImage(systemName: "slider.horizontal.3"),
-            didTapSearchIcon: { print("🔍 Search tapped") },
-            didTapFilterIcon: { print("⚙️ Filter tapped") }
+            filterIcon: nil
         )
     )
 
-    private lazy var productGridRow = GridFormRow(
+    private lazy var productGridRow = FeaturedDealsGridFormRow(
         tag: CellTag.productList.rawValue,
-        items: makeProductGridItems(),
-        numberOfColumns: 2,
-        useCollectionView: false
+        items: makeProductItems(),
+        columns: 2
     )
 
     // MARK: - State
     private struct State {
-        
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
-        var products: [ProductResponse] = []
-        var filteredProducts: [ProductResponse] = []
+
+        var products: [ProductResponseV1] = []
+        var filteredProducts: [ProductResponseV1] = []
+
         var currentPage: Int = 1
         var itemsPerPage: Int = 20
         var hasMorePages: Bool = true
         var isLoadingMore: Bool = false
+
         var searchText: String = ""
-        var categoryId: String? = nil // ✅ Changed type to match service
+        var category: CommodityCategoryResponse? = nil
     }
 
     // MARK: - Tags
@@ -302,4 +282,3 @@ final class ProductListingsViewModel: FormViewModel {
         case productList = 2
     }
 }
-

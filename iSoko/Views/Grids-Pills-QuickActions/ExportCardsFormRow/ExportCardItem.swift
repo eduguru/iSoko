@@ -12,7 +12,8 @@ public struct ExportCardItem {
     public let title: String
     public let subtitle: String?
     public let icon: UIImage?
-    public let images: [UIImage?] // max 4 images
+    public let imageUrls: [String]   // ✅ NEW (remote images)
+    public let images: [UIImage?]    // fallback/local
     public let onTap: (() -> Void)?
 
     public init(
@@ -20,6 +21,7 @@ public struct ExportCardItem {
         title: String,
         subtitle: String? = nil,
         icon: UIImage? = nil,
+        imageUrls: [String] = [],   // ✅ NEW
         images: [UIImage?] = [],
         onTap: (() -> Void)? = nil
     ) {
@@ -27,6 +29,7 @@ public struct ExportCardItem {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
+        self.imageUrls = imageUrls
         self.images = images
         self.onTap = onTap
     }
