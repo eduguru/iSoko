@@ -35,6 +35,8 @@ final class HomeViewModel: FormViewModel {
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
     private let associationsService = NetworkEnvironment.shared.associationsService
     
+    let countryHelper = CountryHelper()
+    
     // MARK: - State
     private var state: State?
     
@@ -54,7 +56,7 @@ final class HomeViewModel: FormViewModel {
             async let _ = fetchDataType(.featuredServices)
             async let _ = fetchDataType(.productCategories)
             async let _ = fetchDataType(.serviceCategories)
-            async let _ = fetchDataType(.associations)   // 👈 NEW
+            async let _ = fetchDataType(.associations)
             
             _ = await ((), (), (), (), ())
             
@@ -309,17 +311,17 @@ final class HomeViewModel: FormViewModel {
         reloadSection(sectionIndex)
     }
     
-    
     private func updateTrendingServicesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingServices.rawValue }) else {
             return
         }
-        let updatedRow = GridFormRow(
+        
+        let updatedRow = FeaturedDealsGridFormRow(
             tag: Tags.Cells.trendingServices.rawValue,
-            items: makeTrendingServiceItems(),
-            numberOfColumns: 2,
-            useCollectionView: false
+            items: makeTrendingServiceItemsForFeaturedGrid(),
+            columns: 2
         )
+        
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
@@ -400,14 +402,38 @@ final class HomeViewModel: FormViewModel {
         columns: 2
     )
     
-    lazy var trendingServices = GridFormRow(
+    lazy var trendingServices = FeaturedDealsGridFormRow(
         tag: Tags.Cells.trendingServices.rawValue,
-        items: makeTrendingServiceItems(),
-        numberOfColumns: 2,
-        useCollectionView: false
+        items: makeTrendingServiceItemsForFeaturedGrid(),
+        columns: 2
     )
     
     // MARK: - Item Builders
+    
+    private func makeTrendingServiceItemsForFeaturedGrid() -> [FeaturedDealItem] {
+        return state?.featuredServices.map { service in
+            
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "") ?? "$"
+            let priceText = service.price != nil ? "\(currency) \(String(format: "%.2f", service.price!))" : "Price on request"
+            
+            return FeaturedDealItem(
+                id: "\(service.id ?? 0)",
+                imageUrl: service.primaryImage ?? "",
+                image: UIImage(named: "blank_rectangle"),
+                badgeText: nil,
+                title: service.name ?? "Unnamed Service",
+                subtitle: service.traderName ?? "",
+                priceText: priceText,
+                isFavorite: false,
+                onTap: { [weak self] in
+                    self?.onTapService?(service)
+                },
+                onFavoriteToggle: { [weak self] isFav in
+                    self?.onFavoriteServiceToggle?(isFav, service)
+                }
+            )
+        } ?? []
+    }
 
     private func makeProductCategoryItems() -> [QuickActionItem] {
         let count = min(state?.productCategories.count ?? 0, 5)
@@ -453,6 +479,7 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredProducts.map { product in
             
             let imageUrl = product.primaryImageURL ?? ""
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "") ?? "$"
             
             return FeaturedDealItem(
                 id: "\(product.id ?? 0)",
@@ -462,7 +489,7 @@ final class HomeViewModel: FormViewModel {
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.description ?? "",
                 priceText: product.price != nil
-                ? "$\(String(format: "%.2f", product.price!))"
+                ? "\(currency) \(String(format: "%.2f", product.price!))"
                 : "Price on request",
                 isFavorite: false,
                 onTap: { [weak self] in

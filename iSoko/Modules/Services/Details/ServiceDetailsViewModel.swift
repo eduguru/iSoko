@@ -14,160 +14,118 @@ final class ServiceDetailsViewModel: FormViewModel {
 
     private var state: State
 
+    // MARK: - Callbacks
+    var onServiceTap: ((TradeServiceResponse) -> Void)?
+    var onToggleFavorite: ((TradeServiceResponse, Bool) -> Void)?
+
     // MARK: - Services
     private let servicesService = NetworkEnvironment.shared.servicesService
-    
-    
-    init(_ product: TradeServiceResponse) {
-        self.state = State(product: product)
+
+    // MARK: - Init
+    init(_ service: TradeServiceResponse) {
+        self.state = State(service: service)
         super.init()
-        
         self.sections = makeSections()
     }
-    
+
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let productsSuccess = await fetchProductItems()
-            
-            if !productsSuccess {
-                print("⚠️ Failed to fetch one or product types.")
+            let success = await fetchServiceItems()
+            if !success {
+                print("⚠️ Failed to fetch similar services.")
             }
-            
             DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                self.updateMoreProductsFromSellerSection()
-                self.updateSimilarProductsSection()
+                self?.updateSimilarServicesSection()
             }
         }
     }
 
-    // MARK: - makeSections
-    
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
-        let images = prepareProductImages()
-
+        let images = prepareServiceImages()
         return [
-            FormSection(id: Tags.Section.productImages.rawValue, cells: [
-                ProductImageGalleryRow(
-                    tag: Tags.Cells.productImages.rawValue,
-                    config: ProductImageGalleryConfig(
-                        images: images,
-                        imageHeight: 140
-                    )
-                ),
-                categotyTitleRow,
-                priceRow,
-                descriptionRow,
-                minimumQuantityRow
-            ]),
-            moreProductsFromSellerSection(),
-            similarProductsSection()
-            
+            FormSection(
+                id: Tags.Section.serviceImages.rawValue,
+                cells: [
+                    ProductImageGalleryRow(
+                        tag: Tags.Cells.serviceImages.rawValue,
+                        config: ProductImageGalleryConfig(images: images, imageHeight: 140)
+                    ),
+                    categoryTitleRow,
+                    minimumQuantityRow,
+                    descriptionRow,
+                    quantityRow,
+                    makeConfirmButtonRow(),
+                    storeProfileRow
+                ]
+            ),
+            similarServicesSection()
         ]
     }
-    
-    private func moreProductsFromSellerSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.moreFromThisSeller.rawValue,
-            title: "More From This Seller",
-            cells: [moreFromThisSellerFormRow]
-        )
-    }
-    
-    private func similarProductsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.similarProducts.rawValue,
+
+    private func similarServicesSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.similarServices.rawValue,
             title: "Similar Services",
-            cells: [similarProductsFormRow]
+            cells: [similarServicesFormRow]
         )
     }
-    
-    private func updateMoreProductsFromSellerSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.moreFromThisSeller.rawValue }) else {
-            return
-        }
 
-        let updatedRow = HorizontalGridFormRow(
-            tag: Tags.Section.moreFromThisSeller.rawValue,
-            items: makeMoreFromSellerGridItems()
-        )
-
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-
-    private func updateSimilarProductsSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.similarProducts.rawValue }) else {
-            return
-        }
-
-        let updatedRow = HorizontalGridFormRow(
-            tag: Tags.Section.similarProducts.rawValue,
-            items: makeSimilarProductsGridItems()
-        )
-
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-
-    // MARK: - Image Preparation
-    
-    private func prepareProductImages() -> [ProductImage] {
-        var imageSet: [ProductImage] = []
-
-        // Add primary image if valid
-        if let primary = state.product.primaryImage,
-           let primaryUrl = URL(string: primary) {
-            imageSet.append(ProductImage(url: primaryUrl, isFeatured: true))
-        }
-
-        // Add other images (excluding duplicates and primary)
-        let otherImages = (state.product.images ?? [])
-            .compactMap { URL(string: $0) }
-            .filter { url in
-                // Avoid duplicates (basic check)
-                !imageSet.contains(where: { $0.url == url })
-            }
-            .map { url in
-                ProductImage(url: url, isFeatured: false)
-            }
-
-        imageSet.append(contentsOf: otherImages)
-
-        // Fallback to placeholder if none exist
-        return imageSet.isEmpty ? placeholderImages() : imageSet
-    }
-    
-    private func placeholderImages() -> [ProductImage] {
-        return [
-            ProductImage(
-                url: URL(string: "https://via.placeholder.com/600x400?text=No+Image")!,
-                isFeatured: true
+    private func updateSimilarServicesSection() {
+        guard let index = sections.firstIndex(where: { $0.id == Tags.Section.similarServices.rawValue }) else { return }
+        sections[index].cells = [
+            HorizontalGridFormRow(
+                tag: Tags.Section.similarServices.rawValue,
+                items: makeSimilarServicesGridItems()
             )
         ]
+        reloadSection(index)
+    }
+
+    // MARK: - Image Handling
+    private func prepareServiceImages() -> [ProductImage] {
+        var images: [ProductImage] = []
+
+        if let primary = state.service.primaryImage, let url = URL(string: primary) {
+            images.append(ProductImage(url: url, isFeatured: true))
+        }
+
+        let otherImages = (state.service.images ?? [])
+            .compactMap { URL(string: $0) }
+            .filter { url in !images.contains(where: { $0.url == url }) }
+            .map { ProductImage(url: $0, isFeatured: false) }
+
+        images.append(contentsOf: otherImages)
+        return images.isEmpty ? placeholderImages() : images
+    }
+
+    private func placeholderImages() -> [ProductImage] {
+        [ProductImage(url: URL(string: "https://via.placeholder.com/600x400?text=No+Image")!, isFeatured: true)]
     }
 
     // MARK: - Lazy Rows
-
-    lazy var categotyTitleRow: FormRow = makeCategotyTitleRow()
-    lazy var priceRow: FormRow = makePriceRow()
+    lazy var categoryTitleRow: FormRow = makeCategoryTitleRow()
     lazy var descriptionRow: FormRow = makeDescriptionRow()
     lazy var minimumQuantityRow: FormRow = makeMinimumQuantityRow()
+    lazy var storeProfileRow: FormRow = makeStoreProfileRow()
+    lazy var quantityRow: FormRow = QuantityFormRow(
+        tag: 500,
+        title: "Quantity",
+        initialValue: 1
+    ) { value in
+        print("Quantity changed: \(value)")
+    }
 
-    private func makeCategotyTitleRow() -> FormRow {
+    private lazy var similarServicesFormRow = HorizontalGridFormRow(tag: 300, items: [])
+
+    // MARK: - Row Builders
+    private func makeCategoryTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
-            title: "\(state.product.categoryName ?? "")",
-            description: "\(state.product.name ?? "")",
+            title: state.service.categoryName ?? "",
+            description: state.service.name ?? "Unnamed Service",
             maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .title,
@@ -175,193 +133,142 @@ final class ServiceDetailsViewModel: FormViewModel {
         )
     }
 
-    private func makePriceRow() -> FormRow {
-        TitleDescriptionFormRow(
-            tag: Tags.Cells.price.rawValue,
-            title: "Price: \(state.product.price ?? 0.0) / \(state.product.measurementUnit ?? "unit")",
-            description: "",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .callout,
-            descriptionFontStyle: .headline
-        )
-    }
-    
     private func makeDescriptionRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
-            title: "\(state.product.description ?? "")",
+            title: state.service.description ?? "No description available",
             description: "",
             maxTitleLines: 20,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
         )
     }
-    
+
     private func makeMinimumQuantityRow() -> FormRow {
-        let price = state.product.price ?? 0.0
-        let minimumOrderQuantity = state.product.minimumOrderQuantity ?? 0
-        
-        return TitleDescriptionFormRow(
-            tag: Tags.Cells.categories.rawValue,
-            title: "Min Qty: \(minimumOrderQuantity)",
-            description: "Min Amt: \(Double(minimumOrderQuantity) * price)",
-            maxTitleLines: 20,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .footnote,
-            descriptionFontStyle: .caption
+        let minQty = state.service.minimumOrderQuantity ?? 1
+        let price = state.service.price ?? 0.0
+        let model = ProductSummaryModel(
+            title: state.service.name ?? "Unnamed Service",
+            rating: 0,
+            reviewCount: 0,
+            location: state.service.traderName ?? "",
+            priceText: state.service.price != nil ? "KES \(String(format: "%.2f", price)) / \(state.service.measurementUnit ?? "unit")" : "Price on request",
+            oldPriceText: nil,
+            discountText: minQty > 1 ? "Min Qty: \(minQty)" : nil
+        )
+        return ProductSummaryRow(tag: 101, model: model)
+    }
+
+    private func makeStoreProfileRow() -> FormRow {
+        let traderName = state.service.traderName ?? "Seller"
+        return StoreProfileCardRow(
+            tag: 400,
+            config: StoreProfileCardConfig(
+                image: .blankRectangle,
+                title: traderName,
+                verifiedImage: nil,
+                badges: [],
+                trailingButtonTitle: "View Store",
+                onTrailingButtonTap: { print("Go to seller: \(traderName)") },
+                actions: [
+                    .init(title: "WhatsApp", image: UIImage(systemName: "message.fill"), handler: { print("WhatsApp tapped") }),
+                    .init(title: "Call", image: UIImage(systemName: "phone.fill"), handler: { print("Call tapped") }),
+                    .init(title: "Email", image: UIImage(systemName: "envelope.fill"), handler: { print("Email tapped") })
+                ],
+                cornerRadius: 20,
+                backgroundColor: .systemBackground,
+                borderColor: .systemGray5,
+                borderWidth: 1
+            )
         )
     }
-    
-    private lazy var moreFromThisSellerFormRow = HorizontalGridFormRow(
-        tag: 300,
-        items: []
-    )
-    
-    private lazy var similarProductsFormRow = HorizontalGridFormRow(
-        tag: 300,
-        items: []
-    )
-    
-    // MARK: - Builders
 
-    private func makeMoreFromSellerGridItems() -> [GridItemModel] {
-        return state.moreOwnerProducts.map { product in
+    private func makeConfirmButtonRow() -> FormRow {
+        ButtonFormRow(
+            tag: 1001,
+            model: ButtonFormModel(
+                title: "Place Order",
+                style: .primary,
+                size: .large,
+                icon: nil,
+                fontStyle: .headline,
+                hapticsEnabled: true
+            ) { print("Place order tapped") }
+        )
+    }
+
+    // MARK: - Grid Items with Callbacks
+    private func makeSimilarServicesGridItems() -> [GridItemModel] {
+        state.similarService.map { service in
             GridItemModel(
-                id: "\(product.id ?? 0)",
+                id: "\(service.id ?? 0)",
                 image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
+                imageUrl: service.primaryImage ?? "",
+                title: service.name ?? "Unnamed Service",
+                subtitle: service.traderName ?? "",
+                price: service.price != nil ? "KES \(String(format: "%.2f", service.price!))" : nil,
                 isFavorite: false,
                 onTap: { [weak self] in
-                    guard let self = self else { return }
-                    // You can emit a callback here if needed
-                    print("Tapped product from same seller: \(product.name ?? "")")
+                    self?.onServiceTap?(service)
                 },
-                onToggleFavorite: { isFav in
-                    print("Favorite toggled (\(isFav)) for product: \(product.name ?? "")")
+                onToggleFavorite: { [weak self] fav in
+                    self?.onToggleFavorite?(service, fav)
                 }
             )
         }
     }
 
-    private func makeSimilarProductsGridItems() -> [GridItemModel] {
-        return state.similarProduct.map { product in
-            GridItemModel(
-                id: "\(product.id ?? 0)",
-                image: UIImage(named: "blank_rectangle"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Product",
-                subtitle: product.traderName ?? "",
-                price: product.price != nil ? "$\(String(format: "%.2f", product.price!))" : nil,
-                isFavorite: false,
-                onTap: { [weak self] in
-                    guard let self = self else { return }
-                    print("Tapped similar product: \(product.name ?? "")")
-                },
-                onToggleFavorite: { isFav in
-                    print("Favorite toggled (\(isFav)) for similar product: \(product.name ?? "")")
-                }
-            )
-        }
+    // MARK: - Network
+    private func fetchServiceItems() async -> Bool {
+        return await fetchData(type: .similarService)
     }
 
-    
-    //MARK: - Network Calls -
-    private func fetchProductItems() async -> Bool {
-        async let moreOwnerProducts = fetchData(type: .moreOwnerProducts)
-        async let similarProduct = fetchData(type: .similarProduct)
-
-        let results = await [moreOwnerProducts, similarProduct]
-        return results.allSatisfy { $0 }
-    }
-    
     @discardableResult
     private func fetchData(type: RequestDataType) async -> Bool {
         do {
             switch type {
-            case .moreOwnerProducts:
-                let traderId = state.product.categoryId ?? 0
-                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
-                self.state.moreOwnerProducts = response
-                print("✅ Fetched Featured Products")
-
-            case .similarProduct:
-                let traderId = state.product.categoryId ?? 0
-                let response = try await servicesService.getTradeServicesByCategory(page: 1, count: 10, categoryId: "\(traderId)", accessToken: state.guestToken)
-                self.state.similarProduct = response
-                print("✅ Fetched Featured Services")
+            case .similarService:
+                let categoryId = state.service.categoryId ?? 0
+                let response = try await servicesService.getTradeServicesByCategory(
+                    page: 1, count: 10, categoryId: "\(categoryId)", accessToken: state.guestToken
+                )
+                state.similarService = response
+                print("✅ Fetched similar services")
             }
-            
             return true
-
-        } catch let NetworkError.server(apiError) {
-            print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
-            print("❌ Unexpected Error in \(type):", error)
-        }
-        return false
-    }
-    
-    // MARK: - Data Types
-
-    private enum RequestDataType: CustomStringConvertible {
-        case similarProduct
-        case moreOwnerProducts
-
-        var description: String {
-            switch self {
-            case .similarProduct: return "Similar Products"
-            case .moreOwnerProducts: return "More from this Seller"
-            }
+            print("❌ Error fetching \(type):", error)
+            return false
         }
     }
 
     // MARK: - State
-
     private struct State {
-        
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
-        var isLoggedIn: Bool = true
-        var product: TradeServiceResponse
-        var similarProduct: [TradeServiceResponse] = []
-        var moreOwnerProducts: [TradeServiceResponse] = []
+        var service: TradeServiceResponse
+        var similarService: [TradeServiceResponse] = []
+    }
+
+    // MARK: - Request Type
+    private enum RequestDataType: CustomStringConvertible {
+        case similarService
+        var description: String { "Similar Services" }
     }
 
     // MARK: - Tags
-
     enum Tags {
         enum Section: Int {
-            case productImages = 0
+            case serviceImages = 0
             case titleAndDescription = 1
-            case price = 2
             case categories = 3
-            case similarProducts = 5
-            case moreFromThisSeller = 6
+            case similarServices = 5
         }
-
         enum Cells: Int {
-            case productImages = 0
+            case serviceImages = 0
             case titleAndDescription = 1
-            case price = 2
             case categories = 3
         }
     }

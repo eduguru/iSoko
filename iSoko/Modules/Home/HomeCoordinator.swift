@@ -37,13 +37,24 @@ public class HomeCoordinator: BaseCoordinator {
         navigationController?.pushViewController(primaryViewController(), animated: true)
     }
     
-    private  func goToProduct(_ product: ProductResponseV1) {
+    private func goToProduct(_ product: ProductResponseV1) {
         let viewModel = ProductDetailsViewModel(product)
         
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in 
+        vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
+        }
+        
+        // Set callbacks
+        viewModel.onProductTap = { [weak self] tappedProduct in
+            guard let self = self else { return }
+            // Create a new details screen for the tapped product
+            self.goToProduct(tappedProduct)
+        }
+        
+        viewModel.onToggleFavorite = { tappedProduct, isFav in
+            print("\(tappedProduct.name ?? "") favorite toggled: \(isFav)")
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
@@ -57,6 +68,25 @@ public class HomeCoordinator: BaseCoordinator {
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in 
             self?.router.pop(animated: true)
+        }
+        
+        viewModel.onServiceTap = { [weak self] service in
+            let newViewModel = ServiceDetailsViewModel(service)
+            let vc = ServiceDetailsViewController()
+            vc.viewModel = newViewModel
+            vc.closeAction = { [weak vc] in
+                vc?.navigationController?.popViewController(animated: true)
+            }
+
+            // Pass callbacks to the new VM if needed
+            newViewModel.onServiceTap = viewModel.onServiceTap
+            newViewModel.onToggleFavorite = viewModel.onToggleFavorite
+
+            self?.router.push(vc, animated: true)
+        }
+
+        viewModel.onToggleFavorite = { service, isFav in
+            print("\(service.name ?? "") favorite toggled: \(isFav)")
         }
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
@@ -112,9 +142,7 @@ public class HomeCoordinator: BaseCoordinator {
     }
     
     private func  onTapServiceCategory(_ item: TradeServiceCategoryResponse) {
-        let id = item.id ?? 0
-        
-        let viewModel = ServiceListingsViewModel(categoryId: "\(id)")
+        let viewModel = ServiceListingsViewModel(item: item)
         viewModel.onTapService = { [weak self] in
             self?.goToServiceDetails($0)
         }

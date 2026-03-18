@@ -11,6 +11,9 @@ import UtilsKit
 import StorageKit
 
 final class ProductDetailsViewModel: FormViewModel {
+    // MARK: - Callbacks
+    var onProductTap: ((ProductResponseV1) -> Void)?
+    var onToggleFavorite: ((ProductResponseV1, Bool) -> Void)?
     
     private var state: State
     
@@ -287,15 +290,15 @@ final class ProductDetailsViewModel: FormViewModel {
                 imageUrl: product.primaryImageURL ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderFullName ?? "",
-                price: product.price != nil
-                    ? "KES \(String(format: "%.2f", product.price!))"
-                    : nil,
+                price: product.price != nil ? "KES \(String(format: "%.2f", product.price!))" : nil,
                 isFavorite: false,
-                onTap: {
-                    print("Tapped: \(product.name ?? "")")
+                onTap: { [weak self] in
+                    guard let self = self else { return }
+                    self.onProductTap?(product)
                 },
-                onToggleFavorite: { fav in
-                    print("Favorite \(fav) for \(product.name ?? "")")
+                onToggleFavorite: { [weak self] fav in
+                    guard let self = self else { return }
+                    self.onToggleFavorite?(product, fav)
                 }
             )
         }

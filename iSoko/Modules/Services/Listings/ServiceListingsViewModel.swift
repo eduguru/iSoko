@@ -26,9 +26,9 @@ final class ServiceListingsViewModel: FormViewModel {
     private var searchDebounceTask: Task<Void, Never>? = nil
 
     // MARK: - Init
-    init(categoryId: String? = nil) { // ✅ Added initializer
+    init(item: TradeServiceCategoryResponse? = nil) {
         super.init()
-        self.state.categoryId = categoryId // ✅ store category
+        self.state.item = item
         self.sections = makeSections()
         setupSearchCallbacks()
     }
@@ -40,23 +40,22 @@ final class ServiceListingsViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await loadProducts(reset: true)
+            let success = await loadServices(reset: true)
             if !success {
                 showError("⚠️ Failed to fetch service listings.")
             }
             DispatchQueue.main.async { [weak self] in
-                self?.refreshProductListSection()
+                self?.refreshServiceListSection()
             }
         }
     }
 
     // MARK: - Refresh (Pull-to-Refresh)
     override func refresh() {
-        print("🔄 Refresh triggered")
         state.currentPage = 1
         state.hasMorePages = true
-        state.products.removeAll()
-        state.filteredProducts.removeAll()
+        state.services.removeAll()
+        state.filteredServices.removeAll()
         state.searchText = ""
         fetchData()
     }
@@ -69,12 +68,12 @@ final class ServiceListingsViewModel: FormViewModel {
         state.currentPage += 1
 
         Task {
-            let success = await loadProducts(reset: false)
+            let success = await loadServices(reset: false)
             state.isLoadingMore = false
 
             if success {
                 DispatchQueue.main.async { [weak self] in
-                    self?.refreshProductListSection()
+                    self?.refreshServiceListSection()
                 }
             } else {
                 state.hasMorePages = false
@@ -107,7 +106,7 @@ final class ServiceListingsViewModel: FormViewModel {
 
         searchDebounceTask = Task { [weak self] in
             do {
-                try await Task.sleep(nanoseconds: 300_000_000)
+                try await Task.sleep(nanoseconds: 300_000_000) // 0.3s debounce
             } catch { return }
             guard let self = self else { return }
             await self.applyLocalFilter(with: self.state.searchText)
@@ -117,40 +116,37 @@ final class ServiceListingsViewModel: FormViewModel {
     // MARK: - Local Filter (async)
     private func applyLocalFilter(with searchText: String) async {
         if searchText.isEmpty {
-            await MainActor.run { self.refreshProductListSection() }
+            await MainActor.run { self.refreshServiceListSection() }
             return
         }
 
         let lowercasedSearch = searchText.lowercased()
         let filtered = await withCheckedContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
-                let results = self.state.products.filter { product in
-                    (product.name?.lowercased().contains(lowercasedSearch) ?? false) ||
-                    (product.traderName?.lowercased().contains(lowercasedSearch) ?? false)
+                let results = self.state.services.filter { service in
+                    (service.name?.lowercased().contains(lowercasedSearch) ?? false) ||
+                    (service.traderName?.lowercased().contains(lowercasedSearch) ?? false)
                 }
                 continuation.resume(returning: results)
             }
         }
 
         await MainActor.run {
-            state.filteredProducts = filtered
-            self.refreshProductListSection()
+            self.state.filteredServices = filtered
+            self.refreshServiceListSection()
         }
     }
 
     // MARK: - Update Section
-    private func refreshProductListSection() {
+    private func refreshServiceListSection() {
         updateSearchRowText()
 
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.productList.rawValue }) else {
-            return
-        }
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.serviceList.rawValue }) else { return }
 
-        let updatedRow = GridFormRow(
-            tag: CellTag.productList.rawValue,
-            items: makeProductGridItems(),
-            numberOfColumns: 2,
-            useCollectionView: false
+        let updatedRow = FeaturedDealsGridFormRow(
+            tag: CellTag.serviceList.rawValue,
+            items: makeServiceGridItems(),
+            columns: 2
         )
 
         var section = sections[sectionIndex]
@@ -168,44 +164,40 @@ final class ServiceListingsViewModel: FormViewModel {
     }
 
     // MARK: - Builders
-    private func makeProductGridItems() -> [GridItemModel] {
-        let productsToShow = state.searchText.isEmpty ? state.products : state.filteredProducts
+    private func makeServiceGridItems() -> [FeaturedDealItem] {
+        let servicesToShow = state.searchText.isEmpty ? state.services : state.filteredServices
+        let currency = CountryHelper().currencyString(for: AppStorage.selectedRegion ?? "") ?? "$"
 
-        return productsToShow.map { product in
-            GridItemModel(
-                id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
-                imageUrl: product.primaryImage ?? "",
-                title: product.name ?? "Unnamed Service",
-                subtitle: product.traderName ?? "",
-                price: formattedPrice(for: product),
+        return servicesToShow.map { service in
+            let priceText = service.price != nil ? "\(currency) \(String(format: "%.2f", service.price!))" : "Price on request"
+            return FeaturedDealItem(
+                id: "\(service.id ?? 0)",
+                imageUrl: service.primaryImage ?? "",
+                image: UIImage.blankRectangle,
+                badgeText: nil,
+                title: service.name ?? "Unnamed Service",
+                subtitle: service.traderName ?? "",
+                priceText: priceText,
                 isFavorite: false,
-                onTap: { [weak self] in self?.onTapService?(product) },
-                onToggleFavorite: { [weak self] isFav in self?.onToggleFavorite?(isFav, product) }
+                onTap: { [weak self] in self?.onTapService?(service) },
+                onFavoriteToggle: { [weak self] isFav in self?.onToggleFavorite?(isFav, service) }
             )
         }
     }
 
-    private func formattedPrice(for product: TradeServiceResponse) -> String? {
-        guard let price = product.price else { return nil }
-        return "$\(String(format: "%.2f", price))"
-    }
-
     // MARK: - API Call
-    private func loadProducts(reset: Bool) async -> Bool {
+    private func loadServices(reset: Bool) async -> Bool {
         do {
             let response: [TradeServiceResponse]
 
-            if let categoryId = state.categoryId { // ✅ Category-based fetch
-                print("📦 Fetching services for categoryId: \(categoryId), page \(state.currentPage)")
+            if let categoryId = state.item?.id {
                 response = try await servicesService.getTradeServicesByCategory(
                     page: state.currentPage,
                     count: state.itemsPerPage,
-                    categoryId: categoryId,
+                    categoryId: "\(categoryId)",
                     accessToken: state.guestToken
                 )
             } else {
-                print("📦 Fetching all trade services, page \(state.currentPage)")
                 response = try await servicesService.getAllTradeServices(
                     page: state.currentPage,
                     count: state.itemsPerPage,
@@ -214,21 +206,18 @@ final class ServiceListingsViewModel: FormViewModel {
             }
 
             if reset {
-                state.products = response
-                state.filteredProducts.removeAll()
+                state.services = response
+                state.filteredServices.removeAll()
             } else {
-                state.products.append(contentsOf: response)
+                state.services.append(contentsOf: response)
             }
 
             state.hasMorePages = response.count >= state.itemsPerPage
-            print("✅ Fetched page \(state.currentPage) (\(response.count) items)")
             return true
 
         } catch let NetworkError.server(apiError) {
-            print("❌ Server error:", apiError.message ?? "")
             showError(apiError.message ?? "Unknown server error")
         } catch {
-            print("❌ Unexpected error:", error.localizedDescription)
             showError(error.localizedDescription)
         }
         return false
@@ -238,14 +227,14 @@ final class ServiceListingsViewModel: FormViewModel {
     private func makeSections() -> [FormSection] {
         [
             FormSection(id: SectionTag.search.rawValue, title: nil, cells: [searchRow]),
-            makeProductListSection()
+            makeServiceListSection()
         ]
     }
 
-    private func makeProductListSection() -> FormSection {
-        let title = state.categoryId == nil ? "All Services" : "Services in Category" // ✅ Dynamic title
+    private func makeServiceListSection() -> FormSection {
+        let title = state.item?.id == nil ? "All Services" : (state.item?.name ?? "Services in Category")
         return FormSection(
-            id: SectionTag.productList.rawValue,
+            id: SectionTag.serviceList.rawValue,
             title: title,
             cells: [productGridRow]
         )
@@ -265,38 +254,36 @@ final class ServiceListingsViewModel: FormViewModel {
         )
     )
 
-    private lazy var productGridRow = GridFormRow(
-        tag: CellTag.productList.rawValue,
-        items: makeProductGridItems(),
-        numberOfColumns: 2,
-        useCollectionView: false
+    private lazy var productGridRow = FeaturedDealsGridFormRow(
+        tag: CellTag.serviceList.rawValue,
+        items: makeServiceGridItems(),
+        columns: 2
     )
 
     // MARK: - State
     private struct State {
-        
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
-        var products: [TradeServiceResponse] = []
-        var filteredProducts: [TradeServiceResponse] = []
+
+        var services: [TradeServiceResponse] = []
+        var filteredServices: [TradeServiceResponse] = []
         var currentPage: Int = 1
         var itemsPerPage: Int = 20
         var hasMorePages: Bool = true
         var isLoadingMore: Bool = false
         var searchText: String = ""
-        var categoryId: String? = nil // ✅ Added
+        var item: TradeServiceCategoryResponse? = nil
     }
 
     // MARK: - Tags
     private enum SectionTag: Int {
         case search = 1
-        case productList = 2
+        case serviceList = 2
     }
 
     private enum CellTag: Int {
         case search = 1
-        case productList = 2
+        case serviceList = 2
     }
 }

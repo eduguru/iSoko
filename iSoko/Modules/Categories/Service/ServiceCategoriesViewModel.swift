@@ -191,7 +191,7 @@ final class ServiceCategoriesViewModel: FormViewModel {
         return productsToShow.map { product in
             ImageTitleGridItemModel(
                 id: "\(product.id ?? 0)",
-                image: UIImage(named: "logo"),
+                image: UIImage.blankRectangle,
                 imageUrl: product.imageUrl ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.description ?? "",
