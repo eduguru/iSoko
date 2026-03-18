@@ -24,11 +24,13 @@ final class CartItemCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
+        setupActions()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         setupUI()
+        setupActions()
     }
 
     private func setupUI() {
@@ -72,7 +74,6 @@ final class CartItemCell: UITableViewCell {
         deleteButton.setImage(UIImage(systemName: "trash"), for: .normal)
         deleteButton.tintColor = .systemRed
         deleteButton.translatesAutoresizingMaskIntoConstraints = false
-        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
 
         stepperView.translatesAutoresizingMaskIntoConstraints = false
         amountView.translatesAutoresizingMaskIntoConstraints = false
@@ -82,13 +83,12 @@ final class CartItemCell: UITableViewCell {
         bottomRow.spacing = 12
         bottomRow.alignment = .center
         bottomRow.translatesAutoresizingMaskIntoConstraints = false
-        cardView.addSubview(bottomRow)
 
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-        cardView.addSubview(container)
-        container.addSubview(bottomRow)
-        container.addSubview(deleteButton)
+        let bottomContainer = UIView()
+        bottomContainer.translatesAutoresizingMaskIntoConstraints = false
+        cardView.addSubview(bottomContainer)
+        bottomContainer.addSubview(bottomRow)
+        bottomContainer.addSubview(deleteButton)
 
         // MARK: - Constraints
         NSLayoutConstraint.activate([
@@ -109,57 +109,67 @@ final class CartItemCell: UITableViewCell {
             descriptionLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
 
             // Bottom row container
-            bottomRow.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            bottomRow.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 12),
-            bottomRow.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
+            bottomContainer.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 12),
+            bottomContainer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+            bottomContainer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+            bottomContainer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
+
+            // Bottom row
+            bottomRow.leadingAnchor.constraint(equalTo: bottomContainer.leadingAnchor, constant: 12),
+            bottomRow.centerYAnchor.constraint(equalTo: bottomContainer.centerYAnchor),
 
             // Delete button
             deleteButton.centerYAnchor.constraint(equalTo: bottomRow.centerYAnchor),
-            deleteButton.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
-            deleteButton.widthAnchor.constraint(equalToConstant: 24),
-            deleteButton.heightAnchor.constraint(equalToConstant: 24),
+            deleteButton.trailingAnchor.constraint(equalTo: bottomContainer.trailingAnchor, constant: -12),
+            deleteButton.widthAnchor.constraint(equalToConstant: 28),
+            deleteButton.heightAnchor.constraint(equalToConstant: 28),
 
             // Fixed widths
             stepperView.widthAnchor.constraint(equalToConstant: 120),
             amountView.widthAnchor.constraint(equalToConstant: 100)
         ])
-
-        // Stepper callback
-        stepperView.onValueChanged = { [weak self] value in
-            self?.viewModel?.updateQuantity(value)
-        }
     }
-    
+
+    private func setupActions() {
+        // Stepper
+        stepperView.onValueChanged = { [weak self] value in
+            guard let self = self else { return }
+            print("🔥 Stepper tapped, value: \(value)")
+            self.viewModel?.updateQuantity(value)
+        }
+
+        // Delete button
+        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
+    }
+
     func configure(with viewModel: CartItemViewModel) {
         self.viewModel = viewModel
 
-        // Set UI
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.subtitle
         priceLabel.text = viewModel.formattedTotal
         stepperView.value = viewModel.quantity
         amountView.setAmount(viewModel.formattedTotal)
 
-        // MARK: - Stepper callback
-        stepperView.onValueChanged = { [weak self] value in
-            // This is the ONLY place user taps propagate to the view model
-            self?.viewModel?.updateQuantity(value)
-        }
-
-        // MARK: - ViewModel updates
+        // Update UI on ViewModel changes
         viewModel.onUpdate = { [weak self] vm in
             guard let self = self else { return }
+            print("💠 ViewModel updated quantity to \(vm.quantity)")
 
             self.priceLabel.text = vm.formattedTotal
             self.amountView.setAmount(vm.formattedTotal)
 
-            // Update stepper if it differs
+            // Only update stepper if different to avoid loops
             if self.stepperView.value != vm.quantity {
                 self.stepperView.value = vm.quantity
             }
         }
+
+        viewModel.onDelete = { vm in
+            print("💥 Delete tapped for \(vm.title)")
+        }
     }
-    
+
     @objc private func deleteTapped() {
         viewModel?.delete()
     }
