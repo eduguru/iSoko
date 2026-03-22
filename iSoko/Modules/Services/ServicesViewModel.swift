@@ -14,7 +14,8 @@ final class ServicesViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var onTapMoreServices: (() -> Void)?
-    var onTapService: ((TradeServiceResponse) -> Void)?
+    var onTapTradeService: ((ServiceProviderResponse) -> Void)?
+    var onTapLogisticsService: ((LogisitcisServiceProviderResponse) -> Void)?
 
     // MARK: - Services
     private let servicesService = NetworkEnvironment.shared.servicesService
@@ -33,12 +34,11 @@ final class ServicesViewModel: FormViewModel {
         showLoader()
 
         Task {
-            async let featured = fetchDataType(.featuredServices)
             async let types = fetchDataType(.serviceProviderTypes)
             async let providers = fetchDataType(.serviceProviders)
             async let logistics = fetchDataType(.logisticsServiceProviders)
 
-            _ = await [featured, types, providers, logistics]
+            _ = await [types, providers, logistics]
 
             DispatchQueue.main.async { [weak self] in
                 self?.reloadBodySection()
@@ -52,14 +52,6 @@ final class ServicesViewModel: FormViewModel {
     private func fetchDataType(_ type: FetchDataType) async -> Bool {
         do {
             switch type {
-
-            case .featuredServices:
-                let response = try await servicesService.getFeaturedTradeServices(
-                    page: 1,
-                    count: 20,
-                    accessToken: state.guestToken
-                )
-                state.featuredServices = response
 
             case .serviceProviderTypes:
                 let response = try await servicesService.getServiceProviderTypes(
@@ -183,27 +175,6 @@ final class ServicesViewModel: FormViewModel {
     }
 
     // MARK: - Grid Builders (ALL SEGMENTS)
-
-    private func makeFeaturedServicesCells() -> [FormRow] {
-        [makeGridRow(items: state.featuredServices.map { service in
-            GridItemModel(
-                id: "\(service.id ?? 0)",
-                image: UIImage(named: "blank_rectangle"),
-                imageUrl: service.primaryImage ?? "",
-                title: service.name ?? "Unnamed",
-                subtitle: service.traderName ?? "",
-                price: service.price != nil
-                    ? "$\(String(format: "%.2f", service.price!))"
-                    : nil,
-                isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapService?(service)
-                },
-                onToggleFavorite: { _ in }
-            )
-        })]
-    }
-
     private func makeServiceProvidersCells() -> [FormRow] {
         [makeGridRow(items: state.serviceProviders.map { provider in
             GridItemModel(
@@ -214,8 +185,8 @@ final class ServicesViewModel: FormViewModel {
                 subtitle: provider.description ?? "",
                 price: nil,
                 isFavorite: false,
-                onTap: {
-                    print("Tapped provider")
+                onTap: { [weak self] in
+                    self?.onTapTradeService?(provider)
                 },
                 onToggleFavorite: { _ in }
             )
@@ -232,8 +203,8 @@ final class ServicesViewModel: FormViewModel {
                 subtitle: provider.locationName ?? "",
                 price: nil,
                 isFavorite: false,
-                onTap: {
-                    print("Tapped logistics")
+                onTap: { [weak self] in
+                    self?.onTapLogisticsService?(provider)
                 },
                 onToggleFavorite: { _ in }
             )
@@ -257,9 +228,9 @@ final class ServicesViewModel: FormViewModel {
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         var selectedSegmentIndex: Int = 0
 
-        var featuredServices: [TradeServiceResponse] = []
         var serviceProviderTypes: [ServiceProviderTypesResponse] = []
         var serviceProviders: [ServiceProviderResponse] = []
+        
         var logisticsServiceProviders: [LogisitcisServiceProviderResponse] = []
     }
 
@@ -280,14 +251,12 @@ final class ServicesViewModel: FormViewModel {
     // MARK: - Data Types
 
     private enum FetchDataType: CustomStringConvertible {
-        case featuredServices
         case serviceProviderTypes
         case serviceProviders
         case logisticsServiceProviders
 
         var description: String {
             switch self {
-            case .featuredServices: return "Featured Services"
             case .serviceProviderTypes: return "Service Provider Types"
             case .serviceProviders: return "Service Providers"
             case .logisticsServiceProviders: return "Logistics Providers"

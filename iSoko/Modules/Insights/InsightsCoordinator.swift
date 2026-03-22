@@ -23,11 +23,11 @@ public class InsightsCoordinator: BaseCoordinator {
     }
     
     public override func start() {
-        navigationController?.pushViewController(primaryViewController(), animated: true)
+        router.setRoot(primaryViewController())
     }
     
     
-    public func dismiss() {
+    private func dismiss() {
         dismissModal()
     }
 }

@@ -19,6 +19,7 @@ final class MoreViewModel: FormViewModel {
     var gotoLegal: (() -> Void)? = { }
     var gotoSettings: (() -> Void)? = { }
     var gotoHelpFeedback: (() -> Void)? = { }
+    var showAuthSheet: (() -> Void)?
 
     private var state: State
 

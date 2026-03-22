@@ -26,6 +26,10 @@ public class MoreCoordinator: BaseCoordinator {
         model.gotoSettings = gotoSettings
         model.gotoHelpFeedback = gotoHelpFeedback
         
+        model.showAuthSheet = { [weak self] in
+            self?.presentAuthBottomSheet()
+        }
+        
         let controller = MoreViewController()
         controller.makeRoot = true
         controller.viewModel = model
@@ -36,12 +40,12 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     public override func start() {
-        router.push(primaryViewController())
-        // navigationController?.pushViewController(primaryViewController(), animated: true)
+        // router.push(primaryViewController())
+        router.setRoot(primaryViewController())
     }
     
     
-    public func dismiss() {
+    private func dismiss() {
         dismissModal()
     }
     
@@ -70,19 +74,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoProfile() {
         guard AppStorage.hasLoggedIn == true else {
-            // PendingActionManager.shared.set { [weak self] in self?.showProfile() }
-            guard let topVC = router.topViewController() else { return }
-            
-            AuthBottomSheet.present(
-                from: topVC,
-                onLogin: { [weak self] in
-                    self?.showLoginFlow()
-                },
-                onGuest: {
-                    RuntimeSession.authState = .guest
-                    AppStorage.hasLoggedIn = false
-                }
-            )
+            presentAuthBottomSheet()
             return
         }
         
@@ -103,19 +95,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func goToEditProfile() {
         guard AppStorage.hasLoggedIn == true else {
-            // PendingActionManager.shared.set { [weak self] in self?.showProfile() }
-            guard let topVC = router.topViewController() else { return }
-            
-            AuthBottomSheet.present(
-                from: topVC,
-                onLogin: { [weak self] in
-                    self?.showLoginFlow()
-                },
-                onGuest: {
-                    RuntimeSession.authState = .guest
-                    AppStorage.hasLoggedIn = false
-                }
-            )
+            presentAuthBottomSheet()
             return
         }
         
@@ -133,19 +113,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoOrganisations() {
         guard AppStorage.hasLoggedIn == true else {
-            // PendingActionManager.shared.set { [weak self] in self?.showProfile() }
-            guard let topVC = router.topViewController() else { return }
-            
-            AuthBottomSheet.present(
-                from: topVC,
-                onLogin: { [weak self] in
-                    self?.showLoginFlow()
-                },
-                onGuest: {
-                    RuntimeSession.authState = .guest
-                    AppStorage.hasLoggedIn = false
-                }
-            )
+            presentAuthBottomSheet()
             return
         }
         
@@ -165,19 +133,7 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func gotoTradeAssociations() {
         guard AppStorage.hasLoggedIn == true else {
-            // PendingActionManager.shared.set { [weak self] in self?.showProfile() }
-            guard let topVC = router.topViewController() else { return }
-            
-            AuthBottomSheet.present(
-                from: topVC,
-                onLogin: { [weak self] in
-                    self?.showLoginFlow()
-                },
-                onGuest: {
-                    RuntimeSession.authState = .guest
-                    AppStorage.hasLoggedIn = false
-                }
-            )
+            presentAuthBottomSheet()
             return
         }
         
@@ -197,19 +153,7 @@ public class MoreCoordinator: BaseCoordinator {
     @MainActor
     private func gotoMyOrders() {
         guard AppStorage.hasLoggedIn == true else {
-            // PendingActionManager.shared.set { [weak self] in self?.showProfile() }
-            guard let topVC = router.topViewController() else { return }
-            
-            AuthBottomSheet.present(
-                from: topVC,
-                onLogin: { [weak self] in
-                    self?.showLoginFlow()
-                },
-                onGuest: {
-                    RuntimeSession.authState = .guest
-                    AppStorage.hasLoggedIn = false
-                }
-            )
+            presentAuthBottomSheet()
             return
         }
         
@@ -275,5 +219,20 @@ public class MoreCoordinator: BaseCoordinator {
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    private func presentAuthBottomSheet() {
+        guard let topVC = router.topViewController() else { return }
+        
+        AuthBottomSheet.present(
+            from: topVC,
+            onLogin: { [weak self] in
+                self?.showLoginFlow()
+            },
+            onGuest: {
+                RuntimeSession.authState = .guest
+                AppStorage.hasLoggedIn = false
+            }
+        )
     }
 }

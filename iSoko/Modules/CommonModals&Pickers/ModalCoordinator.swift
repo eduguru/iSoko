@@ -83,7 +83,7 @@ public class ModalCoordinator: BaseCoordinator {
         presentModal(modalVC)
     }
 
-    public func dismiss() {
+    private func dismiss() {
         dismissModal()
     }
 }

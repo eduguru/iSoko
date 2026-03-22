@@ -34,7 +34,7 @@ public class HomeCoordinator: BaseCoordinator {
     }
     
     public override func start() {
-        navigationController?.pushViewController(primaryViewController(), animated: true)
+        router.setRoot(primaryViewController())
     }
     
     private func goToProduct(_ product: ProductResponseV1) {
@@ -202,7 +202,7 @@ public class HomeCoordinator: BaseCoordinator {
         dismiss()
     }
     
-    public func dismiss() {
+    private func dismiss() {
         dismissModal()
     }
 }

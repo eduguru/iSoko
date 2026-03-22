@@ -573,14 +573,32 @@ class AuthCoordinator: BaseCoordinator {
         
     }
     
+//    private func goToMainTabs() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            let router = Router(navigationController: navigationController)
+//            let cordinator = MainCoordinator(router: router)
+//            addChild(cordinator)
+//            cordinator.start()
+//        }
+//    }
+    
     private func goToMainTabs() {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            let router = Router(navigationController: navigationController)
-            let cordinator = MainCoordinator(router: router)
-            addChild(cordinator)
-            cordinator.start()
+
+            // 1. Reuse the current root navigation controller
+            let router = Router(navigationController: self.router.navigationControllerInstance)
+
+            // 2. Create MainCoordinator using the same nav
+            let mainCoordinator = MainCoordinator(router: router)
+
+            // 3. Retain coordinator to prevent deinit
+            self.addChild(mainCoordinator)
+
+            // 4. Start flow
+            mainCoordinator.start()
         }
     }
 }

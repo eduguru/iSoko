@@ -195,7 +195,7 @@ public class BookKeepingCoordinator: BaseCoordinator {
         router.push(vc)
     }
     
-    public func dismiss() {
+    private func dismiss() {
         dismissModal()
     }
     
