@@ -1,6 +1,6 @@
 //
 //  BookKeepingStockViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/01/2026.
 //
@@ -8,17 +8,74 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class BookKeepingStockViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+    var goToDetails: (() -> Void)? = { }
     
     private var state = State()
-
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
     override init() {
         super.init()
         self.sections = makeSections()
     }
-
+    
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await fetchItems()
+            
+            if !success {
+                print("⚠️ Failed to fetch product data")
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    
+    private func fetchItems() async -> Bool {
+        async let similar = performNetworkRequest()
+        let results = await [similar]
+        return results.allSatisfy { $0 }
+    }
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.getAllStock(
+                userId: state.userProfile?.sub ?? 0,
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+            
+            state.items = response.data
+            
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    private func updateRecentActivitiesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.recentActivities.rawValue
+        }) else { return }
+        
+        sections[index].cells = makeTransactionActionRows()
+        
+        reloadSection(index)
+    }
+    
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
@@ -26,7 +83,7 @@ final class BookKeepingStockViewModel: FormViewModel {
             makeRecentActivitiesSection()
         ]
     }
-
+    
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
@@ -42,7 +99,7 @@ final class BookKeepingStockViewModel: FormViewModel {
     }
     
     // MARK: - Update Sections -
-
+    
     // MARK: - Lazy Rows
     private lazy var searchRow = makeSearchRow()
     
@@ -63,50 +120,56 @@ final class BookKeepingStockViewModel: FormViewModel {
     
     // Lazy factory that creates rows
     func makeTransactionActionRows() -> [FormRow] {
-        (0..<10).map { index in
-
-            let hasActions = index.isMultiple(of: 2)
-
+        return state.items.enumerated().map { index, item in
+            
+            let isInStock = item.inStock
+            let unit = item.measurementUnit?.name ?? ""
+            
             let config = TransactionActionsCellConfig(
-                title: "Paper Cups \(index + 1)",
-                subtitle: "\(index + 1) packs available",
-                amount: "$\(Int.random(in: 10...250)).00",
+                title: item.name,
+                subtitle: "\(item.minimumOrderQuantity) \(unit) available",
+                amount: "Ksh \(Int(item.price))",
                 amountColor: .label,
-                status: "",
-                statusColor: .app(.hex("#717171")),
-                primaryAction: hasActions
-                    ? ActionCardConfig(
-                        title: "View details",
-                        icon: UIImage(systemName: "creditcard"),
-                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .app(.hex("#656C7A")),
-                        onTap: {
-                            print("Pay tapped on row \(index)")
-                        }
-                    )
-                    : nil,
-                secondaryAction: hasActions
-                    ? InlineActionConfig(
-                        title: "Edit",
-                        icon: UIImage(systemName: "pencil"),
-                        onTap: {
-                            print("Edit tapped on row \(index)")
-                        }
-                    )
-                    : nil
+                status: isInStock ? "In Stock" : "Out of Stock",
+                statusColor: isInStock ? .systemGreen : .systemRed,
+                
+                primaryAction: ActionCardConfig(
+                    title: "View details",
+                    icon: UIImage(systemName: "eye"),
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    textColor: .app(.hex("#656C7A")),
+                    onTap: { [weak self] in
+                        self?.goToDetails?()
+                        print("View details tapped for \(item.name)")
+                    }
+                ),
+                
+                secondaryAction: InlineActionConfig(
+                    title: "Edit",
+                    icon: UIImage(systemName: "pencil"),
+                    onTap: {
+                        print("Edit tapped for \(item.name)")
+                    }
+                )
             )
-
+            
             return TransactionActionsRow(
                 tag: index,
                 config: config
             )
         }
     }
-
+    
     // MARK: - State
     private struct State {
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var items: [StockResponse] = []
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {

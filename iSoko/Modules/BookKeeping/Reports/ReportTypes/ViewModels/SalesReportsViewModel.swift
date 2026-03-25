@@ -53,7 +53,7 @@ final class SalesReportsViewModel: FormViewModel {
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: SectionTag.recentActivities.rawValue,
-            cells: generateTransactionRows()
+            cells: makeTransactionActionRows()
         )
     }
     
@@ -171,7 +171,7 @@ final class SalesReportsViewModel: FormViewModel {
         }
     }
     
-    private func generateTransactionRows() -> [FormRow] {
+    private func makeTransactionActionRows() -> [FormRow] {
         // Example of multiple configurations with actions included
         let configs: [TransactionSummaryCellConfig] = [
             TransactionSummaryCellConfig(

@@ -1,6 +1,6 @@
 //
 //  BookKeepingPurchasesViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/01/2026.
 //
@@ -8,17 +8,74 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class BookKeepingPurchasesViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+    var goToDetails: (() -> Void)? = { }
     
     private var state = State()
-
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
     override init() {
         super.init()
         self.sections = makeSections()
     }
-
+    
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await fetchItems()
+            
+            if !success {
+                print("⚠️ Failed to fetch product data")
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    
+    private func fetchItems() async -> Bool {
+        async let similar = performNetworkRequest()
+        let results = await [similar]
+        return results.allSatisfy { $0 }
+    }
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.getAllStock(
+                userId: state.userProfile?.sub ?? 0,
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+            
+            state.items = response.data
+            
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    private func updateRecentActivitiesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.recentActivities.rawValue
+        }) else { return }
+        
+        sections[index].cells = makeTransactionActionRows()
+        
+        reloadSection(index)
+    }
+    
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
@@ -27,7 +84,7 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
             makeRecentActivitiesSection()
         ]
     }
-
+    
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.filter.rawValue,
@@ -45,12 +102,12 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
-            cells: makeOrderSummaryRows()
+            cells: makeTransactionActionRows()
         )
     }
     
     // MARK: - Update Sections -
-
+    
     // MARK: - Lazy Rows
     private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
@@ -94,47 +151,59 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
                 )
             )
         )
-
+        
         let row = DualCardFormRow(
             tag: 100,
             config: config
         )
-
+        
         return row
     }
     
     // Lazy factory that creates rows
-    func makeOrderSummaryRows() -> [FormRow] {
-        (0..<10).map { index in
-            // For demo, every odd index is "Cash" status, even is "Paid"
-            let isCash = index.isMultiple(of: 2)
+    func makeTransactionActionRows() -> [FormRow] {
+        return state.items.enumerated().map { index, item in
             
+            let isInStock = item.inStock
+            
+            // Map images (optional: use first image if needed later)
             let items = [
-                OrderItem(quantity: 2, name: "Bananas", amount: "Ksh 1,500"),
-                OrderItem(quantity: 3, name: "Pastries", amount: "Ksh 2,000")
+                OrderItem(
+                    quantity: item.minimumOrderQuantity,
+                    name: item.name,
+                    amount: "Ksh \(Int(item.price))"
+                )
             ]
             
             let config = OrderSummaryCellConfig(
-                orderTitle: "Order #\(2945 + index)",
-                amount: "Ksh. \(3500 + index * 100)",
-                dateString: "Oct \(27 + index), 2025",
-                itemCountString: "\(items.count) items",
-                statusText: isCash ? "Cash" : "Paid",
-                statusTextColor: isCash
-                ? UIColor(red: 0, green: 0.6, blue: 0, alpha: 1)
-                : UIColor.systemBlue, statusBackgroundColor: isCash
-                ? UIColor(red: 0.85, green: 1, blue: 0.85, alpha: 1)
-                : UIColor(red: 0.85, green: 0.9, blue: 1, alpha: 1), items: items
+                orderTitle: item.name,
+                amount: "Ksh \(Int(item.price))",
+                dateString: item.description ?? "No description",
+                itemCountString: "\(items.count) item",
+                statusText: isInStock ? "In Stock" : "Out of Stock",
+                statusTextColor: isInStock
+                    ? UIColor.systemGreen
+                    : UIColor.systemRed,
+                statusBackgroundColor: isInStock
+                    ? UIColor.systemGreen.withAlphaComponent(0.15)
+                    : UIColor.systemRed.withAlphaComponent(0.15),
+                items: items
             )
             
             return OrderSummaryRow(tag: index, config: config)
         }
     }
-
+    
     // MARK: - State
     private struct State {
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var items: [StockResponse] = []
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {

@@ -68,7 +68,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
             $0.id == Tags.Section.recentActivities.rawValue
         }) else { return }
         
-        sections[index].cells = generateTransactionRows()
+        sections[index].cells = makeTransactionActionRows()
         
         reloadSection(index)
     }
@@ -99,7 +99,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
-            cells: generateTransactionRows()
+            cells: makeTransactionActionRows()
         )
     }
     
@@ -168,7 +168,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
         }
     }
     
-    private func generateTransactionRows() -> [FormRow] {
+    private func makeTransactionActionRows() -> [FormRow] {
         // Example of multiple configurations with actions included
         let configs: [TransactionSummaryCellConfig] = [
             TransactionSummaryCellConfig(
@@ -235,6 +235,8 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
