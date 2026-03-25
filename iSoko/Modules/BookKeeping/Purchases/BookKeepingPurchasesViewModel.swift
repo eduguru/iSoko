@@ -161,7 +161,7 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     }
     
     // Lazy factory that creates rows
-    func makeTransactionActionRows() -> [FormRow] {
+    private func makeTransactionActionRows() -> [FormRow] {
         return state.items.enumerated().map { index, item in
             
             let isInStock = item.inStock

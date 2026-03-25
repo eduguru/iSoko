@@ -1,6 +1,6 @@
 //
 //  BookKeepingCustomersViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/01/2026.
 //
@@ -11,13 +11,13 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingCustomersViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+    var goToDetails: (() -> Void)? = { }
     
     private var state = State()
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-
+    
     override init() {
         super.init()
         self.sections = makeSections()
@@ -49,12 +49,14 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-                let response = try await bookKeepingService.getAllCustomers(
-                    page: 1,
-                    count: 10,
-                    accessToken: state.oauthToken
-                )
-                
+            let response = try await bookKeepingService.getAllCustomers(
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+            
+            state.items = response.data
+            
             return true
             
         } catch {
@@ -72,7 +74,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
         
         reloadSection(index)
     }
-
+    
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
@@ -81,7 +83,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
             makeRecentActivitiesSection()
         ]
     }
-
+    
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
@@ -104,7 +106,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     }
     
     // MARK: - Update Sections -
-
+    
     // MARK: - Lazy Rows
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
@@ -150,65 +152,69 @@ final class BookKeepingCustomersViewModel: FormViewModel {
                 )
             )
         )
-
+        
         let row = DualCardFormRow(
             tag: 100,
             config: config
         )
-
+        
         return row
     }
     
     // Lazy factory that creates rows
-    func makeTransactionActionRows() -> [FormRow] {
-        (0..<10).map { index in
-
-            let hasActions = index.isMultiple(of: 2)
-
+    private func makeTransactionActionRows() -> [FormRow] {
+        return state.items.enumerated().map { index, customer in
+            
+            let name = customer.name ?? "Unnamed Customer"
+            let phone = customer.phoneNumber ?? "No phone"
+            let purchasesCount = customer.purchasesCount ?? 0
+            let totalAmount = customer.purchasesTotalAmount ?? 0.0
+            
             let config = TransactionActionsCellConfig(
-                title: "Customer \(index + 1)",
-                subtitle: "070480011\(index + 1)",
-                amount: "$\(Int.random(in: 10...250)).00",
+                title: name,
+                subtitle: phone,
+                amount: "Ksh \(Int(totalAmount))",
                 amountColor: .label,
-                status: hasActions ? "4 Purchases" : "10 Purchases",
+                status: "\(purchasesCount) Purchases",
                 statusColor: .app(.hex("#717171")),
-                primaryAction: hasActions
-                    ? ActionCardConfig(
-                        title: "View History",
-                        icon: UIImage(systemName: "creditcard"),
-                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .app(.hex("#656C7A")),
-                        onTap: {
-                            print("Pay tapped on row \(index)")
-                        }
-                    )
-                    : nil,
-                secondaryAction: hasActions
-                    ? InlineActionConfig(
-                        title: "Edit",
-                        icon: UIImage(systemName: "pencil"),
-                        onTap: {
-                            print("Edit tapped on row \(index)")
-                        }
-                    )
-                    : nil
+                
+                primaryAction: ActionCardConfig(
+                    title: "View History",
+                    icon: UIImage(systemName: "clock"),
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    textColor: .app(.hex("#656C7A")),
+                    onTap: { [weak self] in
+                        self?.goToDetails?()
+                        print("View history for \(name)")
+                    }
+                ),
+                
+                secondaryAction: InlineActionConfig(
+                    title: "Edit",
+                    icon: UIImage(systemName: "pencil"),
+                    onTap: {
+                        print("Edit tapped for \(name)")
+                    }
+                )
             )
-
+            
             return TransactionActionsRow(
                 tag: index,
                 config: config
             )
         }
     }
-
+    
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var items: [CustomerResponse] = []
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {

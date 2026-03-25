@@ -160,7 +160,7 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     }
     
     // Lazy factory that creates rows
-    func makeTransactionActionRows() -> [FormRow] {
+    private func makeTransactionActionRows() -> [FormRow] {
         (0..<10).map { index in
 
             let hasActions = index.isMultiple(of: 2)
