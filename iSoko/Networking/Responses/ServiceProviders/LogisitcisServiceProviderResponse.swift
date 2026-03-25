@@ -11,6 +11,7 @@ public struct LogisitcisServiceProviderResponse: Codable {
     public let id: Int
     public let providerName: String?
     public let email: String?
+    public let website: String?
     public let phoneNumber: String?
     public let displayImage: String?
     public let locationId: Int?
@@ -21,7 +22,7 @@ public struct LogisitcisServiceProviderResponse: Codable {
     enum CodingKeys: String, CodingKey {
         case id
         case providerName
-        case email
+        case email, website
         case phoneNumber
         case displayImage
         case locationId
@@ -37,6 +38,8 @@ public struct LogisitcisServiceProviderResponse: Codable {
         id = try container.decode(Int.self, forKey: .id)
         providerName = try container.decodeIfPresent(String.self, forKey: .providerName)
         email = try container.decodeIfPresent(String.self, forKey: .email)
+        website = try container.decodeIfPresent(String.self, forKey: .website)
+        
         phoneNumber = try container.decodeIfPresent(String.self, forKey: .phoneNumber)
         displayImage = try container.decodeIfPresent(String.self, forKey: .displayImage)
         locationId = try container.decodeIfPresent(Int.self, forKey: .locationId)

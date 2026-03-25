@@ -50,6 +50,15 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
                     categotyTitleRow,
                     descriptionRow,
                 ]
+            ),
+            FormSection(
+                id: Tags.Section.titleAndDescription.rawValue,
+                title: "Contacts",
+                cells: [
+                    phoneTitleRow,
+                    emailTitleRow,
+                    websiteTitleRow
+                ]
             )
         ]
     }
@@ -89,6 +98,9 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
     
     lazy var categotyTitleRow: FormRow = makeCategotyTitleRow()
     lazy var descriptionRow: FormRow = makeDescriptionRow()
+    lazy var phoneTitleRow: FormRow = makePhoneRow()
+    lazy var emailTitleRow: FormRow = makeEmailRow()
+    lazy var websiteTitleRow: FormRow = makeWebsiteRow()
     
     private lazy var similarProductsFormRow = HorizontalGridFormRow(tag: 300, items: [])
 
@@ -123,6 +135,48 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
+        )
+    }
+    
+    private func makePhoneRow() -> FormRow {
+        let phoneNumbersString = state.item.phoneNumbers?
+            .joined(separator: " / ") ?? "N/A"
+        
+        return TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Phone Number",
+            description: phoneNumbersString,
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
+        )
+    }
+    
+    private func makeEmailRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Email",
+            description: state.item.organizationEmail ?? " N/A",
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
+        )
+    }
+    
+    private func makeWebsiteRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Website",
+            description: state.item.website ?? " N/A",
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
         )
     }
     

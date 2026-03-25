@@ -21,6 +21,7 @@ public struct NetworkEnvironment {
     public let servicesService: ServicesServiceImpl
     public let productsService: ProductsServiceImpl
     public let associationsService: AssociationsServiceImpl
+    public let bookKeepingService: BookKeepingServiceImpl
 
     // MARK: - Init
     private init() {
@@ -39,5 +40,6 @@ public struct NetworkEnvironment {
         self.servicesService = ServicesServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
         self.productsService = ProductsServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
         self.associationsService = AssociationsServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
+        self.bookKeepingService = BookKeepingServiceImpl(provider: networkProvider, tokenProvider: tokenProvider)
     }
 }

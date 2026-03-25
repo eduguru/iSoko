@@ -46,10 +46,18 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
                         )
                     ),
                     categotyTitleRow,
-                    descriptionRow,
-                    quantityRow,
+                ]
+            ),
+            FormSection(
+                id: Tags.Section.titleAndDescription.rawValue,
+                title: "Contacts",
+                cells: [
+                    phoneTitleRow,
+                    emailTitleRow,
+                    websiteTitleRow
                 ]
             )
+            
         ]
     }
     
@@ -85,21 +93,55 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
     }
     
     // MARK: - Rows
+    lazy var phoneTitleRow: FormRow = makePhoneRow()
+    lazy var emailTitleRow: FormRow = makeEmailRow()
+    lazy var websiteTitleRow: FormRow = makeWebsiteRow()
     
     lazy var categotyTitleRow: FormRow = makeCategotyTitleRow()
     lazy var descriptionRow: FormRow = makeDescriptionRow()
     
     private lazy var similarProductsFormRow = HorizontalGridFormRow(tag: 300, items: [])
     
-    lazy var quantityRow: FormRow = QuantityFormRow(
-        tag: 500,
-        title: "Quantity",
-        initialValue: 1
-    ) { value in
-        print("Quantity changed: \(value)")
+    // MARK: - Row Builders
+    
+    private func makePhoneRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Phone Number",
+            description: state.item.phoneNumber ?? " N/A",
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
+        )
     }
     
-    // MARK: - Row Builders
+    private func makeEmailRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Email",
+            description: state.item.email ?? " N/A",
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
+        )
+    }
+    
+    private func makeWebsiteRow() -> FormRow {
+        TitleDescriptionFormRow(
+            tag: Tags.Cells.titleAndDescription.rawValue,
+            title: "Website",
+            description: state.item.website ?? " N/A",
+            maxTitleLines: 2,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            titleFontStyle: .body,
+            descriptionFontStyle: .callout
+        )
+    }
     
     private func makeCategotyTitleRow() -> FormRow {
         TitleDescriptionFormRow(
@@ -109,8 +151,8 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            titleFontStyle: .subheadline,
+            descriptionFontStyle: .body
         )
     }
     
