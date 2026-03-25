@@ -8,15 +8,69 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class BookKeepingSalesViewModel: FormViewModel {
    var goToDetails: (() -> Void)? = { }
     
     private var state = State()
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
 
     override init() {
         super.init()
         self.sections = makeSections()
+    }
+    
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await fetchItems()
+            
+            if !success {
+                print("⚠️ Failed to fetch product data")
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    
+    private func fetchItems() async -> Bool {
+        async let similar = performNetworkRequest()
+        let results = await [similar]
+        return results.allSatisfy { $0 }
+    }
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+                let response = try await bookKeepingService.getAllSales(
+                    page: 1,
+                    count: 10,
+                    accessToken: state.oauthToken
+                )
+                
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    private func updateRecentActivitiesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.recentActivities.rawValue
+        }) else { return }
+        
+        sections[index].cells = generateTransactionRows()
+        
+        reloadSection(index)
     }
 
     // MARK: - Sections -
@@ -181,6 +235,8 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 
     // MARK: - Tags

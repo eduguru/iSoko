@@ -25,17 +25,17 @@ public class BookKeepingCoordinator: BaseCoordinator {
         model.goToDetails = goToDetails
         
         model.goToTotalSales =  goToBookKeepingSalesPayments
-        model.goToTotalProducts = goToBookKeepingPurchases
-        model.goToTotalExpense = goToBookKeepingExpenses
-        model.goToLowStock = goToBookKeepingStock
+        model.goToRecordSales = goToBookKeepingSalesPayments// goToBookKeepingRecordSales
         
-        model.goToLowStock = goToBookKeepingLowStock
-        model.goToRecordSales = goToBookKeepingRecordSales
+        model.goToTotalExpense = goToBookKeepingExpenses
         model.goToAddExpense = goToBookKeepingAddExpense
         
+        model.goToLowStock = goToBookKeepingStock
+        model.goToLowStock = goToBookKeepingLowStock
         model.goToManageStock = goToBookKeepingStock
-        model.goToViewReports = goToBookKeepingReports
         
+        model.goToViewReports = goToBookKeepingReports
+        model.goToTotalProducts = goToBookKeepingPurchases
         model.goToCustomers = goToBookKeepingCustomers
         model.goToSuppliers = goToBookKeepingSupplies
         
