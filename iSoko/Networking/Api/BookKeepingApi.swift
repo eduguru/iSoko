@@ -13,7 +13,7 @@ import NetworkingKit
 // MARK: - orders
 public struct BookKeepingApi {
     
-    static func getOrderSummary(userId: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+    static func getOrderSummary(userId: Int, accessToken: String) -> ValueResponseTarget<StatisticsResponse> {
         let parameters: [String: Any] = [:]
         
         let headers = [
@@ -31,7 +31,7 @@ public struct BookKeepingApi {
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
     static func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {

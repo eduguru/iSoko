@@ -123,9 +123,12 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
         textField.topAnchor.constraint(equalTo: container.topAnchor).isActive = true
         textField.bottomAnchor.constraint(equalTo: container.bottomAnchor).isActive = true
     }
-
+    
     public func configure(with model: SearchFormModel) {
         self.model = model
+        
+        let wasFirstResponder = textField.isFirstResponder
+        let currentText = textField.text
 
         // Placeholder
         if let attributed = model.attributedPlaceholder {
@@ -136,6 +139,10 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
 
         textField.text = model.text
         textField.keyboardType = model.keyboardType
+        
+        if currentText != model.text {
+            textField.text = model.text
+        }
 
         // Reset visibility and constraints
         leftIconButton.isHidden = true
@@ -215,8 +222,15 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
         } else {
             containerTrailingToContent.isActive = true
         }
-
+        
         layoutIfNeeded()
+
+        // ✅ Restore focus ONLY if needed
+        if wasFirstResponder {
+            DispatchQueue.main.async {
+                self.textField.becomeFirstResponder()
+            }
+        }
     }
 
     // MARK: - TextField Delegate
@@ -228,9 +242,10 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
     public func textFieldDidEndEditing(_ textField: UITextField) {
         model?.didEndEditing?(textField.text ?? "")
     }
-
+    
     public func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let newText = (textField.text as NSString?)?.replacingCharacters(in: range, with: string) ?? string
+        model?.text = newText  
         model?.onTextChanged?(newText)
         return true
     }

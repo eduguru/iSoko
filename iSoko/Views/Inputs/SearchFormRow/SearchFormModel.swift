@@ -7,13 +7,6 @@
 
 import UIKit
 
-public enum IconPlacement {
-    case left
-    case right
-    case inside
-    case outside
-}
-
 public struct SearchFormModel {
     public var placeholder: String
     public var attributedPlaceholder: NSAttributedString?
