@@ -20,10 +20,10 @@ public final class TitleDescriptionFormRow: FormRow {
     public var maxTitleLines: Int
     public var maxDescriptionLines: Int
     
-    public var titleEllipsis: EllipsisType
-    public var descriptionEllipsis: EllipsisType
+    public var titleEllipsis: AppEllipsisType
+    public var descriptionEllipsis: AppEllipsisType
     
-    public var layoutStyle: StackLayoutStyle
+    public var layoutStyle: AppStackLayoutStyle
     public var textAlignment: NSTextAlignment
     
     public let rowType: FormRowType = .tableView
@@ -37,9 +37,9 @@ public final class TitleDescriptionFormRow: FormRow {
         description: String,
         maxTitleLines: Int = 2,
         maxDescriptionLines: Int = 0, // 0 = unlimited lines
-        titleEllipsis: EllipsisType = .tail,
-        descriptionEllipsis: EllipsisType = .tail,
-        layoutStyle: StackLayoutStyle = .stackedVertical,
+        titleEllipsis: AppEllipsisType = .tail,
+        descriptionEllipsis: AppEllipsisType = .tail,
+        layoutStyle: AppStackLayoutStyle = .stackedVertical,
         textAlignment: NSTextAlignment = .left,
         titleFontStyle: FontStyle = .headline,            // <- default font styles
         descriptionFontStyle: FontStyle = .subheadline    // <- default font styles

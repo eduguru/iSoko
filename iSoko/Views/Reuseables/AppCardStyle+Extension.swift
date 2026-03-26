@@ -7,14 +7,7 @@
 
 import UIKit
 
-public enum CardStyle {
-    case none
-    case border
-    case shadow
-    case borderAndShadow
-}
-
-extension CardStyle {
+extension AppCardStyle {
 
     struct Appearance {
         let backgroundColor: UIColor
@@ -31,9 +24,7 @@ extension CardStyle {
         let offset: CGSize
     }
 
-    func appearance(
-        cornerRadius: CGFloat = 16
-    ) -> Appearance {
+    func appearance(cornerRadius: CGFloat = 16) -> Appearance {
 
         switch self {
         case .none:

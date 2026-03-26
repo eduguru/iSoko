@@ -7,7 +7,7 @@
 
 import UIKit
 
-public enum EllipsisType {
+public enum AppEllipsisType {
     case tail
     case head
     case middle

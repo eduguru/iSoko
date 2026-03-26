@@ -28,8 +28,8 @@ public final class KeyValueFormRow: FormRow {
     public var maxLeftLines: Int
     public var maxRightLines: Int
 
-    public var leftEllipsis: EllipsisType
-    public var rightEllipsis: EllipsisType
+    public var leftEllipsis: AppEllipsisType
+    public var rightEllipsis: AppEllipsisType
 
     public var showsCard: Bool
     public var showsTopDivider: Bool
@@ -47,8 +47,8 @@ public final class KeyValueFormRow: FormRow {
         rightColor: UIColor? = nil,
         maxLeftLines: Int = 1,
         maxRightLines: Int = 1,
-        leftEllipsis: EllipsisType = .tail,
-        rightEllipsis: EllipsisType = .tail,
+        leftEllipsis: AppEllipsisType = .tail,
+        rightEllipsis: AppEllipsisType = .tail,
         showsCard: Bool = false,
         showsTopDivider: Bool = false,
         showsBottomDivider: Bool = false,

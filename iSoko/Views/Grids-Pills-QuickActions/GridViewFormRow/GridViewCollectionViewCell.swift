@@ -64,13 +64,13 @@ class GridViewCollectionViewCell: UICollectionViewCell {
         subtitleLabel.isHidden = item.subtitle == nil
         priceLabel.isHidden = item.price == nil
         
-        titleLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        titleLabel.lineBreakMode = AppEllipsisType.none.lineBreakMode
         titleLabel.font = styleGuide.font(for: FontStyle.subheadline)
         
-        subtitleLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        subtitleLabel.lineBreakMode = AppEllipsisType.none.lineBreakMode
         subtitleLabel.font = styleGuide.font(for: FontStyle.body)
         
-        priceLabel.lineBreakMode = EllipsisType.none.lineBreakMode
+        priceLabel.lineBreakMode = AppEllipsisType.none.lineBreakMode
         priceLabel.font = styleGuide.font(for: FontStyle.callout)
 
         updateFavoriteIcon(isFavorite: item.isFavorite)

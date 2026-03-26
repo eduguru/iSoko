@@ -16,6 +16,10 @@ public class BusinessCoordinator: BaseCoordinator {
         var model = BusinessViewModel()
         model.goToBookKeeping = goToBookKeeping
         
+        model.goToMyProducts = goToMyProducts
+        model.goToMyServices = goToMyServices
+        model.goToMyOrders = goToMyOrders
+        
         let controller = BusinessViewController()
         controller.makeRoot = true
         controller.viewModel = model
@@ -39,6 +43,60 @@ public class BusinessCoordinator: BaseCoordinator {
         let cordinator = BookKeepingCoordinator(router: router)
         addChild(cordinator)
         cordinator.start()
+    }
+    
+    private func goToMyProducts() {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+        
+        let viewModel = MyProductListingsViewModel()
+        let vc = MyProductListingsViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        // router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToMyServices() {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+        
+        let viewModel = ProfileInfoViewModel()
+        let vc = ProfileInfoViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        // router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToMyOrders() {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+        
+        let viewModel = ProfileInfoViewModel()
+        let vc = ProfileInfoViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        // router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
     private func dismiss() {

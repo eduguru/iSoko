@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum StackLayoutStyle {
+public enum AppStackLayoutStyle {
     case stackedVertical
     case stackedHorizontal
 }

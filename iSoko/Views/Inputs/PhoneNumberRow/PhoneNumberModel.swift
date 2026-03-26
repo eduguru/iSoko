@@ -25,7 +25,7 @@ public class PhoneNumberModel {
 
     // Card styling options
     public var useCardStyle: Bool = true
-    public var cardStyle: CardStyle = .shadow
+    public var cardStyle: AppCardStyle = .shadow
     public var cardCornerRadius: CGFloat = 10
     public var cardBorderColor: UIColor = UIColor.lightGray
     public var cardShadowColor: UIColor = UIColor.black.withAlphaComponent(0.1)
@@ -41,7 +41,7 @@ public class PhoneNumberModel {
         withFlag: Bool = true,
         placeholder: String = "Enter phone number",
         useCardStyle: Bool = true,
-        cardStyle: CardStyle = .shadow,
+        cardStyle: AppCardStyle = .shadow,
         cardCornerRadius: CGFloat = 10,
         cardBorderColor: UIColor = UIColor.lightGray,
         cardShadowColor: UIColor = UIColor.black.withAlphaComponent(0.1),

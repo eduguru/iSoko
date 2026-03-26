@@ -222,7 +222,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
     }
 
     // MARK: - Accessory helper
-    private func applyAccessory(_ type: ImageTitleDescriptionBottomConfig.AccessoryType) {
+    private func applyAccessory(_ type: AppAccessoryType) {
         switch type {
         case .none:
             accessory = nil

@@ -8,6 +8,11 @@
 import NetworkingKit
 
 public protocol BookKeepingService {
+    
+    func getOrderSummary(userId: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
+    func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[SalesResponse]>
+    func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
+    
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     
@@ -58,6 +63,34 @@ public final class BookKeepingServiceImpl: BookKeepingService {
         
         return envelope.toPagedResult()
     }
+}
+
+public extension BookKeepingServiceImpl {
+    
+    func getOrderSummary(userId: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getOrderSummary(userId: userId, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
+    
+    func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) async throws -> PagedResult<[SalesResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getAllOrders(page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
+    
+    func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getOrderProducts(orderId: orderId, page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
+    
 }
 
 // MARK: - Expenses

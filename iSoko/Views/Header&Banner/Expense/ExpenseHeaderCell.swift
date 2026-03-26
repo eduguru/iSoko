@@ -109,7 +109,7 @@ final class ExpenseHeaderCell: UITableViewCell {
 
 private extension UIView {
 
-    func apply(cardStyle: CardStyle) {
+    func apply(cardStyle: AppCardStyle) {
         let appearance = cardStyle.appearance()
 
         backgroundColor = appearance.backgroundColor

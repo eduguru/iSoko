@@ -224,7 +224,7 @@ final class SimpleInputFormCell: UITableViewCell {
 
     private func applyCardStyle(
         enabled: Bool,
-        style: CardStyle,
+        style: AppCardStyle,
         cornerRadius: CGFloat,
         borderColor: UIColor,
         shadowColor: UIColor

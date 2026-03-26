@@ -13,12 +13,14 @@ final class BusinessViewModel: FormViewModel {
     var gotoSignIn: (() -> Void)? = { }
     var gotoSignOut: (() -> Void)? = { }
     var goToBookKeeping: (() -> Void)? = { }
-    var goToMyProducts: (() -> Void)? = { }
-    var goToMyServices: (() -> Void)? = { }
-    var goToMyOrders: (() -> Void)? = { }
+    
     var goToReports: (() -> Void)? = { }
     var goToTaxCalculator: (() -> Void)? = { }
     var goToCurrencyExchange: (() -> Void)? = { }
+    
+    var goToMyProducts: (() -> Void)? = { }
+    var goToMyServices: (() -> Void)? = { }
+    var goToMyOrders: (() -> Void)? = { }
  
     private var state: State
     
@@ -84,22 +86,22 @@ final class BusinessViewModel: FormViewModel {
                         id: "products",
                         icon: UIImage(systemName: "archivebox"),
                         title: "Products",
-                        onTap: {
-                        print("onTap ")
+                        onTap: { [weak self] in
+                            self?.goToMyProducts?()
                     }),
                     .init(
                         id: "services",
                         icon: UIImage(systemName: "wrench"),
                         title: "Services",
-                        onTap: {
-                            print("onTap ")
+                        onTap: { [weak self] in
+                            self?.goToMyServices?()
                         }),
                     .init(
                         id: "orders",
                         icon: UIImage(systemName: "doc.text"),
                         title: "Orders",
-                        onTap: {
-                            print("onTap ")
+                        onTap: { [weak self] in
+                            self?.goToMyOrders?()
                         })
                 ]
             )

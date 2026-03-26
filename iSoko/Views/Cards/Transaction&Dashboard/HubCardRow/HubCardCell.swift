@@ -212,10 +212,10 @@ public final class HubCardCell: UITableViewCell {
         print("🔥 Action tapped with id: \(id)")
         onActionTap?(id)
 
-        if let action = actions.first(where: { $0.id == id }) {
-            print("✅ Triggering action closure for \(action.title)")
-            action.onTap?()
-        }
+//        if let action = actions.first(where: { $0.id == id }) {
+//            print("✅ Triggering action closure for \(action.title)")
+//            action.onTap?()
+//        }
     }
 
     @objc private func handleTouchDown(_ sender: UIControl) {

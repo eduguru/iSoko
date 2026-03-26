@@ -15,7 +15,7 @@ public struct LongInputDescriptionModel {
     
     // Card Style
     public var useCardStyle: Bool
-    public var cardStyle: CardStyle
+    public var cardStyle: AppCardStyle
     public var cardCornerRadius: CGFloat
     public var cardBorderColor: UIColor
     public var cardShadowColor: UIColor
@@ -32,7 +32,7 @@ public struct LongInputDescriptionModel {
         validation: ValidationConfiguration? = nil,
         titleText: String? = nil,
         useCardStyle: Bool = false, // Added to model
-        cardStyle: CardStyle = .border,
+        cardStyle: AppCardStyle = .border,
         cardCornerRadius: CGFloat = 8,
         cardBorderColor: UIColor = .lightGray,
         cardShadowColor: UIColor = .black,

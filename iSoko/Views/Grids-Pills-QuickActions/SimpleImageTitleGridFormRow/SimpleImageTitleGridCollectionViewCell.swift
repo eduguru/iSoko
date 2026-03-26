@@ -44,7 +44,7 @@ class SimpleImageTitleGridCollectionViewCell: UICollectionViewCell {
         title.font = UIFont.preferredFont(forTextStyle: .body)
         
         title.numberOfLines = 0
-        title.lineBreakMode = EllipsisType.none.lineBreakMode
+        title.lineBreakMode = AppEllipsisType.none.lineBreakMode
     }
     
     @objc private func handleCellTap() {

@@ -164,7 +164,7 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
         isUserInteractionEnabled = config.isEnabled
     }
 
-    private func applyAccessory(_ type: ImageTitleDescriptionConfig.AccessoryType) {
+    private func applyAccessory(_ type: AppAccessoryType) {
         switch type {
         case .none:
             accessory = nil

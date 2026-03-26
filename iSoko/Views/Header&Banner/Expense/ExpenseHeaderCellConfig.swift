@@ -21,5 +21,5 @@ struct ExpenseHeaderCellConfig {
     let paymentBackgroundColor: UIColor
 
     let dateText: NSAttributedString
-    let cardStyle: CardStyle
+    let cardStyle: AppCardStyle
 }

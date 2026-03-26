@@ -10,26 +10,14 @@ import UIKit
 
 public struct ImageTitleDescriptionConfig {
 
-    public enum AccessoryType {
-        case none
-        case chevron
-        case custom(view: UIView)
-        case image(image: UIImage)
-    }
-
-    public enum ImageStyle {
-        case rounded
-        case square
-    }
-
     public var image: UIImage?
     public var imageSize: CGSize
-    public var imageStyle: ImageStyle
+    public var imageStyle: AppImageStyle
 
     public var title: String
     public var description: String?
 
-    public var accessoryType: AccessoryType
+    public var accessoryType: AppAccessoryType
 
     public var spacing: CGFloat
     public var contentInsets: UIEdgeInsets
@@ -51,12 +39,12 @@ public struct ImageTitleDescriptionConfig {
     public init(
         image: UIImage? = nil,
         imageSize: CGSize = CGSize(width: 44, height: 44),
-        imageStyle: ImageStyle = .rounded,
+        imageStyle: AppImageStyle = .rounded,
 
         title: String,
         description: String? = nil,
 
-        accessoryType: AccessoryType = .chevron,
+        accessoryType: AppAccessoryType = .chevron,
 
         spacing: CGFloat = 12,
         contentInsets: UIEdgeInsets = UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16),

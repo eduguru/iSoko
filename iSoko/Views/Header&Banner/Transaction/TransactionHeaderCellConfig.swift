@@ -19,5 +19,5 @@ struct TransactionHeaderCellConfig {
     let statusTextColor: UIColor
     let statusBackgroundColor: UIColor
 
-    let cardStyle: CardStyle
+    let cardStyle: AppCardStyle
 }

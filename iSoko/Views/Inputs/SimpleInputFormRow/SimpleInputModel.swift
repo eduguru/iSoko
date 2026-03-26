@@ -17,7 +17,7 @@ public struct SimpleInputModel {
 
     // Card styling
     public var useCardStyle: Bool
-    public var cardStyle: CardStyle
+    public var cardStyle: AppCardStyle
     public var cardCornerRadius: CGFloat
     public var cardBorderColor: UIColor
     public var cardShadowColor: UIColor
@@ -38,7 +38,7 @@ public struct SimpleInputModel {
         validation: ValidationConfiguration? = nil,
         titleText: String? = nil,
         useCardStyle: Bool = false,
-        cardStyle: CardStyle = .border,
+        cardStyle: AppCardStyle = .border,
         cardCornerRadius: CGFloat = 8,
         cardBorderColor: UIColor = .lightGray,
         cardShadowColor: UIColor = .black,

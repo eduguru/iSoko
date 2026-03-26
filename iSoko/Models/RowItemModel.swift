@@ -13,7 +13,7 @@ public struct RowItemModel {
     let image: UIImage
     let bottomLabelText: String?
     let bottomButtonTitle: String?
-    let bottomButtonStyle: ImageTitleDescriptionBottomConfig.BottomButtonStyle?
+    let bottomButtonStyle: AppBottomButtonStyle?
     let onBottomButtonTap: (() -> Void)?
     let onTap: (() -> Void)?
 
@@ -23,7 +23,7 @@ public struct RowItemModel {
         image: UIImage,
         bottomLabelText: String? = nil,
         bottomButtonTitle: String? = nil,
-        bottomButtonStyle: ImageTitleDescriptionBottomConfig.BottomButtonStyle? = nil,
+        bottomButtonStyle: AppBottomButtonStyle? = nil,
         onBottomButtonTap: (() -> Void)? = nil,
         onTap: (() -> Void)? = nil
     ) {

@@ -10,10 +10,85 @@ import Foundation
 import Moya
 import NetworkingKit
 
-// MARK: - Sales
+// MARK: - orders
 public struct BookKeepingApi {
+    
+    static func getOrderSummary(userId: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+        let parameters: [String: Any] = [:]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(userId)/summary",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
+    static func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "traderType": traderType,
+            "count": count
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
+    static func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "count": count
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)/products",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
+}
 
-    public static func getAllSales(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+// MARK: - Sales
+public extension BookKeepingApi {
+
+    static func getAllSales(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
         let headers = [
@@ -34,7 +109,7 @@ public struct BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllSalesByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+    static func getAllSalesByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -62,7 +137,7 @@ public struct BookKeepingApi {
 // MARK: - Expenses
 public extension BookKeepingApi {
 
-    public static func getAllExpenses(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[ExpenseResponse]> {
+    static func getAllExpenses(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[ExpenseResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
         let headers = [
@@ -83,7 +158,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllExpensesByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[ExpenseResponse]> {
+    static func getAllExpensesByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[ExpenseResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -111,7 +186,7 @@ public extension BookKeepingApi {
 // MARK: - Stock
 public extension BookKeepingApi {
     
-    public static func getAllStock(userId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[StockResponse]> {
+    static func getAllStock(userId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[StockResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
         let headers = [
