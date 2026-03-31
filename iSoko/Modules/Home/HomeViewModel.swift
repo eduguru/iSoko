@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class HomeViewModel: FormViewModel {
     
     // MARK: - Callbacks
@@ -35,7 +36,7 @@ final class HomeViewModel: FormViewModel {
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
     private let associationsService = NetworkEnvironment.shared.associationsService
     
-    let countryHelper = CountryHelper()
+    private let countryHelper = CountryHelper()
     
     // MARK: - State
     private var state: State?
@@ -43,7 +44,10 @@ final class HomeViewModel: FormViewModel {
     override init() {
         self.state = State()
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = self.makeSections()
+        }
     }
     
     // MARK: - Fetch

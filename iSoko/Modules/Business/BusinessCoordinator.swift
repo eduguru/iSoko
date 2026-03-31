@@ -87,8 +87,8 @@ public class BusinessCoordinator: BaseCoordinator {
             return
         }
         
-        let viewModel = ProfileInfoViewModel()
-        let vc = ProfileInfoViewController()
+        let viewModel = MyOrdersViewModel()
+        let vc = MyOrdersViewController()
         vc.viewModel = viewModel
         
         vc.closeAction = { [weak self] in

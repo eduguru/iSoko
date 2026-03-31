@@ -34,7 +34,7 @@ public struct BookKeepingApi {
         return ValueResponseTarget(target: target)
     }
     
-    static func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+    static func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) -> UnifiedPagedResponseTarget<[CustomerOrderResponse]> {
         let parameters: [String: Any] = [
             "page": page,
             "traderType": traderType,

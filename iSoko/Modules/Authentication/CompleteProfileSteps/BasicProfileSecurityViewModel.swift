@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BasicProfileSecurityViewModel: FormViewModel {
 
     // MARK: - Navigation callbacks
@@ -51,7 +52,9 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         )
         
         super.init()
-        self.sections = makeSections()
+        Task { @MainActor in
+            self.sections = self.makeSections()
+        }
     }
 
     // MARK: - Sections

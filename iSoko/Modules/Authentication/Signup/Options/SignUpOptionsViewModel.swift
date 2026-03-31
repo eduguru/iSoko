@@ -11,6 +11,7 @@ import UtilsKit
 import StorageKit
 import NetworkingKit
 
+@MainActor
 final class SignUpOptionsViewModel: FormViewModel {
 
     // MARK: - Callbacks
@@ -34,7 +35,10 @@ final class SignUpOptionsViewModel: FormViewModel {
     init(builder: RegistrationBuilder) {
         self.state = State(registrationBuilder: builder)
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = self.makeSections()
+        }
     }
 
     // MARK: - Section Builders

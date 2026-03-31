@@ -17,7 +17,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     var gotoConfirm: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
-    private let countryHelper = CountryHelper()
+    @MainActor private let countryHelper = CountryHelper()
 
     // MARK: -
     private var state = State()

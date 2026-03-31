@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
     // MARK: - Upload
@@ -32,8 +33,11 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     // MARK: - Init
     override init() {
         super.init()
-        sections = makeSections()
-        configureUploadHandlers()
+        
+        Task{ @MainActor in
+            sections = makeSections()
+            configureUploadHandlers()
+        }
     }
 
     // MARK: - Section Builder
@@ -361,7 +365,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         var businessLocation: CommonIdNameModel?
 
         var phoneNumber: String = ""
-        var phoneCountry: Country = CountryHelper().country(forISO: "KE")!
+        var phoneCountry: Country?
 
         var website: String = ""
         var instagram: String = ""

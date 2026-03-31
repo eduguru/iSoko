@@ -201,6 +201,14 @@ final class ProductListingsViewModel: FormViewModel {
                     accessToken: state.guestToken
                 )
                 response = result.data
+            } else {
+                
+                let result = try await productService.getFeaturedProducts(
+                    page: state.currentPage,
+                    count: state.itemsPerPage,
+                    accessToken: state.guestToken
+                )
+                response = result.data
             }
 
             if reset {

@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class ServiceListingsViewModel: FormViewModel {
 
     // MARK: - Callbacks
@@ -29,7 +30,11 @@ final class ServiceListingsViewModel: FormViewModel {
     init(item: TradeServiceCategoryResponse? = nil) {
         super.init()
         self.state.item = item
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = self.makeSections()
+        }
+        
         setupSearchCallbacks()
     }
 
@@ -52,31 +57,34 @@ final class ServiceListingsViewModel: FormViewModel {
 
     // MARK: - Refresh (Pull-to-Refresh)
     override func refresh() {
-        state.currentPage = 1
-        state.hasMorePages = true
-        state.services.removeAll()
-        state.filteredServices.removeAll()
-        state.searchText = ""
-        fetchData()
+        Task { @MainActor in
+            state.currentPage = 1
+            state.hasMorePages = true
+            state.services.removeAll()
+            state.filteredServices.removeAll()
+            state.searchText = ""
+            fetchData()
+        }
     }
 
     // MARK: - Pagination (Load More)
     override func loadMoreIfNeeded() {
-        guard state.hasMorePages, !state.isLoadingMore, state.searchText.isEmpty else { return }
+        Task { @MainActor in
+            guard state.hasMorePages, !state.isLoadingMore, state.searchText.isEmpty else { return }
 
-        state.isLoadingMore = true
-        state.currentPage += 1
+            state.isLoadingMore = true
+            state.currentPage += 1
+        }
 
         Task {
             let success = await loadServices(reset: false)
-            state.isLoadingMore = false
-
-            if success {
-                DispatchQueue.main.async { [weak self] in
-                    self?.refreshServiceListSection()
+            await MainActor.run {
+                state.isLoadingMore = false
+                if success {
+                    refreshServiceListSection()
+                } else {
+                    state.hasMorePages = false
                 }
-            } else {
-                state.hasMorePages = false
             }
         }
     }

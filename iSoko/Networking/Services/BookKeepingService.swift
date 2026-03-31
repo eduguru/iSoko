@@ -10,7 +10,7 @@ import NetworkingKit
 public protocol BookKeepingService {
     
     func getOrderSummary(userId: Int, accessToken: String) async throws -> StatisticsResponse
-    func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[SalesResponse]>
+    func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]>
     func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
     
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
@@ -75,7 +75,7 @@ public extension BookKeepingServiceImpl {
         return envelope
     }
     
-    func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) async throws -> PagedResult<[SalesResponse]> {
+    func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllOrders(page: page, count: count, accessToken: accessToken)
         )

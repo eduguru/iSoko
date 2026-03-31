@@ -9,6 +9,7 @@ import DesignSystemKit
 import UtilsKit
 import UIKit
 
+@MainActor
 final class CountryPickerViewModel: FormViewModel {
     var confirmSelection: ((Country) -> Void)? = { _ in }
 
@@ -18,7 +19,9 @@ final class CountryPickerViewModel: FormViewModel {
         self.state = State()
         super.init()
 
-        self.sections = makeSections()
+        Task { @MainActor in
+            self.sections = self.makeSections()
+        }
     }
 
     // MARK: - Section Builders
