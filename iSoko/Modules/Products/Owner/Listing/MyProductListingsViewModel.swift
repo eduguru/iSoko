@@ -11,7 +11,7 @@ import UtilsKit
 import StorageKit
 
 final class MyProductListingsViewModel: FormViewModel {
-    var goToDetails: (() -> Void)?
+    var goToDetails: ((StockResponse) -> Void)?
     
     private var state = State()
     
@@ -237,7 +237,7 @@ final class MyProductListingsViewModel: FormViewModel {
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),
                     onTap: { [weak self] in
-                        self?.goToDetails?()
+                        self?.goToDetails?(item)
                     }
                 ),
                 

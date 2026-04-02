@@ -52,6 +52,8 @@ public class BusinessCoordinator: BaseCoordinator {
         }
         
         let viewModel = MyProductListingsViewModel()
+        viewModel.goToDetails = goToMyProductDetails
+        
         let vc = MyProductListingsViewController()
         vc.viewModel = viewModel
         
@@ -60,6 +62,23 @@ public class BusinessCoordinator: BaseCoordinator {
         }
         
         // router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToMyProductDetails(_ item: StockResponse) {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+        
+        let viewModel = MyProductDetailsViewModel(item)
+        let vc = ProductDetailsViewController()
+        vc.viewModel = viewModel
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
         router.push(vc, animated: true)
     }
     
@@ -77,7 +96,6 @@ public class BusinessCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        // router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
     
@@ -95,7 +113,6 @@ public class BusinessCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        // router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
     

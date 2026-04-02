@@ -20,6 +20,9 @@ public struct TitleDescriptionModel {
     public var titleFontStyle: FontStyle
     public var descriptionFontStyle: FontStyle
     
+    public var showsDivider: Bool
+    public var card: CardSettings?
+    
     public init(
         title: String,
         description: String,
@@ -30,7 +33,9 @@ public struct TitleDescriptionModel {
         layoutStyle: AppStackLayoutStyle = .stackedVertical,
         textAlignment: NSTextAlignment = .left,
         titleFontStyle: FontStyle = .headline,
-        descriptionFontStyle: FontStyle = .subheadline
+        descriptionFontStyle: FontStyle = .subheadline,
+        showsDivider: Bool = false,
+        card: CardSettings? = nil
     ) {
         self.title = title
         self.description = description
@@ -42,5 +47,7 @@ public struct TitleDescriptionModel {
         self.textAlignment = textAlignment
         self.titleFontStyle = titleFontStyle
         self.descriptionFontStyle = descriptionFontStyle
+        self.showsDivider = showsDivider
+        self.card = card
     }
 }
