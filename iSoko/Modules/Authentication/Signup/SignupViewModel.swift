@@ -34,7 +34,8 @@ final class SignupViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Choose your account type",
+            model: TitleDescriptionModel(
+            title:  "Choose your account type",
             description: "Select your type of account that best describe your needs",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -42,6 +43,7 @@ final class SignupViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+        )
         )
         
         return row

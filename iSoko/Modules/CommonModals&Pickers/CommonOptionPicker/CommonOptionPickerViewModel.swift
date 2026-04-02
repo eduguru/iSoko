@@ -50,7 +50,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
                 switch state.commonUtilityOption {
                 case .userRoles, .userTypes, .userGender, .ageGroups:
                     guard let items = response as? [CommonIdNameResponse] else {
-                        print("⚠️ Unexpected response type for CommonIdNameResponse")
+                        print("Unexpected response type for CommonIdNameResponse")
                         return
                     }
 

@@ -11,8 +11,6 @@ import UtilsKit
 import StorageKit
 
 final class MyOrdersViewModel: FormViewModel {
-    
-    // ✅ Pass full order
     var goToDetails: ((CustomerOrderResponse) -> Void)?
     
     private var state = State()
@@ -39,7 +37,7 @@ final class MyOrdersViewModel: FormViewModel {
                 if didFetchOrders {
                     self.updateRecentActivitiesSection()
                 } else {
-                    print("⚠️ Failed to fetch orders")
+                    print("Failed to fetch orders")
                 }
             }
         }

@@ -270,28 +270,34 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     
     private func makeSummaryRows() -> [FormRow] {
         return [
-        KeyValueFormRow(
-            tag: 1,
-            leftText: "Subtotal",
-            rightText: "$120",
-            usesMonospacedDigits: true
-        ),
-
-        KeyValueFormRow(
-            tag: 2,
-            leftText: "Tax",
-            rightText: "$12",
-            usesMonospacedDigits: true
-        ),
-
-        KeyValueFormRow(
-            tag: 3,
-            leftText: "Total",
-            rightText: "$132",
-            showsTopDivider: true,
-            isEmphasized: true,
-            usesMonospacedDigits: true
-        )
+            KeyValueFormRow(
+                tag: 1,
+                model: KeyValueRowModel(
+                    leftText: "Subtotal",
+                    rightText: "$120",
+                    usesMonospacedDigits: true
+                )
+            ),
+            
+            KeyValueFormRow(
+                tag: 2,
+                model: KeyValueRowModel(
+                    leftText: "Tax",
+                    rightText: "$12",
+                    usesMonospacedDigits: true
+                )
+            ),
+            
+            KeyValueFormRow(
+                tag: 3,
+                model: KeyValueRowModel(
+                    leftText: "Total",
+                    rightText: "$132",
+                    showsTopDivider: true,
+                    isEmphasized: true,
+                    usesMonospacedDigits: true
+                )
+            )
         ]
     }
 

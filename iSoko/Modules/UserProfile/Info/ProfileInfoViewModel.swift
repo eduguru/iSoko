@@ -61,6 +61,7 @@ final class ProfileInfoViewModel: FormViewModel {
 
     private lazy var firstNameRow = TitleDescriptionFormRow(
         tag: Tags.Cells.firstName.rawValue,
+        model: TitleDescriptionModel(
         title: "First Name",
         description: state.userProfile?.name ?? "Enter your first name",
         maxTitleLines: 2,
@@ -69,10 +70,12 @@ final class ProfileInfoViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
 
     private lazy var genderRow = TitleDescriptionFormRow(
         tag: Tags.Cells.gender.rawValue,
+        model: TitleDescriptionModel(
         title: "Gender",
         description: "Select your gender",
         maxTitleLines: 2,
@@ -81,10 +84,12 @@ final class ProfileInfoViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
 
     private lazy var ageGroupRow = TitleDescriptionFormRow(
         tag: Tags.Cells.ageGroup.rawValue,
+        model: TitleDescriptionModel(
         title: "Age Group",
         description: "Select your age group",
         maxTitleLines: 2,
@@ -93,10 +98,12 @@ final class ProfileInfoViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
 
     private lazy var emailRow = TitleDescriptionFormRow(
         tag: Tags.Cells.email.rawValue,
+        model: TitleDescriptionModel(
         title: "Email Address",
         description: state.userProfile?.email ?? "Enter your email",
         maxTitleLines: 2,
@@ -105,10 +112,12 @@ final class ProfileInfoViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
 
     private lazy var phoneNumberRow = TitleDescriptionFormRow(
         tag: Tags.Cells.phoneNumber.rawValue,
+        model: TitleDescriptionModel(
         title: "Phone Number",
         description: state.userProfile?.phoneNumber ?? "Enter your phone number",
         maxTitleLines: 2,
@@ -117,6 +126,7 @@ final class ProfileInfoViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
 
     // MARK: - State

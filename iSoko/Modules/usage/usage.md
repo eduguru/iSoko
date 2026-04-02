@@ -168,7 +168,8 @@ final class AuthViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Welcome to the app",
+            model: TitleDescriptionModel(
+            title:  "Welcome to the app",
             description: "This description can be quite long and should wrap nicely without truncation dots.",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines

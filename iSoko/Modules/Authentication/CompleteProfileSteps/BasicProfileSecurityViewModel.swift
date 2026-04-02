@@ -96,9 +96,11 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: -101,
+            model: TitleDescriptionModel(
             title: "Verify",
             description: "",
             maxTitleLines: 2
+            )
         )
     }
 
@@ -124,6 +126,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
 
     private lazy var emailRow = TitleDescriptionFormRow(
         tag: -00012,
+        model: TitleDescriptionModel(
         title: "Email Address",
         description: "Enter your email",
         maxTitleLines: 2,
@@ -132,6 +135,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .left
+        )
     )
     
     lazy var emailInputRow = SimpleInputFormRow(

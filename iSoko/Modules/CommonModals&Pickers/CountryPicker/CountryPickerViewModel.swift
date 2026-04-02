@@ -39,7 +39,8 @@ final class CountryPickerViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Select Region",
+            model: TitleDescriptionModel(
+            title:  "Select Region",
             description: "Please Select your country or region",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -49,6 +50,7 @@ final class CountryPickerViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+        )
         )
         
         return row

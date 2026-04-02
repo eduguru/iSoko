@@ -70,6 +70,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
     
     private lazy var headerTitleRow = TitleDescriptionFormRow(
         tag: 101,
+        model: TitleDescriptionModel(
         title: "Welcome to the app",
         description: "This description",
         maxTitleLines: 2,
@@ -78,6 +79,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
         descriptionEllipsis: .none,
         layoutStyle: .stackedVertical,
         textAlignment: .center
+        )
     )
 
     private lazy var buttonRow = ButtonFormRow(

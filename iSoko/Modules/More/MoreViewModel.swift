@@ -69,6 +69,7 @@ final class MoreViewModel: FormViewModel {
     private lazy var headerTitleRow: FormRow = {
         return TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
+            model: TitleDescriptionModel(
             title: "",
             description: "Sign in to connect with sellers, explore the iSOKO community, and get personalized recommendations.",
             maxTitleLines: 2,
@@ -77,6 +78,7 @@ final class MoreViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+            )
         )
     }()
 

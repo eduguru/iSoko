@@ -99,6 +99,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
     private func makeTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: CellTag.reportTitle.rawValue,
+            model: TitleDescriptionModel(
             title: "Select Report Type",
             description: "Choose a report to view your business performance",
             maxTitleLines: 2,
@@ -109,6 +110,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .subheadline,
             descriptionFontStyle: .body
+            )
         )
     }
 

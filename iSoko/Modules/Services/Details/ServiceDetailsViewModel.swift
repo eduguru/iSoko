@@ -33,7 +33,7 @@ final class ServiceDetailsViewModel: FormViewModel {
         Task {
             let success = await fetchServiceItems()
             if !success {
-                print("⚠️ Failed to fetch similar services.")
+                print("Failed to fetch similar services.")
             }
             DispatchQueue.main.async { [weak self] in
                 self?.updateSimilarServicesSection()
@@ -123,6 +123,7 @@ final class ServiceDetailsViewModel: FormViewModel {
     private func makeCategoryTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: state.service.categoryName ?? "",
             description: state.service.name ?? "Unnamed Service",
             maxTitleLines: 2,
@@ -130,12 +131,14 @@ final class ServiceDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
     }
 
     private func makeDescriptionRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
+            model: TitleDescriptionModel(
             title: state.service.description ?? "No description available",
             description: "",
             maxTitleLines: 20,
@@ -143,6 +146,7 @@ final class ServiceDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
+            )
         )
     }
 

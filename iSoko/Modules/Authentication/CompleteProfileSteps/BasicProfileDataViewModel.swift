@@ -105,6 +105,7 @@ final class BasicProfileDataViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.title.rawValue,
+            model: TitleDescriptionModel(
             title: state?.registrationType.title ?? "",
             description: state?.registrationType.subtitle ?? "",
             maxTitleLines: 2,
@@ -115,6 +116,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
     }
 

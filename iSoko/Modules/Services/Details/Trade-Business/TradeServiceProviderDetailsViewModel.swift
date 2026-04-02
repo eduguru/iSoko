@@ -110,6 +110,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
     private func makeCategotyTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: state.item.organization,
             description: state.item.serviceProviderType ?? "Unnamed Product",
             maxTitleLines: 2,
@@ -117,6 +118,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
     }
     
@@ -128,6 +130,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
+            model: TitleDescriptionModel(
             title: description,
             description: "",
             maxTitleLines: 20,
@@ -135,6 +138,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
+            )
         )
     }
     
@@ -144,6 +148,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Phone Number",
             description: phoneNumbersString,
             maxTitleLines: 2,
@@ -151,12 +156,14 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     
     private func makeEmailRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Email",
             description: state.item.organizationEmail ?? " N/A",
             maxTitleLines: 2,
@@ -164,12 +171,14 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     
     private func makeWebsiteRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Website",
             description: state.item.website ?? " N/A",
             maxTitleLines: 2,
@@ -177,6 +186,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     

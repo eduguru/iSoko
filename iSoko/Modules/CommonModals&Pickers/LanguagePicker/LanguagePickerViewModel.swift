@@ -37,7 +37,8 @@ final class LanguagePickerViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Choose your Language",
+            model: TitleDescriptionModel(
+            title:  "Choose your Language",
             description: "Chagua lugha / Hitamo nururimi / Sélectionnez la langue",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -47,6 +48,7 @@ final class LanguagePickerViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+        )
         )
         
         return row

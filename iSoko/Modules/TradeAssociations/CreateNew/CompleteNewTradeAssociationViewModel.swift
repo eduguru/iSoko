@@ -122,6 +122,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
+        model: TitleDescriptionModel(
         title: "Complete Association Registration",
         description: "Add your contact and location details to help members find your association easily.",
         maxTitleLines: 2,
@@ -129,6 +130,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         textAlignment: .left,
         titleFontStyle: .title,
         descriptionFontStyle: .headline
+        )
     )
 
     private lazy var phoneDropDownRow = PhoneDropDownFormRow(

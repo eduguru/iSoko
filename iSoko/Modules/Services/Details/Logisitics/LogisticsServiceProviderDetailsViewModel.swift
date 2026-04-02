@@ -107,6 +107,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
     private func makePhoneRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Phone Number",
             description: state.item.phoneNumber ?? " N/A",
             maxTitleLines: 2,
@@ -114,12 +115,14 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     
     private func makeEmailRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Email",
             description: state.item.email ?? " N/A",
             maxTitleLines: 2,
@@ -127,12 +130,14 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     
     private func makeWebsiteRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: "Website",
             description: state.item.website ?? " N/A",
             maxTitleLines: 2,
@@ -140,12 +145,14 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .callout
+            )
         )
     }
     
     private func makeCategotyTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: state.item.providerName ?? "",
             description: state.item.locationName ?? "Unnamed Product",
             maxTitleLines: 2,
@@ -153,6 +160,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .subheadline,
             descriptionFontStyle: .body
+            )
         )
     }
     
@@ -164,6 +172,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
+            model: TitleDescriptionModel(
             title: description,
             description: "",
             maxTitleLines: 20,
@@ -171,6 +180,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
+            )
         )
     }
     

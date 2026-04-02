@@ -14,82 +14,51 @@ public final class TitleDescriptionFormRow: FormRow {
     public let reuseIdentifier: String = String(describing: TitleDescriptionFormCell.self)
     public var cellClass: AnyClass? { TitleDescriptionFormCell.self }
     
-    public var title: String
-    public var descriptionText: String
-    
-    public var maxTitleLines: Int
-    public var maxDescriptionLines: Int
-    
-    public var titleEllipsis: AppEllipsisType
-    public var descriptionEllipsis: AppEllipsisType
-    
-    public var layoutStyle: AppStackLayoutStyle
-    public var textAlignment: NSTextAlignment
-    
     public let rowType: FormRowType = .tableView
     
-    public var titleFontStyle: FontStyle
-    public var descriptionFontStyle: FontStyle
+    public var model: TitleDescriptionModel
     
-    public init(
-        tag: Int,
-        title: String,
-        description: String,
-        maxTitleLines: Int = 2,
-        maxDescriptionLines: Int = 0, // 0 = unlimited lines
-        titleEllipsis: AppEllipsisType = .tail,
-        descriptionEllipsis: AppEllipsisType = .tail,
-        layoutStyle: AppStackLayoutStyle = .stackedVertical,
-        textAlignment: NSTextAlignment = .left,
-        titleFontStyle: FontStyle = .headline,            // <- default font styles
-        descriptionFontStyle: FontStyle = .subheadline    // <- default font styles
-    ) {
+    public init(tag: Int, model: TitleDescriptionModel) {
         self.tag = tag
-        self.title = title
-        self.descriptionText = description
-        self.maxTitleLines = maxTitleLines
-        self.maxDescriptionLines = maxDescriptionLines
-        self.titleEllipsis = titleEllipsis
-        self.descriptionEllipsis = descriptionEllipsis
-        self.layoutStyle = layoutStyle
-        self.textAlignment = textAlignment
-        self.titleFontStyle = titleFontStyle
-        self.descriptionFontStyle = descriptionFontStyle
+        self.model = model
     }
     
-    public func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
+    public func configure(
+        _ cell: UITableViewCell,
+        indexPath: IndexPath,
+        sender: FormViewController?
+    ) -> UITableViewCell {
+        
         guard let cell = cell as? TitleDescriptionFormCell else {
             assertionFailure("Expected TitleDescriptionFormCell")
             return cell
         }
         
-        let model = TitleDescriptionModel(
-            title: title,
-            description: descriptionText,
-            maxTitleLines: maxTitleLines,
-            maxDescriptionLines: maxDescriptionLines,
-            titleEllipsis: titleEllipsis,
-            descriptionEllipsis: descriptionEllipsis,
-            layoutStyle: layoutStyle,
-            textAlignment: textAlignment,
-            titleFontStyle: titleFontStyle,
-            descriptionFontStyle: descriptionFontStyle
-        )
-        
         cell.configure(with: model)
-        
         return cell
     }
-
     
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        // Return automatic dimension, let the tableView calculate height dynamically
-        UITableView.automaticDimension
+        return UITableView.automaticDimension
     }
     
     public func validate() -> Bool { true }
     public func validateWithError() -> Bool { true }
     public func reset() {}
     public func fieldVisibility() -> Bool { true }
+}
+
+public extension TitleDescriptionFormRow {
+    convenience init(
+        tag: Int,
+        title: String,
+        description: String
+    ) {
+        let model = TitleDescriptionModel(
+            title: title,
+            description: description
+        )
+        self.init(tag: tag, model: model)
+    }
 }

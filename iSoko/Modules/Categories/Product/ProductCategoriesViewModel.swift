@@ -41,7 +41,7 @@ final class ProductCategoriesViewModel: FormViewModel {
         Task {
             let success = await loadProducts(reset: true)
             if !success {
-                showError("⚠️ Failed to fetch product listings.")
+                showError("Failed to fetch product listings.")
             }
             DispatchQueue.main.async { [weak self] in
                 self?.refreshProductListSection()

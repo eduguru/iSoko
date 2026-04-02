@@ -129,7 +129,8 @@ final class LoginViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Welcome to the app",
+            model: TitleDescriptionModel(
+            title:  "Welcome to the app",
             description: "This description",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -137,6 +138,7 @@ final class LoginViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .center
+        )
         )
         
         return row

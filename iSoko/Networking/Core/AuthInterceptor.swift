@@ -69,7 +69,7 @@ public final class AuthInterceptor: RequestInterceptor {
         // 🔹 Auth request, but app believes user is NOT logged in
         // This is a state mismatch, not a logout case
         guard AppStorage.hasLoggedIn == true else {
-            print("⚠️ 401 on auth request but user already logged out → normalize state")
+            print("401 on auth request but user already logged out → normalize state")
             RuntimeSession.authState = .guest
             completion(.doNotRetry)
             return

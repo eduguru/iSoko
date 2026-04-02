@@ -42,7 +42,8 @@ final class AuthOptionsViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Sign in or create an account",
+            model: TitleDescriptionModel(
+            title:  "Sign in or create an account",
             description: "Access the region's biggest market platform",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -50,6 +51,7 @@ final class AuthOptionsViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+        )
         )
         
         return row

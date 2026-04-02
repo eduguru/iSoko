@@ -115,6 +115,7 @@ final class InsightsViewModel: FormViewModel {
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
             tag: CellTag.reportTitle.rawValue,
+            model: TitleDescriptionModel(
             title: title,
             description:description,
             maxTitleLines: 2,
@@ -125,6 +126,7 @@ final class InsightsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .subheadline,
             descriptionFontStyle: .body
+            )
         )
     }
 

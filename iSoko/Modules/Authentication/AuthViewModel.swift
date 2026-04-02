@@ -90,7 +90,8 @@ final class AuthViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
-            title: "Sign in",
+            model: TitleDescriptionModel(
+            title:  "Sign in",
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -100,6 +101,7 @@ final class AuthViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+        )
         )
         
         return row

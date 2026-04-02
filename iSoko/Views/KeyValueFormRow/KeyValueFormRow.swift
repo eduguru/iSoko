@@ -16,61 +16,11 @@ public final class KeyValueFormRow: FormRow {
 
     public let rowType: FormRowType = .tableView
 
-    public var leftText: String
-    public var rightText: String
+    public var model: KeyValueRowModel
 
-    public var leftFontStyle: FontStyle
-    public var rightFontStyle: FontStyle
-
-    public var leftColor: UIColor?
-    public var rightColor: UIColor?
-
-    public var maxLeftLines: Int
-    public var maxRightLines: Int
-
-    public var leftEllipsis: AppEllipsisType
-    public var rightEllipsis: AppEllipsisType
-
-    public var showsCard: Bool
-    public var showsTopDivider: Bool
-    public var showsBottomDivider: Bool
-    public var isEmphasized: Bool
-    public var usesMonospacedDigits: Bool
-
-    public init(
-        tag: Int,
-        leftText: String,
-        rightText: String,
-        leftFontStyle: FontStyle = .body,
-        rightFontStyle: FontStyle = .body,
-        leftColor: UIColor? = nil,
-        rightColor: UIColor? = nil,
-        maxLeftLines: Int = 1,
-        maxRightLines: Int = 1,
-        leftEllipsis: AppEllipsisType = .tail,
-        rightEllipsis: AppEllipsisType = .tail,
-        showsCard: Bool = false,
-        showsTopDivider: Bool = false,
-        showsBottomDivider: Bool = false,
-        isEmphasized: Bool = false,
-        usesMonospacedDigits: Bool = false
-    ) {
+    public init(tag: Int, model: KeyValueRowModel) {
         self.tag = tag
-        self.leftText = leftText
-        self.rightText = rightText
-        self.leftFontStyle = leftFontStyle
-        self.rightFontStyle = rightFontStyle
-        self.leftColor = leftColor
-        self.rightColor = rightColor
-        self.maxLeftLines = maxLeftLines
-        self.maxRightLines = maxRightLines
-        self.leftEllipsis = leftEllipsis
-        self.rightEllipsis = rightEllipsis
-        self.showsCard = showsCard
-        self.showsTopDivider = showsTopDivider
-        self.showsBottomDivider = showsBottomDivider
-        self.isEmphasized = isEmphasized
-        self.usesMonospacedDigits = usesMonospacedDigits
+        self.model = model
     }
 
     public func configure(
@@ -84,36 +34,31 @@ public final class KeyValueFormRow: FormRow {
             return cell
         }
 
-        let model = KeyValueRowModel(
-            leftText: leftText,
-            rightText: rightText,
-            leftFontStyle: leftFontStyle,
-            rightFontStyle: rightFontStyle,
-            leftColor: leftColor,
-            rightColor: rightColor,
-            maxLeftLines: maxLeftLines,
-            maxRightLines: maxRightLines,
-            leftEllipsis: leftEllipsis,
-            rightEllipsis: rightEllipsis,
-            showsCard: showsCard,
-            showsTopDivider: showsTopDivider,
-            showsBottomDivider: showsBottomDivider,
-            isEmphasized: isEmphasized,
-            usesMonospacedDigits: usesMonospacedDigits
-        )
-
         cell.configure(with: model)
-
         return cell
     }
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        UITableView.automaticDimension
+        return UITableView.automaticDimension
     }
 
     public func validate() -> Bool { true }
     public func validateWithError() -> Bool { true }
     public func reset() {}
     public func fieldVisibility() -> Bool { true }
+}
+
+public extension KeyValueFormRow {
+    convenience init(
+        tag: Int,
+        leftText: String,
+        rightText: String
+    ) {
+        let model = KeyValueRowModel(
+            leftText: leftText,
+            rightText: rightText
+        )
+        self.init(tag: tag, model: model)
+    }
 }

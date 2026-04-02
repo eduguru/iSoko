@@ -35,6 +35,7 @@ final class ResetPasswordViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
+            model: TitleDescriptionModel(
             title: "Forgot password?",
             description: "Don’t worry! It happens. Please enter the email associated with your account.",
             maxTitleLines: 2,
@@ -45,6 +46,7 @@ final class ResetPasswordViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
         
         return row

@@ -33,7 +33,7 @@ final class ProductDetailsViewModel: FormViewModel {
             let success = await fetchProductItems()
             
             if !success {
-                print("⚠️ Failed to fetch product data")
+                print("Failed to fetch product data")
             }
             
             DispatchQueue.main.async { [weak self] in
@@ -149,6 +149,7 @@ final class ProductDetailsViewModel: FormViewModel {
     private func makeCategotyTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
+            model: TitleDescriptionModel(
             title: state.product.categoryName ?? "",
             description: state.product.name ?? "Unnamed Product",
             maxTitleLines: 2,
@@ -156,6 +157,7 @@ final class ProductDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
     }
     
@@ -170,12 +172,14 @@ final class ProductDetailsViewModel: FormViewModel {
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.price.rawValue,
+            model: TitleDescriptionModel(
             title: "\(priceText) / \(state.product.measurementUnit?.name ?? "unit")",
             description: "",
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .callout,
             descriptionFontStyle: .headline
+            )
         )
     }
     
@@ -187,6 +191,7 @@ final class ProductDetailsViewModel: FormViewModel {
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
+            model: TitleDescriptionModel(
             title: description,
             description: "",
             maxTitleLines: 20,
@@ -194,6 +199,7 @@ final class ProductDetailsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .body,
             descriptionFontStyle: .headline
+            )
         )
     }
     

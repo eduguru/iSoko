@@ -74,6 +74,7 @@ final class ResetPasswordSuccessViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
+            model: TitleDescriptionModel(
             title: "Password changed",
             description: "Your password has been changed succesfully",
             maxTitleLines: 2,
@@ -82,6 +83,7 @@ final class ResetPasswordSuccessViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .center
+            )
         )
         
         return row

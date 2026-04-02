@@ -160,6 +160,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
+            model: TitleDescriptionModel(
             title: "Create an Account",
             description: "Join a network of Traders and grow your network.",
             maxTitleLines: 2,
@@ -170,6 +171,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .subheadline
+            )
         )
     }
 
@@ -284,7 +286,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     }
     
     private func showErrorMessage(_ message: String) {
-        print("⚠️ Pre-Validation Error: \(message)")
+        print("Pre-Validation Error: \(message)")
     }
 
     func reloadRowWithTag(_ tag: Int) {

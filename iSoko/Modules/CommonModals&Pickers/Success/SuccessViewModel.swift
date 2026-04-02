@@ -77,6 +77,7 @@ final class SuccessViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         let row = TitleDescriptionFormRow(
             tag: 101,
+            model: TitleDescriptionModel(
             title: "Success",
             description: "",
             maxTitleLines: 2,
@@ -87,6 +88,7 @@ final class SuccessViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .title,
             descriptionFontStyle: .headline
+            )
         )
         
         return row

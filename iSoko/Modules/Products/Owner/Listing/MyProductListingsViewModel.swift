@@ -11,7 +11,6 @@ import UtilsKit
 import StorageKit
 
 final class MyProductListingsViewModel: FormViewModel {
-    
     var goToDetails: (() -> Void)?
     
     private var state = State()
@@ -42,8 +41,8 @@ final class MyProductListingsViewModel: FormViewModel {
                 if didFetchStats { self.updateStatsSection() }
                 if didFetchStock { self.updateRecentActivitiesSection() }
                 
-                if !didFetchStock { print("⚠️ Failed to fetch stock items") }
-                if !didFetchStats { print("⚠️ Failed to fetch statistics") }
+                if !didFetchStock { print("Failed to fetch stock items") }
+                if !didFetchStats { print("Failed to fetch statistics") }
             }
         }
     }

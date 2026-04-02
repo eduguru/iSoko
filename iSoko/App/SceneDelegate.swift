@@ -72,7 +72,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             RuntimeSession.authState = .authenticated
             print("✅ OAuth restored:", token.accessToken.prefix(6))
         } catch {
-            print("⚠️ OAuth restore failed — downgraded to guest")
+            print("OAuth restore failed — downgraded to guest")
             RuntimeSession.authState = .guest
             AppStorage.hasLoggedIn = false
         }

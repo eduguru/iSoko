@@ -158,7 +158,7 @@ public final class OAuthService: NSObject {
                 print("📦 User Details JSON:\n\(jsonString)")
             }
         } catch {
-            print("⚠️ Failed to print JSON:", error)
+            print("Failed to print JSON:", error)
         }
     }
 

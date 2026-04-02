@@ -29,7 +29,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
             let success = await fetchItems()
             
             if !success {
-                print("⚠️ Failed to fetch product data")
+                print("Failed to fetch product data")
             }
             
             DispatchQueue.main.async { [weak self] in

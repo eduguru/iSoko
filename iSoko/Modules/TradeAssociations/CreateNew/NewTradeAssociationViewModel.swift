@@ -63,6 +63,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
     // Header title
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
+        model: TitleDescriptionModel(
         title: "Register Association",
         description: "Join the iSOKO network and expand your association's reach",
         maxTitleLines: 2,
@@ -70,6 +71,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         textAlignment: .left,
         titleFontStyle: .title,
         descriptionFontStyle: .headline
+        )
     )
     
     // Association name input

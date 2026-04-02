@@ -79,6 +79,7 @@ final class ExpensesReportsViewModel: FormViewModel {
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.reportTitle.rawValue,
+            model: TitleDescriptionModel(
             title: title,
             description:description,
             maxTitleLines: 2,
@@ -89,6 +90,7 @@ final class ExpensesReportsViewModel: FormViewModel {
             textAlignment: .left,
             titleFontStyle: .subheadline,
             descriptionFontStyle: .body
+            )
         )
     }
 

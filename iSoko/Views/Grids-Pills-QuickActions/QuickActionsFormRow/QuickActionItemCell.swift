@@ -73,7 +73,7 @@ final class QuickActionItemCell: UICollectionViewCell {
               !urlString.isEmpty,
               let url = URL(string: urlString) else {
             
-            print("⚠️ Invalid or empty URL → using placeholder")
+            print("Invalid or empty URL → using placeholder")
             return
         }
 

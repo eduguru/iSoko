@@ -47,7 +47,7 @@ final class ServiceListingsViewModel: FormViewModel {
         Task {
             let success = await loadServices(reset: true)
             if !success {
-                showError("⚠️ Failed to fetch service listings.")
+                showError("Failed to fetch service listings.")
             }
             DispatchQueue.main.async { [weak self] in
                 self?.refreshServiceListSection()

@@ -111,6 +111,7 @@ final class BusinessViewModel: FormViewModel {
     private lazy var headerTitleRow: FormRow = {
         return TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
+            model: TitleDescriptionModel(
             title: "Business Management",
             description: "",
             maxTitleLines: 2,
@@ -119,6 +120,7 @@ final class BusinessViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+            )
         )
     }()
     

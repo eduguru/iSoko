@@ -53,9 +53,9 @@ public final class NetworkManager<T: TargetType> {
                     } catch {
                         // Decoding failed, print raw response for debugging
                         if let rawString = String(data: response.data, encoding: .utf8) {
-                            print("⚠️ Decoding failed. Raw response:\n\(rawString)")
+                            print("Decoding failed. Raw response:\n\(rawString)")
                         } else {
-                            print("⚠️ Decoding failed. Raw bytes: \(response.data as NSData)")
+                            print("Decoding failed. Raw bytes: \(response.data as NSData)")
                         }
                         continuation.resume(throwing: error)
                     }
@@ -63,9 +63,9 @@ public final class NetworkManager<T: TargetType> {
                     // Failure handling for non-2xx status (401, 403, etc.)
                     if let response = error.response {
                         if let rawString = String(data: response.data, encoding: .utf8) {
-                            print("⚠️ Request failed. Status: \(response.statusCode), Raw response:\n\(rawString)")
+                            print("Request failed. Status: \(response.statusCode), Raw response:\n\(rawString)")
                         } else {
-                            print("⚠️ Request failed. Status: \(response.statusCode), Raw bytes: \(response.data as NSData)")
+                            print("Request failed. Status: \(response.statusCode), Raw bytes: \(response.data as NSData)")
                         }
 
                         // Try decoding anyway even if status != 200
@@ -74,7 +74,7 @@ public final class NetworkManager<T: TargetType> {
                             continuation.resume(returning: decoded)
                             return // exit early if successful
                         } catch {
-                            print("⚠️ Decoding failed for non-200 response")
+                            print("Decoding failed for non-200 response")
                         }
                     }
 

@@ -71,7 +71,8 @@ final class NewsDetailsViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: 101,
-            title: state.newsItem?.newsTitle ?? "No Title",
+            model: TitleDescriptionModel(
+            title:  state.newsItem?.newsTitle ?? "No Title",
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
@@ -79,6 +80,7 @@ final class NewsDetailsViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+        )
         )
     }
 
@@ -90,6 +92,7 @@ final class NewsDetailsViewModel: FormViewModel {
 
         return TitleDescriptionFormRow(
             tag: 102,
+            model: TitleDescriptionModel(
             title: category,
             description: dateText,
             maxTitleLines: 1,
@@ -98,6 +101,7 @@ final class NewsDetailsViewModel: FormViewModel {
             descriptionEllipsis: .tail,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+        )
         )
     }
 

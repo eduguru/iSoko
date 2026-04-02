@@ -65,6 +65,7 @@ final class OTPFormViewModel: FormViewModel {
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
+            model: TitleDescriptionModel(
             title: state.type.displayTitle,
             description: "",
             maxTitleLines: 2,
@@ -73,6 +74,7 @@ final class OTPFormViewModel: FormViewModel {
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
             textAlignment: .left
+            )
         )
     }
 
