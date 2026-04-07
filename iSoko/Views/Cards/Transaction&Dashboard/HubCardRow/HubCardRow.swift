@@ -27,7 +27,7 @@ public final class HubCardRow: FormRow {
         guard let cell = cell as? HubCardCell else { return cell }
         cell.configure(with: config)
 
-        // ✅ Wire tap callback from cell to row, then trigger action's closure
+        //Wire tap callback from cell to row, then trigger action's closure
         cell.onActionTap = { [config] actionId in
             if let action = config.actions.first(where: { $0.id == actionId }) {
                 action.onTap?()

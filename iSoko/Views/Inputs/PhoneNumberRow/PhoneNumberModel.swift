@@ -30,7 +30,7 @@ public class PhoneNumberModel {
     public var cardBorderColor: UIColor = UIColor.lightGray
     public var cardShadowColor: UIColor = UIColor.black.withAlphaComponent(0.1)
 
-    // ✅ Callback closure
+    //Callback closure
     public var onPhoneNumberChanged: ((String?) -> Void)?
 
     public init(

@@ -306,7 +306,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
                 let response = try await authenticationService.register(state.builder.build(), accessToken: state.guestToken)
                 // let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
 
-                await MainActor.run { // ✅ Success path (status == 200 guaranteed) // Proceed
+                await MainActor.run { //Success path (status == 200 guaranteed) // Proceed
                     self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
                 }
 

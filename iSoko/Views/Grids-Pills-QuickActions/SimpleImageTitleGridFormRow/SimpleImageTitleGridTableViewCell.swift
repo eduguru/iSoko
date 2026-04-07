@@ -38,7 +38,7 @@ final class SimpleImageTitleGridTableViewCell: UITableViewCell {
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.isScrollEnabled = false // ✅ prevent scrolling conflict
+        collectionView.isScrollEnabled = false //prevent scrolling conflict
         collectionView.showsVerticalScrollIndicator = false
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self

@@ -225,7 +225,7 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
         
         layoutIfNeeded()
 
-        // ✅ Restore focus ONLY if needed
+        //Restore focus ONLY if needed
         if wasFirstResponder {
             DispatchQueue.main.async {
                 self.textField.becomeFirstResponder()

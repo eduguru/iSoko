@@ -20,7 +20,7 @@ final class PDFItem: NSObject, QLPreviewItem {
         self.title = title
     }
 
-    // ✅ Match optional type expected by protocol
+    //Match optional type expected by protocol
     var previewItemURL: URL? {
         return url
     }

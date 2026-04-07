@@ -84,7 +84,7 @@ public final class StoreProfileCardCell: UITableViewCell {
         verifiedImageView.translatesAutoresizingMaskIntoConstraints = false
         verifiedImageView.heightAnchor.constraint(equalToConstant: 18).isActive = true
 
-        // ✅ vertical stack now
+        //vertical stack now
         titleStack.axis = .vertical
         titleStack.spacing = 4
         titleStack.alignment = .leading
@@ -112,7 +112,7 @@ public final class StoreProfileCardCell: UITableViewCell {
             topRowStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
         ])
 
-        // ✅ Styled capsule button
+        //Styled capsule button
         trailingButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         trailingButton.layer.cornerRadius = 14
         trailingButton.layer.borderWidth = 1
@@ -167,7 +167,7 @@ public final class StoreProfileCardCell: UITableViewCell {
         containerView.addSubview(actionsStack)
 
         NSLayoutConstraint.activate([
-            actionsStack.topAnchor.constraint(equalTo: dividerView.bottomAnchor, constant: 12), // ✅ spacing
+            actionsStack.topAnchor.constraint(equalTo: dividerView.bottomAnchor, constant: 12), //spacing
             actionsStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             actionsStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             actionsStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12)
@@ -181,7 +181,7 @@ public final class StoreProfileCardCell: UITableViewCell {
         avatarImageView.image = config.image
         titleLabel.text = config.title
 
-        // ✅ Verified auto collapse
+        //Verified auto collapse
         if let verifiedImage = config.verifiedImage {
             verifiedImageView.image = verifiedImage
             verifiedImageView.isHidden = false
@@ -189,7 +189,7 @@ public final class StoreProfileCardCell: UITableViewCell {
             verifiedImageView.isHidden = true
         }
 
-        // ✅ Button
+        //Button
         trailingButton.setTitle(config.trailingButtonTitle, for: .normal)
         trailingButton.isHidden = config.trailingButtonTitle == nil
         trailingButton.removeTarget(nil, action: nil, for: .allEvents)
@@ -200,7 +200,7 @@ public final class StoreProfileCardCell: UITableViewCell {
             }, for: .touchUpInside)
         }
 
-        // ✅ Badges
+        //Badges
         badgesStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         for badge in config.badges {
@@ -215,7 +215,7 @@ public final class StoreProfileCardCell: UITableViewCell {
 
         badgesStack.isHidden = config.badges.isEmpty
 
-        // ✅ Actions
+        //Actions
         actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         actionHandlers.removeAll()
 
@@ -228,7 +228,7 @@ public final class StoreProfileCardCell: UITableViewCell {
         actionsStack.isHidden = !hasActions
         dividerView.isHidden = !hasActions
 
-        // ✅ Card styling
+        //Card styling
         containerView.backgroundColor = config.backgroundColor
         containerView.layer.borderColor = config.borderColor.cgColor
         containerView.layer.borderWidth = config.borderWidth

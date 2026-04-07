@@ -31,7 +31,7 @@ public class PhoneNumberRow: NSObject, FormRow {
     // Configure the cell for TableView
     public func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
         if let phoneCell = cell as? PhoneNumberTableViewCell {
-            phoneCell.configure(with: phoneNumberModel) // ✅ Only pass model
+            phoneCell.configure(with: phoneNumberModel) //Only pass model
         }
         return cell
     }

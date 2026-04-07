@@ -54,7 +54,7 @@ final public class ProductImageGalleryCell: UITableViewCell, UICollectionViewDat
 
         collectionView.register(ProductImageCollectionViewCell.self, forCellWithReuseIdentifier: ProductImageCollectionViewCell.reuseIdentifier)
 
-        // ✅ Set pagination tint colors
+        //Set pagination tint colors
         pageControl.pageIndicatorTintColor = UIColor.lightGray // Inactive dots
         pageControl.currentPageIndicatorTintColor = .app(.primary) // Active dot
 

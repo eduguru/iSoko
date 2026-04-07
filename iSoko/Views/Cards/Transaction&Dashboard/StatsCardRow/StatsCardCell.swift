@@ -10,7 +10,7 @@ import UIKit
 public final class StatsCardCell: UITableViewCell {
 
     private let stackView = UIStackView()
-    private var items: [StatsCardConfig.Item] = []
+    private var items: [StatsCardItem] = []
 
     var onItemTap: ((String) -> Void)?
 
@@ -55,31 +55,27 @@ public final class StatsCardCell: UITableViewCell {
         }
     }
 
-    private func makeCard(item: StatsCardConfig.Item, config: StatsCardConfig) -> UIView {
+    private func makeCard(item: StatsCardItem, config: StatsCardConfig) -> UIView {
         let control = UIControl()
         control.accessibilityIdentifier = item.id
         control.layer.cornerRadius = config.cornerRadius
         control.clipsToBounds = true
+        control.backgroundColor = config.showsBackground ? (item.backgroundColor ?? UIColor.systemGray6) : .clear
 
-        // Background logic
-        if config.showsBackground {
-            control.backgroundColor = item.backgroundColor ?? UIColor.systemGray6
-        } else {
-            control.backgroundColor = .clear
-        }
-
-        // Tap
+        // Tap events
         control.addTarget(self, action: #selector(handleTap(_:)), for: .touchUpInside)
         control.addTarget(self, action: #selector(handleDown(_:)), for: [.touchDown, .touchDragEnter])
         control.addTarget(self, action: #selector(handleUp(_:)), for: [.touchUpInside, .touchCancel, .touchDragExit])
 
+        // Stack for content
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = 8
+        stack.alignment = .leading // ← Align all content to leading (left)
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.isUserInteractionEnabled = false
 
-        // Icon
+        // Icon container (badge)
         let iconContainer = UIView()
         iconContainer.backgroundColor = item.iconBackgroundColor ?? UIColor.systemGray5
         iconContainer.layer.cornerRadius = 10
@@ -101,29 +97,30 @@ public final class StatsCardCell: UITableViewCell {
             icon.heightAnchor.constraint(equalToConstant: 20)
         ])
 
-        // Title
+        // Labels
         let titleLabel = UILabel()
         titleLabel.text = item.title
         titleLabel.font = .systemFont(ofSize: 14)
         titleLabel.textColor = .secondaryLabel
         titleLabel.numberOfLines = 2
 
-        // Value
         let valueLabel = UILabel()
         valueLabel.text = item.value
         valueLabel.font = .systemFont(ofSize: 20, weight: .bold)
         valueLabel.textColor = .label
 
+        // Add views to stack
         stack.addArrangedSubview(iconContainer)
         stack.addArrangedSubview(titleLabel)
         stack.addArrangedSubview(valueLabel)
 
+        // Add stack to control
         control.addSubview(stack)
 
         NSLayoutConstraint.activate([
             stack.topAnchor.constraint(equalTo: control.topAnchor, constant: 12),
             stack.leadingAnchor.constraint(equalTo: control.leadingAnchor, constant: 12),
-            stack.trailingAnchor.constraint(equalTo: control.trailingAnchor, constant: -12),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: control.trailingAnchor, constant: -12),
             stack.bottomAnchor.constraint(equalTo: control.bottomAnchor, constant: -12)
         ])
 

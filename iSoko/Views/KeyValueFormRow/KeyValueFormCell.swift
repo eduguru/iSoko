@@ -21,6 +21,18 @@ public final class KeyValueFormCell: UITableViewCell {
     private let topDivider = UIView()
     private let bottomDivider = UIView()
 
+    // Card constraints
+    private var cardLeadingConstraint: NSLayoutConstraint!
+    private var cardTrailingConstraint: NSLayoutConstraint!
+    private var cardTopConstraint: NSLayoutConstraint!
+    private var cardBottomConstraint: NSLayoutConstraint!
+
+    // Stack constraints (inside card or contentView)
+    private var stackLeadingConstraint: NSLayoutConstraint!
+    private var stackTrailingConstraint: NSLayoutConstraint!
+    private var stackTopConstraint: NSLayoutConstraint!
+    private var stackBottomConstraint: NSLayoutConstraint!
+
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setup()
@@ -32,24 +44,9 @@ public final class KeyValueFormCell: UITableViewCell {
     }
 
     private func setup() {
-
         selectionStyle = .none
         backgroundColor = .clear
         contentView.backgroundColor = .clear
-
-        // Card view (background only)
-        cardView.translatesAutoresizingMaskIntoConstraints = false
-        cardView.backgroundColor = .secondarySystemBackground
-        cardView.layer.cornerRadius = 12
-
-        contentView.addSubview(cardView)
-
-        NSLayoutConstraint.activate([
-            cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 6),
-            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -6)
-        ])
 
         // Labels
         leftLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
@@ -60,30 +57,50 @@ public final class KeyValueFormCell: UITableViewCell {
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
-
         stackView.addArrangedSubview(leftLabel)
-        stackView.addArrangedSubview(UIView())
+        stackView.addArrangedSubview(UIView()) // spacer
         stackView.addArrangedSubview(rightLabel)
 
-        contentView.addSubview(stackView)
+        // Card
+        cardView.translatesAutoresizingMaskIntoConstraints = false
+        cardView.backgroundColor = .clear
+        cardView.layer.cornerRadius = 12
+        cardView.layer.masksToBounds = true
 
+        contentView.addSubview(cardView)
+        cardView.addSubview(stackView)
+
+        // Card constraints
+        cardLeadingConstraint = cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+        cardTrailingConstraint = cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+        cardTopConstraint = cardView.topAnchor.constraint(equalTo: contentView.topAnchor)
+        cardBottomConstraint = cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
+            cardLeadingConstraint,
+            cardTrailingConstraint,
+            cardTopConstraint,
+            cardBottomConstraint
+        ])
+
+        // Stack constraints (we will adjust constants later)
+        stackLeadingConstraint = stackView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16)
+        stackTrailingConstraint = stackView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
+        stackTopConstraint = stackView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12)
+        stackBottomConstraint = stackView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12)
+        NSLayoutConstraint.activate([
+            stackLeadingConstraint,
+            stackTrailingConstraint,
+            stackTopConstraint,
+            stackBottomConstraint
         ])
 
         // Dividers
         topDivider.backgroundColor = .separator
         bottomDivider.backgroundColor = .separator
-
         topDivider.translatesAutoresizingMaskIntoConstraints = false
         bottomDivider.translatesAutoresizingMaskIntoConstraints = false
-
         contentView.addSubview(topDivider)
         contentView.addSubview(bottomDivider)
-
         NSLayoutConstraint.activate([
             topDivider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             topDivider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
@@ -118,14 +135,46 @@ public final class KeyValueFormCell: UITableViewCell {
             rightLabel.font = rightLabel.font.monospacedDigit()
         }
 
-        cardView.isHidden = !model.showsCard
-
         topDivider.isHidden = !model.showsTopDivider
         bottomDivider.isHidden = !model.showsBottomDivider
 
         if model.isEmphasized {
             leftLabel.font = styleGuide.font(for: .headline)
             rightLabel.font = styleGuide.font(for: .headline)
+        }
+
+        if let card = model.card {
+
+            cardView.backgroundColor = card.backgroundColor
+            cardView.layer.cornerRadius = card.cornerRadius
+            cardView.layer.borderColor = card.borderColor?.cgColor
+            cardView.layer.borderWidth = card.borderWidth
+
+            cardLeadingConstraint.constant = 16
+            cardTrailingConstraint.constant = -16
+            cardTopConstraint.constant = 6
+            cardBottomConstraint.constant = -6
+
+            stackLeadingConstraint.constant = card.contentInsets.left
+            stackTrailingConstraint.constant = -card.contentInsets.right
+            stackTopConstraint.constant = card.contentInsets.top
+            stackBottomConstraint.constant = -card.contentInsets.bottom
+
+        } else {
+            // No card styling
+            cardView.backgroundColor = .clear
+            cardView.layer.cornerRadius = 0
+            cardView.layer.borderWidth = 0
+
+            cardLeadingConstraint.constant = 0
+            cardTrailingConstraint.constant = 0
+            cardTopConstraint.constant = 0
+            cardBottomConstraint.constant = 0
+
+            stackLeadingConstraint.constant = 16
+            stackTrailingConstraint.constant = -16
+            stackTopConstraint.constant = 12
+            stackBottomConstraint.constant = -12
         }
     }
 

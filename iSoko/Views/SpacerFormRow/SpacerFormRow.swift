@@ -10,10 +10,15 @@ import UIKit
 
 public final class SpacerFormRow: FormRow {
     public let tag: Int
+    public let height: CGFloat = 8
     public let reuseIdentifier: String = String(describing: SpacerFormCell.self)
     public var cellClass: AnyClass? { SpacerFormCell.self }
 
     public init(tag: Int) {
+        self.tag = tag
+    }
+    
+    public init(tag: Int, height: CGFloat = 8) {
         self.tag = tag
     }
 

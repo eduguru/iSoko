@@ -19,7 +19,7 @@ public struct ImageTitleDescriptionBottomConfig {
     public var bottomLabelText: String?
     public var bottomButtonTitle: String?
     public var bottomButtonStyle: AppBottomButtonStyle
-    public var onBottomButtonTap: (() -> Void)? // ✅ separate callback
+    public var onBottomButtonTap: (() -> Void)? //separate callback
 
     // Accessory
     public var accessoryType: AppAccessoryType?

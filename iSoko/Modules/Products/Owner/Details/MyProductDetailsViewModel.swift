@@ -31,6 +31,8 @@ final class MyProductDetailsViewModel: FormViewModel {
         sections.append(makeSummarySection())
         sections.append(FormSection(id: 0012, title: nil, cells: [priceRow]))
         
+        sections.append(makeOverviewSection())
+        
         return sections
     }
     
@@ -61,51 +63,60 @@ final class MyProductDetailsViewModel: FormViewModel {
         )
     }
     
+    private func makeOverviewSection() -> FormSection {
+        return FormSection(
+            id: SectionTag.overview.rawValue,
+            title: "Overview",
+            cells: [overviewFormRow, SpacerFormRow(tag: -000)]
+        )
+    }
+    
     // MARK: - Rows
     private lazy var summaryRows = makeSummaryRows()
     
     private lazy var titleRow = TitleDescriptionFormRow(
         tag: 102,
         model: TitleDescriptionModel(
-        title: state.item.name,
-        description: "",
-        maxTitleLines: 2,
-        maxDescriptionLines: 0,
-        titleEllipsis: .none,
-        descriptionEllipsis: .none,
-        layoutStyle: .stackedVertical,
-        textAlignment: .left
+            title: state.item.name,
+            description: "",
+            maxTitleLines: 2,
+            maxDescriptionLines: 0,
+            titleEllipsis: .none,
+            descriptionEllipsis: .none,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            card: .default.with(borderColor: .clear)
         )
     )
     
     private lazy var aboutProductRow = TitleDescriptionFormRow(
         tag: 101,
         model: TitleDescriptionModel(
-        title: "About the Product",
-        description: state.item.description ?? "",
-        maxTitleLines: 2,
-        maxDescriptionLines: 0,
-        titleEllipsis: .none,
-        descriptionEllipsis: .none,
-        layoutStyle: .stackedVertical,
-        textAlignment: .left,
-        card: .default
+            title: "About the Product",
+            description: state.item.description ?? "",
+            maxTitleLines: 2,
+            maxDescriptionLines: 0,
+            titleEllipsis: .none,
+            descriptionEllipsis: .none,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            card: .default
         )
     )
     
     private lazy var priceRow = TitleDescriptionFormRow(
         tag: 102,
         model: TitleDescriptionModel(
-        title: "Pricing",
-        description: "Original Price \n \(state.item.price)",
-        maxTitleLines: 2,
-        maxDescriptionLines: 0,
-        titleEllipsis: .none,
-        descriptionEllipsis: .none,
-        layoutStyle: .stackedVertical,
-        textAlignment: .left,
-        showsDivider: true,
-        card: .default
+            title: "Pricing",
+            description: "Original Price \n \(state.item.price)",
+            maxTitleLines: 2,
+            maxDescriptionLines: 0,
+            titleEllipsis: .none,
+            descriptionEllipsis: .none,
+            layoutStyle: .stackedVertical,
+            textAlignment: .left,
+            showsDivider: true,
+            card: .default
         )
     )
     
@@ -116,6 +127,8 @@ final class MyProductDetailsViewModel: FormViewModel {
                 model: KeyValueRowModel(
                     leftText: "Category",
                     rightText: state.item.category?.name ?? "",
+                    card: .default.with(borderColor: .clear),
+                    showsTopDivider: true,
                     usesMonospacedDigits: true
                 )
             ),
@@ -125,6 +138,8 @@ final class MyProductDetailsViewModel: FormViewModel {
                 model: KeyValueRowModel(
                     leftText: "Unit",
                     rightText: state.item.measurementUnit?.name ?? "",
+                    card: .default.with(borderColor: .clear),
+                    showsTopDivider: true,
                     usesMonospacedDigits: true
                 )
             ),
@@ -134,6 +149,7 @@ final class MyProductDetailsViewModel: FormViewModel {
                 model: KeyValueRowModel(
                     leftText: "Minimum order quantity",
                     rightText: "\(state.item.minimumOrderQuantity)",
+                    card: .default.with(borderColor: .clear),
                     showsTopDivider: true,
                     isEmphasized: true,
                     usesMonospacedDigits: true
@@ -142,8 +158,47 @@ final class MyProductDetailsViewModel: FormViewModel {
         ]
     }
     
-    private func reloadBodySection(animated: Bool = true) {
+    lazy var overviewFormRow = DynamicGridFormRow<StatsCardItem, StatsCardCollectionViewCell>(
+        tag: CellTag.overview.rawValue,
+        items: makeTrendingServiceItemsForFeaturedGrid(),
+        cellType: StatsCardCollectionViewCell.self,
+        columns: 2,
+        itemHeight: { item, width in
+            return 130
+        },
+        configureCell: { cell, item, _ in
+            cell.configure(with: item)
+        },
+        onSelect: { item, _ in
+            item.onTap?()
+        }
+    )
+    
+    private func makeTrendingServiceItemsForFeaturedGrid() -> [StatsCardItem] {
+        var items: [StatsCardItem] = []
         
+        let values = [
+            (title: "Current Stock", image: UIImage(systemName: "archivebox"), value: 9),
+            (title: "Total Views", image: UIImage(systemName: "archivebox"), value: 9),
+            (title: "Total Orders", image: UIImage(systemName: "archivebox"), value: 9),
+            (title: "Total Revenue", image: UIImage(systemName: "archivebox"), value: 9)
+        ]
+        for item in values {
+            let item = StatsCardItem.init(
+                id: item.0,
+                icon: item.image,
+                title: item.title,
+                value: "\(item.value)",
+                iconBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                onTap: {
+                    print("item tapped")
+                }
+            )
+            
+            items.append(item)
+        }
+        
+        return items
     }
     
     // MARK: - Image Handling
@@ -151,20 +206,20 @@ final class MyProductDetailsViewModel: FormViewModel {
         guard let images = state.item.images else {
             return placeholderImages()
         }
-
+        
         let mapped = images.compactMap { image -> ProductImage? in
             let urlString = image.url
             
             guard image.active == true, let url = URL(string: urlString) else { return nil }
-
+            
             return ProductImage(
                 url: url,
                 isFeatured: image.primary ?? false
             )
         }
-
+        
         let sorted = mapped.sorted { $0.isFeatured && !$1.isFeatured }
-
+        
         return sorted.isEmpty ? placeholderImages() : sorted
     }
     
@@ -177,7 +232,11 @@ final class MyProductDetailsViewModel: FormViewModel {
         ]
     }
     
-    // MARK: - Submit
+    // MARK: -
+    private func reloadBodySection(animated: Bool = true) {
+        
+    }
+    
     private func submit() async {
         
     }
@@ -197,12 +256,14 @@ final class MyProductDetailsViewModel: FormViewModel {
     private enum SectionTag: Int {
         case productImages = 1
         case summary = 2
+        case overview = 3
         
     }
     
     private enum CellTag: Int {
         case productImages = 1
         case summary = 2
+        case overview = 3
         
     }
 }

@@ -1,6 +1,6 @@
 //
 //  BusinessCoordinator.swift
-//  
+//
 //
 //  Created by Edwin Weru on 01/10/2025.
 //
@@ -51,35 +51,10 @@ public class BusinessCoordinator: BaseCoordinator {
             return
         }
         
-        let viewModel = MyProductListingsViewModel()
-        viewModel.goToDetails = goToMyProductDetails
-        
-        let vc = MyProductListingsViewController()
-        vc.viewModel = viewModel
-        
-        vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
-        }
-        
-        // router.navigationControllerInstance?.navigationBar.isHidden = false
-        router.push(vc, animated: true)
-    }
-    
-    private func goToMyProductDetails(_ item: StockResponse) {
-        guard AppStorage.hasLoggedIn == true else {
-            presentAuthBottomSheet()
-            return
-        }
-        
-        let viewModel = MyProductDetailsViewModel(item)
-        let vc = ProductDetailsViewController()
-        vc.viewModel = viewModel
-        
-        vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
-        }
-        
-        router.push(vc, animated: true)
+        let router = Router(navigationController: navigationController)
+        let cordinator = ProductsCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.start()
     }
     
     private func goToMyServices() {
@@ -122,14 +97,14 @@ public class BusinessCoordinator: BaseCoordinator {
     
     private func showLoginFlow() {
         AppStorage.hasShownInitialLoginOptions = false
-
+        
         let nav = BaseNavigationController()
         let router = Router(navigationController: nav)
         let coordinator = AuthCoordinator(router: router)
-
+        
         addChild(coordinator)
         coordinator.start()
-
+        
         nav.modalPresentationStyle = .fullScreen
         self.router.present(nav, animated: true)
     }

@@ -32,7 +32,7 @@ public struct ImageTitleDescriptionConfig {
     public var cardBorderColor: UIColor
     public var cardBorderWidth: CGFloat
 
-    // ✅ NEW (icon container control)
+    //NEW (icon container control)
     public var iconBackgroundColor: UIColor?
     public var iconCornerRadius: CGFloat?
 

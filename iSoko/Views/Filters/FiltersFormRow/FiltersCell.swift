@@ -57,7 +57,7 @@ public final class FiltersCell: UITableViewCell {
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
-            // ✅ Proper internal card padding
+            //Proper internal card padding
             contentStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
             contentStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             contentStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),

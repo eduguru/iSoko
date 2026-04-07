@@ -58,7 +58,7 @@ final class GridCollectionViewRowCell: UICollectionViewCell {
         self.items = items
         self.numberOfColumns = max(1, columns)
 
-        // ✅ Fix: Ensure layout is settled before measuring
+        //Fix: Ensure layout is settled before measuring
         collectionView.setNeedsLayout()
         collectionView.layoutIfNeeded()
 

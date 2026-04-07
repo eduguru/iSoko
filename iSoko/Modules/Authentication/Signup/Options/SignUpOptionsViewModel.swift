@@ -312,7 +312,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                     accessToken: state.guestToken
                 )
 
-                // ✅ Success path (status == 200 guaranteed)
+                //Success path (status == 200 guaranteed)
                 await MainActor.run {
                     // Proceed to OTP screen if phone is valid
                     self.goToOtp?(.phone(number: phone, title: "Verify your phone")) { [weak self] in
@@ -355,7 +355,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                     accessToken: state.guestToken
                 )
 
-                // ✅ Success (status == 200 guaranteed)
+                //Success (status == 200 guaranteed)
                 await MainActor.run {
                     self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
                         guard let self = self else { return }

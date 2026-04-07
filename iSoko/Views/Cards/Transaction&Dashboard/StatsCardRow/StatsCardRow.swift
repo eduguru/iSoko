@@ -26,7 +26,7 @@ public final class StatsCardRow: FormRow {
 
         cell.configure(with: config)
 
-        // ✅ Centralized tap handling
+        //Centralized tap handling
         cell.onItemTap = { [config] id in
             config.items.first(where: { $0.id == id })?.onTap?()
         }

@@ -12,20 +12,15 @@ public struct KeyValueRowModel {
 
     public var leftText: String
     public var rightText: String
-
     public var leftFontStyle: FontStyle
     public var rightFontStyle: FontStyle
-
     public var leftColor: UIColor?
     public var rightColor: UIColor?
-
     public var maxLeftLines: Int
     public var maxRightLines: Int
-
     public var leftEllipsis: AppEllipsisType
     public var rightEllipsis: AppEllipsisType
-
-    public var showsCard: Bool
+    public var card: CardSettings?
     public var showsTopDivider: Bool
     public var showsBottomDivider: Bool
     public var isEmphasized: Bool
@@ -42,7 +37,7 @@ public struct KeyValueRowModel {
         maxRightLines: Int = 1,
         leftEllipsis: AppEllipsisType = .tail,
         rightEllipsis: AppEllipsisType = .tail,
-        showsCard: Bool = false,
+        card: CardSettings? = nil,
         showsTopDivider: Bool = false,
         showsBottomDivider: Bool = false,
         isEmphasized: Bool = false,
@@ -58,7 +53,7 @@ public struct KeyValueRowModel {
         self.maxRightLines = maxRightLines
         self.leftEllipsis = leftEllipsis
         self.rightEllipsis = rightEllipsis
-        self.showsCard = showsCard
+        self.card = card
         self.showsTopDivider = showsTopDivider
         self.showsBottomDivider = showsBottomDivider
         self.isEmphasized = isEmphasized

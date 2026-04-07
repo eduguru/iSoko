@@ -119,7 +119,7 @@ public struct NewPagedResponse<Payload: Decodable>: Decodable {
     }
     
     public let data: Payload
-    public let query: [String: [String]]? // ✅ correct
+    public let query: [String: [String]]? //correct
     public let page: PageInfo
 }
 
