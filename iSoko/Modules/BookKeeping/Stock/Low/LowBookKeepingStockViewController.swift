@@ -9,23 +9,50 @@ import UIKit
 import DesignSystemKit
 
 class LowBookKeepingStockViewController: FormViewController, CloseableViewController {
+    
+    var goToCreateAction: (() -> Void)?
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Low Stock"
-        // Do any additional setup after loading the view.
-        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
+        title = "Stock"
         
+        if !makeRoot {
+            applyCloseButtonStyling(action: #selector(close), image: "backArrow")
+        }
+        
+        setupNavigationBar()
+    }
+    
+    private func setupNavigationBar() {
+        let createItem = UIBarButtonItem(
+            title: "Create",
+            style: .plain,
+            target: self,
+            action: #selector(didTapCreate)
+        )
+        
+        // Optional: make it slightly stronger (closer to your semibold look)
+        createItem.setTitleTextAttributes(
+            [.font: UIFont.systemFont(ofSize: 17, weight: .semibold)],
+            for: .normal
+        )
+        
+        navigationItem.rightBarButtonItem = createItem
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
     
-    @objc func close() {
+    // MARK: - Actions
+    @objc private func close() {
         closeAction?()
+    }
+    
+    @objc private func didTapCreate() {
+        goToCreateAction?()
     }
     
     deinit { }

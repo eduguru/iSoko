@@ -28,7 +28,7 @@ public class BookKeepingCoordinator: BaseCoordinator {
         model.goToRecordSales = goToBookKeepingSalesPayments// goToBookKeepingRecordSales
         
         model.goToTotalExpense = goToBookKeepingExpenses
-        model.goToAddExpense = goToBookKeepingAddExpense
+        model.goToAddExpense = goToAddBookKeepingExpense
         
         model.goToLowStock = goToBookKeepingStock
         model.goToLowStock = goToBookKeepingLowStock
@@ -71,28 +71,8 @@ public class BookKeepingCoordinator: BaseCoordinator {
             self?.router.pop()
         }
         
-        router.push(vc)
-    }
-    
-    public func goToBookKeepingRecordSales() {
-        let model = AddBookKeepingSalesViewModel()
-        
-        let vc = AddBookKeepingSalesViewController()
-        vc.viewModel = model
-        vc.closeAction = { [weak self] in
-            self?.router.pop()
-        }
-        
-        router.push(vc)
-    }
-    
-    public func goToBookKeepingAddExpense() {
-        let model = AddBookKeepingExpensesViewModel()
-        
-        let vc = AddBookKeepingExpensesViewController()
-        vc.viewModel = model
-        vc.closeAction = { [weak self] in
-            self?.router.pop()
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingStock()
         }
         
         router.push(vc)
@@ -107,6 +87,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
             self?.router.pop()
         }
         
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingCustomer()
+        }
+        
         router.push(vc)
     }
     
@@ -117,6 +101,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
+        }
+        
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingStock()
         }
         
         router.push(vc)
@@ -131,6 +119,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
             self?.router.pop()
         }
         
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingSupplier()
+        }
+        
         router.push(vc)
     }
     
@@ -141,6 +133,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
+        }
+        
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingStock()
         }
         
         router.push(vc)
@@ -155,6 +151,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
             self?.router.pop()
         }
         
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingExpense()
+        }
+        
         router.push(vc)
     }
     
@@ -165,6 +165,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
+        }
+        
+        vc.goToCreateAction = { [weak self] in
+            self?.goToAddBookKeepingSales()
         }
         
         router.push(vc)
@@ -203,6 +207,69 @@ public class BookKeepingCoordinator: BaseCoordinator {
         dismissModal() // will call router.dismiss()
         parentCoordinator?.removeChild(self)
     }
+}
+
+extension BookKeepingCoordinator {
+    public func goToAddBookKeepingExpense() {
+        let model = AddBookKeepingExpensesViewModel()
+        
+        let vc = AddBookKeepingExpensesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToAddBookKeepingSales() {
+        let model = AddBookKeepingSalesViewModel()
+        
+        let vc = AddBookKeepingSalesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToAddBookKeepingStock() {
+        let model = AddBookKeepingStockViewModel()
+        
+        let vc = AddBookKeepingStockViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToAddBookKeepingCustomer() {
+        let model = AddBookKeepingCustomersViewModel()
+        
+        let vc = AddBookKeepingCustomersViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToAddBookKeepingSupplier() {
+        let model = AddBookKeepingSuppliesViewModel()
+        
+        let vc = AddBookKeepingSuppliesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+
 }
 
 extension BookKeepingCoordinator {

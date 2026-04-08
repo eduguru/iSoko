@@ -30,7 +30,6 @@ public class ProductsCoordinator: BaseCoordinator {
         let vc = MyProductListingsViewController()
         vc.viewModel = viewModel
         
-        
         vc.goToCreateAction = { [weak self] in
             self?.gotoCreateProduct()
         }
