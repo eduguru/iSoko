@@ -210,8 +210,28 @@ public class BookKeepingCoordinator: BaseCoordinator {
 }
 
 extension BookKeepingCoordinator {
+    private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] result in
+            completion(result)
+            self?.router.pop()
+        }
+    }
+    
+    private func gotoSelectDate(config: DatePickerConfig,completion: @escaping (Date?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToAppleStyleCalendar(config: config) { [weak self] result in
+            completion(result)
+        }
+    }
+    
     public func goToAddBookKeepingExpense() {
         let model = AddBookKeepingExpensesViewModel()
+        model.goToDateSelection = gotoSelectDate
         
         let vc = AddBookKeepingExpensesViewController()
         vc.viewModel = model

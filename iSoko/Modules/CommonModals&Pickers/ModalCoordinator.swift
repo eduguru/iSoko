@@ -91,29 +91,23 @@ public class ModalCoordinator: BaseCoordinator {
 // ModalCoordinator+DatePicker.swift
 extension ModalCoordinator {
 
-    func goToDatePicker(
+    func goToDateSelection(
         config: DatePickerConfig,
         completion: @escaping (Date?) -> Void
     ) {
-
-        let viewModel = DatePickerViewModel(config: config)
-
-        viewModel.onConfirm = { [weak self] date in
-            completion(date)
-        }
-
         let vc = DatePickerViewController()
-        vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in
-            completion(nil)
+        vc.config = config
+
+        vc.onComplete = { [weak self] date in
+            completion(date)
+            self?.dismissModal()
         }
 
-        vc.modalPresentationStyle = .pageSheet
-        router.present(vc)
-    }
-}
+        let nav = UINavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .pageSheet
 
-extension ModalCoordinator {
+        router.present(nav)
+    }
 
     func goToCalendarPicker(
         mode: CalendarPickerMode,
@@ -145,6 +139,30 @@ extension ModalCoordinator {
         let nav = UINavigationController(rootViewController: picker)
         nav.modalPresentationStyle = .pageSheet
         nav.modalTransitionStyle = .coverVertical
+
+        router.present(nav)
+    }
+    
+    func goToAppleStyleCalendar(config: DatePickerConfig, completion: @escaping (Date?) -> Void) {
+        let pickerVC = AppleStyleCalendarPickerViewController()
+        pickerVC.config = config
+        pickerVC.onComplete = { date in
+            completion(date)
+        }
+
+        let nav = UINavigationController(rootViewController: pickerVC)
+
+        if #available(iOS 15.0, *) {
+            nav.modalPresentationStyle = .pageSheet
+            if let sheet = nav.sheetPresentationController {
+                sheet.detents = [.medium()]   // Compact height
+                sheet.prefersGrabberVisible = true
+            }
+        } else {
+            // iOS 14 fallback: form sheet gives a compact modal on iPad
+            nav.modalPresentationStyle = .formSheet
+            nav.preferredContentSize = CGSize(width: 350, height: 400) // adjust height as needed
+        }
 
         router.present(nav)
     }

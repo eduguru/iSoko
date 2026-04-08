@@ -7,61 +7,50 @@
 
 import UIKit
 
-// DatePickerViewController.swift
 final class DatePickerViewController: UIViewController {
 
-    var viewModel: DatePickerViewModel!
-    var closeAction: (() -> Void)?
+    // MARK: - Public
+    var config: DatePickerConfig!
+    var onComplete: ((Date?) -> Void)?
 
+    // MARK: - Private
     private let datePicker = UIDatePicker()
     private var monthYearPicker: MonthYearPickerView?
+    private var selectedDate: Date = Date()
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
-    }
-
-    private func setupUI() {
         view.backgroundColor = .systemBackground
-
-        setupHeader()
+        setupNavigation()
         setupPicker()
     }
 
-    private func setupHeader() {
-        let cancel = UIButton(type: .system)
-        cancel.setTitle("Cancel", for: .normal)
-        cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
+    // MARK: - Setup
+    private func setupNavigation() {
+        title = "Select Date"
 
-        let confirm = UIButton(type: .system)
-        confirm.setTitle("Confirm", for: .normal)
-        confirm.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Cancel",
+            style: .plain,
+            target: self,
+            action: #selector(cancelTapped)
+        )
 
-        let stack = UIStackView(arrangedSubviews: [cancel, UIView(), confirm])
-        stack.axis = .horizontal
-        stack.alignment = .center
-
-        view.addSubview(stack)
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
-            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
-        ])
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Done",
+            style: .done,
+            target: self,
+            action: #selector(doneTapped)
+        )
     }
 
     private func setupPicker() {
-        switch viewModel.config.mode {
+        selectedDate = config.initialDate ?? Date()
 
-        case .year:
+        switch config.mode {
+        case .fullDate, .year:
             setupSystemDatePicker()
-            viewModel.selectedDate = datePicker.date.yearOnlyNormalized
-            datePicker.addTarget(self, action: #selector(yearChanged), for: .valueChanged)
-
-        case .fullDate:
-            setupSystemDatePicker()
-            datePicker.addTarget(self, action: #selector(fullDateChanged), for: .valueChanged)
-
         case .monthYear:
             setupMonthYearPicker()
         }
@@ -70,9 +59,17 @@ final class DatePickerViewController: UIViewController {
     private func setupSystemDatePicker() {
         datePicker.preferredDatePickerStyle = .wheels
         datePicker.datePickerMode = .date
-        datePicker.minimumDate = viewModel.config.minimumDate
-        datePicker.maximumDate = viewModel.config.maximumDate
-        datePicker.date = viewModel.selectedDate
+        datePicker.locale = Locale.current
+        datePicker.calendar = Calendar.current
+        datePicker.minimumDate = config.minimumDate
+        datePicker.maximumDate = config.maximumDate
+        datePicker.date = selectedDate
+
+        if config.mode == .year {
+            selectedDate = datePicker.date.yearOnlyNormalized
+        }
+
+        datePicker.addTarget(self, action: #selector(dateChanged), for: .valueChanged)
 
         view.addSubview(datePicker)
         datePicker.translatesAutoresizingMaskIntoConstraints = false
@@ -84,13 +81,13 @@ final class DatePickerViewController: UIViewController {
 
     private func setupMonthYearPicker() {
         let picker = MonthYearPickerView(
-            minDate: viewModel.config.minimumDate,
-            maxDate: viewModel.config.maximumDate,
-            initialDate: viewModel.config.initialDate
+            minDate: config.minimumDate,
+            maxDate: config.maximumDate,
+            initialDate: config.initialDate
         )
 
         picker.onChange = { [weak self] date in
-            self?.viewModel.selectedDate = date
+            self?.selectedDate = date
         }
 
         monthYearPicker = picker
@@ -103,20 +100,22 @@ final class DatePickerViewController: UIViewController {
     }
 
     // MARK: - Actions
-
-    @objc private func yearChanged() {
-        viewModel.selectedDate = datePicker.date.yearOnlyNormalized
+    @objc private func dateChanged() {
+        switch config.mode {
+        case .year:
+            selectedDate = datePicker.date.yearOnlyNormalized
+        case .fullDate:
+            selectedDate = datePicker.date
+        case .monthYear:
+            break
+        }
     }
 
-    @objc private func fullDateChanged() {
-        viewModel.selectedDate = datePicker.date
-    }
-
-    @objc private func confirmTapped() {
-        viewModel.onConfirm?(viewModel.selectedDate)
+    @objc private func doneTapped() {
+        onComplete?(selectedDate)
     }
 
     @objc private func cancelTapped() {
-        closeAction?()
+        onComplete?(nil)
     }
 }

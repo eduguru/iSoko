@@ -12,8 +12,9 @@ import StorageKit
 
 final class AddBookKeepingExpensesViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-    var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
-    var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
+    
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    
     var gotoConfirm: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
@@ -35,9 +36,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             FormSection(
                 id: SectionTag.main.rawValue,
                 cells: [
-                    categoryDropdownRow,
-                    foundedYearRow,
-                    paymentMethodDropdownRow,
+                    dateRow,
                     amountInputRow,
                     supplierNameInputRow,
                     SpacerFormRow(tag: 20),
@@ -121,41 +120,19 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         )
     }
     
-    private lazy var categoryDropdownRow = DropdownFormRow(
-        tag: CellTag.category.rawValue,
-        config: DropdownFormConfig(
-            title: "Category",
-            placeholder: state.categories?.name ?? "Select location",
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handleCategorySelection()
-            }
-        )
-    )
-    
-    private lazy var paymentMethodDropdownRow = DropdownFormRow(
-        tag: CellTag.paymentMethod.rawValue,
-        config: DropdownFormConfig(
-            title: "Payment Method",
-            placeholder: state.paymentMethod?.name ?? "Select location",
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handlePaymentMethodSelection()
-            }
-        )
-    )
-    
-    private lazy var foundedYearRow = DropdownFormRow(
+    private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "\(state.foundedYear ?? 0000)",
+            placeholder: "Date",
             rightImage: UIImage(systemName: "calendar"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
-                self?.handleFoundedYearSelection()
+                let config = DatePickerConfig.year()
+                
+                self?.goToDateSelection(config) { selectedDate in
+                    print(selectedDate)
+                }
             }
         )
     )
@@ -219,34 +196,6 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     )
 
     // MARK: - handle selections
-    private func handleCategorySelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.categories = value
-            self.categoryDropdownRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.categoryDropdownRow.tag)
-        }
-    }
-    
-    private func handlePaymentMethodSelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.paymentMethod = value
-            self.paymentMethodDropdownRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.paymentMethodDropdownRow.tag)
-        }
-    }
-    
-    private func handleFoundedYearSelection() {
-        selectFoundedYear? { [weak self] value in
-            guard let self, let value else { return }
-            state.foundedYear = value
-            foundedYearRow.config.placeholder = "\(value)"
-            reloadRow(withTag: foundedYearRow.tag)
-        }
-    }
 
     // MARK: - Reload
     private func reloadRow(withTag tag: Int) {
@@ -272,7 +221,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         var amount: String = ""
         var supplierName: String = ""
         var description: String = ""
-        var foundedYear: Int?
+        var date: Date?
 
         var attachmentFile: PickedFile?
 
