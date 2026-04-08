@@ -18,6 +18,9 @@ final class AddProductImagesViewModel: FormViewModel {
 
     // MARK: - Navigation
     var gotoConfirm: (() -> Void)?
+    
+    /// NEW: preview full image
+    var onPreviewImage: ((PickedFile) -> Void)?
 
     // MARK: - State
     private var state = State()
@@ -48,7 +51,8 @@ final class AddProductImagesViewModel: FormViewModel {
             id: SectionTag.main.rawValue,
             cells: [
                 SpacerFormRow(tag: 20),
-                headerRow
+                headerRow,
+                stepIndicatorRow
             ]
         )
     }
@@ -106,14 +110,19 @@ final class AddProductImagesViewModel: FormViewModel {
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            titleFontStyle: .headline,
+            descriptionFontStyle: .subheadline
         )
+    )
+    
+    private lazy var stepIndicatorRow = StepStripFormRow(
+        tag: CellTag.steps.rawValue,
+        model: StepStripModel(totalSteps: 2, currentStep: 2)
     )
 
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
-            tag: UUID().hashValue, // ✅ avoid duplicate tag bug
+            tag: UUID().hashValue,
             model: TitleDescriptionModel(
                 title: title,
                 description: description,
@@ -155,10 +164,17 @@ final class AddProductImagesViewModel: FormViewModel {
         )
     )
 
-    // PREVIEW ROW
+    // PREVIEW ROW (with remove + tap)
     private lazy var imagePreviewRow = ImagePreviewFormRow(
         tag: CellTag.preview.rawValue,
-        items: []
+        items: [],
+        onRemove: { [weak self] index in
+            self?.removeImage(at: index)
+        },
+        onTap: { [weak self] index in
+            guard let image = self?.state.additionalImages[index] else { return }
+            self?.onPreviewImage?(image)
+        }
     )
 
     private lazy var continueButtonRow = ButtonFormRow(
@@ -213,6 +229,14 @@ final class AddProductImagesViewModel: FormViewModel {
         }
     }
 
+    // MARK: - Actions
+
+    private func removeImage(at index: Int) {
+        guard index < state.additionalImages.count else { return }
+        state.additionalImages.remove(at: index)
+        updatePreview()
+    }
+
     // MARK: - Preview Sync
 
     private func updatePreview() {
@@ -242,6 +266,7 @@ final class AddProductImagesViewModel: FormViewModel {
     private struct State {
         var primaryImage: PickedFile?
         var additionalImages: [PickedFile] = []
+        private let maxImages = 5
     }
 
     // MARK: - Tags
@@ -259,5 +284,6 @@ final class AddProductImagesViewModel: FormViewModel {
         case additionalImages
         case preview
         case continueButton
+        case steps
     }
 }

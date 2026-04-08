@@ -12,16 +12,20 @@ public final class ImagePreviewFormRow: FormRow {
 
     public let tag: Int
     public var items: [ImagePreviewItem]
+
     public let onRemove: ((Int) -> Void)?
+    public let onTap: ((Int) -> Void)?
 
     public init(
         tag: Int,
         items: [ImagePreviewItem],
-        onRemove: ((Int) -> Void)? = nil
+        onRemove: ((Int) -> Void)? = nil,
+        onTap: ((Int) -> Void)? = nil
     ) {
         self.tag = tag
         self.items = items
         self.onRemove = onRemove
+        self.onTap = onTap
     }
 
     public var reuseIdentifier: String { "ImagePreviewCell" }
@@ -40,7 +44,8 @@ public final class ImagePreviewFormRow: FormRow {
 
         cell.configure(
             items: items,
-            onRemove: onRemove
+            onRemove: onRemove,
+            onTap: onTap
         )
 
         return cell
@@ -55,6 +60,6 @@ public final class ImagePreviewFormRow: FormRow {
     }
 
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return items.isEmpty ? 0 : 110
+        return items.isEmpty ? 0.01 : 110
     }
 }

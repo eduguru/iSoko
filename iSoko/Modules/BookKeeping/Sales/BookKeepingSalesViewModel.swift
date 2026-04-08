@@ -20,6 +20,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     override init() {
         super.init()
+        
         self.sections = makeSections()
     }
     

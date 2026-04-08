@@ -10,16 +10,13 @@ import UIKit
 
 public final class SpacerFormRow: FormRow {
     public let tag: Int
-    public let height: CGFloat = 8
+    public let height: CGFloat
     public let reuseIdentifier: String = String(describing: SpacerFormCell.self)
     public var cellClass: AnyClass? { SpacerFormCell.self }
 
-    public init(tag: Int) {
-        self.tag = tag
-    }
-    
     public init(tag: Int, height: CGFloat = 8) {
         self.tag = tag
+        self.height = height
     }
 
     public func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
@@ -28,6 +25,6 @@ public final class SpacerFormRow: FormRow {
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        SpacerFormCell.height
+        return height
     }
 }

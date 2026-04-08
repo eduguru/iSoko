@@ -8,8 +8,8 @@
 import UIKit
 import DesignSystemKit
 
-
 class MyProductListingsViewController: FormViewController, CloseableViewController {
+    
     var goToCreateAction: (() -> Void)?
     var makeRoot: Bool = false
     
@@ -17,33 +17,43 @@ class MyProductListingsViewController: FormViewController, CloseableViewControll
         super.viewDidLoad()
 
         title = "My Products"
-        if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
-        let btn01 = UIButton(type: .system) //use .system for automatic tint/color handling
-        btn01.setTitle("Create", for: .normal)
-        btn01.setTitleColor(.app(.primary), for: .normal) //set an explicit color (or .label for adaptive)
-        btn01.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
-        btn01.addTarget(self, action: #selector(didTapButton01), for: .touchUpInside)
-
-        btn01.sizeToFit()
-
-        let actionButton01 = UIBarButtonItem(customView: btn01)
-        navigationItem.rightBarButtonItem = actionButton01
+        if !makeRoot {
+            applyCloseButtonStyling(action: #selector(close), image: "backArrow")
+        }
+        
+        setupNavigationBar()
+    }
+    
+    private func setupNavigationBar() {
+        let createItem = UIBarButtonItem(
+            title: "Create",
+            style: .plain,
+            target: self,
+            action: #selector(didTapCreate)
+        )
+        
+        // Optional: make it slightly stronger (closer to your semibold look)
+        createItem.setTitleTextAttributes(
+            [.font: UIFont.systemFont(ofSize: 17, weight: .semibold)],
+            for: .normal
+        )
+        
+        navigationItem.rightBarButtonItem = createItem
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
     
-    @objc func close() {
+    // MARK: - Actions
+    @objc private func close() {
         closeAction?()
     }
     
-    deinit { }
-    
-    @objc func didTapButton01() {
+    @objc private func didTapCreate() {
         goToCreateAction?()
     }
+    
+    deinit { }
 }
-
-

@@ -11,6 +11,7 @@ final class ImagePreviewTableViewCell: UITableViewCell {
 
     private var items: [ImagePreviewItem] = []
     private var onRemove: ((Int) -> Void)?
+    private var onTap: ((Int) -> Void)?
 
     private var collectionView: UICollectionView!
 
@@ -51,10 +52,12 @@ final class ImagePreviewTableViewCell: UITableViewCell {
 
     func configure(
         items: [ImagePreviewItem],
-        onRemove: ((Int) -> Void)?
+        onRemove: ((Int) -> Void)? = nil,
+        onTap: ((Int) -> Void)? = nil
     ) {
         self.items = items
         self.onRemove = onRemove
+        self.onTap = onTap
         collectionView.reloadData()
     }
 }
@@ -83,6 +86,9 @@ extension ImagePreviewTableViewCell: UICollectionViewDataSource, UICollectionVie
             item: item,
             onRemove: { [weak self] in
                 self?.onRemove?(indexPath.item)
+            },
+            onTap: { [weak self] in
+                self?.onTap?(indexPath.item)
             }
         )
 

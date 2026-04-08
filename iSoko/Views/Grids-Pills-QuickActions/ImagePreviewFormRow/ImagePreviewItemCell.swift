@@ -13,6 +13,7 @@ final class ImagePreviewItemCell: UICollectionViewCell {
     private let removeButton = UIButton(type: .system)
 
     private var onRemove: (() -> Void)?
+    private var onTap: (() -> Void)?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -34,6 +35,11 @@ final class ImagePreviewItemCell: UICollectionViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.layer.cornerRadius = 8
+        imageView.isUserInteractionEnabled = true
+
+        // Tap gesture for preview
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
+        imageView.addGestureRecognizer(tapGesture)
 
         removeButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
         removeButton.tintColor = .white
@@ -56,13 +62,19 @@ final class ImagePreviewItemCell: UICollectionViewCell {
 
     func configure(
         item: ImagePreviewItem,
-        onRemove: @escaping () -> Void
+        onRemove: @escaping () -> Void,
+        onTap: (() -> Void)? = nil
     ) {
         imageView.image = item.image
         self.onRemove = onRemove
+        self.onTap = onTap
     }
 
     @objc private func removeTapped() {
         onRemove?()
+    }
+
+    @objc private func imageTapped() {
+        onTap?()
     }
 }

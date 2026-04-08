@@ -34,6 +34,15 @@ final class AddProductImagesViewController: FormViewController {
                 completion(pickedFile)
             }
         }
+        
+        
+        vm.onPreviewImage = { [weak self] file in
+//            guard let data = file.fileData,
+//                  let image = UIImage(data: data) else { return }
+//
+//            let vc = ImagePreviewViewController(image: image)
+//            self?.present(vc, animated: true)
+        }
     }
 
     @objc func close() {
