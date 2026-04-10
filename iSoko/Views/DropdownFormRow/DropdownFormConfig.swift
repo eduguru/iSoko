@@ -30,8 +30,12 @@ public struct DropdownFormConfig {
 
     public var isEnabled: Bool
     public var showAsterisk: Bool
-
+    
+    public var actionImage: UIImage?
+    public var showsActionButton: Bool
+    
     public var onTap: (() -> Void)?
+    public var onActionTap: (() -> Void)?
 
     public init(
         title: String? = nil,
@@ -52,7 +56,10 @@ public struct DropdownFormConfig {
         cardBorderWidth: CGFloat = 1,
         isEnabled: Bool = true,
         showAsterisk: Bool = true,
-        onTap: (() -> Void)? = nil
+        onTap: (() -> Void)? = nil,
+        onActionTap: (() -> Void)? = nil,
+        actionImage: UIImage? = nil,
+        showsActionButton: Bool = false
     ) {
         self.title = title
         self.showTitle = showTitle
@@ -72,6 +79,13 @@ public struct DropdownFormConfig {
         self.cardBorderWidth = cardBorderWidth
         self.isEnabled = isEnabled
         self.showAsterisk = showAsterisk
+        
         self.onTap = onTap
+        
+        self.onActionTap = onActionTap
+        self.actionImage = actionImage
+        self.showsActionButton = showsActionButton
+        
+        
     }
 }

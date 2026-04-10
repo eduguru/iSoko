@@ -170,7 +170,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
                 button.setTitleColor(.app(.primary), for: .normal)
             case .plain:
                 button.backgroundColor = .clear
-                button.setTitleColor(.systemBlue, for: .normal)
+                button.setTitleColor(.app(.primary), for: .normal)
             case .custom(let bg, let text):
                 button.backgroundColor = bg
                 button.setTitleColor(text, for: .normal)

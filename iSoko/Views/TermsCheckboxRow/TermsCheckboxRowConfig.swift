@@ -31,7 +31,7 @@ public struct TermsCheckboxRowConfig {
         onToggle: ((Bool) -> Void)? = nil,
         onTermsTapped: (() -> Void)? = nil,
         onPrivacyTapped: (() -> Void)? = nil,
-        checkboxTintColor: UIColor = .systemBlue,
+        checkboxTintColor: UIColor = .app(.primary),
         textColor: UIColor = .label,
         font: UIFont = UIFont.preferredFont(forTextStyle: .footnote),
         useCardStyle: Bool = false,

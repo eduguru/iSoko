@@ -29,7 +29,7 @@ final class InlineActionButton: UIView {
         iconView.setContentHuggingPriority(.required, for: .horizontal)
 
         label.font = .preferredFont(forTextStyle: .subheadline)
-        label.textColor = .systemBlue
+        label.textColor = .app(.primary)
 
         stack.axis = .horizontal
         stack.spacing = 4

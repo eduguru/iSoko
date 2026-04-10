@@ -76,7 +76,7 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         self.model = model
 
         // Setup page control colors
-        pageControl.currentPageIndicatorTintColor = model.currentPageDotColor ?? .systemBlue
+        pageControl.currentPageIndicatorTintColor = model.currentPageDotColor ?? .app(.primary)
         pageControl.pageIndicatorTintColor = model.pageDotColor ?? .systemGray3
 
         if savedModel != model {

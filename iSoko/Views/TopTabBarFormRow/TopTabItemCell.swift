@@ -19,7 +19,7 @@ class TopTabItemCell: UICollectionViewCell {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
 
         underlineView.translatesAutoresizingMaskIntoConstraints = false
-        underlineView.backgroundColor = .systemBlue
+        underlineView.backgroundColor = .app(.primary)
         underlineView.isHidden = true
 
         contentView.addSubview(titleLabel)
@@ -44,7 +44,7 @@ class TopTabItemCell: UICollectionViewCell {
 
     func configure(title: String, isSelected: Bool) {
         titleLabel.text = title
-        titleLabel.textColor = isSelected ? .systemBlue : .label
+        titleLabel.textColor = isSelected ? .app(.primary) : .label
         underlineView.isHidden = !isSelected
     }
 }

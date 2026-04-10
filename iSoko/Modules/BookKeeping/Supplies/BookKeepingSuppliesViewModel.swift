@@ -177,7 +177,7 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                         title: "View Details",
                         icon: UIImage(systemName: "eye"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .systemBlue,
+                        textColor: .app(.primary),
                         onTap: {
                             print("Pay tapped on row \(index)")
                         }

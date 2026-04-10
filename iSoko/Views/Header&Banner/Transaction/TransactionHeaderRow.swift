@@ -34,30 +34,3 @@ final class TransactionHeaderRow: FormRow {
         UITableView.automaticDimension
     }
 }
-
-//TransactionHeaderRow(
-//    tag: 1,
-//    config: TransactionHeaderCellConfig(
-//        title: "Sale #987654",
-//        titleIcon: UIImage(systemName: "cart"),
-//        leftColumn: [
-//            .init(icon: UIImage(systemName: "calendar"),
-//                  text: NSAttributedString(string: "26/04/2025")),
-//            .init(icon: UIImage(systemName: "creditcard"),
-//                  text: NSAttributedString(string: "Mobile Money"))
-//        ],
-//        rightColumn: [
-//            .init(icon: UIImage(systemName: "person"),
-//                  text: NSAttributedString(string: "John Doe")),
-//            .init(icon: UIImage(systemName: "calendar.badge.exclamationmark"),
-//                  text: NSAttributedString(
-//                      string: "30/04/2025",
-//                      attributes: [.foregroundColor: UIColor.systemRed]
-//                  ))
-//        ],
-//        statusText: "Credit Sale",
-//        statusTextColor: .systemBlue,
-//        statusBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-//        cardStyle: .default
-//    )
-//)

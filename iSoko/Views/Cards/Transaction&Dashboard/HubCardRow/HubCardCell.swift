@@ -174,7 +174,7 @@ public final class HubCardCell: UITableViewCell {
 
         // Icon
         let icon = UIImageView(image: action.icon)
-        icon.tintColor = .systemBlue
+        icon.tintColor = .app(.primary)
         icon.contentMode = .scaleAspectFit
         icon.translatesAutoresizingMaskIntoConstraints = false
         icon.isUserInteractionEnabled = false // 🚀 disable interaction

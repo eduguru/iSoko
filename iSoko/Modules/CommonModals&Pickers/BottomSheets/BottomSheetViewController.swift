@@ -127,7 +127,7 @@ public final class BottomSheetViewController: UIViewController {
 
             switch btnModel.style {
             case .primary:
-                button.backgroundColor = .systemBlue
+                button.backgroundColor = .app(.primary)
                 button.setTitleColor(.white, for: .normal)
             case .secondary:
                 button.backgroundColor = .secondarySystemBackground

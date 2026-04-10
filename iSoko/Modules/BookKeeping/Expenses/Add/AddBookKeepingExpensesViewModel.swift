@@ -38,8 +38,10 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
                 cells: [
                     dateRow,
                     amountInputRow,
-                    supplierNameInputRow,
+                    supplierRow,
+                    categoryRow,
                     SpacerFormRow(tag: 20),
+                    paymentOptionsRow,
                     descriptionRow,
                     uploadAttachmentRow,
                     continueButtonRow
@@ -133,6 +135,53 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
                 self?.goToDateSelection(config) { selectedDate in
                     print(selectedDate)
                 }
+            }
+        )
+    )
+    
+    private lazy var supplierRow = DropdownFormRow(
+        tag: CellTag.date.rawValue,
+        config: DropdownFormConfig(
+            title: "Supplier",
+            placeholder: "Select an option",
+            rightImage: UIImage(systemName: "chevron.down"),
+            onTap: {
+                print("open dropdown")
+            },
+            onActionTap: {
+                print("add new / pick contact")
+            },
+            actionImage: UIImage(systemName: "person.badge.plus"),
+            showsActionButton: true
+        )
+    )
+    
+    private lazy var categoryRow = DropdownFormRow(
+        tag: CellTag.date.rawValue,
+        config: DropdownFormConfig(
+            title: "Category",
+            placeholder: "Select an option",
+            rightImage: UIImage(systemName: "chevron.down"),
+            onTap: {
+                print("open dropdown")
+            },
+            onActionTap: {
+                print("add new / pick")
+            },
+            actionImage: UIImage(systemName: "person.badge.plus"),
+            showsActionButton: true
+        )
+    )
+    
+    private lazy var paymentOptionsRow = DropdownFormRow(
+        tag: CellTag.date.rawValue,
+        config: DropdownFormConfig(
+            title: "Payment Method",
+            placeholder: "Date",
+            rightImage: UIImage(systemName: "calendar"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                
             }
         )
     )

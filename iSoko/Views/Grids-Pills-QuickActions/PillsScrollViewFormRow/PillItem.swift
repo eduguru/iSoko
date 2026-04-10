@@ -31,11 +31,11 @@ public struct PillItem {
         title: String,
         isSelected: Bool = false,
         backgroundColor: UIColor = .systemGray5,
-        selectedBackgroundColor: UIColor = .systemBlue,
+        selectedBackgroundColor: UIColor = .app(.primary),
         textColor: UIColor = .label,
         selectedTextColor: UIColor = .white,
         borderColor: UIColor = .clear,
-        selectedBorderColor: UIColor = .systemBlue,
+        selectedBorderColor: UIColor = .app(.primary),
         font: UIFont = .systemFont(ofSize: 14),
         cornerRadius: CGFloat = 16,
         horizontalPadding: CGFloat = 12

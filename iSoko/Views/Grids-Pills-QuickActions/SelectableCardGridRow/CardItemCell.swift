@@ -59,7 +59,7 @@ final class CardItemCell: UICollectionViewCell {
         // MARK: Checkmark
         checkmark.translatesAutoresizingMaskIntoConstraints = false
         checkmark.image = UIImage(systemName: "checkmark.circle.fill")
-        checkmark.tintColor = .systemBlue
+        checkmark.tintColor = .app(.primary)
         checkmark.isHidden = true
         containerView.addSubview(checkmark)
 
@@ -103,8 +103,8 @@ final class CardItemCell: UICollectionViewCell {
         iconView.isHidden = icon == nil
 
         if selected {
-            containerView.layer.borderColor = UIColor.systemBlue.cgColor
-            containerView.backgroundColor = UIColor.systemBlue.withAlphaComponent(0.1)
+            containerView.layer.borderColor = UIColor.app(.primary).cgColor
+            containerView.backgroundColor = UIColor.app(.primary).withAlphaComponent(0.1)
             checkmark.isHidden = false
         } else {
             containerView.layer.borderColor = UIColor.systemGray4.cgColor

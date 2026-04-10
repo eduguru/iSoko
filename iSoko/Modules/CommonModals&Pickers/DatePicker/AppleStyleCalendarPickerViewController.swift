@@ -71,7 +71,7 @@ final class AppleStyleCalendarPickerViewController: UIViewController, FSCalendar
         // Styling
         calendar.appearance.headerMinimumDissolvedAlpha = 0.0
         calendar.appearance.weekdayTextColor = .secondaryLabel
-        calendar.appearance.todayColor = .systemBlue
+        calendar.appearance.todayColor = .app(.primary)
         calendar.appearance.selectionColor = .systemGreen
         calendar.appearance.titleDefaultColor = .label
         calendar.appearance.titleTodayColor = .white

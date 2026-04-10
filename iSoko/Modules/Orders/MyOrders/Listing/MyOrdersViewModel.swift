@@ -164,7 +164,7 @@ final class MyOrdersViewModel: FormViewModel {
                         title: "View details",
                         icon: UIImage(systemName: "eye"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.1),
-                        textColor: .systemBlue,
+                        textColor: .app(.primary),
                         onTap: { [weak self] in
                             self?.goToDetails?(order)
                         }
