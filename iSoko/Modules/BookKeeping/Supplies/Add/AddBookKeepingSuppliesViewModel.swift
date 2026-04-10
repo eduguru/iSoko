@@ -13,6 +13,7 @@ import StorageKit
 final class AddBookKeepingSuppliesViewModel: FormViewModel {
     
     var gotoConfirm: (() -> Void)?
+    var goToSelectExpenseCategory: (() -> Void)? = { }
 
     // MARK: -
     private var state = State()
@@ -29,12 +30,15 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
             FormSection(
                 id: SectionTag.main.rawValue,
                 cells: [
+                    titleFormRow,
+                    SpacerFormRow(tag: 10, height: 16),
                     supplierNameInputRow,
                     phoneNumberInputRow,
                     emailAddressInputRow,
-                    countryInputRow,
+                    // countryInputRow,
                     townInputRow,
                     streetAddressInputRow,
+                    categoryRow,
 
                     SpacerFormRow(tag: 20),
                     continueButtonRow
@@ -75,18 +79,53 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
 
     private lazy var townInputRow = makeInputRow(
         tag: CellTag.town.rawValue,
-        title: "Town",
-        placeholder: "Town",
+        title: "City/Town",
+        placeholder: "City/Town (optional)",
         keyboard: .default
     )
 
     private lazy var streetAddressInputRow = makeInputRow(
         tag: CellTag.streetAddress.rawValue,
-        title: "Street Address",
-        placeholder: "Street Address",
+        title: "Physical Address",
+        placeholder: "Physical Address (optional)",
         keyboard: .default
     )
-
+    
+    private lazy var categoryRow = DropdownFormRow(
+        tag: CellTag.categoryRow.rawValue,
+        config: DropdownFormConfig(
+            title: "Category",
+            placeholder: "Select an option",
+            rightImage: UIImage(systemName: "chevron.down"),
+            onTap: { [weak self] in
+                self?.goToSelectExpenseCategory?()
+            },
+            onActionTap: { [weak self] in
+                self?.goToSelectExpenseCategory?()
+            },
+            actionImage: UIImage(systemName: "plus.square"),
+            showsActionButton: true
+        )
+    )
+    
+    private lazy var titleFormRow: FormRow = makeTitleRow(
+        title: "Register Supplier",
+        description: "Enter Details Below"
+    )
+    
+    private func makeTitleRow(title: String, description: String) -> FormRow {
+        TitleDescriptionFormRow(
+            tag: UUID().hashValue,
+            model: TitleDescriptionModel(
+                title: title,
+                description: description,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .headline,
+                descriptionFontStyle: .subheadline
+            )
+        )
+    }
     // MARK: - Row Builder
 
     private func makeInputRow(
@@ -202,5 +241,6 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         case country = 4
         case town = 5
         case streetAddress = 6
+        case categoryRow = 7
     }
 }

@@ -210,6 +210,15 @@ public class BookKeepingCoordinator: BaseCoordinator {
 }
 
 extension BookKeepingCoordinator {
+    private func goToCommonSelection(_ type: CommonUtilityOption, _ staticOptions: [CommonIdNameModel]? = nil, _ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToCommonSelection(type, staticOptions) { [weak self] result in
+            completion(result)
+        }
+    }
+    
     private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
         let coordinator = ModalCoordinator(router: router)
         // coordinator.delegate = self
@@ -233,6 +242,11 @@ extension BookKeepingCoordinator {
         let model = AddBookKeepingExpensesViewModel()
         model.goToDateSelection = gotoSelectDate
         
+        model.goToAddSupplier = goToAddBookKeepingSupplier
+        model.goToSelectSupplier = goToSelectSupplier
+        model.goToSelectExpenseCategory = goToSelectExpenseCategory
+        model.goToAddExpenseCategory = goToAddExpenseCategory
+        
         let vc = AddBookKeepingExpensesViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
@@ -240,6 +254,21 @@ extension BookKeepingCoordinator {
         }
         
         router.push(vc)
+    }
+    
+    public func goToSelectSupplier() {
+        goToCommonSelection(CommonUtilityOption.ageGroups, nil) { [weak self]_ in
+            
+        }
+    }
+    
+    public func goToSelectExpenseCategory() {
+        goToCommonSelection(CommonUtilityOption.ageGroups, nil) { [weak self]_ in
+            
+        }
+    }
+    
+    public func goToAddExpenseCategory() {
     }
     
     public func goToAddBookKeepingSales() {
@@ -289,7 +318,7 @@ extension BookKeepingCoordinator {
         
         router.push(vc)
     }
-
+    
 }
 
 extension BookKeepingCoordinator {

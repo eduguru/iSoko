@@ -10,14 +10,22 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class AddBookKeepingExpensesViewModel: FormViewModel {
-    var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     
+    var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
+    var onPreviewImage: ((PickedFile) -> Void)?
+    
+    var goToAddSupplier: (() -> Void)? = { }
+    var goToSelectSupplier: (() -> Void)? = { }
+    var goToSelectExpenseCategory: (() -> Void)? = { }
+    var goToAddExpenseCategory: (() -> Void)? = { }
+    
+    var gotoConfirm: (() -> Void)? = { }
+    
+    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
     
-    var gotoConfirm: (() -> Void)?
-
-    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     @MainActor private let countryHelper = CountryHelper()
 
     // MARK: -
@@ -26,8 +34,11 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     // MARK: -
     override init() {
         super.init()
-        sections = makeSections()
-        configureUploadHandlers()
+        
+        Task { @MainActor in
+            sections = makeSections()
+            configureUploadHandlers()
+        }
     }
 
     // MARK: - Section Builder
@@ -43,45 +54,17 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
                     SpacerFormRow(tag: 20),
                     paymentOptionsRow,
                     descriptionRow,
-                    uploadAttachmentRow,
+                    SpacerFormRow(tag: 20),
+                    otherImagesTitleFormRow,
+                    imagePreviewRow,
+                    additionalImagesRow,
                     continueButtonRow
                 ]
             )
         ]
     }
 
-    // MARK: - Upload Handlers
-    private func configureUploadHandlers() {
-        // Logo Upload
-        uploadAttachmentRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
-
-            switch result {
-            case .pick:
-                self.pickFile? { picked in
-                    guard let picked else { return }
-
-                    self.state.attachmentFile = picked
-
-                    if let data = picked.fileData,
-                       let image = UIImage(data: data) {
-                        self.uploadAttachmentRow.selectedImage = image
-                        self.uploadAttachmentRow.selectedDocumentName = nil
-                    } else {
-                        self.uploadAttachmentRow.selectedDocumentName = picked.fileName
-                        self.uploadAttachmentRow.selectedImage = nil
-                    }
-
-                    self.reloadRow(withTag: self.uploadAttachmentRow.tag)
-                }
-            default:
-                break
-            }
-        }
-    }
-
     // MARK: - Rows
-
     private lazy var amountInputRow = makeInputRow(
         tag: CellTag.amount.rawValue,
         title: "Amount *",
@@ -145,11 +128,11 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             title: "Supplier",
             placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
-            onTap: {
-                print("open dropdown")
+            onTap: { [weak self] in
+                self?.goToSelectSupplier?()
             },
-            onActionTap: {
-                print("add new / pick contact")
+            onActionTap: { [weak self] in
+                self?.goToAddSupplier?()
             },
             actionImage: UIImage(systemName: "person.badge.plus"),
             showsActionButton: true
@@ -157,18 +140,18 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     )
     
     private lazy var categoryRow = DropdownFormRow(
-        tag: CellTag.date.rawValue,
+        tag: CellTag.categoryRow.rawValue,
         config: DropdownFormConfig(
             title: "Category",
             placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
-            onTap: {
-                print("open dropdown")
+            onTap: { [weak self] in
+                self?.goToSelectExpenseCategory?()
             },
-            onActionTap: {
-                print("add new / pick")
+            onActionTap: { [weak self] in
+                self?.goToAddExpenseCategory?()
             },
-            actionImage: UIImage(systemName: "person.badge.plus"),
+            actionImage: UIImage(systemName: "plus.square"),
             showsActionButton: true
         )
     )
@@ -177,7 +160,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Payment Method",
-            placeholder: "Date",
+            placeholder: "Method",
             rightImage: UIImage(systemName: "calendar"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -185,20 +168,53 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             }
         )
     )
+    
+    private lazy var otherImagesTitleFormRow: FormRow = makeTitleRow(
+        title: "Add Receipt Images",
+        description: ""
+    )
+    
+    private func makeTitleRow(title: String, description: String) -> FormRow {
+        TitleDescriptionFormRow(
+            tag: UUID().hashValue,
+            model: TitleDescriptionModel(
+                title: title,
+                description: description,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .body,
+                descriptionFontStyle: .subheadline
+            )
+        )
+    }
 
-    public lazy var uploadAttachmentRow = UploadFormRow(
+    private lazy var additionalImagesRow = UploadFormRow(
         tag: CellTag.attachment.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Upload Attachment (Optional)",
-            subtitle: ".png, .jpg, .jpeg up to 5MB",
-            icon: UIImage(systemName: "photo"),
+            title: "Add Image",
+            subtitle: "",
+            icon: UIImage(systemName: "plus"),
             borderColor: .lightGray,
             backgroundColor: .clear,
             cornerRadius: 12,
-            height: 120
+            height: 100
         )
     )
+
+    // PREVIEW ROW (with remove + tap)
+    private lazy var imagePreviewRow = ImagePreviewFormRow(
+        tag: CellTag.preview.rawValue,
+        items: [],
+        onRemove: { [weak self] index in
+            self?.removeImage(at: index)
+        },
+        onTap: { [weak self] index in
+            guard let image = self?.state.additionalImages[index] else { return }
+            self?.onPreviewImage?(image)
+        }
+    )
+    
 
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
@@ -243,6 +259,45 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             }
         )
     )
+    
+    // MARK: - Upload Handlers
+
+    private func configureUploadHandlers() {
+        // ADDITIONAL IMAGES (ARRAY)
+        additionalImagesRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+
+            if case .pick = result {
+                self.pickFile? { picked in
+                    guard let picked else { return }
+
+                    self.state.additionalImages.append(picked)
+                    self.updatePreview()
+                }
+            }
+        }
+    }
+
+    // MARK: - Actions
+
+    private func removeImage(at index: Int) {
+        guard index < state.additionalImages.count else { return }
+        state.additionalImages.remove(at: index)
+        updatePreview()
+    }
+
+    // MARK: - Preview Sync
+
+    private func updatePreview() {
+        imagePreviewRow.items = state.additionalImages.map { file in
+            ImagePreviewItem(
+                image: file.fileData.flatMap { UIImage(data: $0) },
+                fileName: file.fileName
+            )
+        }
+
+        reloadRow(withTag: imagePreviewRow.tag)
+    }
 
     // MARK: - handle selections
 
@@ -273,6 +328,9 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         var date: Date?
 
         var attachmentFile: PickedFile?
+        
+        var additionalImages: [PickedFile] = []
+        private let maxImages = 5
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
@@ -295,6 +353,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         case continueButton = 9
         case attachment = 11
         case description = 12
+        case preview
+        case categoryRow
     }
 }
-

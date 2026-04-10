@@ -9,17 +9,18 @@ import DesignSystemKit
 import UIKit
 
 final class BasicProfileDataViewModel: FormViewModel {
-    // var gotoSelectGender: (_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _, _ in }
-    var gotoSelectGender: ( _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
-    var gotoSelectAgeRange: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
-    var gotoSelectRole: (_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void = { _ in }
-    var gotoSelectLocation: (_ completion: @escaping (LocationModel?) -> Void) -> Void = { _ in }
-
-    var gotoSelectOrgType: (_ completion: @escaping (OrganisationTypeModel?) -> Void) -> Void = { _ in }
-    var gotoSelectOrgSize: (_ completion: @escaping (OrganisationSizeModel?) -> Void) -> Void = { _ in }
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
+   
+    var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
+    var gotoSelectOrgType: (CommonUtilityOption, _ completion: @escaping (OrganisationTypeModel?) -> Void) -> Void = { _, _ in }
+    var gotoSelectOrgSize: (CommonUtilityOption, _ completion: @escaping (OrganisationSizeModel?) -> Void) -> Void = { _, _ in }
 
     var gotoConfirm: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
-
+    
     private var state: State?
 
     // MARK: - Init
@@ -234,12 +235,7 @@ final class BasicProfileDataViewModel: FormViewModel {
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
                 onTap: { [weak self] in
-                    self?.gotoSelectOrgType { selected in
-                        guard let self = self, let value = selected else { return }
-                        self.state?.orgType = value
-                        self.orgTypeDropdownRow.config.placeholder = value.name ?? "Org Type"
-                        self.reloadRowWithTag(self.orgTypeDropdownRow.tag)
-                    }
+                    self?.handleOrgTypeSelection()
                 }
             )
         )
@@ -254,12 +250,7 @@ final class BasicProfileDataViewModel: FormViewModel {
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
                 onTap: { [weak self] in
-                    self?.gotoSelectOrgSize { selected in
-                        guard let self = self, let value = selected else { return }
-                        self.state?.orgSize = value
-                        self.orgSizeDropdownRow.config.placeholder = value.name ?? "Org Size"
-                        self.reloadRowWithTag(self.orgSizeDropdownRow.tag)
-                    }
+                    self?.handleOrgSizeSelection()
                 }
             )
         )
@@ -327,7 +318,7 @@ final class BasicProfileDataViewModel: FormViewModel {
 
     // MARK: - Selection Handlers
     private func handleGenderSelection() {
-        gotoSelectGender() { [weak self] value in
+        goToCommonSelectionOptions(.userGender(page: 0, count: 10), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.gender = value
             self.selectGenderRow.config.placeholder = value.name
@@ -336,7 +327,7 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     private func handleAgeRangeSelection() {
-        gotoSelectAgeRange { [weak self] value in
+        goToCommonSelectionOptions(.ageGroups, nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.ageRange = value
             self.selectAgeRangeRow.config.placeholder = value.name
@@ -345,21 +336,39 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     private func handleRoleSelection() {
-        gotoSelectRole { [weak self] value in
+        goToCommonSelectionOptions(.userRoles(page: 0, count: 100), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.roles = value
             self.selectRoleRow.config.placeholder = value.name
             self.reloadRowWithTag(self.selectRoleRow.tag)
         }
     }
-
+    
     private func handleLocationSelection() {
-        gotoSelectLocation { [weak self] value in
+        gotoSelectLocation(.locations(page: 0, count: 100)) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.location = value
             self.selectLocationRow.config.placeholder = value.name ?? ""
             
             self.reloadRowWithTag(self.selectLocationRow.tag)
+        }
+    }
+    
+    private func handleOrgSizeSelection() {
+        gotoSelectOrgSize(.organisationSize(page: 0, count: 100)) {[weak self] selected in
+            guard let self = self, let value = selected else { return }
+            self.state?.orgSize = value
+            self.orgSizeDropdownRow.config.placeholder = value.name ?? "Org Size"
+            self.reloadRowWithTag(self.orgSizeDropdownRow.tag)
+        }
+    }
+    
+    private func handleOrgTypeSelection() {
+        gotoSelectOrgType(.organisationType(page: 0, count: 100)) {[weak self] selected in
+            guard let self = self, let value = selected else { return }
+            self.state?.orgType = value
+            self.orgTypeDropdownRow.config.placeholder = value.name ?? "Org Type"
+            self.reloadRowWithTag(self.orgTypeDropdownRow.tag)
         }
     }
 

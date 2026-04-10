@@ -12,6 +12,30 @@ import UIKit
 public class ModalCoordinator: BaseCoordinator {
     
     public override func start() { }
+    
+    public func goToCommonSelection(_ type: CommonUtilityOption, _ staticOptions: [CommonIdNameModel]? = nil, _ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type, options: staticOptions)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .idName(let model):
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.push(vc, animated: true)
+    }
 
     // MARK: - Country Selection
     public func goToCountrySelection(completion: @escaping (Country) -> Void) {
