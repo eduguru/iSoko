@@ -1,8 +1,8 @@
 //
-//  AddBookKeepingSuppliesViewModel.swift
+//  AddSupplierCategoryViewModel.swift
 //  
 //
-//  Created by Edwin Weru on 18/02/2026.
+//  Created by Edwin Weru on 13/04/2026.
 //
 
 import DesignSystemKit
@@ -10,12 +10,16 @@ import UIKit
 import UtilsKit
 import StorageKit
 
-final class AddBookKeepingSuppliesViewModel: FormViewModel {
+final class AddSupplierCategoryViewModel: FormViewModel {
     
     var gotoConfirm: (() -> Void)?
-    var goToSelectCategory: (() -> Void)? = { }
-    var goToAddCategory: (() -> Void)? = { }
     
+    var goToAddCategorySuccess: ((SupplierCategoryResponse) -> Void)? = { _ in }
+    var goToSelectExpenseCategory: (() -> Void)? = { }
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+
     // MARK: -
     private var state = State()
 
@@ -23,6 +27,27 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     override init() {
         super.init()
         sections = makeSections()
+    }
+    
+    // MARK: - Fetch
+    override func fetchData() {
+        
+    }
+    
+    // MARK: - Network
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.addSupplierCategories(name: state.name, accessToken: state.oauthToken)
+                
+            state.SupplierCategory = response
+            goToAddCategorySuccess?(response)
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
     }
 
     // MARK: - Section Builder
@@ -33,14 +58,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
                 cells: [
                     titleFormRow,
                     SpacerFormRow(tag: 10, height: 16),
-                    supplierNameInputRow,
-                    phoneNumberInputRow,
-                    emailAddressInputRow,
-                    // countryInputRow,
-                    townInputRow,
-                    streetAddressInputRow,
-                    categoryRow,
-
+                    nameInputRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
                 ]
@@ -49,69 +67,16 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     }
 
     // MARK: - Rows
-
-    private lazy var supplierNameInputRow = makeInputRow(
+    private lazy var nameInputRow = makeInputRow(
         tag: CellTag.supplierName.rawValue,
-        title: "Supplier Name",
-        placeholder: "Supplier Name",
+        title: "Enter Category name",
+        placeholder: "Enter Category name",
         keyboard: .default
-    )
-
-    private lazy var phoneNumberInputRow = makeInputRow(
-        tag: CellTag.phoneNumber.rawValue,
-        title: "Phone Number",
-        placeholder: "Phone Number",
-        keyboard: .phonePad
-    )
-
-    private lazy var emailAddressInputRow = makeInputRow(
-        tag: CellTag.emailAddress.rawValue,
-        title: "Email Address",
-        placeholder: "Email Address",
-        keyboard: .emailAddress
-    )
-
-    private lazy var countryInputRow = makeInputRow(
-        tag: CellTag.country.rawValue,
-        title: "Country",
-        placeholder: "Country",
-        keyboard: .default
-    )
-
-    private lazy var townInputRow = makeInputRow(
-        tag: CellTag.town.rawValue,
-        title: "City/Town",
-        placeholder: "City/Town (optional)",
-        keyboard: .default
-    )
-
-    private lazy var streetAddressInputRow = makeInputRow(
-        tag: CellTag.streetAddress.rawValue,
-        title: "Physical Address",
-        placeholder: "Physical Address (optional)",
-        keyboard: .default
-    )
-    
-    private lazy var categoryRow = DropdownFormRow(
-        tag: CellTag.categoryRow.rawValue,
-        config: DropdownFormConfig(
-            title: "Category",
-            placeholder: "Select an option",
-            rightImage: UIImage(systemName: "chevron.down"),
-            onTap: { [weak self] in
-                self?.goToSelectCategory?()
-            },
-            onActionTap: { [weak self] in
-                self?.goToAddCategory?()
-            },
-            actionImage: UIImage(systemName: "plus.square"),
-            showsActionButton: true
-        )
     )
     
     private lazy var titleFormRow: FormRow = makeTitleRow(
-        title: "Register Supplier",
-        description: "Enter Details Below"
+        title: "Add a new Category",
+        description: "Enter a unique name for the new category to help organize your supplier catalog"
     )
     
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -153,22 +118,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
                     switch tag {
 
                     case CellTag.supplierName.rawValue:
-                        self.state.supplierName = newText
-
-                    case CellTag.phoneNumber.rawValue:
-                        self.state.phoneNumber = newText
-
-                    case CellTag.emailAddress.rawValue:
-                        self.state.emailAddress = newText
-
-                    case CellTag.country.rawValue:
-                        self.state.country = newText
-
-                    case CellTag.town.rawValue:
-                        self.state.town = newText
-
-                    case CellTag.streetAddress.rawValue:
-                        self.state.streetAddress = newText
+                        self.state.name = newText
 
                     default:
                         break
@@ -207,18 +157,19 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        gotoConfirm?()
+        Task {
+            let success = await performNetworkRequest()
+            
+            if !success {
+                print("Failed to fetch add supplier category data")
+            }
+        }
     }
 
     // MARK: - State
     private struct State {
-
-        var supplierName: String = ""
-        var phoneNumber: String = ""
-        var emailAddress: String = ""
-        var country: String = ""
-        var town: String = ""
-        var streetAddress: String = ""
+        var name: String = ""
+        var SupplierCategory: SupplierCategoryResponse?
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
@@ -237,11 +188,6 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     private enum CellTag: Int {
         case continueButton = 0
         case supplierName = 1
-        case phoneNumber = 2
-        case emailAddress = 3
-        case country = 4
-        case town = 5
-        case streetAddress = 6
         case categoryRow = 7
     }
 }

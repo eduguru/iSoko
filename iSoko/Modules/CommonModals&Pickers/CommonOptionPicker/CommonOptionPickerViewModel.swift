@@ -14,10 +14,13 @@ import StorageKit
 final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel {
     var hasPrimaryActionButton: Bool = true
     var confirmSelection: ((CommonSelection) -> Void)? = { _ in }
-
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     private var commonUtilitiesService: CommonUtilitiesServiceImpl
+    
     private var state: State
-
+    
     // MARK: - Init
     init(
         option: CommonUtilityOption,
@@ -48,17 +51,16 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
                 let models: [CommonIdNameModel]
 
                 switch state.commonUtilityOption {
-                case .userRoles, .userTypes, .userGender, .ageGroups:
+                case .userRoles, .userTypes, .userGender, .ageGroups, .suppliers:
                     guard let items = response as? [CommonIdNameResponse] else {
                         print("Unexpected response type for CommonIdNameResponse")
                         return
                     }
 
                     switch state.commonUtilityOption {
-                    case .userRoles: state.rawUserRoles = items
-                    case .userTypes: state.rawUserTypes = items
-                    case .userGender: state.rawGenders = items
-                    case .ageGroups: state.rawAgeGroups = items
+                    case .userRoles, .userTypes, .userGender, .ageGroups, .suppliers:
+                        state.rawCommonIdNameResponse = items
+                        
                     default: break
                     }
 
@@ -240,10 +242,8 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         var rawLocationOptions: [LocationResponse] = []
         var rawOrganisationSizes: [OrganisationSizeResponse] = []
         var rawOrganisationTypes: [OrganisationTypeResponse] = []
-        var rawUserRoles: [CommonIdNameResponse] = []
-        var rawUserTypes: [CommonIdNameResponse] = []
-        var rawGenders: [CommonIdNameResponse] = []
-        var rawAgeGroups: [CommonIdNameResponse] = []
+        
+        var rawCommonIdNameResponse: [CommonIdNameResponse] = []
 
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
@@ -293,6 +293,8 @@ extension CommonOptionPickerViewModel {
             return try await commonUtilitiesService.getUserAgeGroups(accessToken: state.guestToken)
         case let .locations(page, count):
             return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken)
+        case .suppliers(page: let page, count: let count):
+            return try await bookKeepingService.getSupplierCategories(page: page, count: count, accessToken: state.oauthToken).data
         }
     }
 }

@@ -11,10 +11,12 @@ public enum CommonUtilityOption {
     case userRoles(page: Int, count: Int)
     case userTypes(page: Int, count: Int)
     case userGender(page: Int, count: Int)
+    case ageGroups
+    
     case organisationType(page: Int, count: Int)
     case organisationSize(page: Int, count: Int)
 
-    case ageGroups
     case locations(page: Int, count: Int)
-    //we add more cases as needed
+    
+    case suppliers(page: Int, count: Int)
 }

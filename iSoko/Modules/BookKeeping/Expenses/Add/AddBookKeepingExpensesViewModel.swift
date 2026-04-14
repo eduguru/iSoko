@@ -12,14 +12,19 @@ import StorageKit
 
 @MainActor
 final class AddBookKeepingExpensesViewModel: FormViewModel {
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
     
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
-    
-    var goToAddSupplier: (() -> Void)? = { }
-    var goToSelectSupplier: (() -> Void)? = { }
+            
     var goToSelectExpenseCategory: (() -> Void)? = { }
     var goToAddExpenseCategory: (() -> Void)? = { }
+    
+    var goToAddSupplier: (() -> Void)? = { }
     
     var gotoConfirm: (() -> Void)? = { }
     
@@ -123,13 +128,13 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     )
     
     private lazy var supplierRow = DropdownFormRow(
-        tag: CellTag.date.rawValue,
+        tag: CellTag.supplier.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
             placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
-                self?.goToSelectSupplier?()
+                self?.handleSupplierSelection()
             },
             onActionTap: { [weak self] in
                 self?.goToAddSupplier?()
@@ -157,7 +162,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     )
     
     private lazy var paymentOptionsRow = DropdownFormRow(
-        tag: CellTag.date.rawValue,
+        tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
             title: "Payment Method",
             placeholder: "Method",
@@ -301,7 +306,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
 
     // MARK: - handle selections
 
-    // MARK: - Reload
+    // MARK: - Reload // MARK: - Helpers
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -310,6 +315,17 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             }
         }
     }
+
+    // MARK: - Selection Handlers
+    private func handleSupplierSelection() {
+        goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            // self.state?.gender = value
+            self.supplierRow.config.placeholder = value.name
+            self.reloadRow(withTag: self.supplierRow.tag)
+        }
+    }
+
 
     // MARK: - Submit
     private func submit() async {
@@ -345,8 +361,9 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     }
 
     private enum CellTag: Int {
+        case date
         case category = 4
-        case date = 5
+        case supplier = 5
         case paymentMethod = 6
         case amount = 7
         case supplierName = 8

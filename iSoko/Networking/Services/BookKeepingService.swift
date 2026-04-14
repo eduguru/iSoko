@@ -27,6 +27,9 @@ public protocol BookKeepingService {
     
     func getAllSuppliers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
+    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SupplierReportResponse>
+    func addSupplierCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
+    func getSupplierCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     func getAllReports(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
     func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
@@ -35,7 +38,6 @@ public protocol BookKeepingService {
     func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<ExpenseReportResponse>
     func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<StockReportResponse>
     func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<CustomerReportResponse>
-    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SupplierReportResponse>
     
 }
 
@@ -177,12 +179,28 @@ public extension BookKeepingServiceImpl {
         return envelope.toPagedResult()
     }
     
-    func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SupplierResponse]> {
+    func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String) async throws -> PagedResult<[SupplierResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSuppliersByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
         return envelope.toPagedResult()
+    }
+    
+    func getSupplierCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getSupplierCategories(page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
+    
+    func addSupplierCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.addSupplierCategories(name: name, accessToken: accessToken)
+        )
+        
+        return envelope
     }
 }
 

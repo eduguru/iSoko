@@ -328,6 +328,49 @@ public extension BookKeepingApi {
         
         return UnifiedPagedResponseTarget(target: target)
     }
+    
+    public static func getSupplierCategories(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/supplier-categories",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
+    public static func addSupplierCategories(name: String, accessToken: String) -> ValueResponseTarget<SupplierCategoryResponse> {
+        let parameters: [String: Any] = ["name": name]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/supplier-categories",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
 }
 
 // MARK: - Reports

@@ -243,7 +243,9 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         
         model.goToAddSupplier = goToAddBookKeepingSupplier
-        model.goToSelectSupplier = goToSelectSupplier
+        
+        model.goToCommonSelectionOptions = goToCommonSelection
+        
         model.goToSelectExpenseCategory = goToSelectExpenseCategory
         model.goToAddExpenseCategory = goToAddExpenseCategory
         
@@ -254,12 +256,6 @@ extension BookKeepingCoordinator {
         }
         
         router.push(vc)
-    }
-    
-    public func goToSelectSupplier() {
-        goToCommonSelection(CommonUtilityOption.ageGroups, nil) { [weak self]_ in
-            
-        }
     }
     
     public func goToSelectExpenseCategory() {
@@ -310,7 +306,26 @@ extension BookKeepingCoordinator {
     public func goToAddBookKeepingSupplier() {
         let model = AddBookKeepingSuppliesViewModel()
         
+        model.gotoConfirm = { }
+        model.goToSelectCategory = {
+            
+        }
+        model.goToAddCategory = goToAddSupplierCategory
+        
         let vc = AddBookKeepingSuppliesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    public func goToAddSupplierCategory() {
+        let model = AddSupplierCategoryViewModel()
+        model.gotoConfirm = { }
+        
+        let vc = AddSupplierCategoryViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
