@@ -326,6 +326,26 @@ public struct CommonUtilitiesApi {
         return OptionalObjectResponseTarget(target: target)
     }
     
-    //MARK: - location levels -
+    public static func getPaymentOptions(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "payment-options",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+
     
 }

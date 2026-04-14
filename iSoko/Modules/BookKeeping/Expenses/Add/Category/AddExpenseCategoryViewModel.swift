@@ -1,8 +1,8 @@
 //
-//  AddSupplierCategoryViewModel.swift
+//  AddExpenseCategoryViewModel.swift
 //  
 //
-//  Created by Edwin Weru on 13/04/2026.
+//  Created by Edwin Weru on 14/04/2026.
 //
 
 import DesignSystemKit
@@ -10,7 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
-final class AddSupplierCategoryViewModel: FormViewModel {
+final class AddExpenseCategoryViewModel: FormViewModel {
     
     var gotoConfirm: (() -> Void)?
     
@@ -38,7 +38,7 @@ final class AddSupplierCategoryViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-            let response = try await bookKeepingService.addSupplierCategories(name: state.name, accessToken: state.oauthToken)
+            let response = try await bookKeepingService.addExpenseCategories(name: state.name, accessToken: state.oauthToken)
                 
             state.SupplierCategory = response
             goToAddCategorySuccess?(response)
@@ -76,7 +76,7 @@ final class AddSupplierCategoryViewModel: FormViewModel {
     
     private lazy var titleFormRow: FormRow = makeTitleRow(
         title: "Add a new Category",
-        description: "Enter a unique name for the new category to help organize your supplier catalog"
+        description: "Enter a unique name for the new category to help organize your Expense catalog"
     )
     
     private func makeTitleRow(title: String, description: String) -> FormRow {

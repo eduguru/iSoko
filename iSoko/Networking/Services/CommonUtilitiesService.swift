@@ -139,4 +139,13 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         
         return response
     }
+    
+    
+    func getPaymentOptions(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let envelope = try await manager.request(
+            CommonUtilitiesApi.getPaymentOptions(page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
 }

@@ -51,18 +51,14 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
                 let models: [CommonIdNameModel]
 
                 switch state.commonUtilityOption {
-                case .userRoles, .userTypes, .userGender, .ageGroups, .suppliers:
+                case .userRoles, .userTypes, .userGender, .ageGroups, .suppliers, .expenses, .paymentOptions:
+                    
                     guard let items = response as? [CommonIdNameResponse] else {
                         print("Unexpected response type for CommonIdNameResponse")
                         return
                     }
-
-                    switch state.commonUtilityOption {
-                    case .userRoles, .userTypes, .userGender, .ageGroups, .suppliers:
-                        state.rawCommonIdNameResponse = items
-                        
-                    default: break
-                    }
+                    
+                    state.rawCommonIdNameResponse = items
 
                     models = items.map {
                         CommonIdNameModel(id: $0.id, name: $0.name, description: $0.description)
@@ -295,6 +291,11 @@ extension CommonOptionPickerViewModel {
             return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken)
         case .suppliers(page: let page, count: let count):
             return try await bookKeepingService.getSupplierCategories(page: page, count: count, accessToken: state.oauthToken).data
+        case .expenses(page: let page, count: let count):
+            return try await bookKeepingService.getExpenseCategories(page: page, count: count, accessToken: state.oauthToken).data
+        case .paymentOptions(page: let page, count: let count):
+            return try await commonUtilitiesService.getPaymentOptions(page: page, count: count, accessToken: state.oauthToken).data
+         
         }
     }
 }

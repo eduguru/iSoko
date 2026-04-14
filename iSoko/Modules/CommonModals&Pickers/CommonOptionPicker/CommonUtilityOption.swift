@@ -19,4 +19,6 @@ public enum CommonUtilityOption {
     case locations(page: Int, count: Int)
     
     case suppliers(page: Int, count: Int)
+    case expenses(page: Int, count: Int)
+    case paymentOptions(page: Int, count: Int)
 }

@@ -21,9 +21,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
             
-    var goToSelectExpenseCategory: (() -> Void)? = { }
     var goToAddExpenseCategory: (() -> Void)? = { }
-    
     var goToAddSupplier: (() -> Void)? = { }
     
     var gotoConfirm: (() -> Void)? = { }
@@ -115,7 +113,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         config: DropdownFormConfig(
             title: "Date",
             placeholder: "Date",
-            rightImage: UIImage(systemName: "calendar"),
+            rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
                 let config = DatePickerConfig.year()
@@ -151,7 +149,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
-                self?.goToSelectExpenseCategory?()
+                self?.handleExpenseSelection()
             },
             onActionTap: { [weak self] in
                 self?.goToAddExpenseCategory?()
@@ -169,7 +167,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             rightImage: UIImage(systemName: "calendar"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
-                
+                self?.handlePaymentsSelection()
             }
         )
     )
@@ -321,12 +319,35 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             // self.state?.gender = value
-            self.supplierRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.supplierRow.tag)
+            let dropdownFormRow: DropdownFormRow = supplierRow
+            
+            dropdownFormRow.config.placeholder = value.name
+            self.reloadRow(withTag: dropdownFormRow.tag)
         }
     }
-
-
+    
+    private func handleExpenseSelection() {
+        goToCommonSelectionOptions(.expenses(page: 0, count: 10), nil) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            // self.state?.gender = value
+            let dropdownFormRow: DropdownFormRow = categoryRow
+            
+            dropdownFormRow.config.placeholder = value.name
+            self.reloadRow(withTag: dropdownFormRow.tag)
+        }
+    }
+    
+    private func handlePaymentsSelection() {
+        goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            // self.state?.gender = value
+            let dropdownFormRow: DropdownFormRow = paymentOptionsRow
+            
+            dropdownFormRow.config.placeholder = value.name
+            self.reloadRow(withTag: dropdownFormRow.tag)
+        }
+    }
+    
     // MARK: - Submit
     private func submit() async {
 

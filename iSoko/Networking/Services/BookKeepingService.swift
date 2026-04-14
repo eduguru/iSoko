@@ -18,6 +18,8 @@ public protocol BookKeepingService {
     
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
     func getAllExpensesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
+    func addExpenseCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
+    func getExpenseCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     func getAllStock(userId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[StockResponse]>
     func getAllStockByDate(userId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[StockResponse]>
@@ -112,6 +114,22 @@ public extension BookKeepingServiceImpl {
         )
         
         return envelope.toPagedResult()
+    }
+    
+    func getExpenseCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getExpenseCategories(page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
+    
+    func addExpenseCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.addExpenseCategories(name: name, accessToken: accessToken)
+        )
+        
+        return envelope
     }
 }
 

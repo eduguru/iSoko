@@ -9,4 +9,5 @@ public struct CommonIdNameResponse: Decodable {
     public let id: Int
     public let name: String
     public let description: String?
+    public let active: Bool?
 }
