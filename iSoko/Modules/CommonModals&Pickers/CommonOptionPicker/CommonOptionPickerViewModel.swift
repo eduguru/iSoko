@@ -58,58 +58,6 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         }
     }
 
-    // MARK: - Mapping (single switch only here)
-    private func mapResponse(_ response: [Any]) -> [CommonIdNameModel] {
-        switch state.commonUtilityOption {
-
-        case .userRoles, .userTypes, .userGender, .ageGroups,
-             .suppliers, .supplierCategory, .expenses, .paymentOptions:
-
-            guard let items = response as? [CommonIdNameResponse] else { return [] }
-            state.rawCommonIdNameResponse = items
-
-            return items.map {
-                CommonIdNameModel(id: $0.id, name: $0.name, description: $0.description)
-            }
-
-        case .organisationSize:
-            guard let items = response as? [OrganisationSizeResponse] else { return [] }
-            state.rawOrganisationSizes = items
-
-            return items.compactMap {
-                guard let id = $0.id, let name = $0.name else { return nil }
-                return CommonIdNameModel(id: id, name: name, description: "")
-            }
-
-        case .organisationType:
-            guard let items = response as? [OrganisationTypeResponse] else { return [] }
-            state.rawOrganisationTypes = items
-
-            return items.compactMap {
-                guard let id = $0.id, let name = $0.name else { return nil }
-                return CommonIdNameModel(id: id, name: name, description: "")
-            }
-
-        case .locations:
-            guard let items = response as? [LocationResponse] else { return [] }
-            state.rawLocationOptions = items
-
-            return items.compactMap {
-                guard let id = $0.id, let name = $0.name else { return nil }
-                return CommonIdNameModel(id: id, name: name, description: $0.codeName)
-            }
-
-        case .countries:
-            guard let items = response as? [CountryResponse] else { return [] }
-            state.rawCountryOptions = items
-
-            return items.compactMap {
-                guard let name = $0.name else { return nil }
-                return CommonIdNameModel(id: $0.id, name: name, description: $0.code)
-            }
-        }
-    }
-
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [makeSelectionSection()]
@@ -222,8 +170,10 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         var rawCountryOptions: [CountryResponse] = []
         var rawOrganisationSizes: [OrganisationSizeResponse] = []
         var rawOrganisationTypes: [OrganisationTypeResponse] = []
+        var rawSuppliersResponse: [SupplierResponse] = []
+        
         var rawCommonIdNameResponse: [CommonIdNameResponse] = []
-
+        
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
 
@@ -269,7 +219,7 @@ extension CommonOptionPickerViewModel {
             return try await commonUtilitiesService.getSystemCountries(page: page, count: count, accessToken: state.guestToken).data
         
         case .suppliers(page: let page, count: let count):
-            return try await bookKeepingService.getSupplierCategories(page: page, count: count, accessToken: state.oauthToken).data
+            return try await bookKeepingService.getAllSuppliers(page: page, count: count, accessToken: state.oauthToken).data
         case .supplierCategory(page: let page, count: let count):
             return try await bookKeepingService.getSupplierCategories(page: page, count: count, accessToken: state.oauthToken).data
             
@@ -279,6 +229,66 @@ extension CommonOptionPickerViewModel {
         case .paymentOptions(page: let page, count: let count):
             return try await commonUtilitiesService.getPaymentOptions(page: page, count: count, accessToken: state.oauthToken).data
          
+        }
+    }
+    
+    // MARK: - Mapping (single switch only here)
+    private func mapResponse(_ response: [Any]) -> [CommonIdNameModel] {
+        switch state.commonUtilityOption {
+
+        case .userRoles, .userTypes, .userGender, .ageGroups,
+              .supplierCategory, .expenses, .paymentOptions:
+
+            guard let items = response as? [CommonIdNameResponse] else { return [] }
+            state.rawCommonIdNameResponse = items
+
+            return items.map {
+                CommonIdNameModel(id: $0.id, name: $0.name, description: $0.description)
+            }
+            
+        case .suppliers:
+            guard let items = response as? [SupplierResponse] else { return [] }
+            state.rawSuppliersResponse = items
+
+            return items.compactMap {
+                return CommonIdNameModel(id: $0.id, name: $0.name ?? "", description: $0.phoneNumber)
+            }
+            
+        case .organisationSize:
+            guard let items = response as? [OrganisationSizeResponse] else { return [] }
+            state.rawOrganisationSizes = items
+
+            return items.compactMap {
+                guard let id = $0.id, let name = $0.name else { return nil }
+                return CommonIdNameModel(id: id, name: name, description: "")
+            }
+
+        case .organisationType:
+            guard let items = response as? [OrganisationTypeResponse] else { return [] }
+            state.rawOrganisationTypes = items
+
+            return items.compactMap {
+                guard let id = $0.id, let name = $0.name else { return nil }
+                return CommonIdNameModel(id: id, name: name, description: "")
+            }
+
+        case .locations:
+            guard let items = response as? [LocationResponse] else { return [] }
+            state.rawLocationOptions = items
+
+            return items.compactMap {
+                guard let id = $0.id, let name = $0.name else { return nil }
+                return CommonIdNameModel(id: id, name: name, description: $0.codeName)
+            }
+
+        case .countries:
+            guard let items = response as? [CountryResponse] else { return [] }
+            state.rawCountryOptions = items
+
+            return items.compactMap {
+                guard let name = $0.name else { return nil }
+                return CommonIdNameModel(id: $0.id, name: name, description: $0.code)
+            }
         }
     }
 }

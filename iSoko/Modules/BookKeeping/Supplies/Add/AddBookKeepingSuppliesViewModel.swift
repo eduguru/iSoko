@@ -19,13 +19,15 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     
     var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
 
-    
     var gotoConfirm: (() -> Void)?
-
     var goToAddCategory: (() -> Void)? = { }
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
     // MARK: -
     private var state = State()
+    
 
     // MARK: -
     override init() {
@@ -175,9 +177,6 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
                     case CellTag.emailAddress.rawValue:
                         self.state.emailAddress = newText
 
-                    case CellTag.country.rawValue:
-                        self.state.country = newText
-
                     case CellTag.town.rawValue:
                         self.state.town = newText
 
@@ -223,7 +222,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     private func handleSpplierCategorySelection() {
         goToCommonSelectionOptions(.supplierCategory(page: 0, count: 10), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
-            // self.state?.gender = value
+            self.state.selectedCategory = value
             let dropdownFormRow: DropdownFormRow = categoryRow
             
             dropdownFormRow.config.placeholder = value.name
@@ -234,7 +233,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     private func handleCountrySelection() {
         gotoSelectSystemCountry(.countries(page: 0, count: 10)) { [weak self] value in
             guard let self = self, let value = value else { return }
-            // self.state?.gender = value
+            self.state.selectedCountry = value
             let dropdownFormRow: DropdownFormRow = countryInputRow
             
             dropdownFormRow.config.placeholder = value.name ?? ""
@@ -244,7 +243,53 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        gotoConfirm?()
+        Task {
+            let success = await performNetworkRequest()
+            
+            if !success {
+                print("Failed to fetch product data")
+            }
+            
+            DispatchQueue.main.async { [weak self] in  // go to success
+                self?.gotoConfirm?()
+            }
+        }
+
+    }
+    
+    // MARK: - Network
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        guard let country = state.selectedCountry else {
+            print("❌ No country selected")
+            return false
+        }
+
+        guard let category = state.selectedCategory else {
+            print("❌ No category selected")
+            return false
+        }
+
+        let payload: [String : Any] = [
+            "name": state.supplierName,
+            "phoneNumber": state.phoneNumber,
+            "email": state.emailAddress,
+            "countryId": country.id,
+            "categoryId": category.id,
+            "town": state.town,
+            "streetAddress": state.streetAddress
+        ]
+        print("📦 Payload:", payload)
+        
+        do {
+            let response = try await bookKeepingService.addSupplier(parameters: payload, accessToken: state.oauthToken)
+                
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
     }
 
     // MARK: - State
@@ -256,6 +301,9 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         var country: String = ""
         var town: String = ""
         var streetAddress: String = ""
+        
+        var selectedCountry: CountryResponse?
+        var selectedCategory: CommonIdNameModel?
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""

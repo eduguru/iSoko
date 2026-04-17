@@ -325,8 +325,27 @@ public extension BookKeepingApi {
 
 // MARK: - Suppliers
 public extension BookKeepingApi {
+    
+    static func addSupplier(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SupplierResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
         
-    public static func getAllSuppliers(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SupplierResponse]> {
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/suppliers",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+        
+    static func getAllSuppliers(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SupplierResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
 
         let headers = [
@@ -347,7 +366,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[SupplierResponse]> {
+    static func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[SupplierResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -371,7 +390,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getSupplierCategories(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+    static func getSupplierCategories(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
 
         let headers = [
@@ -392,7 +411,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func addSupplierCategories(name: String, accessToken: String) -> ValueResponseTarget<SupplierCategoryResponse> {
+    static func addSupplierCategories(name: String, accessToken: String) -> ValueResponseTarget<SupplierCategoryResponse> {
         let parameters: [String: Any] = ["name": name]
 
         let headers = [

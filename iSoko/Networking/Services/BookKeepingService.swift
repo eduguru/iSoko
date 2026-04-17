@@ -27,6 +27,7 @@ public protocol BookKeepingService {
     func getAllCustomers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CustomerResponse]>
     func getAllCustomersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[CustomerResponse]>
     
+    func addSupplier(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse
     func getAllSuppliers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SupplierReportResponse>
@@ -184,6 +185,14 @@ public extension BookKeepingServiceImpl {
 
 // MARK: - Suppliers
 public extension BookKeepingServiceImpl {
+    
+    func addSupplier(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.addSupplier(parameters: parameters, accessToken: accessToken)
+        )
+        
+        return envelope
+    }
         
     func getAllSuppliers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SupplierResponse]> {
         let envelope = try await manager.request(
