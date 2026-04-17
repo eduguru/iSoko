@@ -148,4 +148,12 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         
         return envelope.toPagedResult()
     }
+    
+    func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]> {
+        let envelope = try await manager.request(
+            CommonUtilitiesApi.getSystemCountries(page: page, count: count, accessToken: accessToken)
+        )
+        
+        return envelope.toPagedResult()
+    }
 }

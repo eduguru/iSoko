@@ -346,6 +346,26 @@ public struct CommonUtilitiesApi {
         
         return UnifiedPagedResponseTarget(target: target)
     }
-
     
+    public static func getSystemCountries(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CountryResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "countries",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+
 }

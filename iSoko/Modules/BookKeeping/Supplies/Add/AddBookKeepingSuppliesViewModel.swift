@@ -11,9 +11,17 @@ import UtilsKit
 import StorageKit
 
 final class AddBookKeepingSuppliesViewModel: FormViewModel {
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
+    
+    var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
+
     
     var gotoConfirm: (() -> Void)?
-    var goToSelectCategory: (() -> Void)? = { }
+
     var goToAddCategory: (() -> Void)? = { }
     
     // MARK: -
@@ -36,9 +44,9 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
                     supplierNameInputRow,
                     phoneNumberInputRow,
                     emailAddressInputRow,
-                    // countryInputRow,
                     townInputRow,
                     streetAddressInputRow,
+                    countryInputRow,
                     categoryRow,
 
                     SpacerFormRow(tag: 20),
@@ -71,13 +79,6 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         keyboard: .emailAddress
     )
 
-    private lazy var countryInputRow = makeInputRow(
-        tag: CellTag.country.rawValue,
-        title: "Country",
-        placeholder: "Country",
-        keyboard: .default
-    )
-
     private lazy var townInputRow = makeInputRow(
         tag: CellTag.town.rawValue,
         title: "City/Town",
@@ -92,6 +93,19 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         keyboard: .default
     )
     
+    private lazy var countryInputRow = DropdownFormRow(
+        tag: CellTag.country.rawValue,
+        config: DropdownFormConfig(
+            title: "Country",
+            placeholder: "Country",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleCountrySelection()
+            }
+        )
+    )
+    
     private lazy var categoryRow = DropdownFormRow(
         tag: CellTag.categoryRow.rawValue,
         config: DropdownFormConfig(
@@ -99,7 +113,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
             placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
-                self?.goToSelectCategory?()
+                self?.handleSpplierCategorySelection()
             },
             onActionTap: { [weak self] in
                 self?.goToAddCategory?()
@@ -202,6 +216,29 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
                 onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
                 break
             }
+        }
+    }
+    
+    // MARK: - Selection Handlers
+    private func handleSpplierCategorySelection() {
+        goToCommonSelectionOptions(.supplierCategory(page: 0, count: 10), nil) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            // self.state?.gender = value
+            let dropdownFormRow: DropdownFormRow = categoryRow
+            
+            dropdownFormRow.config.placeholder = value.name
+            self.reloadRow(withTag: dropdownFormRow.tag)
+        }
+    }
+    
+    private func handleCountrySelection() {
+        gotoSelectSystemCountry(.countries(page: 0, count: 10)) { [weak self] value in
+            guard let self = self, let value = value else { return }
+            // self.state?.gender = value
+            let dropdownFormRow: DropdownFormRow = countryInputRow
+            
+            dropdownFormRow.config.placeholder = value.name ?? ""
+            self.reloadRow(withTag: dropdownFormRow.tag)
         }
     }
 
