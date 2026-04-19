@@ -43,7 +43,7 @@ public final class FiltersFormRow: FormRow {
 }
 
 //
-//✅ 1️⃣ Card With Title + (2 inline) + (1 below)
+// 1️⃣ Card With Title + (2 inline) + (1 below)
 //┌──────────────────────────────┐
 // │ Type                        │
 // │ Sale Type   | Time Period   │
@@ -78,7 +78,7 @@ public final class FiltersFormRow: FormRow {
 //    )
 //)
 //
-//✅ 2️⃣ Card With Title + (2 inline) + (2 inline)
+// 2️⃣ Card With Title + (2 inline) + (2 inline)
 //┌──────────────────────────────┐
 // │ Type                        │
 // │ Sale Type   | Time Period   │
@@ -118,7 +118,7 @@ public final class FiltersFormRow: FormRow {
 //    )
 //)
 //
-//✅ 3️⃣ No Title + Two Inline Rows
+// 3️⃣ No Title + Two Inline Rows
 //┌──────────────────────────────┐
 // │ Sale Type   | Time Period   │
 // │ Org Type    | Start Period  │

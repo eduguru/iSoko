@@ -288,6 +288,10 @@ extension BookKeepingCoordinator {
     
     public func goToAddBookKeepingSales() {
         let model = AddBookKeepingSalesViewModel()
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        
+        model.goToAddCustomer = goToAddBookKeepingCustomer
         
         let vc = AddBookKeepingSalesViewController()
         vc.viewModel = model
@@ -312,7 +316,8 @@ extension BookKeepingCoordinator {
     
     public func goToAddBookKeepingCustomer() {
         let model = AddBookKeepingCustomersViewModel()
-        
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
         let vc = AddBookKeepingCustomersViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in

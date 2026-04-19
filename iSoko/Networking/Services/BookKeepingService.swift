@@ -6,6 +6,7 @@
 //
 
 import NetworkingKit
+import UtilsKit
 
 public protocol BookKeepingService {
     
@@ -13,9 +14,11 @@ public protocol BookKeepingService {
     func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]>
     func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
     
+    func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]>
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     
+    func addExpense(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
     func getAllExpensesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
     func addExpenseCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
@@ -53,15 +56,25 @@ public final class BookKeepingServiceImpl: BookKeepingService {
         self.manager = provider.manager()
         self.tokenProvider = tokenProvider
     }
+}
 
-    public func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]> {
+// MARK: - Sales
+public extension BookKeepingServiceImpl {
+    func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getSalesType(page: page, count: count, accessToken: accessToken))
+        
+        return envelope.toPagedResult()
+    }
+    
+    func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSales(page: page, count: count, accessToken: accessToken))
         
         return envelope.toPagedResult()
     }
     
-    public func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]> {
+    func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSalesByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
@@ -70,6 +83,7 @@ public final class BookKeepingServiceImpl: BookKeepingService {
     }
 }
 
+// MARK: - Orders
 public extension BookKeepingServiceImpl {
     
     func getOrderSummary(userId: Int, accessToken: String) async throws -> StatisticsResponse {
@@ -100,6 +114,9 @@ public extension BookKeepingServiceImpl {
 
 // MARK: - Expenses
 public extension BookKeepingServiceImpl {
+    func addExpense(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse {
+        try await manager.request(BookKeepingApi.addExpense(parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
+    }
 
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]> {
         let envelope = try await manager.request(
@@ -161,6 +178,14 @@ public extension BookKeepingServiceImpl {
 
 // MARK: - Customers
 public extension BookKeepingServiceImpl {
+    
+    func addCustomer(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.addCustomer(parameters: parameters, accessToken: accessToken)
+        )
+        
+        return envelope
+    }
     
     func getAllCustomers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CustomerResponse]> {
         let envelope = try await manager.request(

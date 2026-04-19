@@ -26,37 +26,33 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await fetchItems()
-            
+            let success = await performNetworkRequest()
+
             if !success {
-                print("Failed to fetch product data")
+                print("Failed to fetch suppliers")
             }
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.updateRecentActivitiesSection()
+
+            await MainActor.run {
+                self.updateRecentActivitiesSection()
             }
         }
     }
     
     // MARK: - Network
     
-    private func fetchItems() async -> Bool {
-        async let similar = performNetworkRequest()
-        let results = await [similar]
-        return results.allSatisfy { $0 }
-    }
-    
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-                let response = try await bookKeepingService.getAllSuppliers(
-                    page: 1,
-                    count: 10,
-                    accessToken: state.oauthToken
-                )
-                
+            let response = try await bookKeepingService.getAllSuppliers(
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+
+            // store real data
+            self.state.suppliers = response.data ?? []
+
             return true
-            
         } catch {
             print("❌ Error: ", error)
             return false
@@ -161,16 +157,16 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     
     // Lazy factory that creates rows
     private func makeTransactionActionRows() -> [FormRow] {
-        (0..<10).map { index in
+        state.suppliers.map { supplier in
 
-            let hasActions = index.isMultiple(of: 2)
+            let hasActions = true // (supplier.id % 2 == 0)
 
             let config = TransactionActionsCellConfig(
-                title: "ABC Company \(index + 1)",
-                subtitle:  "0712345678",
-                amount: "$\(Int.random(in: 10...250)).00",
+                title: supplier.name ?? "Unknown Supplier",
+                subtitle: supplier.phoneNumber ?? "No phone",
+                amount: supplier.totalAmountSupplied.map { "$\($0)" } ?? "$0.00",
                 amountColor: .label,
-                status: "3 items supplied ",
+                status: "\(supplier.suppliesCount ?? 0) items supplied",
                 statusColor: .darkGray,
                 primaryAction: hasActions
                     ? ActionCardConfig(
@@ -178,8 +174,8 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                         icon: UIImage(systemName: "eye"),
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                         textColor: .app(.primary),
-                        onTap: {
-                            print("Pay tapped on row \(index)")
+                        onTap: { [weak self] in
+                            self?.goToDetails?()
                         }
                     )
                     : nil,
@@ -188,14 +184,14 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                         title: "Edit",
                         icon: UIImage(systemName: "pencil"),
                         onTap: {
-                            print("Edit tapped on row \(index)")
+                            print("Edit supplier \(supplier.id)")
                         }
                     )
                     : nil
             )
 
             return TransactionActionsRow(
-                tag: index,
+                tag: supplier.id,
                 config: config
             )
         }
@@ -203,6 +199,8 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
+        var suppliers: [SupplierResponse] = []
+
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""

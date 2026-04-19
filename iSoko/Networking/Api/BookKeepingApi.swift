@@ -9,6 +9,7 @@
 import Foundation
 import Moya
 import NetworkingKit
+import UtilsKit
 
 // MARK: - orders
 public struct BookKeepingApi {
@@ -87,7 +88,28 @@ public struct BookKeepingApi {
 
 // MARK: - Sales
 public extension BookKeepingApi {
-
+    
+    static func getSalesType(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameModel]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sale-types",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
     static func getAllSales(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
@@ -136,6 +158,34 @@ public extension BookKeepingApi {
 
 // MARK: - Expenses
 public extension BookKeepingApi {
+    
+    static func addExpense(
+        parameters: [String: Any],
+        pickedFiles: [PickedFile]?,
+        accessToken: String
+    ) -> ValueResponseTarget<ExpenseResponse> {
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
+        var files: [UploadFile] = Helpers.mapPickedFile2UploadFile(pickedFiles, name: "documents")
+
+        let target = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/expenses",
+            method: .post,
+            jsonPartName: "expense",
+            jsonData: paramsJson,
+            files: files,
+            headers: headers,
+            requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: target.asAnyTarget())
+    }
 
     static func getAllExpenses(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[ExpenseResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
@@ -277,7 +327,26 @@ public extension BookKeepingApi {
 // MARK: - Customers
 public extension BookKeepingApi {
     
-    public static func getAllCustomers(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CustomerResponse]> {
+    static func addCustomer(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SupplierResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/customers",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func getAllCustomers(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CustomerResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
         let headers = [
@@ -298,7 +367,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllCustomersByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[CustomerResponse]> {
+    static func getAllCustomersByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[CustomerResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate

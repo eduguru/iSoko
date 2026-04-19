@@ -94,7 +94,7 @@ public struct NetworkHeaders {
 }
 
 
-//✅ 1. Basic (No Auth)
+// 1. Basic (No Auth)
 //let headers = NetworkHeaders.standard()
 //
 //let target = AnyTarget(
@@ -105,7 +105,7 @@ public struct NetworkHeaders {
 //    headers: headers,
 //    authorizationType: .none
 //)
-//✅ 2. Authenticated Request
+// 2. Authenticated Request
 //let headers = NetworkHeaders.authenticated(accessToken: accessToken)
 //
 //let target = AnyTarget(
@@ -116,7 +116,7 @@ public struct NetworkHeaders {
 //    headers: headers,
 //    authorizationType: .bearer
 //)
-//✅ 3. Web Request (Optional Auth)
+// 3. Web Request (Optional Auth)
 //let headers = NetworkHeaders.web(accessToken: accessToken)
 //// OR
 //let headers = NetworkHeaders.web()
@@ -129,7 +129,7 @@ public struct NetworkHeaders {
 //    headers: headers,
 //    authorizationType: accessToken != nil ? .bearer : .none
 //)
-//✅ 4. Fully Composed (Advanced Use)
+// 4. Fully Composed (Advanced Use)
 //let headers = NetworkHeaders.withAuth(
 //    NetworkHeaders.withPlatform(
 //        NetworkHeaders.base(),
@@ -142,7 +142,7 @@ public struct NetworkHeaders {
 //
 //You want "ios" instead of "web"
 //You’re debugging or experimenting
-//✅ 5. With App Info (Version + Locale)
+// 5. With App Info (Version + Locale)
 //let headers = NetworkHeaders.withAuth(
 //    NetworkHeaders.withAppInfo(
 //        NetworkHeaders.withPlatform(platform: "ios"),
@@ -151,7 +151,7 @@ public struct NetworkHeaders {
 //    ),
 //    accessToken: accessToken
 //)
-//✅ 6. Cleanest Pattern Inside Your API
+// 6. Cleanest Pattern Inside Your API
 //static func getAllSales(accessToken: String) -> UnifiedPagedResponseTarget<[ProductResponse]> {
 //    
 //    let headers = NetworkHeaders.authenticated(accessToken: accessToken)

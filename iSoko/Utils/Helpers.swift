@@ -6,21 +6,10 @@
 //
 
 import DesignSystemKit
+import NetworkingKit
+import UtilsKit
 
 public struct Helpers {
-    
-    public  static func mimeType(for fileExtension: String) -> String {
-        switch fileExtension.lowercased() {
-        case "jpg", "jpeg":
-            return "image/jpeg"
-        case "png":
-            return "image/png"
-        case "pdf":
-            return "application/pdf"
-        default:
-            return "application/octet-stream"
-        }
-    }
     
     /// Inserts SpacerFormRow(s) before first, between cells, and/or after last based on flags.
     public static func insertSpacers(
@@ -97,5 +86,70 @@ public struct Helpers {
         }
         
         return result
+    }
+}
+
+
+public extension Helpers {
+    static func mapPickedFileToUploadFile(
+        _ file: PickedFile?,
+        name: String = "file"
+    ) -> UploadFile? {
+        
+        guard let file,
+              let data = file.fileData else { return nil }
+        
+        return UploadFile(
+            data: data,
+            name: name,
+            fileName: file.fileName,
+            mimeType: mimeType(for: file.fileExtension)
+        )
+    }
+    
+    static func mapPickedFile2UploadFile(_ files: [PickedFile]?) -> [UploadFile] {
+        guard let files else { return [] }
+        
+        return files.compactMap { file in
+            guard let data = file.fileData else { return nil }
+            
+            return UploadFile(
+                data: data,
+                name: "file",
+                fileName: file.fileName,
+                mimeType: mimeType(for: file.fileExtension)
+            )
+        }
+    }
+    
+    static func mapPickedFile2UploadFile(
+        _ files: [PickedFile]?,
+        name: String = "file"
+    ) -> [UploadFile] {
+        guard let files else { return [] }
+        
+        return files.compactMap { file in
+            guard let data = file.fileData else { return nil }
+            
+            return UploadFile(
+                data: data,
+                name: name,
+                fileName: file.fileName,
+                mimeType: mimeType(for: file.fileExtension)
+            )
+        }
+    }
+    
+    static func mimeType(for ext: String) -> String {
+        switch ext.lowercased() {
+        case "jpg", "jpeg":
+            return "image/jpeg"
+        case "png":
+            return "image/png"
+        case "pdf":
+            return "application/pdf"
+        default:
+            return "application/octet-stream"
+        }
     }
 }

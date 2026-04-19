@@ -11,13 +11,25 @@ import UtilsKit
 import StorageKit
 
 final class AddBookKeepingSalesViewModel: FormViewModel {
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
+    
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var goToAddCustomer: (() -> Void)? = { }
+    
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-    var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
+
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     var gotoConfirm: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     @MainActor private let countryHelper = CountryHelper()
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
 
     // MARK: -
     private var state = State()
@@ -40,11 +52,46 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         return sections
     }
     
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await performNetworkRequest()
+
+            if !success {
+                print("Failed to fetch suppliers")
+            }
+
+            await MainActor.run {
+                // self.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.getSalesType(
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+
+            // store real data
+
+            return true
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
     private func makeSegmentSection() -> FormSection {
         FormSection(
             id: SectionTag.segmentControl.rawValue,
             cells: [
-                segmentedOptions
+                pillsOptions
             ]
         )
     }
@@ -55,8 +102,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             title: "Sales Details",
             cells: [
                 dateRow,
-                customerNameInputRow,
-                paymentMethodDropdownRow
+                customerRow,
+                paymentOptionsRow
             ]
         )
     }
@@ -99,8 +146,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
 
     // MARK: - Rows
-    private lazy var segmentedOptions = makeOptionsSegmentFormRow()
+    private lazy var pillsOptions = makePillsOptionsFormRow()
     private lazy var summaryRows = makeSummaryRows()
+    
+    
     
 
     private lazy var customerNameInputRow = makeInputRow(
@@ -109,28 +158,56 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         placeholder: "Enter Customer Name"
     )
     
+    private lazy var customerRow = DropdownFormRow(
+        tag: CellTag.customerName.rawValue,
+        config: DropdownFormConfig(
+            title: "Customer Name",
+            placeholder: "Select an option",
+            rightImage: UIImage(systemName: "chevron.down"),
+            onTap: { [weak self] in
+                self?.handleCustomerSelection()
+            },
+            onActionTap: { [weak self] in
+                self?.goToAddCustomer?()
+            },
+            actionImage: UIImage(systemName: "person.badge.plus"),
+            showsActionButton: true
+        )
+    )
+    
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "\(state.foundedYear ?? 0000)",
-            rightImage: UIImage(systemName: "calendar"),
+            placeholder: "Date",
+            rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
-                self?.handleYearSelection()
+                guard let self else { return }
+
+                let config = DatePickerConfig.year()
+
+                self.goToDateSelection(config) { selectedDate in
+                    guard let date = selectedDate else { return }
+
+                    self.state.date = date
+                    self.state.dateString = Self.format(date)
+
+                    self.handleDateSelection()
+                }
             }
         )
     )
     
-    private lazy var paymentMethodDropdownRow = DropdownFormRow(
+    private lazy var paymentOptionsRow = DropdownFormRow(
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
             title: "Payment Method",
-            placeholder: state.paymentMethod?.name ?? "Select location",
-            rightImage: UIImage(systemName: "chevron.down"),
+            placeholder: "Method",
+            rightImage: UIImage(systemName: "calendar"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
-                self?.handlePaymentMethodSelection()
+                self?.handlePaymentsSelection()
             }
         )
     )
@@ -219,27 +296,18 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         )
     )
     
-    // MARK: - Segmented Control
-    private func makeOptionsSegmentFormRow() -> FormRow {
-        SegmentedFormRow(
-            model: SegmentedFormModel(
-                title: nil,
-                segments: ["Cash Sales", "Credit Sales"],
-                selectedIndex: state.selectedSegmentIndex,
-                tag: 2001,
-                tintColor: .gray,
-                selectedSegmentTintColor: .app(.primary),
-                backgroundColor: .white,
-                titleTextColor: .darkGray,
-                segmentTextColor: .lightGray,
-                selectedSegmentTextColor: .white,
-                onSelectionChanged: { [weak self] index in
-                    guard let self else { return }
-                    self.state.selectedSegmentIndex = index
-                    self.reloadBodySection(animated: true)
-                }
-            )
-        )
+    private func makePillsOptionsFormRow() -> FormRow {
+        PillsFormRowV2(
+            tag: 98,
+            items: [
+                PillItem(id: "1", title: "Cash"),
+                PillItem(id: "2", title: "Credit")
+            ],
+            layoutMode: .segmentedStretch,
+            selectionMode: .single
+        ) { items in
+            print(items.first(where: { $0.isSelected }))
+        }
     }
     
     private func makeCartItemsRow() -> [FormRow] {
@@ -303,23 +371,42 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - handle selections
     
-    private func handlePaymentMethodSelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
+    private func handleCustomerSelection() {
+        goToCommonSelectionOptions(.customers(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
 
-            self.state.paymentMethod = value
-            self.paymentMethodDropdownRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.paymentMethodDropdownRow.tag)
+            self.state.customer = value
+            let dropDownRow: DropdownFormRow = customerRow
+
+            dropDownRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: dropDownRow.tag)
         }
     }
     
-    private func handleYearSelection() {
-        selectFoundedYear? { [weak self] value in
-            guard let self, let value else { return }
-            state.foundedYear = value
-            dateRow.config.placeholder = "\(value)"
-            reloadRow(withTag: dateRow.tag)
+    private func handlePaymentsSelection() {
+        goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+
+            self.state.paymentMethod = value
+            let dropDownRow: DropdownFormRow = paymentOptionsRow
+
+            dropDownRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: dropDownRow.tag)
         }
+    }
+    
+    private func handleDateSelection() {
+        var config = dateRow.config
+        config.placeholder = state.dateString
+        dateRow.config = config
+
+        reloadRow(withTag: CellTag.date.rawValue)
+    }
+    
+    private static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 
     // MARK: - Reload
@@ -346,12 +433,14 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         var selectedSegmentIndex: Int = 0
         var categories: CommonIdNameModel?
         var paymentMethod: CommonIdNameModel?
+        var customer: CommonIdNameModel?
 
+        var date: Date?
         var dateString: String = ""
+        
         var amount: String = ""
         var supplierName: String = ""
         var description: String = ""
-        var foundedYear: Int?
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
@@ -385,3 +474,4 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 }
 
 
+// https://api.dev.isoko.africa/v1/users/7/products?size=50&page=1&bookkeepingStock=true

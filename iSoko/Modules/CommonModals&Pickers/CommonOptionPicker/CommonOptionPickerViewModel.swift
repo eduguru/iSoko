@@ -42,6 +42,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
     // MARK: - Fetch Data
     override func fetchData() {
         guard state.options.isEmpty else { return }
+        showLoader()
 
         Task {
             do {
@@ -51,6 +52,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
 
                 self.state.options = models
                 self.sections = makeSections()
+                hideLoader()
 
             } catch {
                 print("Error:", error)
@@ -171,6 +173,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         var rawOrganisationSizes: [OrganisationSizeResponse] = []
         var rawOrganisationTypes: [OrganisationTypeResponse] = []
         var rawSuppliersResponse: [SupplierResponse] = []
+        var rawCustomerOptions: [CustomerResponse] = []
         
         var rawCommonIdNameResponse: [CommonIdNameResponse] = []
         
@@ -228,7 +231,10 @@ extension CommonOptionPickerViewModel {
         
         case .paymentOptions(page: let page, count: let count):
             return try await commonUtilitiesService.getPaymentOptions(page: page, count: count, accessToken: state.oauthToken).data
-         
+            
+            case .customers(page: let page, count: let count):
+                return try await bookKeepingService.getAllCustomers(page: page, count: count, accessToken: state.oauthToken).data
+            
         }
     }
     
@@ -237,7 +243,7 @@ extension CommonOptionPickerViewModel {
         switch state.commonUtilityOption {
 
         case .userRoles, .userTypes, .userGender, .ageGroups,
-              .supplierCategory, .expenses, .paymentOptions:
+                .supplierCategory, .expenses, .paymentOptions:
 
             guard let items = response as? [CommonIdNameResponse] else { return [] }
             state.rawCommonIdNameResponse = items
@@ -289,6 +295,16 @@ extension CommonOptionPickerViewModel {
                 guard let name = $0.name else { return nil }
                 return CommonIdNameModel(id: $0.id, name: name, description: $0.code)
             }
+            
+        case .customers:
+            guard let items = response as? [CustomerResponse] else { return [] }
+            state.rawCustomerOptions = items
+
+            return items.compactMap {
+                return CommonIdNameModel(id: $0.id, name: $0.name ?? "", description: $0.phoneNumber)
+            }
+            
         }
+        
     }
 }

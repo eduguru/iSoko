@@ -34,5 +34,4 @@ public final class PillsFormRow: FormRow {
         // Ensure you have access to the `items` array, which is already defined as a property in the PillsTableViewCell
         return PillsTableViewCell.estimatedHeight(for: items)
     }
-
 }

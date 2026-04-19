@@ -31,6 +31,9 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     
     @MainActor private let countryHelper = CountryHelper()
 
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
     // MARK: -
     private var state = State()
 
@@ -98,8 +101,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
                     switch tag {
                     case CellTag.amount.rawValue:
                         self.state.amount = newText
-                    case CellTag.supplierName.rawValue:
-                        self.state.supplierName = newText
+                    
                     default:
                         break
                     }
@@ -116,10 +118,17 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
+                guard let self else { return }
+
                 let config = DatePickerConfig.year()
-                
-                self?.goToDateSelection(config) { selectedDate in
-                    print(selectedDate)
+
+                self.goToDateSelection(config) { selectedDate in
+                    guard let date = selectedDate else { return }
+
+                    self.state.date = date
+                    self.state.dateString = Self.format(date)
+
+                    self.handleDateSelection()
                 }
             }
         )
@@ -252,8 +261,8 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             cardCornerRadius: 12,
             cardBorderColor: .app(.primary),
             cardShadowColor: .gray,
-            onTextChanged: { newText in
-                print("Description changed to: \(newText)")
+            onTextChanged: {[weak self] newText in
+                self?.state.description = newText
             },
             onValidationError: { error in
                 if let error = error {
@@ -317,62 +326,113 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     // MARK: - Selection Handlers
     private func handleSupplierSelection() {
         goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
-            guard let self = self, let value = value else { return }
-            // self.state?.gender = value
-            let dropdownFormRow: DropdownFormRow = supplierRow
-            
-            dropdownFormRow.config.placeholder = value.name
-            self.reloadRow(withTag: dropdownFormRow.tag)
+            guard let self else { return }
+
+            self.state.supplier = value
+
+            self.supplierRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: self.supplierRow.tag)
         }
     }
     
     private func handleExpenseSelection() {
         goToCommonSelectionOptions(.expenses(page: 0, count: 10), nil) { [weak self] value in
-            guard let self = self, let value = value else { return }
-            // self.state?.gender = value
-            let dropdownFormRow: DropdownFormRow = categoryRow
-            
-            dropdownFormRow.config.placeholder = value.name
-            self.reloadRow(withTag: dropdownFormRow.tag)
+            guard let self else { return }
+
+            self.state.categories = value
+
+            self.categoryRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: self.categoryRow.tag)
         }
     }
     
     private func handlePaymentsSelection() {
         goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
-            guard let self = self, let value = value else { return }
-            // self.state?.gender = value
-            let dropdownFormRow: DropdownFormRow = paymentOptionsRow
-            
-            dropdownFormRow.config.placeholder = value.name
-            self.reloadRow(withTag: dropdownFormRow.tag)
+            guard let self else { return }
+
+            self.state.paymentMethod = value
+
+            self.paymentOptionsRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: self.paymentOptionsRow.tag)
         }
     }
     
+    private func handleDateSelection() {
+        var config = dateRow.config
+        config.placeholder = state.dateString
+        dateRow.config = config
+
+        reloadRow(withTag: CellTag.date.rawValue)
+    }
+  
     // MARK: - Submit
     private func submit() async {
+        Task {
+            let success = await performNetworkRequest()
+            
+            if !success {
+                print("Failed to fetch product data")
+            }
+            
+            DispatchQueue.main.async { [weak self] in  // go to success
+                self?.gotoConfirm?()
+            }
+        }
 
+    }
+    
+    // MARK: - Network
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        
+        let payload: [String: Any] = [
+            "categoryId": state.categories?.id ?? "",
+            "amount": state.amount,
+            "description": state.description,
+            "date": state.date.map { $0.toISO8601String() } ?? "",
+            "supplierId": state.supplier?.id ?? "",
+            "paymentMethodId": state.paymentMethod?.id ?? ""
+        ]
+
+        print("📦 payload:", payload)
+        
+        do {
+            let response = try await bookKeepingService.addExpense(parameters: payload, pickedFiles: state.additionalImages, accessToken: state.oauthToken)
+                
+            return true
+            
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    private static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 
     // MARK: - State
     private struct State {
         var categories: CommonIdNameModel?
+        var supplier: CommonIdNameModel?
         var paymentMethod: CommonIdNameModel?
 
-        var dateString: String = ""
-        var amount: String = ""
-        var supplierName: String = ""
-        var description: String = ""
         var date: Date?
+        var dateString: String = ""
 
-        var attachmentFile: PickedFile?
-        
+        var amount: String = ""
+        var description: String = ""
+
         var additionalImages: [PickedFile] = []
+
         private let maxImages = 5
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
+
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }

@@ -11,7 +11,8 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingExpensesViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+    
+    var goToDetails: (() -> Void)? = { }
     
     private var state = State()
     
@@ -26,54 +27,50 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await fetchItems()
-            
+            let success = await performNetworkRequest()
+
             if !success {
-                print("Failed to fetch product data")
+                print("Failed to fetch expenses")
             }
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.updateRecentActivitiesSection()
+
+            await MainActor.run {
+                self.updateRecentActivitiesSection()
             }
         }
     }
     
     // MARK: - Network
-    
-    private func fetchItems() async -> Bool {
-        async let similar = performNetworkRequest()
-        let results = await [similar]
-        return results.allSatisfy { $0 }
-    }
-    
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-                let response = try await bookKeepingService.getAllExpenses(
-                    page: 1,
-                    count: 10,
-                    accessToken: state.oauthToken
-                )
-                
+            let response = try await bookKeepingService.getAllExpenses(
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+
+            // Store real data
+            self.state.expenses = response.data ?? []
+
             return true
-            
+
         } catch {
             print("❌ Error: ", error)
             return false
         }
     }
     
+    // MARK: - Update Section
     private func updateRecentActivitiesSection() {
         guard let index = sections.firstIndex(where: {
             $0.id == Tags.Section.recentActivities.rawValue
         }) else { return }
         
         sections[index].cells = makeTransactionActionRows()
-        
         reloadSection(index)
     }
 
-    // MARK: - Sections -
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             makeFilterSection(),
@@ -103,12 +100,9 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         )
     }
     
-    // MARK: - Update Sections -
-
-    // MARK: - Lazy Rows
-    private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    // MARK: - Rows
+    private lazy var financialSummaryRow: FormRow = makeFinancialSummaryRow()
     private lazy var filterFormRow: FormRow = makeFilterFormRow()
-    
     private lazy var searchRow = makeSearchRow()
     
     private func makeSearchRow() -> FormRow {
@@ -127,7 +121,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     }
     
     private func makeFilterFormRow() -> FormRow {
-        let row = FiltersFormRow(
+        FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
                 title: "Filters",
@@ -137,17 +131,13 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                             placeholder: "Sale Type",
                             selectedValue: nil,
                             iconSystemName: "tag",
-                            onTap: {
-                                print("Sale Type tapped")
-                            }
+                            onTap: { print("Sale Type tapped") }
                         ),
                         FilterFieldConfig(
                             placeholder: "Time Period",
                             selectedValue: nil,
                             iconSystemName: "calendar",
-                            onTap: {
-                                print("Time Period tapped")
-                            }
+                            onTap: { print("Time Period tapped") }
                         )
                     ],
                     [
@@ -155,23 +145,19 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                             placeholder: "Region",
                             selectedValue: nil,
                             iconSystemName: "mappin.and.ellipse",
-                            onTap: {
-                                print("Region tapped")
-                            }
+                            onTap: { print("Region tapped") }
                         )
                     ]
                 ],
                 message: "Select filters to refine your results"
             )
         )
-
-        return row
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Customers",
+                title: "Total Expenses",
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "This month",
                 status: CardStatusStyle(
@@ -182,9 +168,9 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 )
             ),
             right: DualCardItemConfig(
-                title: "Active Buyers",
+                title: "Pending Review",
                 titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
+                subtitle: "2 pending",
                 status: CardStatusStyle(
                     text: "Action needed",
                     textColor: .systemOrange,
@@ -194,90 +180,67 @@ final class BookKeepingExpensesViewModel: FormViewModel {
             )
         )
 
-        let row = DualCardFormRow(
-            tag: 100,
-            config: config
-        )
-
-        return row
+        return DualCardFormRow(tag: 100, config: config)
     }
     
-    // Lazy factory that creates rows
-   
-    func generateTransactionData(from configs: [TransactionSummaryCellConfig]) -> [FormRow] {
-        return configs.enumerated().map { index, config in
-            // Create a new row for each config
-            return TransactionSummaryRow(tag: index, config: config)
-        }
-    }
-    
+    // MARK: - Rows from API
     private func makeTransactionActionRows() -> [FormRow] {
-        // Example of multiple configurations with actions included
-        let configs: [TransactionSummaryCellConfig] = [
-            TransactionSummaryCellConfig(
-                title: "John Doe",
-                amount: "Ksh. 12,987",
-                amountColor: .green,
-                dateText: "Oct 27, 2025",
-                saleTypeText: "Cash Sale",
+        state.expenses.map { expense in
+            
+            let amountText = expense.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let dateText = formatDate(expense)
+            let supplierName = expense.supplier?.name ?? "Unknown Supplier"
+            let categoryName = expense.category?.name ?? "Expense"
+            
+            let config = TransactionSummaryCellConfig(
+                title: supplierName,
+                amount: amountText,
+                amountColor: .label,
+                dateText: dateText,
+                saleTypeText: categoryName,
                 saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .green,
-                itemsCountText: "3 items",
+                saleTypeBackgroundColor: .systemBlue,
+                itemsCountText: expense.description ?? "",
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
                     borderColor: .systemGray4,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    onTap: { [weak self] in
+                        self?.goToDetails?()
+                    }
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Edit",
                     icon: UIImage(systemName: "pencil"),
-                    onTap: { print("Edit tapped!") }
-                ),
-                cardBackgroundColor: .white,
-                cardBorderColor: .systemGray4,
-                cardBorderWidth: 1,
-                cardCornerRadius: 12
-            ),
-            TransactionSummaryCellConfig(
-                title: "Jane Smith",
-                amount: "Ksh. 8,500",
-                amountColor: .blue,
-                dateText: "Nov 15, 2025",
-                saleTypeText: "Credit Sale",
-                saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .blue,
-                itemsCountText: "2 items",
-                primaryAction: ActionCardConfig(
-                    title: "View Details",
-                    icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .white,
-                    textColor: .label,
-                    borderColor: .systemGray4,
-                    borderWidth: 1
-                ),
-                secondaryAction: InlineActionConfig(
-                    title: "Delete",
-                    icon: UIImage(systemName: "trash"),
-                    onTap: { print("Delete tapped!") }
+                    onTap: {
+                        print("Edit expense \(expense.id)")
+                    }
                 ),
                 cardBackgroundColor: .white,
                 cardBorderColor: .systemGray4,
                 cardBorderWidth: 1,
                 cardCornerRadius: 12
             )
-        ]
 
-        // Generate rows
-        let rows: [FormRow] = generateTransactionData(from: configs)
-        return rows
-
+            return TransactionSummaryRow(
+                tag: expense.id,
+                config: config
+            )
+        }
+    }
+    
+    // MARK: - Helpers
+    private func formatDate(_ expense: ExpenseResponse) -> String {
+        return expense.expenseDate ?? expense.createdOn ?? ""
     }
 
     // MARK: - State
     private struct State {
+        var expenses: [ExpenseResponse] = []
+
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
@@ -293,15 +256,13 @@ final class BookKeepingExpensesViewModel: FormViewModel {
             case businessMetrics = 3
             case recentActivities = 4
         }
+
         enum Cells: Int {
             case search = 0
             case financialSummary = 1
             case quickActions = 2
             case businessMetrics = 3
             case recentActivities = 4
-            
         }
     }
 }
-
-

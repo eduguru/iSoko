@@ -12,7 +12,6 @@ public enum CommonUtilityOption {
     case userTypes(page: Int, count: Int)
     case userGender(page: Int, count: Int)
     case countries(page: Int, count: Int)
-    
     case ageGroups
     
     case organisationType(page: Int, count: Int)
@@ -25,4 +24,6 @@ public enum CommonUtilityOption {
     
     case expenses(page: Int, count: Int)
     case paymentOptions(page: Int, count: Int)
+    
+    case customers(page: Int, count: Int)
 }
