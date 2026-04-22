@@ -23,3 +23,19 @@ public struct CommodityResponse: Decodable {
     let tradeStatisticsMeasurementMetricId: Int?
     let tradeStatisticsMeasurementMetric: String?
 }
+
+
+public struct CommodityV1Response: Decodable {
+    let id: Int?
+    let name: String?
+    let imageUrl: String?
+    let subCategory: CommoditySubCategoryResponse?
+    let marketPriceUnit: MeasurementUnitResponse?
+    let tradeStatisticsUnit: MeasurementUnitResponse?
+    let active: Bool?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, subCategory, marketPriceUnit, tradeStatisticsUnit, active
+        case imageUrl = "url"
+    }
+}

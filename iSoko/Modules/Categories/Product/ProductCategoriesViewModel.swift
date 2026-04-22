@@ -283,7 +283,8 @@ final class ProductCategoriesViewModel: FormViewModel {
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
         var products: [CommodityCategoryResponse] = []
-        var filteredProducts: [CommodityCategoryResponse] = [] // Store filtered products separately
+        var filteredProducts: [CommodityCategoryResponse] = []
+        
         var currentPage: Int = 1
         var itemsPerPage: Int = 20
         var hasMorePages: Bool = true

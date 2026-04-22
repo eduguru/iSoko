@@ -19,6 +19,7 @@ final class AddProductImagesViewController: FormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "Add Product"
         guard let vm = viewModel as? AddProductImagesViewModel else {
             fatalError("Expected AddProductImagesViewModel")
         }

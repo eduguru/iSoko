@@ -11,4 +11,6 @@ enum CommonSelection {
     case countries(CountryResponse)
     case organisationSize(OrganisationSizeResponse)
     case organisationType(OrganisationTypeResponse)
+    case commodityCategories(CommodityCategoryResponse)
+    case commodities(CommodityV1Response)
 }

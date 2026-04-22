@@ -76,44 +76,44 @@ public struct CommonUtilitiesApi {
     
     //MARK: - Measurement
     
-    public static func getMeasurementMetrics(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[MeasurementMetricResponse]> {
+    public static func getMeasurementMetrics(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[MeasurementMetricResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/measurement-metric",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "measurement-metrics",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getMeasurementUnits(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[MeasurementUnitResponse]> {
+    public static func getMeasurementUnits(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[MeasurementUnitResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/measurement-unit",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "measurement-units",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     //MARK: - Organisation
@@ -251,7 +251,7 @@ public struct CommonUtilitiesApi {
             "size": count,
             "status": "active",
             // "module": module
-        ] //https://api.dev.isoko.africa/v1/commodity-categories?page=1&size=100&status=active
+        ]
         
         let headers = [
             "Content-Type": "application/json",
@@ -324,6 +324,38 @@ public struct CommonUtilitiesApi {
         )
         
         return OptionalObjectResponseTarget(target: target)
+    }
+    
+    public static func getCommoditiesV1(
+        page: Int,
+        count: Int,
+        categoryId: String,
+        subCategoryId: String,
+        accessToken: String
+    ) -> UnifiedPagedResponseTarget<[CommodityV1Response]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "count": count,
+            "categoryId": categoryId,
+            "subCategoryId": subCategoryId
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "commodities",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getPaymentOptions(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {

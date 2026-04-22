@@ -36,6 +36,30 @@ public class ModalCoordinator: BaseCoordinator {
         
         router.push(vc, animated: true)
     }
+    
+    public func goToComoditySelection( _ completion: @escaping (CommodityV1Response?) -> Void) {
+        let viewModel = CommodityPickerViewModel()
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .commodities(let model):
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommodityPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.push(vc, animated: true)
+    }
 
     // MARK: - Country Selection
     public func goToCountrySelection(completion: @escaping (Country) -> Void) {

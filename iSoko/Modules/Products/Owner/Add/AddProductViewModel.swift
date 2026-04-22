@@ -5,16 +5,19 @@
 //  Created by Edwin Weru on 07/04/2026.
 //
 
-
-
-
 import DesignSystemKit
 import UIKit
 import UtilsKit
 
 final class AddProductViewModel: FormViewModel {
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
     
-    var gotoSelectOption: ((_ options: [CommonIdNameModel], _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
+    var goToComoditySelection: (_ completion: @escaping (CommodityV1Response?) -> Void) -> Void = { _ in }
+    
     var gotoConfirm: (() -> Void)?
     
     // MARK: - State
@@ -191,20 +194,26 @@ final class AddProductViewModel: FormViewModel {
     // MARK: - Handlers
     
     private func handleCommoditySelection() {
-        gotoSelectOption?(state.commodityOptions) { [weak self] value in
+        goToComoditySelection() { [weak self] value in
             guard let self, let value else { return }
-            state.selectedCommodity = value
-            commodityTypeRow.config.placeholder = value.name
-            reloadRow(withTag: CellTag.commodityType.rawValue)
+            
+            // state.selectedCommodity = value
+            let dropDownRow: DropdownFormRow = self.commodityTypeRow
+
+            dropDownRow.config.placeholder = value.name ?? ""
+            self.reloadRow(withTag: dropDownRow.tag)
         }
     }
     
     private func handleMeasurementSelection() {
-        gotoSelectOption?(state.measurementOptions) { [weak self] value in
-            guard let self, let value else { return }
-            state.selectedMeasurement = value
-            measurementUnitRow.config.placeholder = value.name
-            reloadRow(withTag: CellTag.measurementUnit.rawValue)
+        goToCommonSelectionOptions(.measurementUnits(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+
+            self.state.selectedMeasurement = value
+            let dropDownRow: DropdownFormRow = self.measurementUnitRow
+
+            dropDownRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: dropDownRow.tag)
         }
     }
     
@@ -229,18 +238,6 @@ final class AddProductViewModel: FormViewModel {
         
         var selectedCommodity: CommonIdNameModel?
         var selectedMeasurement: CommonIdNameModel?
-        
-        var commodityOptions: [CommonIdNameModel] = [
-            .init(id: 1, name: "Grains"),
-            .init(id: 2, name: "Vegetables"),
-            .init(id: 3, name: "Fruits")
-        ]
-        
-        var measurementOptions: [CommonIdNameModel] = [
-            .init(id: 1, name: "Kg"),
-            .init(id: 2, name: "Ton"),
-            .init(id: 3, name: "Pieces")
-        ]
     }
     
     // MARK: - Tags

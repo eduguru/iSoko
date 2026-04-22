@@ -8,6 +8,7 @@
 public struct MeasurementMetricResponse: Decodable {
     let id: Int?
     let name: String?
-    let description: String?
     let code: String?
+    let description: String?
+    let active: Bool?
 }

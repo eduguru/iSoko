@@ -14,8 +14,7 @@ class AddProductViewController: FormViewController, CloseableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = ""
-        
+        title = "Add Product"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
     }

@@ -204,7 +204,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         config: DropdownFormConfig(
             title: "Payment Method",
             placeholder: "Method",
-            rightImage: UIImage(systemName: "calendar"),
+            rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
                 self?.handlePaymentsSelection()

@@ -109,12 +109,14 @@ public class ProductsCoordinator: BaseCoordinator {
 }
 
 extension ProductsCoordinator {
-    
     private func gotoCreateProduct() {
         let modalCoordinator = ModalCoordinator(router: router)  // coordinator.delegate = self
         addChild(modalCoordinator)
         
         let viewModel = AddProductViewModel()
+        viewModel.goToCommonSelectionOptions = goToCommonSelection
+        viewModel.goToComoditySelection = goToComoditySelection
+        
         viewModel.gotoConfirm = { [weak self] in
             self?.gotoCompleteCreateProduct()
         }
@@ -140,5 +142,67 @@ extension ProductsCoordinator {
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    private func goToCommonSelection(_ type: CommonUtilityOption, _ staticOptions: [CommonIdNameModel]? = nil, _ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToCommonSelection(type, staticOptions) { [weak self] result in
+            completion(result)
+        }
+    }
+    
+    private func goToComoditySelection(_ completion: @escaping (CommodityV1Response?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToComoditySelection() { [weak self] result in
+            completion(result)
+        }
+    }
+    
+    private func gotoSelectSystemCountry(_ type: CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .countries(let response):
+                let model = response
+                completion(model)
+            default:
+                completion(nil)
+            }
+
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] result in
+            completion(result)
+            self?.router.pop()
+        }
+    }
+    
+    private func gotoSelectDate(config: DatePickerConfig,completion: @escaping (Date?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToAppleStyleCalendar(config: config) { [weak self] result in
+            completion(result)
+        }
     }
 }

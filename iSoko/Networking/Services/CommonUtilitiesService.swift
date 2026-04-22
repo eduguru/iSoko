@@ -1,6 +1,6 @@
 //
 //  CommonUtilitiesService.swift
-//  
+//
 //
 //  Created by Edwin Weru on 27/08/2025.
 //
@@ -12,10 +12,11 @@ public protocol CommonUtilitiesService {
     func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse]
     func getLocationLevels(page: Int, count: Int, accessToken: String) async throws -> [LocationLevelsResponse]
     func getLocationsByLevel(page: Int, count: Int, locationLevel: String, accessToken: String) async throws -> [LocationResponse]
+    func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]>
     
     //MARK: - Measurement
-    func getMeasurementMetrics(page: Int, count: Int, accessToken: String) async throws -> [MeasurementMetricResponse]
-    func getMeasurementUnits(page: Int, count: Int, accessToken: String) async throws -> [MeasurementUnitResponse]
+    func getMeasurementMetrics(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[MeasurementMetricResponse]>
+    func getMeasurementUnits(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[MeasurementUnitResponse]>
     
     //MARK: - Organisation
     func getOrganisationType(page: Int, count: Int, accessToken: String) async throws -> [OrganisationTypeResponse]
@@ -42,6 +43,14 @@ public protocol CommonUtilitiesService {
         accessToken: String
     ) async throws -> [CommodityResponse]
     
+    func getCommoditiesV1(
+        page: Int,
+        count: Int,
+        categoryId: String,
+        subCategoryId: String,
+        accessToken: String
+    ) async throws -> PagedResult<[CommodityV1Response]>
+    
 }
 
 public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
@@ -55,10 +64,10 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
     
     public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse] {
         let response: NewPagedResponse<[LocationResponse]> =
-            try await manager.request(
-                CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)
-            )
-
+        try await manager.request(
+            CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)
+        )
+        
         return response.data
     }
     
@@ -74,16 +83,16 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         return response
     }
     
-    public func getMeasurementMetrics(page: Int, count: Int, accessToken: String) async throws -> [MeasurementMetricResponse] {
-        let response: [MeasurementMetricResponse] = try await manager.request(CommonUtilitiesApi.getMeasurementMetrics(page: page, count: count, accessToken: accessToken)) ?? []
+    public func getMeasurementMetrics(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[MeasurementMetricResponse]> {
+        let envelope = try await manager.request(CommonUtilitiesApi.getMeasurementMetrics(page: page, count: count, accessToken: accessToken))
         
-        return response
+        return envelope.toPagedResult()
     }
     
-    public func getMeasurementUnits(page: Int, count: Int, accessToken: String) async throws -> [MeasurementUnitResponse] {
-        let response: [MeasurementUnitResponse] = try await manager.request(CommonUtilitiesApi.getMeasurementUnits(page: page, count: count, accessToken: accessToken)) ?? []
+    public func getMeasurementUnits(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[MeasurementUnitResponse]> {
+        let envelope = try await manager.request(CommonUtilitiesApi.getMeasurementUnits(page: page, count: count, accessToken: accessToken))
         
-        return response
+        return envelope.toPagedResult()
     }
     
     public func getOrganisationType(page: Int, count: Int, accessToken: String) async throws -> [OrganisationTypeResponse] {
@@ -140,6 +149,13 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         return response
     }
     
+    public func getCommoditiesV1(page: Int, count: Int, categoryId: String, subCategoryId: String, accessToken: String) async throws -> PagedResult<[CommodityV1Response]> {
+        let envelope = try await manager.request(
+            CommonUtilitiesApi.getCommoditiesV1(page: page, count: count, categoryId: categoryId, subCategoryId: subCategoryId, accessToken: accessToken)
+        )
+
+        return envelope.toPagedResult()
+    }
     
     func getPaymentOptions(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
         let envelope = try await manager.request(
@@ -149,7 +165,7 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         return envelope.toPagedResult()
     }
     
-    func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]> {
+    public func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]> {
         let envelope = try await manager.request(
             CommonUtilitiesApi.getSystemCountries(page: page, count: count, accessToken: accessToken)
         )

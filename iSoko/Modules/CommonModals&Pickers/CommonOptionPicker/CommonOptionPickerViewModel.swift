@@ -12,16 +12,16 @@ import UIKit
 import StorageKit
 
 final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel {
-
+    
     var hasPrimaryActionButton: Bool = true
     var confirmSelection: ((CommonSelection) -> Void)? = { _ in }
-
+    
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     private var commonUtilitiesService: CommonUtilitiesServiceImpl
-
+    
     private var state: State
-
+    
     // MARK: - Init
     init(
         option: CommonUtilityOption,
@@ -31,58 +31,58 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         self.commonUtilitiesService = commonUtilitiesService
         self.state = State(commonUtilityOption: option, options: options ?? [])
         super.init()
-
+        
         if options != nil {
             self.sections = makeSections()
         } else {
             fetchData()
         }
     }
-
+    
     // MARK: - Fetch Data
     override func fetchData() {
         guard state.options.isEmpty else { return }
         showLoader()
-
+        
         Task {
             do {
                 let response = try await fetchCommonUtility(option: state.commonUtilityOption)
-
+                
                 let models = mapResponse(response)
-
+                
                 self.state.options = models
                 self.sections = makeSections()
                 hideLoader()
-
+                
             } catch {
                 print("Error:", error)
             }
         }
     }
-
+    
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [makeSelectionSection()]
     }
-
+    
     private func makeSelectionSection() -> FormSection {
         FormSection(id: Tags.Section.options.rawValue, cells: makeSelectionCells())
     }
-
+    
     private func updateSelectionSection() {
         guard let index = sections.firstIndex(where: { $0.id == Tags.Section.options.rawValue }) else { return }
         sections[index].cells = makeSelectionCells()
         reloadSection(index)
     }
-
+    
     private func makeSelectionCells() -> [FormRow] {
         state.options.map { makeOptionsRow(for: $0) }
     }
-
+    
     private func makeOptionsRow(for option: CommonIdNameModel) -> SelectableRow {
         let tag = option.id.hashValue
         let isSelected = state.selectedOption?.id == option.id
-
+        
         return SelectableRow(
             tag: tag,
             config: SelectableRowConfig(
@@ -106,39 +106,39 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
             )
         )
     }
-
+    
     // MARK: - Selection Resolver (single switch)
     private func resolveSelection(_ selected: CommonIdNameModel) -> CommonSelection {
         switch state.commonUtilityOption {
-
+            
         case .locations:
             if let item = state.rawLocationOptions.first(where: { $0.id == selected.id }) {
                 return .location(item)
             }
-
+            
         case .organisationSize:
             if let item = state.rawOrganisationSizes.first(where: { $0.id == selected.id }) {
                 return .organisationSize(item)
             }
-
+            
         case .organisationType:
             if let item = state.rawOrganisationTypes.first(where: { $0.id == selected.id }) {
                 return .organisationType(item)
             }
-
+            
         case .countries:
             
             if let item = state.rawCountryOptions.first(where: { $0.id == selected.id }) {
                 return .countries(item)
             }
-
+            
         default:
             return .idName(selected)
         }
-
+        
         return .idName(selected)
     }
-
+    
     // MARK: - Confirm Button
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
@@ -152,44 +152,48 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         ) { [weak self] in
             guard let self = self,
                   let selected = self.state.selectedOption else { return }
-
+            
             self.confirmSelection?(self.resolveSelection(selected))
         }
     )
-
+    
     // MARK: - ActionHandling
     func handlePrimaryAction() {
         guard let selected = state.selectedOption else { return }
         confirmSelection?(resolveSelection(selected))
     }
-
+    
     // MARK: - State
     private struct State {
         var options: [CommonIdNameModel]
         var selectedOption: CommonIdNameModel?
-
+        
         var rawLocationOptions: [LocationResponse] = []
         var rawCountryOptions: [CountryResponse] = []
+        
         var rawOrganisationSizes: [OrganisationSizeResponse] = []
         var rawOrganisationTypes: [OrganisationTypeResponse] = []
         var rawSuppliersResponse: [SupplierResponse] = []
         var rawCustomerOptions: [CustomerResponse] = []
         
+        var rawMeasurementMetricOptions: [MeasurementMetricResponse] = []
+        var rawMeasurementUnitOptions: [MeasurementUnitResponse] = []
+        
         var rawCommonIdNameResponse: [CommonIdNameResponse] = []
         
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
-
+        
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-
+        
         init(commonUtilityOption: CommonUtilityOption, options: [CommonIdNameModel]) {
             self.commonUtilityOption = commonUtilityOption
             self.options = options
         }
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
@@ -220,7 +224,7 @@ extension CommonOptionPickerViewModel {
             return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken)
         case let .countries(page, count):
             return try await commonUtilitiesService.getSystemCountries(page: page, count: count, accessToken: state.guestToken).data
-        
+            
         case .suppliers(page: let page, count: let count):
             return try await bookKeepingService.getAllSuppliers(page: page, count: count, accessToken: state.oauthToken).data
         case .supplierCategory(page: let page, count: let count):
@@ -228,26 +232,32 @@ extension CommonOptionPickerViewModel {
             
         case .expenses(page: let page, count: let count):
             return try await bookKeepingService.getExpenseCategories(page: page, count: count, accessToken: state.oauthToken).data
-        
+            
         case .paymentOptions(page: let page, count: let count):
             return try await commonUtilitiesService.getPaymentOptions(page: page, count: count, accessToken: state.oauthToken).data
             
-            case .customers(page: let page, count: let count):
-                return try await bookKeepingService.getAllCustomers(page: page, count: count, accessToken: state.oauthToken).data
+        case .customers(page: let page, count: let count):
+            return try await bookKeepingService.getAllCustomers(page: page, count: count, accessToken: state.oauthToken).data
+         
+        case .measurementUnits(page: let page, count: let count):
+            return try await commonUtilitiesService.getMeasurementUnits(page: page, count: count, accessToken: state.oauthToken).data
             
+        case .measurementMetrics(page: let page, count: let count):
+            return try await commonUtilitiesService.getMeasurementMetrics(page: page, count: count, accessToken: state.oauthToken).data
+
         }
     }
     
     // MARK: - Mapping (single switch only here)
     private func mapResponse(_ response: [Any]) -> [CommonIdNameModel] {
         switch state.commonUtilityOption {
-
+            
         case .userRoles, .userTypes, .userGender, .ageGroups,
                 .supplierCategory, .expenses, .paymentOptions:
-
+            
             guard let items = response as? [CommonIdNameResponse] else { return [] }
             state.rawCommonIdNameResponse = items
-
+            
             return items.map {
                 CommonIdNameModel(id: $0.id, name: $0.name, description: $0.description)
             }
@@ -255,7 +265,7 @@ extension CommonOptionPickerViewModel {
         case .suppliers:
             guard let items = response as? [SupplierResponse] else { return [] }
             state.rawSuppliersResponse = items
-
+            
             return items.compactMap {
                 return CommonIdNameModel(id: $0.id, name: $0.name ?? "", description: $0.phoneNumber)
             }
@@ -263,34 +273,34 @@ extension CommonOptionPickerViewModel {
         case .organisationSize:
             guard let items = response as? [OrganisationSizeResponse] else { return [] }
             state.rawOrganisationSizes = items
-
+            
             return items.compactMap {
                 guard let id = $0.id, let name = $0.name else { return nil }
                 return CommonIdNameModel(id: id, name: name, description: "")
             }
-
+            
         case .organisationType:
             guard let items = response as? [OrganisationTypeResponse] else { return [] }
             state.rawOrganisationTypes = items
-
+            
             return items.compactMap {
                 guard let id = $0.id, let name = $0.name else { return nil }
                 return CommonIdNameModel(id: id, name: name, description: "")
             }
-
+            
         case .locations:
             guard let items = response as? [LocationResponse] else { return [] }
             state.rawLocationOptions = items
-
+            
             return items.compactMap {
                 guard let id = $0.id, let name = $0.name else { return nil }
                 return CommonIdNameModel(id: id, name: name, description: $0.codeName)
             }
-
+            
         case .countries:
             guard let items = response as? [CountryResponse] else { return [] }
             state.rawCountryOptions = items
-
+            
             return items.compactMap {
                 guard let name = $0.name else { return nil }
                 return CommonIdNameModel(id: $0.id, name: name, description: $0.code)
@@ -299,9 +309,27 @@ extension CommonOptionPickerViewModel {
         case .customers:
             guard let items = response as? [CustomerResponse] else { return [] }
             state.rawCustomerOptions = items
-
+            
             return items.compactMap {
                 return CommonIdNameModel(id: $0.id, name: $0.name ?? "", description: $0.phoneNumber)
+            }
+            
+        case .measurementUnits:
+            guard let items = response as? [MeasurementUnitResponse] else { return [] }
+            state.rawMeasurementUnitOptions = items
+            
+            return items.compactMap {
+                guard let name = $0.name else { return nil }
+                return CommonIdNameModel(id: $0.id ?? 0, name: name, description: $0.code)
+            }
+            
+        case .measurementMetrics:
+            guard let items = response as? [MeasurementMetricResponse] else { return [] }
+            state.rawMeasurementMetricOptions = items
+            
+            return items.compactMap {
+                guard let name = $0.name else { return nil }
+                return CommonIdNameModel(id: $0.id ?? 0, name: name, description: $0.code)
             }
             
         }

@@ -12,6 +12,8 @@ public enum CommonUtilityOption {
     case userTypes(page: Int, count: Int)
     case userGender(page: Int, count: Int)
     case countries(page: Int, count: Int)
+    case measurementUnits(page: Int, count: Int)
+    case measurementMetrics(page: Int, count: Int)
     case ageGroups
     
     case organisationType(page: Int, count: Int)

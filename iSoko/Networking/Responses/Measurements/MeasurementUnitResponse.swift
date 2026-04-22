@@ -10,6 +10,6 @@ public struct MeasurementUnitResponse: Decodable {
     let name: String?
     let code: String?
     let description: String?
-    let measurementMetricName: String?
-    let measurementMetricId: Int?
+    let metric: MeasurementMetricResponse?
+    let active: Bool?
 }
