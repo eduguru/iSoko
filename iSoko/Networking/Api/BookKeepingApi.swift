@@ -278,6 +278,34 @@ public extension BookKeepingApi {
 // MARK: - Stock
 public extension BookKeepingApi {
     
+    static func addProduct(
+        parameters: [String: Any],
+        pickedFiles: [PickedFile]?,
+        accessToken: String
+    ) -> ValueResponseTarget<ExpenseResponse> {
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
+        var files: [UploadFile] = Helpers.mapPickedFile2UploadFile(pickedFiles, name: "images")
+
+        let target = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "products",
+            method: .post,
+            jsonPartName: "product",
+            jsonData: paramsJson,
+            files: files,
+            headers: headers,
+            requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: target.asAnyTarget())
+    }
+    
     static func getAllStock(userId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[StockResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         

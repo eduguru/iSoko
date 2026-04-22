@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - Cell Config
 public struct FiltersCellConfig {
 
     public let title: String?
@@ -16,24 +17,18 @@ public struct FiltersCellConfig {
     public let messageColor: UIColor
 
     public let showsCard: Bool
-    public let cardBackgroundColor: UIColor
-    public let cardCornerRadius: CGFloat
 
     public init(
         title: String? = nil,
         rows: [[FilterFieldConfig]],
         message: String? = nil,
         messageColor: UIColor = .secondaryLabel,
-        showsCard: Bool = true,
-        cardBackgroundColor: UIColor = .systemGray6,
-        cardCornerRadius: CGFloat = 12
+        showsCard: Bool = false
     ) {
         self.title = title
         self.rows = rows
         self.message = message
         self.messageColor = messageColor
         self.showsCard = showsCard
-        self.cardBackgroundColor = cardBackgroundColor
-        self.cardCornerRadius = cardCornerRadius
     }
 }

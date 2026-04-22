@@ -179,7 +179,6 @@ final class BookKeepingReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Start Date",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: { [weak self] in
                                 self?.onStartDateTap?()
                             }
@@ -187,7 +186,6 @@ final class BookKeepingReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "End Date",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: { [weak self] in
                                 self?.onEndDateTap?()
                             }

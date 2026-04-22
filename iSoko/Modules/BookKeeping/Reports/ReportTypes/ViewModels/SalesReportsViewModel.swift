@@ -113,7 +113,6 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Sales Type",
                             selectedValue: nil,
-                            iconSystemName: "mappin.and.ellipse",
                             onTap: {
                                 print("tapped")
                             }
@@ -123,7 +122,6 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Product",
                             selectedValue: nil,
-                            iconSystemName: "tag",
                             onTap: {
                                 print("Sale Type tapped")
                             }
@@ -131,7 +129,6 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Payment Method",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: {
                                 print("Time Period tapped")
                             }
@@ -141,7 +138,6 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Start Date",
                             selectedValue: nil,
-                            iconSystemName: "tag",
                             onTap: {
                                 print("Sale Type tapped")
                             }
@@ -149,7 +145,6 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "End Date",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: {
                                 print("Time Period tapped")
                             }

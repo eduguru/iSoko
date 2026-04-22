@@ -126,7 +126,6 @@ final class StockReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Supplier",
                             selectedValue: nil,
-                            iconSystemName: "mappin.and.ellipse",
                             onTap: {
                                 print("tapped")
                             }
@@ -144,7 +143,6 @@ final class StockReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "End Date",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: {
                                 print("Time Period tapped")
                             }

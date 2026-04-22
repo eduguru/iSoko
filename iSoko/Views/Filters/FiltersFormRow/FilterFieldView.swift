@@ -7,11 +7,11 @@
 
 import UIKit
 
+// MARK: - Filter Field View
 final class FilterFieldView: UIControl {
 
-    private let iconImageView = UIImageView()
     private let label = UILabel()
-    private let chevron = UIImageView()
+    private let trailingIcon = UIImageView()
     private let clearButton = UIButton(type: .system)
 
     private let stack = UIStackView()
@@ -20,6 +20,7 @@ final class FilterFieldView: UIControl {
     private var onTap: (() -> Void)?
     private var onClear: (() -> Void)?
 
+    // MARK: - Init
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
@@ -30,29 +31,33 @@ final class FilterFieldView: UIControl {
         setup()
     }
 
+    // MARK: - Setup
     private func setup() {
+
+        // ✅ Base styling
         backgroundColor = .systemBackground
         layer.cornerRadius = 10
+        layer.borderWidth = 1
+        layer.borderColor = UIColor.separator.withAlphaComponent(0.5).cgColor
 
-        // Icon
-        iconImageView.contentMode = .scaleAspectFit
-        iconImageView.tintColor = .secondaryLabel
-        iconImageView.setContentHuggingPriority(.required, for: .horizontal)
-        iconImageView.isHidden = true
+        // Optional subtle elevation (comment out if you want flat UI)
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.02
+        layer.shadowOffset = CGSize(width: 0, height: 1)
+        layer.shadowRadius = 2
 
         // Label
         label.font = .preferredFont(forTextStyle: .body)
 
-        // Chevron
-        chevron.image = UIImage(systemName: "chevron.down")
-        chevron.tintColor = .secondaryLabel
-        chevron.setContentHuggingPriority(.required, for: .horizontal)
+        // Trailing icon
+        trailingIcon.tintColor = .secondaryLabel
+        trailingIcon.setContentHuggingPriority(.required, for: .horizontal)
 
         // Clear button
         clearButton.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
         clearButton.tintColor = .secondaryLabel
-        clearButton.addTarget(self, action: #selector(clearTapped), for: .touchUpInside)
         clearButton.setContentHuggingPriority(.required, for: .horizontal)
+        clearButton.addTarget(self, action: #selector(clearTapped), for: .touchUpInside)
 
         // Stack
         stack.axis = .horizontal
@@ -60,26 +65,27 @@ final class FilterFieldView: UIControl {
         stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
 
-        stack.addArrangedSubview(iconImageView)
         stack.addArrangedSubview(label)
         stack.addArrangedSubview(spacer)
         stack.addArrangedSubview(clearButton)
-        stack.addArrangedSubview(chevron)
+        stack.addArrangedSubview(trailingIcon)
 
         addSubview(stack)
 
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor, constant: 14),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -14),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 14),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -14)
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 12),
+            stack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12)
         ])
 
         addTarget(self, action: #selector(tapped), for: .touchUpInside)
     }
 
+    // MARK: - Configure
     func configure(with config: FilterFieldConfig) {
 
+        // Text
         if let value = config.selectedValue {
             label.text = value
             label.textColor = .label
@@ -88,18 +94,24 @@ final class FilterFieldView: UIControl {
             label.textColor = .secondaryLabel
         }
 
-        if let iconName = config.iconSystemName {
-            iconImageView.image = UIImage(systemName: iconName)
-            iconImageView.isHidden = false
-        } else {
-            iconImageView.isHidden = true
-        }
-
+        // Clear button
         clearButton.isHidden = !config.showsClearButton || config.selectedValue == nil
+
+        // ✅ Smart trailing icon logic
+        let iconName = config.iconSystemName ?? (config.onTap != nil ? "chevron.down" : nil)
+
+        if let iconName {
+            trailingIcon.image = UIImage(systemName: iconName)
+            trailingIcon.isHidden = false
+        } else {
+            trailingIcon.isHidden = true
+        }
 
         onTap = config.onTap
         onClear = config.onClear
     }
+
+    // MARK: - Interaction
 
     @objc private func tapped() {
         onTap?()
@@ -107,5 +119,27 @@ final class FilterFieldView: UIControl {
 
     @objc private func clearTapped() {
         onClear?()
+    }
+
+    // MARK: - Press Feedback
+
+    override var isHighlighted: Bool {
+        didSet {
+            UIView.animate(withDuration: 0.15) {
+                self.backgroundColor = self.isHighlighted
+                ? UIColor.systemGray5
+                : UIColor.systemBackground
+            }
+        }
+    }
+
+    // MARK: - Focus State (Optional external control)
+
+    func setActive(_ active: Bool) {
+        UIView.animate(withDuration: 0.2) {
+            self.layer.borderColor = active
+            ? UIColor.systemBlue.cgColor
+            : UIColor.separator.withAlphaComponent(0.5).cgColor
+        }
     }
 }

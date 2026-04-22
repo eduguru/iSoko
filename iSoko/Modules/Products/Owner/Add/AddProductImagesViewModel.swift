@@ -18,25 +18,23 @@ final class AddProductImagesViewModel: FormViewModel {
 
     // MARK: - Navigation
     var gotoConfirm: (() -> Void)?
-    
-    /// NEW: preview full image
     var onPreviewImage: ((PickedFile) -> Void)?
 
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+
     // MARK: - State
-    private var state = State()
+    private var state: State
 
     // MARK: - Init
-    override init() {
+    init(_ params: [String: Any]?) {
+        self.state = State(params: params)
         super.init()
 
-        Task { @MainActor in
-            sections = makeSections()
-            configureUploadHandlers()
-        }
+        sections = makeSections()
+        configureUploadHandlers()
     }
 
-    // MARK: - Sections
-    
     private func makeSections() -> [FormSection] {
         [
             makeHeaderSection(),
@@ -45,7 +43,7 @@ final class AddProductImagesViewModel: FormViewModel {
             makeSubmitSection()
         ]
     }
-    
+
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: SectionTag.main.rawValue,
@@ -56,7 +54,7 @@ final class AddProductImagesViewModel: FormViewModel {
             ]
         )
     }
-    
+
     private func makeMainImageSection() -> FormSection {
         FormSection(
             id: SectionTag.mainImage.rawValue,
@@ -67,7 +65,7 @@ final class AddProductImagesViewModel: FormViewModel {
             ]
         )
     }
-    
+
     private func makeOtherImagesSection() -> FormSection {
         FormSection(
             id: SectionTag.additionalImages.rawValue,
@@ -79,10 +77,10 @@ final class AddProductImagesViewModel: FormViewModel {
             ]
         )
     }
-    
+
     private func makeSubmitSection() -> FormSection {
         FormSection(
-            id: SectionTag.continueButton.rawValue,
+            id: SectionTag.submit.rawValue,
             cells: [
                 SpacerFormRow(tag: 20),
                 continueButtonRow
@@ -90,23 +88,11 @@ final class AddProductImagesViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Header
-
-    private lazy var mainImageTitleFormRow: FormRow = makeTitleRow(
-        title: "Primary Product Image",
-        description: "This will be the main image shown to customers"
-    )
-
-    private lazy var otherImagesTitleFormRow: FormRow = makeTitleRow(
-        title: "Additional Product Images",
-        description: "Upload more images to showcase your product (Optional)"
-    )
-
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
             title: "Product Images",
-            description: "Upload a primary image and additional images to showcase your product",
+            description: "Upload a primary image and additional images",
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
@@ -114,10 +100,20 @@ final class AddProductImagesViewModel: FormViewModel {
             descriptionFontStyle: .subheadline
         )
     )
-    
+
     private lazy var stepIndicatorRow = StepStripFormRow(
         tag: CellTag.steps.rawValue,
         model: StepStripModel(totalSteps: 2, currentStep: 2)
+    )
+
+    private lazy var mainImageTitleFormRow = makeTitleRow(
+        title: "Primary Product Image",
+        description: "This will be the main image shown to customers"
+    )
+
+    private lazy var otherImagesTitleFormRow = makeTitleRow(
+        title: "Additional Product Images",
+        description: "Optional extra images"
     )
 
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -134,13 +130,11 @@ final class AddProductImagesViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Rows
-
     private lazy var primaryImageRow = UploadFormRow(
         tag: CellTag.primaryImage.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Primary Product Image",
+            title: "Primary Image",
             subtitle: "",
             icon: UIImage(systemName: "photo"),
             borderColor: .lightGray,
@@ -164,7 +158,6 @@ final class AddProductImagesViewModel: FormViewModel {
         )
     )
 
-    // PREVIEW ROW (with remove + tap)
     private lazy var imagePreviewRow = ImagePreviewFormRow(
         tag: CellTag.preview.rawValue,
         items: [],
@@ -172,13 +165,15 @@ final class AddProductImagesViewModel: FormViewModel {
             self?.removeImage(at: index)
         },
         onTap: { [weak self] index in
-            guard let image = self?.state.additionalImages[index] else { return }
-            self?.onPreviewImage?(image)
+            guard let self,
+                  index < self.state.additionalImages.count else { return }
+
+            self.onPreviewImage?(self.state.additionalImages[index])
         }
     )
 
     private lazy var continueButtonRow = ButtonFormRow(
-        tag: CellTag.continueButton.rawValue,
+        tag: CellTag.continueAction.rawValue,
         model: ButtonFormModel(
             title: "Continue",
             style: .primary,
@@ -186,50 +181,43 @@ final class AddProductImagesViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoConfirm?()
+            Task { await self?.submit() }
         }
     )
+}
 
-    // MARK: - Upload Handlers
+// MARK: - Upload Logic
+extension AddProductImagesViewModel {
 
     private func configureUploadHandlers() {
 
-        // PRIMARY IMAGE
         primaryImageRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
+            guard let self, case .pick = result else { return }
 
-            if case .pick = result {
-                self.pickFile? { picked in
-                    guard let picked else { return }
+            self.pickFile? { file in
+                guard let file else { return }
 
-                    self.state.primaryImage = picked
+                self.state.primaryImage = file
 
-                    if let data = picked.fileData,
-                       let image = UIImage(data: data) {
-                        self.primaryImageRow.selectedImage = image
-                    }
-
-                    self.reloadRow(withTag: self.primaryImageRow.tag)
+                if let data = file.fileData {
+                    self.primaryImageRow.selectedImage = UIImage(data: data)
                 }
+
+                self.reloadRow(withTag: self.primaryImageRow.tag)
             }
         }
 
-        // ADDITIONAL IMAGES (ARRAY)
         additionalImagesRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
+            guard let self, case .pick = result else { return }
 
-            if case .pick = result {
-                self.pickFile? { picked in
-                    guard let picked else { return }
+            self.pickFile? { file in
+                guard let file else { return }
 
-                    self.state.additionalImages.append(picked)
-                    self.updatePreview()
-                }
+                self.state.additionalImages.append(file)
+                self.updatePreview()
             }
         }
     }
-
-    // MARK: - Actions
 
     private func removeImage(at index: Int) {
         guard index < state.additionalImages.count else { return }
@@ -237,20 +225,62 @@ final class AddProductImagesViewModel: FormViewModel {
         updatePreview()
     }
 
-    // MARK: - Preview Sync
-
     private func updatePreview() {
-        imagePreviewRow.items = state.additionalImages.map { file in
+        imagePreviewRow.items = state.additionalImages.map {
             ImagePreviewItem(
-                image: file.fileData.flatMap { UIImage(data: $0) },
-                fileName: file.fileName
+                image: $0.fileData.flatMap { UIImage(data: $0) },
+                fileName: $0.fileName
             )
         }
 
         reloadRow(withTag: imagePreviewRow.tag)
     }
+}
 
-    // MARK: - Helpers
+// MARK: - Submit
+extension AddProductImagesViewModel {
+
+    private func submit() async {
+
+        guard let params = state.params else {
+            print("❌ Missing params")
+            return
+        }
+
+        let files = [state.primaryImage].compactMap { $0 } + state.additionalImages
+
+        let success = await performNetworkRequest(params: params, files: files)
+
+        if success {
+            gotoConfirm?()
+        } else {
+            print("❌ Upload failed")
+        }
+    }
+
+    private func performNetworkRequest(
+        params: [String: Any],
+        files: [PickedFile]
+    ) async -> Bool {
+
+        print("📦 Payload:", params)
+
+        do {
+            _ = try await bookKeepingService.addProduct(
+                parameters: params,
+                pickedFiles: files,
+                accessToken: state.oauthToken
+            )
+            return true
+        } catch {
+            print("❌ Error:", error)
+            return false
+        }
+    }
+}
+
+// MARK: - Helpers
+extension AddProductImagesViewModel {
 
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
@@ -260,30 +290,37 @@ final class AddProductImagesViewModel: FormViewModel {
             }
         }
     }
+}
 
-    // MARK: - State
+// MARK: - State
+extension AddProductImagesViewModel {
 
     private struct State {
+        var params: [String: Any]?
+
         var primaryImage: PickedFile?
         var additionalImages: [PickedFile] = []
-        private let maxImages = 5
-    }
 
-    // MARK: - Tags
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+    }
+}
+
+// MARK: - Tags
+extension AddProductImagesViewModel {
 
     private enum SectionTag: Int {
         case main
         case mainImage
         case additionalImages
-        case continueButton
+        case submit
     }
 
     private enum CellTag: Int {
         case header = 1
+        case steps
         case primaryImage
         case additionalImages
         case preview
-        case continueButton
-        case steps
+        case continueAction
     }
 }

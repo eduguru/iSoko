@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - Filters Cell
 public final class FiltersCell: UITableViewCell {
 
     private let titleLabel = UILabel()
@@ -15,6 +16,11 @@ public final class FiltersCell: UITableViewCell {
     private let containerView = UIView()
     private let contentStack = UIStackView()
     private let filtersContainerStack = UIStackView()
+
+    private var topC: NSLayoutConstraint!
+    private var bottomC: NSLayoutConstraint!
+    private var leadingC: NSLayoutConstraint!
+    private var trailingC: NSLayoutConstraint!
 
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -51,13 +57,14 @@ public final class FiltersCell: UITableViewCell {
         containerView.addSubview(contentStack)
         contentView.addSubview(containerView)
 
-        NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+        topC = containerView.topAnchor.constraint(equalTo: contentView.topAnchor)
+        bottomC = containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+        leadingC = containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor)
+        trailingC = containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
 
-            //Proper internal card padding
+        NSLayoutConstraint.activate([
+            topC, bottomC, leadingC, trailingC,
+
             contentStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
             contentStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
             contentStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
@@ -74,13 +81,13 @@ public final class FiltersCell: UITableViewCell {
         messageLabel.textColor = config.messageColor
         messageLabel.isHidden = config.message == nil
 
-        // Remove old rows (important for reuse)
+        // Clear reuse
         filtersContainerStack.arrangedSubviews.forEach {
             filtersContainerStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
 
-        // Build rows dynamically
+        // Build rows
         for row in config.rows {
 
             let rowStack = UIStackView()
@@ -90,21 +97,31 @@ public final class FiltersCell: UITableViewCell {
             rowStack.distribution = row.count > 1 ? .fillEqually : .fill
 
             for fieldConfig in row {
-                let fieldView = FilterFieldView()
-                fieldView.configure(with: fieldConfig)
-                rowStack.addArrangedSubview(fieldView)
+                let field = FilterFieldView()
+                field.configure(with: fieldConfig)
+                rowStack.addArrangedSubview(field)
             }
 
             filtersContainerStack.addArrangedSubview(rowStack)
         }
 
-        // Card styling
+        // Optional card
         if config.showsCard {
-            containerView.backgroundColor = config.cardBackgroundColor
-            containerView.layer.cornerRadius = config.cardCornerRadius
+            containerView.backgroundColor = .systemGray6
+            containerView.layer.cornerRadius = 12
+
+            topC.constant = 8
+            bottomC.constant = -8
+            leadingC.constant = 16
+            trailingC.constant = -16
         } else {
             containerView.backgroundColor = .clear
             containerView.layer.cornerRadius = 0
+
+            topC.constant = 0
+            bottomC.constant = 0
+            leadingC.constant = 0
+            trailingC.constant = 0
         }
     }
 }

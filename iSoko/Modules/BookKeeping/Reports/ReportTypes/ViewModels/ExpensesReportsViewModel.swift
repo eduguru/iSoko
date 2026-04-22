@@ -139,7 +139,6 @@ final class ExpensesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Category",
                             selectedValue: nil,
-                            iconSystemName: "tag",
                             onTap: {
                                 print("Sale Type tapped")
                             }
@@ -147,7 +146,6 @@ final class ExpensesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "PaymentMethod",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: {
                                 print("Time Period tapped")
                             }
@@ -157,7 +155,6 @@ final class ExpensesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Start Date",
                             selectedValue: nil,
-                            iconSystemName: "tag",
                             onTap: {
                                 print("Sale Type tapped")
                             }
@@ -165,7 +162,6 @@ final class ExpensesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "End Date",
                             selectedValue: nil,
-                            iconSystemName: "calendar",
                             onTap: {
                                 print("Time Period tapped")
                             }

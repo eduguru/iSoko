@@ -154,6 +154,10 @@ public extension BookKeepingServiceImpl {
 // MARK: - Stock
 public extension BookKeepingServiceImpl {
     
+    func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse {
+        try await manager.request(BookKeepingApi.addProduct(parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
+    }
+    
     func getAllStock(userId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[StockResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllStock(

@@ -10,14 +10,16 @@ import UIKit
 import UtilsKit
 
 final class AddProductViewModel: FormViewModel {
+    
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
-        _ completion: @escaping (CommonIdNameModel?) -> Void)
-    -> Void = { _, _, _ in }
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
     
     var goToComoditySelection: (_ completion: @escaping (CommodityV1Response?) -> Void) -> Void = { _ in }
     
+    var goToProductAddImages: (([String: Any]) -> Void)?
     var gotoConfirm: (() -> Void)?
     
     // MARK: - State
@@ -50,6 +52,7 @@ final class AddProductViewModel: FormViewModel {
     }
     
     // MARK: - Header
+    
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
@@ -187,7 +190,19 @@ final class AddProductViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.gotoConfirm?()
+            guard let self else { return }
+            
+            guard self.isValidForm() else {
+                print("Missing required fields")
+                return
+            }
+            
+            guard let params = self.buildParams() else {
+                print("Failed to build params")
+                return
+            }
+            
+            self.goToProductAddImages?(params)
         }
     )
     
@@ -197,24 +212,71 @@ final class AddProductViewModel: FormViewModel {
         goToComoditySelection() { [weak self] value in
             guard let self, let value else { return }
             
-            // state.selectedCommodity = value
-            let dropDownRow: DropdownFormRow = self.commodityTypeRow
-
-            dropDownRow.config.placeholder = value.name ?? ""
-            self.reloadRow(withTag: dropDownRow.tag)
+            self.state.selectedCommodity = value
+            
+            let row = self.commodityTypeRow
+            row.config.placeholder = value.name ?? ""
+            
+            self.reloadRow(withTag: row.tag)
         }
     }
     
     private func handleMeasurementSelection() {
         goToCommonSelectionOptions(.measurementUnits(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
+            
             self.state.selectedMeasurement = value
-            let dropDownRow: DropdownFormRow = self.measurementUnitRow
-
-            dropDownRow.config.placeholder = value?.name ?? ""
-            self.reloadRow(withTag: dropDownRow.tag)
+            
+            let row = self.measurementUnitRow
+            row.config.placeholder = value?.name ?? ""
+            
+            self.reloadRow(withTag: row.tag)
         }
+    }
+    
+    // MARK: - Validation
+    
+    private func isValidForm() -> Bool {
+        guard
+            let name = state.productName, !name.isEmpty,
+            let price = state.price, !price.isEmpty,
+            let qty = state.minOrderQty, !qty.isEmpty,
+            let desc = state.description, !desc.isEmpty,
+            state.selectedCommodity != nil,
+            state.selectedMeasurement != nil
+        else {
+            return false
+        }
+        
+        return true
+    }
+    
+    // MARK: - Params Builder
+    
+    private func buildParams() -> [String: Any]? {
+        guard let commodity = state.selectedCommodity,
+              let measurement = state.selectedMeasurement,
+              let name = state.productName,
+              let price = state.price,
+              let qty = state.minOrderQty,
+              let desc = state.description else {
+            return nil
+        }
+        
+        return [
+            "bookkeepingStock": true,
+            "name": name,
+            "price": price,
+            "minimumOrderQuantity": qty,
+            "quantity": 100,
+            "description": desc,
+            "published": true,
+            "inStock": true,
+            
+            "commodityId": commodity.id ?? 0,
+            "categoryId": commodity.id ?? 0,
+            "measurementUnitId": measurement.id ?? 0
+        ]
     }
     
     // MARK: - Helpers
@@ -236,7 +298,7 @@ final class AddProductViewModel: FormViewModel {
         var minOrderQty: String?
         var description: String?
         
-        var selectedCommodity: CommonIdNameModel?
+        var selectedCommodity: CommodityV1Response?
         var selectedMeasurement: CommonIdNameModel?
     }
     

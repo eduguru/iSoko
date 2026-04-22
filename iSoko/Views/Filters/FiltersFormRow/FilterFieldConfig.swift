@@ -5,11 +5,13 @@
 //  Created by Edwin Weru on 26/01/2026.
 //
 
+// MARK: - Field Config
 public struct FilterFieldConfig {
 
     public let placeholder: String
     public let selectedValue: String?
-    public let iconSystemName: String?
+
+    public let iconSystemName: String?   // ✅ custom trailing icon
 
     public let onTap: (() -> Void)?
 

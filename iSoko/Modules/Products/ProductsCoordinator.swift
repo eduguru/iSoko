@@ -117,9 +117,7 @@ extension ProductsCoordinator {
         viewModel.goToCommonSelectionOptions = goToCommonSelection
         viewModel.goToComoditySelection = goToComoditySelection
         
-        viewModel.gotoConfirm = { [weak self] in
-            self?.gotoCompleteCreateProduct()
-        }
+        viewModel.goToProductAddImages = gotoCompleteCreateProduct
         
         let vc = AddProductViewController()
         vc.viewModel = viewModel
@@ -132,8 +130,8 @@ extension ProductsCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func gotoCompleteCreateProduct() {
-        let viewModel = AddProductImagesViewModel()
+    private func gotoCompleteCreateProduct(_ params: [String: Any]? = nil) {
+        let viewModel = AddProductImagesViewModel(params)
         let vc = AddProductImagesViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
