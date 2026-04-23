@@ -5,129 +5,225 @@
 //  Created by Edwin Weru on 08/03/2026.
 //
 
-import UIKit
 import DesignSystemKit
+import UIKit
 import UtilsKit
 import StorageKit
 
-// MARK: - Suppliers Report VM
 final class SuppliersReportsViewModel: FormViewModel {
-    var gotoConfirm: ((ReportSelectionPayload) -> Void)?
-    var onStartDateTap: (() -> Void)?
-    var onEndDateTap: (() -> Void)?
-    var onCustomTimeframeTap: (() -> Void)?
+   var goToDetails: (() -> Void)? = { }
     
     private var state = State()
     
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+
     override init() {
         super.init()
-        sections = makeSections()
+        self.sections = makeSections()
     }
     
-    // MARK: - Section Builder
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await performNetworkRequest()
+
+            if !success {
+                print("Failed to fetch suppliers")
+            }
+
+            await MainActor.run {
+                self.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.getAllSuppliers(
+                page: 1,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+
+            // store real data
+            self.state.suppliers = response.data ?? []
+
+            return true
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    private func updateRecentActivitiesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.recentActivities.rawValue
+        }) else { return }
+        
+        sections[index].cells = makeTransactionActionRows()
+        
+        reloadSection(index)
+    }
+
+    // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
-            makeTitleSection(),
-            makeActionSection()
+            makeFilterSection(),
+            makeFinancialSummarySection(),
+            makeRecentActivitiesSection()
         ]
     }
-    
-    private func makeTitleSection() -> FormSection {
+
+    private func makeFilterSection() -> FormSection {
         FormSection(
-            id: SectionTag.action.rawValue,
-            cells: [
-                titleDescriptionFormRow
-            ]
+            id: Tags.Section.search.rawValue,
+            cells: [searchRow]
         )
     }
     
-    private func makeActionSection() -> FormSection {
+    private func makeFinancialSummarySection() -> FormSection {
         FormSection(
-            id: SectionTag.action.rawValue,
-            cells: [
-                continueButtonRow
-            ]
+            id: Tags.Section.financialSummary.rawValue,
+            cells: [financialSummaryRow]
         )
     }
     
-    private func makeTitleRow(title: String, description: String) -> FormRow {
-        TitleDescriptionFormRow(
-            tag: CellTag.reportTitle.rawValue,
-            model: TitleDescriptionModel(
-            title: title,
-            description:description,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .subheadline,
-            descriptionFontStyle: .body
+    private func makeRecentActivitiesSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeTransactionActionRows()
+        )
+    }
+    
+    // MARK: - Update Sections -
+
+    // MARK: - Lazy Rows
+    private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    
+    private lazy var searchRow = makeSearchRow()
+    
+    private func makeSearchRow() -> FormRow {
+        SearchFormRow(
+            tag: Tags.Cells.search.rawValue,
+            model: SearchFormModel(
+                placeholder: "Search",
+                keyboardType: .default,
+                searchIcon: UIImage(systemName: "magnifyingglass"),
+                searchIconPlacement: .right,
+                filterIcon: nil,
+                didTapSearchIcon: { print("🔍 Search tapped") },
+                didTapFilterIcon: { print("⚙️ Filter tapped") }
             )
         )
     }
     
-
-    private lazy var continueButtonRow = ButtonFormRow(
-        tag: CellTag.continueButton.rawValue,
-        model: ButtonFormModel(
-            title: "Continue",
-            style: .primary,
-            size: .medium,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            Task {
-                await self?.submit()
-            }
-        }
-    )
-    
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Suppliers Report", description: "Vendor performance and details")
-    
-    // MARK: - Submit
-    private func submit() async {
-
-        guard let report = state.selectedReport else {
-            print("No report selected")
-            return
-        }
-
-        let payload = ReportSelectionPayload(
-            report: report,
-            timeframe: state.timeframe,
-            startDate: state.startDate,
-            endDate: state.endDate
+    private func makeFinancialSummaryRow() -> FormRow {
+        let config = DualCardCellConfig(
+            left: DualCardItemConfig(
+                title: "Total Suppliers",
+                titleIcon: nil,
+                subtitle: "36",
+                status: CardStatusStyle(
+                    text: "24% since last week",
+                    textColor: .systemGreen,
+                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
+                    icon: .stockmarketArrowUp
+                )
+            ),
+            right: DualCardItemConfig(
+                title: "Active Suppliers",
+                titleIcon: nil,
+                subtitle: "2",
+                status: CardStatusStyle(
+                    text: "24% since last week",
+                    textColor: .systemOrange,
+                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
+                    icon: .stockmarketArrowDown
+                )
+            )
         )
 
-        gotoConfirm?(payload)
+        let row = DualCardFormRow(
+            tag: 100,
+            config: config
+        )
+
+        return row
     }
     
+    // Lazy factory that creates rows
+    private func makeTransactionActionRows() -> [FormRow] {
+        state.suppliers.map { supplier in
+
+            let hasActions = true // (supplier.id % 2 == 0)
+
+            let config = TransactionActionsCellConfig(
+                title: supplier.name ?? "Unknown Supplier",
+                subtitle: supplier.phoneNumber ?? "No phone",
+                amount: supplier.totalAmountSupplied.map { "$\($0)" } ?? "$0.00",
+                amountColor: .label,
+                status: "\(supplier.suppliesCount ?? 0) items supplied",
+                statusColor: .darkGray,
+                primaryAction: hasActions
+                    ? ActionCardConfig(
+                        title: "View Details",
+                        icon: UIImage(systemName: "eye"),
+                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                        textColor: .app(.primary),
+                        onTap: { [weak self] in
+                            self?.goToDetails?()
+                        }
+                    )
+                    : nil,
+                secondaryAction: hasActions
+                    ? InlineActionConfig(
+                        title: "Edit",
+                        icon: UIImage(systemName: "pencil"),
+                        onTap: {
+                            print("Edit supplier \(supplier.id)")
+                        }
+                    )
+                    : nil
+            )
+
+            return TransactionActionsRow(
+                tag: supplier.id,
+                config: config
+            )
+        }
+    }
+
     // MARK: - State
     private struct State {
+        var suppliers: [SupplierResponse] = []
 
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-
-        var selectedReport: ReportType?
-        var timeframe: Timeframe = .today
-        var startDate: Date?
-        var endDate: Date?
-
-        var errorMessage: String?
-        var fieldErrors: [BasicResponse.ErrorsObject]?
-    }
-    
-    // MARK: - Enums
-    private enum SectionTag: Int {
-        case title = 0
-        case action
     }
 
-    private enum CellTag: Int {
-        case reportTitle = 0
-        case continueButton = 1
+    // MARK: - Tags
+    enum Tags {
+        enum Section: Int {
+            case search = 0
+            case financialSummary = 1
+            case quickActions = 2
+            case businessMetrics = 3
+            case recentActivities = 4
+        }
+        enum Cells: Int {
+            case search = 0
+            case financialSummary = 1
+            case quickActions = 2
+            case businessMetrics = 3
+            case recentActivities = 4
+            
+        }
     }
 }
+

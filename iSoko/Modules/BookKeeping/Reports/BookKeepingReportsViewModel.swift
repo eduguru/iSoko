@@ -18,20 +18,16 @@ final class BookKeepingReportsViewModel: FormViewModel {
     var onEndDateTap: (() -> Void)?
     var onCustomTimeframeTap: (() -> Void)?
 
-    // MARK: - Available Timeframes
+    // REQUIRED (same pattern as your other VM)
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+
+    // MARK: - Timeframes
     private let availableTimeframes: [Timeframe] = [
-        .today,
-        .yesterday,
-        .last7Days,
-        .last30Days,
-        .lastMonth,
-        .last3Months,
-        .last6Months,
-        .thisMonth,
-        .custom
+        .today, .yesterday, .last7Days, .last30Days,
+        .lastMonth, .last3Months, .last6Months,
+        .thisMonth, .custom
     ]
 
-    // MARK: - Internal State
     private var state = State()
 
     // MARK: - Init
@@ -40,7 +36,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
         sections = makeSections()
     }
 
-    // MARK: - Section Builder
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             makeSelectionSection(),
@@ -54,8 +50,8 @@ final class BookKeepingReportsViewModel: FormViewModel {
         FormSection(
             id: SectionTag.selection.rawValue,
             cells: [
-                titleDescriptionFormRow,
-                selectionInputRow
+                makeTitleRow(),
+                makeSelectionGrid()
             ]
         )
     }
@@ -63,9 +59,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
     private func makeSpacerSection() -> FormSection {
         FormSection(
             id: SectionTag.spacer.rawValue,
-            cells: [
-                SpacerFormRow(tag: 20)
-            ]
+            cells: [SpacerFormRow(tag: 20)]
         )
     }
 
@@ -75,7 +69,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
             title: "Select Time Frame",
             cells: [
                 timeFrameRow,
-                filterFormRow
+                makeFilterFormRow()
             ]
         )
     }
@@ -83,39 +77,28 @@ final class BookKeepingReportsViewModel: FormViewModel {
     private func makeActionSection() -> FormSection {
         FormSection(
             id: SectionTag.action.rawValue,
-            cells: [
-                continueButtonRow
-            ]
+            cells: [continueButtonRow]
         )
     }
 
-    // MARK: - Rows
-
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow()
-    private lazy var selectionInputRow: FormRow = makeSelectionGrid()
+    // MARK: - ROWS
     private lazy var timeFrameRow: FormRow = makeTimeFrameGrid()
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
 
     private func makeTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: CellTag.reportTitle.rawValue,
             model: TitleDescriptionModel(
-            title: "Select Report Type",
-            description: "Choose a report to view your business performance",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .subheadline,
-            descriptionFontStyle: .body
+                title: "Select Report Type",
+                description: "Choose a report to view your business performance",
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .subheadline,
+                descriptionFontStyle: .body
             )
         )
     }
 
     private func makeSelectionGrid() -> FormRow {
-
         SelectableCardGridRow(
             tag: CellTag.category.rawValue,
             config: .init(
@@ -134,20 +117,22 @@ final class BookKeepingReportsViewModel: FormViewModel {
 
     private func makeTimeFrameGrid() -> FormRow {
 
-        let timeframeOptions = availableTimeframes.map {
-            TimeframeOption(title: $0.title)
-        }
+        let options = availableTimeframes.map { TimeframeOption(title: $0.title) }
 
-        let config = TimeframeSelectorConfig(
-            options: timeframeOptions,
-            allowsMultipleSelection: false,
-            selectedIndex: 0
-        )
+            let selectedIndex: Int = {
+                guard let index = availableTimeframes.firstIndex(of: state.timeframe) else {
+                    return 0
+                }
+                return index
+            }()
 
-        let row = TimeframeSelectorRow(
-            tag: 101,
-            config: config
-        )
+            let config = TimeframeSelectorConfig(
+                options: options,
+                allowsMultipleSelection: false,
+                selectedIndex: selectedIndex
+            )
+
+            let row = TimeframeSelectorRow(tag: 101, config: config)
 
         row.onSelectionChanged = { [weak self] index in
             guard let self else { return }
@@ -158,11 +143,17 @@ final class BookKeepingReportsViewModel: FormViewModel {
             let range = DateFormatters.dateRange(for: timeframe)
             self.state.startDate = range.start
             self.state.endDate = range.end
+
+            self.updateFilterSection()
         }
 
         row.onCustomSelected = { [weak self] in
-            self?.state.timeframe = .custom
-            self?.onCustomTimeframeTap?()
+            guard let self else { return }
+
+            self.state.timeframe = .custom
+            self.onCustomTimeframeTap?()
+
+            self.updateFilterSection()
         }
 
         return row
@@ -170,33 +161,30 @@ final class BookKeepingReportsViewModel: FormViewModel {
 
     private func makeFilterFormRow() -> FormRow {
 
-        let row = FiltersFormRow(
+        FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: "Custom Range",
+                title: state.timeframe == .custom ? "Custom Range" : "Date Range",
                 rows: [
                     [
                         FilterFieldConfig(
                             placeholder: "Start Date",
-                            selectedValue: nil,
-                            onTap: { [weak self] in
-                                self?.onStartDateTap?()
-                            }
+                            selectedValue: state.startDateString,
+                            onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
                             placeholder: "End Date",
-                            selectedValue: nil,
-                            onTap: { [weak self] in
-                                self?.onEndDateTap?()
-                            }
+                            selectedValue: state.endDateString,
+                            onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
                     ]
                 ],
-                message: ""
+                message: state.timeframe == .custom
+                    ? DateFormatters.displayRange(start: state.startDate, end: state.endDate)
+                    : nil,
+                showsCard: false
             )
         )
-
-        return row
     }
 
     private lazy var continueButtonRow = ButtonFormRow(
@@ -208,13 +196,56 @@ final class BookKeepingReportsViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            Task {
-                await self?.submit()
-            }
+            Task { await self?.submit() }
         }
     )
 
-    // MARK: - Submit
+    // MARK: - FILTER UI UPDATE
+    private func updateFilterSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.timeFrame.rawValue
+        }) else { return }
+
+        sections[index].cells = [
+            timeFrameRow,
+            makeFilterFormRow()
+        ]
+
+        reloadSection(index)
+    }
+
+    // MARK: - DATE HANDLERS (FIXED)
+
+    private func handleStartDateSelection() {
+
+        onStartDateTap?()
+
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+
+            self.state.startDate = date
+            self.state.startDateString = Self.format(date)
+
+            self.updateFilterSection()
+        }
+    }
+
+    private func handleEndDateSelection() {
+
+        onEndDateTap?()
+
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+
+            self.state.endDate = date
+            self.state.endDateString = Self.format(date)
+
+            self.updateFilterSection()
+        }
+    }
+
+    // MARK: - SUBMIT
+
     @MainActor
     private func submit() async {
 
@@ -233,23 +264,29 @@ final class BookKeepingReportsViewModel: FormViewModel {
         gotoConfirm?(payload)
     }
 
-    // MARK: - State
+    // MARK: - STATE
+
     private struct State {
-
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-
         var selectedReport: ReportType?
         var timeframe: Timeframe = .today
+
         var startDate: Date?
         var endDate: Date?
 
-        var errorMessage: String?
-        var fieldErrors: [BasicResponse.ErrorsObject]?
+        var startDateString: String?
+        var endDateString: String?
     }
 
-    // MARK: - Enums
+    // MARK: - HELPERS
+
+    private static func format(_ date: Date) -> String {
+        let df = DateFormatter()
+        df.dateStyle = .medium
+        return df.string(from: date)
+    }
+
+    // MARK: - ENUMS
+
     private enum SectionTag: Int {
         case selection = 0
         case spacer

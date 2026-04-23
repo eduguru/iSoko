@@ -41,8 +41,8 @@ public protocol BookKeepingService {
     func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
     
     func getAllSalesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SalesReportResponse>
-    func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<ExpenseReportResponse>
-    func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<StockReportResponse>
+    func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse
+    func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> StockReportResponse
     func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<CustomerReportResponse>
     
 }
@@ -291,20 +291,20 @@ public extension BookKeepingServiceImpl {
         return envelope.toPagedResult()
     }
     
-    func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<ExpenseReportResponse> {
+    func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllExpensesReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
-    func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<StockReportResponse> {
+    func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> StockReportResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllStockReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
     func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<CustomerReportResponse> {

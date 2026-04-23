@@ -12,14 +12,28 @@ import StorageKit
 
 // MARK: - Customers Report VM
 final class CustomersReportsViewModel: FormViewModel {
-    var gotoConfirm: ((ReportSelectionPayload) -> Void)?
-    var onStartDateTap: (() -> Void)?
-    var onEndDateTap: (() -> Void)?
-    var onCustomTimeframeTap: (() -> Void)?
     
-    private var state = State()
+    var goToDetails: (() -> Void)?
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
     
-    override init() {
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
+
+    var gotoConfirm: (() -> Void)?
+    var goToAddCategory: (() -> Void)? = { }
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    // MARK: -
+    private var state: State
+    
+    init(payload: ReportSelectionPayload) {
+        state = State()
         super.init()
         sections = makeSections()
     }
@@ -101,7 +115,7 @@ final class CustomersReportsViewModel: FormViewModel {
             endDate: state.endDate
         )
 
-        gotoConfirm?(payload)
+        gotoConfirm?()
     }
     
     // MARK: - State

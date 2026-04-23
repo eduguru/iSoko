@@ -144,6 +144,8 @@ public class BookKeepingCoordinator: BaseCoordinator {
     
     public func goToBookKeepingExpenses() {
         let model = BookKeepingExpensesViewModel()
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
         
         let vc = BookKeepingExpensesViewController()
         vc.viewModel = model
@@ -176,6 +178,8 @@ public class BookKeepingCoordinator: BaseCoordinator {
     
     public func goToBookKeepingReports() {
         let model = BookKeepingReportsViewModel()
+        
+        model.goToDateSelection = gotoSelectDate
         model.gotoConfirm = goToReportTypes
         
         let vc = BookKeepingReportsViewController()
@@ -377,39 +381,121 @@ extension BookKeepingCoordinator {
     
     @MainActor
     public func goToReportTypes(_ payload: ReportSelectionPayload) {
-        
-        let model: FormViewModel
-        
+
         switch payload.report {
-        case .sales: model = SalesReportsViewModel()
-        case .expenses: model = ExpensesReportsViewModel()
-        case .stock: model = StockReportsViewModel()
-        case .profitLoss: model = ProfitLossReportsViewModel()
-        case .customers: model = CustomersReportsViewModel()
-        case .suppliers: model = SuppliersReportsViewModel()
+        case .sales:
+            goToSalesReport(payload)
+
+        case .expenses:
+            goToExpensesReport(payload)
+
+        case .stock:
+            goToStockReport(payload)
+
+        case .profitLoss:
+            goToProfitLossReport(payload)
+
+        case .customers:
+            goToCustomersReport(payload)
+
+        case .suppliers:
+            goToSuppliersReport(payload)
         }
+    }
+    
+    @MainActor
+    public func goToSalesReport(_ payload: ReportSelectionPayload) {
+
+        let model = SalesReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
         
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
+
         router.push(vc)
     }
     
-    public func goToSalesReport() {
+    @MainActor
+    public func goToExpensesReport(_ payload: ReportSelectionPayload) {
+        
+        let model = ExpensesReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+
+        router.push(vc)
     }
     
-    public func goToExpensesReport() {
+    @MainActor
+    public func goToSuppliersReport(_ payload: ReportSelectionPayload) {
+        
+        let model = SuppliersReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+
+        router.push(vc)
     }
     
-    public func goToStockReport() {
+    @MainActor
+    public func goToCustomersReport(_ payload: ReportSelectionPayload) {
+        
+        let model = CustomersReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+
+        router.push(vc)
     }
     
-    public func goToProfitLossReport() {
+    @MainActor
+    public func goToStockReport(_ payload: ReportSelectionPayload) {
+        
+        let model = StockReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+
+        router.push(vc)
     }
     
-    public func goToCustomersReport() {
-    }
-    
-    public func goToSuppliersReport() {
+    @MainActor
+    public func goToProfitLossReport(_ payload: ReportSelectionPayload) {
+        
+        let model = ProfitLossReportsViewModel(payload: payload)
+        model.gotoConfirm = { }
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+
+        let vc = BookKeepingReportsViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in self?.router.pop() }
+
+        router.push(vc)
     }
 }

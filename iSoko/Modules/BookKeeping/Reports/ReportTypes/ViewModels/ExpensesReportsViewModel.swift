@@ -5,40 +5,124 @@
 //  Created by Edwin Weru on 08/03/2026.
 //
 
-import UIKit
 import DesignSystemKit
+import UIKit
 import UtilsKit
 import StorageKit
-    
+
 final class ExpensesReportsViewModel: FormViewModel {
-    var gotoConfirm: ((ReportSelectionPayload) -> Void)?
-    var onStartDateTap: (() -> Void)?
-    var onEndDateTap: (() -> Void)?
-    var onCustomTimeframeTap: (() -> Void)?
-    var goToDetails: (() -> Void)? = { }
     
-    private var state = State()
+    // MARK: - Navigation Callbacks (UNCHANGED)
+    var goToDetails: (() -> Void)?
     
-    override init() {
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+    
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    
+    var gotoSelectSystemCountry: (
+        CommonUtilityOption,
+        _ completion: @escaping (CountryResponse?) -> Void
+    ) -> Void = { _, _ in }
+
+    var gotoConfirm: (() -> Void)?
+    var goToAddCategory: (() -> Void)? = { }
+    
+    // MARK: - Service
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    // MARK: - State
+    private var state: State
+    
+    init(payload: ReportSelectionPayload) {
+        self.state = State(payload: payload)
         super.init()
-        sections = makeSections()
+        self.sections = makeSections()
     }
     
-    // MARK: - Sections -
+    // MARK: - Fetch
+    override func fetchData() {
+        Task {
+            let success = await performNetworkRequest()
+
+            if !success {
+                print("Failed to fetch expenses")
+            }
+
+            await MainActor.run {
+                self.updateRecentActivitiesSection()
+                self.updateFinancialSummarySection()
+            }
+        }
+    }
+    
+    // MARK: - Network
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        do {
+            let response = try await bookKeepingService.getAllExpensesReportByDate(
+                startDate: state.payload.startDate?.getYearMonthDay() ?? "",
+                endDate: state.payload.endDate?.getYearMonthDay() ?? "",
+                accessToken: state.oauthToken
+            )
+
+            // ✅ Correct mapping (IMPORTANT)
+            self.state.expenses = response.history ?? []
+            return true
+
+        } catch {
+            print("❌ Error: ", error)
+            return false
+        }
+    }
+    
+    // MARK: - Section Updates
+    private func updateRecentActivitiesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.recentActivities.rawValue
+        }) else { return }
+        
+        sections[index].cells = makeTransactionActionRows()
+        reloadSection(index)
+    }
+
+    private func updateFilterSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.search.rawValue
+        }) else { return }
+        
+        sections[index].cells = [
+            searchRow,
+            makeFilterFormRow()
+        ]
+        reloadSection(index)
+    }
+    
+    private func updateFinancialSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.financialSummary.rawValue
+        }) else { return }
+
+        sections[index].cells = [makeFinancialSummaryRow()]
+        reloadSection(index)
+    }
+
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
-            makeTitleSection(),
             makeFilterSection(),
             makeFinancialSummarySection(),
-            makeRecentActivitiesSection(),
-            makeActionSection()
+            makeRecentActivitiesSection()
         ]
     }
 
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
-            cells: [filterFormRow]
+            cells: [searchRow, makeFilterFormRow()]
         )
     }
     
@@ -56,64 +140,49 @@ final class ExpensesReportsViewModel: FormViewModel {
         )
     }
     
-    // MARK: - Update Sections -
+    // MARK: - Rows
+    private lazy var financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    private lazy var searchRow = makeSearchRow()
     
-    private func makeTitleSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.action.rawValue,
-            cells: [
-                titleDescriptionFormRow
-            ]
-        )
-    }
-    
-    private func makeActionSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.action.rawValue,
-            cells: [
-                continueButtonRow
-            ]
-        )
-    }
-    
-    private func makeTitleRow(title: String, description: String) -> FormRow {
-        TitleDescriptionFormRow(
-            tag: Tags.Cells.reportTitle.rawValue,
-            model: TitleDescriptionModel(
-            title: title,
-            description:description,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .subheadline,
-            descriptionFontStyle: .body
+    private func makeFinancialSummaryRow() -> FormRow {
+
+        let expenses = state.expenses
+
+        let totalAmount = expenses.compactMap { $0.amount }.reduce(0, +)
+        let count = expenses.count
+
+        let config = DualCardCellConfig(
+            left: DualCardItemConfig(
+                title: "Total Expenses",
+                titleIcon: UIImage(systemName: "chart.bar"),
+                subtitle: "Ksh. \(Int(totalAmount))",
+                status: CardStatusStyle(
+                    text: totalAmount >= 0 ? "Net Positive" : "Net Negative",
+                    textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
+                    backgroundColor: (totalAmount >= 0
+                        ? UIColor.systemGreen
+                        : UIColor.systemRed
+                    ).withAlphaComponent(0.15),
+                    icon: UIImage(systemName: totalAmount >= 0 ? "arrow.up" : "arrow.down")
+                )
+            ),
+            right: DualCardItemConfig(
+                title: "Number of Expenses",
+                titleIcon: UIImage(systemName: "doc.text"),
+                subtitle: "\(count)",
+                status: CardStatusStyle(
+                    text: "Total entries",
+                    textColor: .systemBlue,
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "list.number")
+                )
             )
         )
+
+        return DualCardFormRow(tag: 100, config: config)
     }
-
-    private lazy var continueButtonRow = ButtonFormRow(
-        tag: Tags.Cells.continueButton.rawValue,
-        model: ButtonFormModel(
-            title: "Continue",
-            style: .primary,
-            size: .medium,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            Task {
-                await self?.submit()
-            }
-        }
-    )
-
-    // MARK: - Lazy Rows
-    private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Expenses Report", description: "Monitor your spending")
     
+    // MARK: - Search
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
@@ -130,192 +199,148 @@ final class ExpensesReportsViewModel: FormViewModel {
     }
     
     private func makeFilterFormRow() -> FormRow {
-        let row = FiltersFormRow(
+        FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: nil,
+                title: "Filters",
                 rows: [
                     [
                         FilterFieldConfig(
                             placeholder: "Category",
-                            selectedValue: nil,
-                            onTap: {
-                                print("Sale Type tapped")
-                            }
+                            selectedValue: state.selectedCategory?.name,
+                            onTap: { [weak self] in self?.handleCategorySelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "PaymentMethod",
-                            selectedValue: nil,
-                            onTap: {
-                                print("Time Period tapped")
-                            }
+                            placeholder: "Payment Method",
+                            selectedValue: state.selectedPaymentMethod?.name,
+                            onTap: { [weak self] in self?.handlePaymentSelection() }
                         )
                     ],
                     [
                         FilterFieldConfig(
                             placeholder: "Start Date",
-                            selectedValue: nil,
-                            onTap: {
-                                print("Sale Type tapped")
-                            }
+                            selectedValue: state.startDateString,
+                            onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
                             placeholder: "End Date",
-                            selectedValue: nil,
-                            onTap: {
-                                print("Time Period tapped")
-                            }
+                            selectedValue: state.endDateString,
+                            onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
                     ]
                 ],
-                message: "Select filters to refine your results"
+                message: "Select filters to refine your results",
+                showsCard: false
             )
         )
-
-        return row
     }
     
-    private func makeFinancialSummaryRow() -> FormRow {
-        let config = DualCardCellConfig(
-            left: DualCardItemConfig(
-                title: "Total Customers",
-                titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
-                status: CardStatusStyle(
-                    text: "On track",
-                    textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "checkmark")
-                )
-            ),
-            right: DualCardItemConfig(
-                title: "Active Buyers",
-                titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
-                status: CardStatusStyle(
-                    text: "Action needed",
-                    textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "exclamationmark.triangle")
-                )
-            )
-        )
-
-        let row = DualCardFormRow(
-            tag: 100,
-            config: config
-        )
-
-        return row
-    }
-    
-    // Lazy factory that creates rows
-   
-    func generateTransactionData(from configs: [TransactionSummaryCellConfig]) -> [FormRow] {
-        return configs.enumerated().map { index, config in
-            // Create a new row for each config
-            return TransactionSummaryRow(tag: index, config: config)
+    // MARK: - Selection Handlers
+    private func handleCategorySelection() {
+        goToCommonSelectionOptions(.expenses(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+            self.state.selectedCategory = value
+            self.updateFilterSection()
+            self.fetchData()
         }
     }
     
+    private func handlePaymentSelection() {
+        goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+            self.state.selectedPaymentMethod = value
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handleStartDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+            self.state.startDate = date
+            self.state.startDateString = Self.format(date)
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handleEndDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+            self.state.endDate = date
+            self.state.endDateString = Self.format(date)
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    // MARK: - Rows from API
     private func makeTransactionActionRows() -> [FormRow] {
-        // Example of multiple configurations with actions included
-        let configs: [TransactionSummaryCellConfig] = [
-            TransactionSummaryCellConfig(
-                title: "John Doe",
-                amount: "Ksh. 12,987",
-                amountColor: .green,
-                dateText: "Oct 27, 2025",
-                saleTypeText: "Cash Sale",
+        state.expenses.map { expense in
+            
+            let amountText = expense.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let dateText = expense.date ?? ""
+            let categoryName = expense.category?.name ?? "Expense"
+            
+            let config = TransactionSummaryCellConfig(
+                title: categoryName,
+                amount: amountText,
+                amountColor: .label,
+                dateText: dateText,
+                saleTypeText: categoryName,
                 saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .green,
-                itemsCountText: "3 items",
+                saleTypeBackgroundColor: .systemBlue,
+                itemsCountText: "",
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
                     borderColor: .systemGray4,
-                    borderWidth: 1
+                    borderWidth: 1,
+                    onTap: { [weak self] in
+                        self?.goToDetails?()
+                    }
                 ),
                 secondaryAction: InlineActionConfig(
                     title: "Edit",
                     icon: UIImage(systemName: "pencil"),
-                    onTap: { print("Edit tapped!") }
-                ),
-                cardBackgroundColor: .white,
-                cardBorderColor: .systemGray4,
-                cardBorderWidth: 1,
-                cardCornerRadius: 12
-            ),
-            TransactionSummaryCellConfig(
-                title: "Jane Smith",
-                amount: "Ksh. 8,500",
-                amountColor: .blue,
-                dateText: "Nov 15, 2025",
-                saleTypeText: "Credit Sale",
-                saleTypeTextColor: .white,
-                saleTypeBackgroundColor: .blue,
-                itemsCountText: "2 items",
-                primaryAction: ActionCardConfig(
-                    title: "View Details",
-                    icon: UIImage(systemName: "eye.fill"),
-                    backgroundColor: .white,
-                    textColor: .label,
-                    borderColor: .systemGray4,
-                    borderWidth: 1
-                ),
-                secondaryAction: InlineActionConfig(
-                    title: "Delete",
-                    icon: UIImage(systemName: "trash"),
-                    onTap: { print("Delete tapped!") }
+                    onTap: {
+                        print("Edit tapped")
+                    }
                 ),
                 cardBackgroundColor: .white,
                 cardBorderColor: .systemGray4,
                 cardBorderWidth: 1,
                 cardCornerRadius: 12
             )
-        ]
 
-        // Generate rows
-        let rows: [FormRow] = generateTransactionData(from: configs)
-        return rows
-
-    }
-
-
-    // MARK: - Submit
-    private func submit() async {
-
-        guard let report = state.selectedReport else {
-            print("No report selected")
-            return
+            return TransactionSummaryRow(tag: expense.date?.hashValue ?? UUID().hashValue, config: config)
         }
-
-        let payload = ReportSelectionPayload(
-            report: report,
-            timeframe: state.timeframe,
-            startDate: state.startDate,
-            endDate: state.endDate
-        )
-
-        gotoConfirm?(payload)
     }
     
+    // MARK: - Helpers
+    private static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
+
     // MARK: - State
     private struct State {
+        var payload: ReportSelectionPayload
+        var expenses: [ExpenseHistoryResponse] = []
 
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-
-        var selectedReport: ReportType?
-        var timeframe: Timeframe = .today
+        var selectedCategory: CommonIdNameModel?
+        var selectedPaymentMethod: CommonIdNameModel?
+        
         var startDate: Date?
         var endDate: Date?
+        
+        var startDateString: String?
+        var endDateString: String?
 
-        var errorMessage: String?
-        var fieldErrors: [BasicResponse.ErrorsObject]?
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
     }
 
     // MARK: - Tags
@@ -323,21 +348,11 @@ final class ExpensesReportsViewModel: FormViewModel {
         enum Section: Int {
             case search = 0
             case financialSummary = 1
-            case quickActions = 2
-            case businessMetrics = 3
-            case recentActivities = 4
-            case action
+            case recentActivities = 2
         }
+
         enum Cells: Int {
             case search = 0
-            case financialSummary = 1
-            case quickActions = 2
-            case businessMetrics = 3
-            case recentActivities = 4
-            
-            case reportTitle
-            case continueButton
-            
         }
     }
 }

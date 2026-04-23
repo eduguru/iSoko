@@ -6,7 +6,9 @@
 //
 
 public struct ExpenseHistoryResponse: Codable {
-    public let category: ExpenseResponse?
     public let date: String?
     public let amount: Double?
+    
+    public let category: IDNamePairInt?
+    public let paymentMethod: IDNamePairInt?
 }

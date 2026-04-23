@@ -12,8 +12,17 @@ import StorageKit
 
 final class BookKeepingExpensesViewModel: FormViewModel {
     
-    var goToDetails: (() -> Void)? = { }
+    // MARK: - Navigation
+    var goToDetails: (() -> Void)?
     
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+    
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+
     private var state = State()
     
     // MARK: - Services
@@ -35,6 +44,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
 
             await MainActor.run {
                 self.updateRecentActivitiesSection()
+                self.updateFinancialSummarySection()
             }
         }
     }
@@ -49,9 +59,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            // Store real data
             self.state.expenses = response.data ?? []
-
             return true
 
         } catch {
@@ -60,13 +68,32 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         }
     }
     
-    // MARK: - Update Section
+    // MARK: - Section Updates
     private func updateRecentActivitiesSection() {
         guard let index = sections.firstIndex(where: {
             $0.id == Tags.Section.recentActivities.rawValue
         }) else { return }
         
         sections[index].cells = makeTransactionActionRows()
+        reloadSection(index)
+    }
+
+    private func updateFilterSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.search.rawValue
+        }) else { return }
+        
+        sections[index].cells = [searchRow, makeFilterFormRow()]
+        reloadSection(index)
+    }
+    
+    private func updateFinancialSummarySection() {
+
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.financialSummary.rawValue
+        }) else { return }
+
+        sections[index].cells = [makeFinancialSummaryRow()]
         reloadSection(index)
     }
 
@@ -82,7 +109,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
-            cells: [searchRow, filterFormRow]
+            cells: [searchRow, makeFilterFormRow()]
         )
     }
     
@@ -102,8 +129,61 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Rows
     private lazy var financialSummaryRow: FormRow = makeFinancialSummaryRow()
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
     private lazy var searchRow = makeSearchRow()
+    
+    private func makeFinancialSummaryRow() -> FormRow {
+
+        let expenses = state.expenses
+
+        // Total = raw sum from backend (already signed correctly)
+        let totalAmount: Double = expenses.compactMap { $0.amount }.reduce(0, +)
+
+        let count = expenses.count
+
+        let totalText = "Ksh. \(Int(totalAmount))"
+        let countText = "\(count)"
+
+        let subtitle = buildSummarySubtitle()
+
+        let config = DualCardCellConfig(
+            left: DualCardItemConfig(
+                title: "Total Expenses",
+                titleIcon: UIImage(systemName: "chart.bar"),
+                subtitle: totalText,
+                status: CardStatusStyle(
+                    text: totalAmount >= 0 ? "Net Positive" : "Net Negative",
+                    textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
+                    backgroundColor: (totalAmount >= 0
+                        ? UIColor.systemGreen
+                        : UIColor.systemRed
+                    ).withAlphaComponent(0.15),
+                    icon: UIImage(systemName: totalAmount >= 0 ? "arrow.up" : "arrow.down")
+                )
+            ),
+            right: DualCardItemConfig(
+                title: "Number of Expenses",
+                titleIcon: UIImage(systemName: "doc.text"),
+                subtitle: countText,
+                status: CardStatusStyle(
+                    text: "Total entries",
+                    textColor: .systemBlue,
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "list.number")
+                )
+            )
+        )
+
+        return DualCardFormRow(tag: 100, config: config)
+    }
+    
+    private func buildSummarySubtitle() -> String {
+
+        guard let start = state.startDate, let end = state.endDate else {
+            return "All time"
+        }
+
+        return DateFormatters.displayRange(start: start, end: end)
+    }
     
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
@@ -128,59 +208,81 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Sale Type",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: { print("Sale Type tapped") }
+                            placeholder: "Category",
+                            selectedValue: state.selectedCategory?.name,
+                            onTap: { [weak self] in self?.handleCategorySelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "Time Period",
-                            selectedValue: nil,
-                            iconSystemName: "calendar",
-                            onTap: { print("Time Period tapped") }
+                            placeholder: "Payment Method",
+                            selectedValue: state.selectedPaymentMethod?.name,
+                            onTap: { [weak self] in
+                                self?.handlePaymentSelection()
+                            }
                         )
                     ],
                     [
                         FilterFieldConfig(
-                            placeholder: "Region",
-                            selectedValue: nil,
-                            iconSystemName: "mappin.and.ellipse",
-                            onTap: { print("Region tapped") }
+                            placeholder: "Start Date",
+                            selectedValue: state.startDateString,
+                            onTap: { [weak self] in self?.handleStartDateSelection() }
+                        ),
+                        FilterFieldConfig(
+                            placeholder: "End Date",
+                            selectedValue: state.endDateString,
+                            onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
                     ]
                 ],
-                message: "Select filters to refine your results"
+                message: "Select filters to refine your results",
+                showsCard: false
             )
         )
     }
     
-    private func makeFinancialSummaryRow() -> FormRow {
-        let config = DualCardCellConfig(
-            left: DualCardItemConfig(
-                title: "Total Expenses",
-                titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
-                status: CardStatusStyle(
-                    text: "On track",
-                    textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "checkmark")
-                )
-            ),
-            right: DualCardItemConfig(
-                title: "Pending Review",
-                titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 pending",
-                status: CardStatusStyle(
-                    text: "Action needed",
-                    textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "exclamationmark.triangle")
-                )
-            )
-        )
+    // MARK: - Selection Handlers (COPIED + ADAPTED)
+    
+    private func handleCategorySelection() {
+        goToCommonSelectionOptions(.expenses(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
 
-        return DualCardFormRow(tag: 100, config: config)
+            self.state.selectedCategory = value
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handlePaymentSelection() {
+        goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+
+            self.state.selectedPaymentMethod = value
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handleStartDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+
+            self.state.startDate = date
+            self.state.startDateString = Self.format(date)
+
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handleEndDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+
+            self.state.endDate = date
+            self.state.endDateString = Self.format(date)
+
+            self.updateFilterSection()
+            self.fetchData()
+        }
     }
     
     // MARK: - Rows from API
@@ -200,7 +302,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 saleTypeText: categoryName,
                 saleTypeTextColor: .white,
                 saleTypeBackgroundColor: .systemBlue,
-                itemsCountText: expense.description ?? "",
+                itemsCountText: "",
                 primaryAction: ActionCardConfig(
                     title: "View Details",
                     icon: UIImage(systemName: "eye.fill"),
@@ -225,26 +327,36 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 cardCornerRadius: 12
             )
 
-            return TransactionSummaryRow(
-                tag: expense.id,
-                config: config
-            )
+            return TransactionSummaryRow(tag: expense.id, config: config)
         }
     }
     
     // MARK: - Helpers
     private func formatDate(_ expense: ExpenseResponse) -> String {
-        return expense.expenseDate ?? expense.createdOn ?? ""
+        expense.expenseDate ?? expense.createdOn ?? ""
+    }
+    
+    private static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
     }
 
     // MARK: - State
     private struct State {
         var expenses: [ExpenseResponse] = []
 
-        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userProfile
+        // ✅ Filters
+        var selectedCategory: CommonIdNameModel?
+        var selectedPaymentMethod: CommonIdNameModel?
+        
+        var startDate: Date?
+        var endDate: Date?
+        
+        var startDateString: String?
+        var endDateString: String?
+
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 
     // MARK: - Tags
@@ -252,17 +364,11 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         enum Section: Int {
             case search = 0
             case financialSummary = 1
-            case quickActions = 2
-            case businessMetrics = 3
-            case recentActivities = 4
+            case recentActivities = 2
         }
 
         enum Cells: Int {
             case search = 0
-            case financialSummary = 1
-            case quickActions = 2
-            case businessMetrics = 3
-            case recentActivities = 4
         }
     }
 }

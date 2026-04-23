@@ -13,6 +13,7 @@ public struct SelectableCardItemConfig {
     public let title: String
     public let subtitle: String?
     public let icon: UIImage?
+    public let iconTintColor: UIColor?
     public let onTap: ((Int) -> Void)?
 
     // Selection appearance
@@ -26,6 +27,7 @@ public struct SelectableCardItemConfig {
         title: String,
         subtitle: String? = nil,
         icon: UIImage? = nil,
+        iconTintColor: UIColor? = nil,
         selectionColor: UIColor = .systemGreen,
         selectionImage: UIImage? = UIImage(systemName: "checkmark.circle.fill"),
         showsSelection: Bool = true,
@@ -34,6 +36,7 @@ public struct SelectableCardItemConfig {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
+        self.iconTintColor = iconTintColor
         self.selectionColor = selectionColor
         self.selectionImage = selectionImage
         self.showsSelection = showsSelection

@@ -603,7 +603,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<ExpenseReportResponse> {
+    public static func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<ExpenseReportResponse> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -617,17 +617,17 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/reports/expenses",
+            path: "bookkeeping/expenses/reports",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
-    public static func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<StockReportResponse> {
+    public static func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<StockReportResponse> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -641,14 +641,14 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/reports/products",
+            path: "products/reports",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
     public static func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<CustomerReportResponse> {

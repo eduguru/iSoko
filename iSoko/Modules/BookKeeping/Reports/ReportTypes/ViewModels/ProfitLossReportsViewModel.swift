@@ -12,14 +12,27 @@ import StorageKit
 
 // MARK: - Profit & Loss Report VM
 final class ProfitLossReportsViewModel: FormViewModel {
-    var gotoConfirm: ((ReportSelectionPayload) -> Void)?
-    var onStartDateTap: (() -> Void)?
-    var onEndDateTap: (() -> Void)?
-    var onCustomTimeframeTap: (() -> Void)?
+    var goToDetails: (() -> Void)?
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void)
+    -> Void = { _, _, _ in }
     
-    private var state = State()
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
+
+    var gotoConfirm: (() -> Void)?
+    var goToAddCategory: (() -> Void)? = { }
     
-    override init() {
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    // MARK: -
+    private var state: State
+    
+    init(payload: ReportSelectionPayload) {
+        state = State()
         super.init()
         sections = makeSections()
     }
@@ -101,7 +114,7 @@ final class ProfitLossReportsViewModel: FormViewModel {
             endDate: state.endDate
         )
 
-        gotoConfirm?(payload)
+        gotoConfirm?()
     }
     
     // MARK: - State

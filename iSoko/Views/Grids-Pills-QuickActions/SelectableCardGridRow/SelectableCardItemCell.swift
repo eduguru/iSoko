@@ -36,7 +36,7 @@ final class SelectableCardItemCell: UICollectionViewCell {
 
     func configure(item: SelectableCardItemConfig, selected: Bool) {
 
-        let iconTintColor = getTintColor(for: item.title)
+        let iconTintColor = getTintColor(for: item.title) ?? item.iconTintColor ?? .label
 
         cardView.configure(
             title: item.title,
@@ -51,7 +51,7 @@ final class SelectableCardItemCell: UICollectionViewCell {
         )
     }
 
-    private func getTintColor(for title: String) -> UIColor {
+    private func getTintColor(for title: String) -> UIColor? {
         switch title.lowercased() {
         case "sales": return UIColor.systemGreen
         case "expenses": return UIColor.systemRed
@@ -59,7 +59,7 @@ final class SelectableCardItemCell: UICollectionViewCell {
         case "profit & loss": return UIColor.systemPurple
         case "customers": return UIColor.systemOrange
         case "suppliers": return UIColor.systemRed.withAlphaComponent(0.7)
-        default: return UIColor.label
+        default: return nil
         }
     }
 }

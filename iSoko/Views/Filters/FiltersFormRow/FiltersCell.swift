@@ -22,6 +22,8 @@ public final class FiltersCell: UITableViewCell {
     private var leadingC: NSLayoutConstraint!
     private var trailingC: NSLayoutConstraint!
 
+    private var fieldViews: [FilterFieldView] = []
+
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setup()
@@ -33,8 +35,14 @@ public final class FiltersCell: UITableViewCell {
     }
 
     private func setup() {
+
         backgroundColor = .clear
         selectionStyle = .none
+
+        // IMPORTANT: ensures touches pass through correctly
+        contentView.isUserInteractionEnabled = true
+        containerView.isUserInteractionEnabled = true
+        filtersContainerStack.isUserInteractionEnabled = true
 
         titleLabel.font = .preferredFont(forTextStyle: .subheadline)
         titleLabel.textColor = .secondaryLabel
@@ -44,6 +52,7 @@ public final class FiltersCell: UITableViewCell {
 
         filtersContainerStack.axis = .vertical
         filtersContainerStack.spacing = 12
+        filtersContainerStack.isUserInteractionEnabled = true
 
         contentStack.axis = .vertical
         contentStack.spacing = 8
@@ -81,13 +90,15 @@ public final class FiltersCell: UITableViewCell {
         messageLabel.textColor = config.messageColor
         messageLabel.isHidden = config.message == nil
 
-        // Clear reuse
+        // 🔥 IMPORTANT: prevent stale interaction bugs
+        fieldViews.forEach { $0.removeFromSuperview() }
+        fieldViews.removeAll()
+
         filtersContainerStack.arrangedSubviews.forEach {
             filtersContainerStack.removeArrangedSubview($0)
             $0.removeFromSuperview()
         }
 
-        // Build rows
         for row in config.rows {
 
             let rowStack = UIStackView()
@@ -96,19 +107,31 @@ public final class FiltersCell: UITableViewCell {
             rowStack.alignment = .fill
             rowStack.distribution = row.count > 1 ? .fillEqually : .fill
 
+            // IMPORTANT: allow full touch routing inside row
+            rowStack.isUserInteractionEnabled = true
+
             for fieldConfig in row {
+
                 let field = FilterFieldView()
+
+                // ensure full hit area works
+                field.isUserInteractionEnabled = true
+
                 field.configure(with: fieldConfig)
+
+                fieldViews.append(field)
                 rowStack.addArrangedSubview(field)
             }
 
             filtersContainerStack.addArrangedSubview(rowStack)
         }
 
-        // Optional card
+        // Card styling
         if config.showsCard {
-            containerView.backgroundColor = .systemGray6
-            containerView.layer.cornerRadius = 12
+            containerView.backgroundColor = .systemBackground
+            containerView.layer.cornerRadius = 14
+            containerView.layer.borderWidth = 1
+            containerView.layer.borderColor = UIColor.separator.withAlphaComponent(0.5).cgColor
 
             topC.constant = 8
             bottomC.constant = -8
@@ -117,11 +140,15 @@ public final class FiltersCell: UITableViewCell {
         } else {
             containerView.backgroundColor = .clear
             containerView.layer.cornerRadius = 0
+            containerView.layer.borderWidth = 0
 
             topC.constant = 0
             bottomC.constant = 0
             leadingC.constant = 0
             trailingC.constant = 0
         }
+
+        setNeedsLayout()
+        layoutIfNeeded()
     }
 }
