@@ -193,7 +193,7 @@ final class SalesReportsViewModel: FormViewModel {
                         )
                     ]
                 ],
-                message: "Select filters to refine your results",
+                message: "",
                 showsCard: false
             )
         )

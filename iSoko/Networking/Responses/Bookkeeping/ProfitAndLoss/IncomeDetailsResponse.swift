@@ -6,6 +6,6 @@
 //
 
 public struct IncomeDetailsResponse: Codable {
-    public let sales: Double
-    public let otherIncome: Double
+    public let sales: Double?
+    public let otherIncome: Double?
 }

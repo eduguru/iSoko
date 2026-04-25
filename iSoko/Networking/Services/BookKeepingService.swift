@@ -44,6 +44,7 @@ public protocol BookKeepingService {
     func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse
     func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> StockReportResponse
     func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> CustomerReportResponse
+    func getAllProfitLossReportByDate(startDate: String, endDate: String, accessToken: String) async throws -> ProfitAndLossReportResponse
     
 }
 
@@ -318,6 +319,14 @@ public extension BookKeepingServiceImpl {
     func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> SupplierReportResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSuppliersReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
+        )
+        
+        return envelope
+    }
+    
+    func getAllProfitLossReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ProfitAndLossReportResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.getAllProfitLossReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
         return envelope

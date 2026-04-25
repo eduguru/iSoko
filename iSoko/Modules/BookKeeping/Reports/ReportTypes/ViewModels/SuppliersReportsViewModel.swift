@@ -169,7 +169,7 @@ final class SuppliersReportsViewModel: FormViewModel {
                         )
                     ]
                 ],
-                message: "Select filters to refine your results",
+                message: "",
                 showsCard: false
             )
         )
