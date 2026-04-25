@@ -579,8 +579,9 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllSalesReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<SalesReportResponse> {
+    public static func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<SalesReportResponse> {
         let parameters: [String: Any] = [
+            "customerId": customerId,
             "startDate": startDate,
             "endDate": endDate
         ]
@@ -593,14 +594,14 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/reports/sales",
+            path: "bookkeeping/sales/reports",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
     public static func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<ExpenseReportResponse> {
@@ -651,7 +652,7 @@ public extension BookKeepingApi {
         return ValueResponseTarget(target: target)
     }
     
-    public static func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<CustomerReportResponse> {
+    public static func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<CustomerReportResponse> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -665,17 +666,17 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/reports/customers",
+            path: "bookkeeping/customers/reports",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
-    public static func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<SupplierReportResponse> {
+    public static func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<SupplierReportResponse> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -689,14 +690,14 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/reports/suppliers",
+            path: "bookkeeping/suppliers/reports",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
 
 }

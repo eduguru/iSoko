@@ -69,7 +69,6 @@ final class ExpensesReportsViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            // ✅ Correct mapping (IMPORTANT)
             self.state.expenses = response.history ?? []
             return true
 
@@ -339,8 +338,11 @@ final class ExpensesReportsViewModel: FormViewModel {
         
         var startDateString: String?
         var endDateString: String?
-
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        
+            var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+            var userProfile: UserDetails? = AppStorage.userProfile
+            var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+            var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 
     // MARK: - Tags

@@ -346,7 +346,6 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     private struct State {
         var expenses: [ExpenseResponse] = []
 
-        // ✅ Filters
         var selectedCategory: CommonIdNameModel?
         var selectedPaymentMethod: CommonIdNameModel?
         

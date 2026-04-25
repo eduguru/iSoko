@@ -33,17 +33,17 @@ public protocol BookKeepingService {
     func addSupplier(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse
     func getAllSuppliers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
-    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SupplierReportResponse>
+    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> SupplierReportResponse
     func addSupplierCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
     func getSupplierCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     func getAllReports(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
     func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
     
-    func getAllSalesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SalesReportResponse>
+    func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> SalesReportResponse
     func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse
     func getAllStockReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> StockReportResponse
-    func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<CustomerReportResponse>
+    func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> CustomerReportResponse
     
 }
 
@@ -283,12 +283,12 @@ public extension BookKeepingServiceImpl {
         return envelope.toPagedResult()
     }
     
-    func getAllSalesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SalesReportResponse> {
+    func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> SalesReportResponse {
         let envelope = try await manager.request(
-            BookKeepingApi.getAllSalesReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
+            BookKeepingApi.getAllSalesReportByDate(customerId: customerId, startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
     func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse {
@@ -307,20 +307,20 @@ public extension BookKeepingServiceImpl {
         return envelope
     }
     
-    func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<CustomerReportResponse> {
+    func getAllCustomersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> CustomerReportResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllCustomersReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
-    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<SupplierReportResponse> {
+    func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> SupplierReportResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSuppliersReportByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
 
 }

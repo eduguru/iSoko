@@ -326,7 +326,6 @@ final class StockReportsViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            // ✅ STORE REAL DATA
             state.stockSummary = response
             state.stockHistory = response.stock ?? []
 
@@ -419,16 +418,16 @@ final class StockReportsViewModel: FormViewModel {
     private struct State {
         var payload: ReportSelectionPayload
 
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+            var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+            var userProfile: UserDetails? = AppStorage.userProfile
+            var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+            var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
         var selectedReport: ReportType?
         var timeframe: Timeframe = .today
         var startDate: Date?
         var endDate: Date?
 
-        // ✅ NEW: API response storage
         var stockSummary: StockReportResponse?
         var stockHistory: [StockReportHistoryResponse] = []
 

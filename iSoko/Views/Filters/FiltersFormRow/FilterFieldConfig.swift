@@ -11,7 +11,7 @@ public struct FilterFieldConfig {
     public let placeholder: String
     public let selectedValue: String?
 
-    public let iconSystemName: String?   // ✅ custom trailing icon
+    public let iconSystemName: String? 
 
     public let onTap: (() -> Void)?
 

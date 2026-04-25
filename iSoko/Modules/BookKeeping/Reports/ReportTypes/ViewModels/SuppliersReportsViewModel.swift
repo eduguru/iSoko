@@ -1,6 +1,6 @@
 //
 //  SuppliersReportsViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 08/03/2026.
 //
@@ -11,14 +11,31 @@ import UtilsKit
 import StorageKit
 
 final class SuppliersReportsViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+    var goToDetails: (() -> Void)?
     
-    private var state = State()
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
     
-    // MARK: - Services
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    
+    var gotoSelectSystemCountry: (
+        CommonUtilityOption,
+        _ completion: @escaping (CountryResponse?) -> Void
+    ) -> Void = { _, _ in }
+    
+    var gotoConfirm: (() -> Void)?
+    
+    // MARK: - Service
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-
-    override init() {
+    
+    // MARK: - State
+    private var state: State
+    
+    init(payload: ReportSelectionPayload) {
+        self.state = State(payload: payload)
         super.init()
         self.sections = makeSections()
     }
@@ -27,13 +44,14 @@ final class SuppliersReportsViewModel: FormViewModel {
     override func fetchData() {
         Task {
             let success = await performNetworkRequest()
-
+            
             if !success {
                 print("Failed to fetch suppliers")
             }
-
+            
             await MainActor.run {
                 self.updateRecentActivitiesSection()
+                self.updateFinancialSummarySection()
             }
         }
     }
@@ -43,16 +61,17 @@ final class SuppliersReportsViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-            let response = try await bookKeepingService.getAllSuppliers(
-                page: 1,
-                count: 10,
+            let response = try await bookKeepingService.getAllSuppliersReportByDate(
+                startDate: state.payload.startDate?.getYearMonthDay() ?? "",
+                endDate: state.payload.endDate?.getYearMonthDay() ?? "",
                 accessToken: state.oauthToken
             )
-
-            // store real data
-            self.state.suppliers = response.data ?? []
-
+            
+            self.state.suppliers = response.history ?? []
+            self.state.summary = response
+            
             return true
+            
         } catch {
             print("❌ Error: ", error)
             return false
@@ -68,7 +87,7 @@ final class SuppliersReportsViewModel: FormViewModel {
         
         reloadSection(index)
     }
-
+    
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
@@ -77,11 +96,14 @@ final class SuppliersReportsViewModel: FormViewModel {
             makeRecentActivitiesSection()
         ]
     }
-
+    
     private func makeFilterSection() -> FormSection {
         FormSection(
             id: Tags.Section.search.rawValue,
-            cells: [searchRow]
+            cells: [
+                searchRow,
+                makeFilterFormRow()
+            ]
         )
     }
     
@@ -100,11 +122,58 @@ final class SuppliersReportsViewModel: FormViewModel {
     }
     
     // MARK: - Update Sections -
-
+    private func updateFilterSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.search.rawValue
+        }) else { return }
+        
+        sections[index].cells = [
+            searchRow,
+            makeFilterFormRow()
+        ]
+        reloadSection(index)
+    }
+    
+    private func updateFinancialSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.financialSummary.rawValue
+        }) else { return }
+        
+        sections[index].cells = [makeFinancialSummaryRow()]
+        reloadSection(index)
+    }
+    
     // MARK: - Lazy Rows
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
     private lazy var searchRow = makeSearchRow()
+    
+    
+    
+    private func makeFilterFormRow() -> FormRow {
+        FiltersFormRow(
+            tag: 1,
+            config: FiltersCellConfig(
+                title: "",
+                rows: [
+                    [
+                        FilterFieldConfig(
+                            placeholder: "Start Date",
+                            selectedValue: state.startDateString,
+                            onTap: { [weak self] in self?.handleStartDateSelection() }
+                        ),
+                        FilterFieldConfig(
+                            placeholder: "End Date",
+                            selectedValue: state.endDateString,
+                            onTap: { [weak self] in self?.handleEndDateSelection() }
+                        )
+                    ]
+                ],
+                message: "Select filters to refine your results",
+                showsCard: false
+            )
+        )
+    }
     
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
@@ -122,91 +191,132 @@ final class SuppliersReportsViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
+        
+        let totalSuppliers = state.summary?.suppliers ?? 0
+        let totalAmount = state.summary?.amount ?? 0
+        
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
                 title: "Total Suppliers",
                 titleIcon: nil,
-                subtitle: "36",
+                subtitle: "\(totalSuppliers)",
                 status: CardStatusStyle(
-                    text: "24% since last week",
-                    textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: .stockmarketArrowUp
+                    text: "All suppliers",
+                    textColor: .systemBlue,
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "person.3")
                 )
             ),
             right: DualCardItemConfig(
-                title: "Active Suppliers",
+                title: "Total Supplied",
                 titleIcon: nil,
-                subtitle: "2",
+                subtitle: "Ksh. \(Int(totalAmount))",
                 status: CardStatusStyle(
-                    text: "24% since last week",
-                    textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: .stockmarketArrowDown
+                    text: totalAmount >= 0 ? "Positive" : "Negative",
+                    textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
+                    backgroundColor: (totalAmount >= 0
+                                      ? UIColor.systemGreen
+                                      : UIColor.systemRed
+                                     ).withAlphaComponent(0.15),
+                    icon: UIImage(systemName: totalAmount >= 0 ? "arrow.up" : "arrow.down")
                 )
             )
         )
-
-        let row = DualCardFormRow(
-            tag: 100,
-            config: config
-        )
-
-        return row
+        
+        return DualCardFormRow(tag: 100, config: config)
     }
     
     // Lazy factory that creates rows
     private func makeTransactionActionRows() -> [FormRow] {
-        state.suppliers.map { supplier in
-
-            let hasActions = true // (supplier.id % 2 == 0)
-
+        state.suppliers.map { history in
+            
+            let supplier = history.supplier
+            
+            let name = supplier?.name ?? "Unknown Supplier"
+            let phone = supplier?.phoneNumber ?? "No phone"
+            let amountText = history.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let itemsText = "\(history.items ?? 0) items supplied"
+            
             let config = TransactionActionsCellConfig(
-                title: supplier.name ?? "Unknown Supplier",
-                subtitle: supplier.phoneNumber ?? "No phone",
-                amount: supplier.totalAmountSupplied.map { "$\($0)" } ?? "$0.00",
+                title: name,
+                subtitle: phone,
+                amount: amountText,
                 amountColor: .label,
-                status: "\(supplier.suppliesCount ?? 0) items supplied",
+                status: itemsText,
                 statusColor: .darkGray,
-                primaryAction: hasActions
-                    ? ActionCardConfig(
-                        title: "View Details",
-                        icon: UIImage(systemName: "eye"),
-                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .app(.primary),
-                        onTap: { [weak self] in
-                            self?.goToDetails?()
-                        }
-                    )
-                    : nil,
-                secondaryAction: hasActions
-                    ? InlineActionConfig(
-                        title: "Edit",
-                        icon: UIImage(systemName: "pencil"),
-                        onTap: {
-                            print("Edit supplier \(supplier.id)")
-                        }
-                    )
-                    : nil
+                primaryAction: ActionCardConfig(
+                    title: "View Details",
+                    icon: UIImage(systemName: "eye"),
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    textColor: .app(.primary),
+                    onTap: { [weak self] in
+                        self?.goToDetails?()
+                    }
+                ),
+                secondaryAction: InlineActionConfig(
+                    title: "Edit",
+                    icon: UIImage(systemName: "pencil"),
+                    onTap: {
+                        print("Edit supplier \(supplier?.id ?? 0)")
+                    }
+                )
             )
-
+            
             return TransactionActionsRow(
-                tag: supplier.id,
+                tag: supplier?.id ?? UUID().hashValue,
                 config: config
             )
         }
     }
-
+    
+    // MARK: - Selection Handlers
+    private func handleStartDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+            self.state.startDate = date
+            self.state.startDateString = Self.format(date)
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    private func handleEndDateSelection() {
+        goToDateSelection(.year()) { [weak self] date in
+            guard let self, let date else { return }
+            self.state.endDate = date
+            self.state.endDateString = Self.format(date)
+            self.updateFilterSection()
+            self.fetchData()
+        }
+    }
+    
+    // MARK: - Helpers
+    private static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
+    
     // MARK: - State
     private struct State {
-        var suppliers: [SupplierResponse] = []
-
+        var payload: ReportSelectionPayload
+        
+        var suppliers: [SupplierHistoryResponse] = []  
+        
+        var summary: SupplierReportResponse?            // optional (for totals)
+        
+        var startDate: Date?
+        var endDate: Date?
+        
+        var startDateString: String?
+        var endDateString: String?
+        
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
