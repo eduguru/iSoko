@@ -69,21 +69,6 @@ public class ProductsCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func presentAuthBottomSheet() {
-        guard let topVC = router.topViewController() else { return }
-        
-        AuthBottomSheet.present(
-            from: topVC,
-            onLogin: { [weak self] in
-                self?.showLoginFlow()
-            },
-            onGuest: {
-                RuntimeSession.authState = .guest
-                AppStorage.hasLoggedIn = false
-            }
-        )
-    }
-    
     private func showLoginFlow() {
         AppStorage.hasShownInitialLoginOptions = false
 
@@ -202,5 +187,20 @@ extension ProductsCoordinator {
         coordinator.goToAppleStyleCalendar(config: config) { [weak self] result in
             completion(result)
         }
+    }
+    
+    private func presentAuthBottomSheet() {
+        guard let topVC = router.topViewController() else { return }
+        
+        AuthBottomSheet.present(
+            from: topVC,
+            onLogin: { [weak self] in
+                self?.showLoginFlow()
+            },
+            onGuest: {
+                RuntimeSession.authState = .guest
+                AppStorage.hasLoggedIn = false
+            }
+        )
     }
 }

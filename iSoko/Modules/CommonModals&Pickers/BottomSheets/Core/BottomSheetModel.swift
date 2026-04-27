@@ -46,13 +46,15 @@ public struct BottomSheetModel {
     public let message: String?
     public let showCloseButton: Bool
     public let buttons: [Button]
-
+    public let state: State
+    
     public init(
         style: Style,
         icon: UIImage? = nil,
         title: String,
         message: String? = nil,
         showCloseButton: Bool = false,
+        state: State = .normal,
         buttons: [Button]
     ) {
         self.style = style
@@ -60,6 +62,13 @@ public struct BottomSheetModel {
         self.title = title
         self.message = message
         self.showCloseButton = showCloseButton
+        self.state = state
         self.buttons = buttons
+    }
+    
+    public enum State {
+        case normal
+        case success
+        case error
     }
 }
