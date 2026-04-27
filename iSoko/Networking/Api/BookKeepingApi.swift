@@ -13,7 +13,6 @@ import UtilsKit
 
 // MARK: - orders
 public struct BookKeepingApi {
-    
     static func getOrderSummary(userId: Int, accessToken: String) -> ValueResponseTarget<StatisticsResponse> {
         let parameters: [String: Any] = [:]
         
@@ -327,7 +326,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getAllStockByDate(userId: Int, startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[StockResponse]> {
+    static func getAllStockByDate(userId: Int, startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[StockResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -545,7 +544,7 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "api/product",
+            path: "bookkeeping/dashboard",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -555,7 +554,7 @@ public extension BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    static func getAllReportsByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<BookKeepingSummaryResponse> {
+    static func getAllReportsByDate(startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<BookKeepingSummaryResponse> {
         let parameters: [String: Any] = [
             "startDate": startDate,
             "endDate": endDate
@@ -569,14 +568,14 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "api/product",
+            path: "bookkeeping/dashboard",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
     static func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String) -> ValueResponseTarget<SalesReportResponse> {

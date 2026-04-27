@@ -50,7 +50,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             print("✅ Guest token ready")
         } catch {
             print("❌ Guest token failed — app cannot proceed")
-            return
+            // return
         }
 
         // 2️⃣ OAuth token is OPTIONAL

@@ -16,7 +16,11 @@ public struct BookKeepingSummaryResponse: Codable {
 
 public struct BookKeepingRecentActivityResponse: Codable {
     public let module: String?
-    public let item: String?
-    public let value: Double?
+    public let action: String?
+    public let entityType: String?
+    public let entityId: Int?
+    public let summary: String?
     public let datetimeCreated: String?
+    public let value: String?
+    public let metadata: String?
 }

@@ -79,17 +79,9 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
-            makeFilterSection(),
             makeFinancialSummarySection(),
             makeRecentActivitiesSection()
         ]
-    }
-    
-    private func makeFilterSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.filter.rawValue,
-            cells: [filterRow]
-        )
     }
     
     private func makeFinancialSummarySection() -> FormSection {
@@ -109,23 +101,8 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     // MARK: - Update Sections -
     
     // MARK: - Lazy Rows
-    private lazy var  filterRow: FormRow = makeFilterRowRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
-    
-    private func makeFilterRowRow() -> FormRow {
-        let model = ProfileInfoCellConfig(
-            name: "String",
-            phone: "String",
-            email: "String",
-            location: "String",
-            onEditTap: {
-            }
-        )
-        
-        let row = ProfileInfoRow(tag: Tags.Cells.filter.rawValue, config: model)
-        return row
-    }
-    
+
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(

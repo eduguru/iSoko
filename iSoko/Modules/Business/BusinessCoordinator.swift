@@ -63,15 +63,10 @@ public class BusinessCoordinator: BaseCoordinator {
             return
         }
         
-        let viewModel = ProfileInfoViewModel()
-        let vc = ProfileInfoViewController()
-        vc.viewModel = viewModel
-        
-        vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
-        }
-        
-        router.push(vc, animated: true)
+        let router = Router(navigationController: navigationController)
+        let cordinator = OwnerServicesCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.start()
     }
     
     private func goToMyOrders() {

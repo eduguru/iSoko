@@ -38,7 +38,7 @@ public protocol BookKeepingService {
     func getSupplierCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     func getAllReports(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
-    func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse>
+    func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> BookKeepingSummaryResponse
     
     func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> SalesReportResponse
     func getAllExpensesReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> ExpenseReportResponse
@@ -276,12 +276,12 @@ public extension BookKeepingServiceImpl {
         return envelope.toPagedResult()
     }
     
-    func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<BookKeepingSummaryResponse> {
+    func getAllReportsByDate(startDate: String, endDate: String, accessToken: String)  async throws -> BookKeepingSummaryResponse {
         let envelope = try await manager.request(
             BookKeepingApi.getAllReportsByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
     func getAllSalesReportByDate(customerId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> SalesReportResponse {

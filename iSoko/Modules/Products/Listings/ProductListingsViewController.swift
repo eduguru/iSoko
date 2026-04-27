@@ -15,7 +15,7 @@ class ProductListingsViewController: FormViewController, CloseableViewController
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Market Place"
+        title = "My Products"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
         let btn01 = UIButton(type: .custom)
