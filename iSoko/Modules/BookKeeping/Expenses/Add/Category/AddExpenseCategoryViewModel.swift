@@ -13,6 +13,7 @@ import StorageKit
 final class AddExpenseCategoryViewModel: FormViewModel {
     
     var gotoConfirm: (() -> Void)?
+    var goToShowSuccessScreen: (() -> Void)?
     
     var goToAddCategorySuccess: ((SupplierCategoryResponse) -> Void)? = { _ in }
     var goToSelectExpenseCategory: (() -> Void)? = { }
@@ -37,14 +38,19 @@ final class AddExpenseCategoryViewModel: FormViewModel {
     // MARK: - Network
     @discardableResult
     private func performNetworkRequest() async -> Bool {
+        showLoader()
+        
         do {
             let response = try await bookKeepingService.addExpenseCategories(name: state.name, accessToken: state.oauthToken)
                 
             state.SupplierCategory = response
             goToAddCategorySuccess?(response)
+            hideLoader()
+            goToShowSuccessScreen?()
             return true
             
         } catch {
+            hideLoader()
             print("❌ Error: ", error)
             return false
         }

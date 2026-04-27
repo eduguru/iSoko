@@ -14,6 +14,8 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
     var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
     
     var gotoConfirm: (() -> Void)?
+    var goToShowSuccessScreen: (() -> Void)?
+    
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
@@ -207,6 +209,8 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
             return false
         }
 
+        showLoader()
+        
         let payload: [String : Any] = [
             "name": state.customerName,
             "phoneNumber": state.phoneNumber,
@@ -223,8 +227,12 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
                 parameters: payload,
                 accessToken: state.oauthToken
             )
+            
+            goToShowSuccessScreen?()
+            hideLoader()
             return true
         } catch {
+            hideLoader()
             print("❌ Error:", error)
             return false
         }

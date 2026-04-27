@@ -14,7 +14,9 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
+    
     var gotoConfirm: (() -> Void)?
+    var goToShowSuccessScreen: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     @MainActor private let countryHelper = CountryHelper()
@@ -201,7 +203,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-
+        goToShowSuccessScreen?()
     }
 
     // MARK: - State

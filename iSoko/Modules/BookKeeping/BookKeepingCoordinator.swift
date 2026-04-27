@@ -61,7 +61,7 @@ public class BookKeepingCoordinator: BaseCoordinator {
     public func goToDetails() {
         goToBookKeepingPurchases()
     }
- 
+    
     public func goToBookKeepingLowStock() {
         let model = LowBookKeepingStockViewModel()
         
@@ -234,16 +234,16 @@ extension BookKeepingCoordinator {
             default:
                 completion(nil)
             }
-
+            
             self?.router.pop(animated: true)
         }
-
+        
         let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-
+        
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -292,6 +292,7 @@ extension BookKeepingCoordinator {
     
     public func goToAddBookKeepingSales() {
         let model = AddBookKeepingSalesViewModel()
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         
@@ -308,6 +309,7 @@ extension BookKeepingCoordinator {
     
     public func goToAddBookKeepingStock() {
         let model = AddBookKeepingStockViewModel()
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         
         let vc = AddBookKeepingStockViewController()
         vc.viewModel = model
@@ -320,8 +322,9 @@ extension BookKeepingCoordinator {
     
     public func goToAddBookKeepingCustomer() {
         let model = AddBookKeepingCustomersViewModel()
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = AddBookKeepingCustomersViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
@@ -335,6 +338,7 @@ extension BookKeepingCoordinator {
         let model = AddBookKeepingSuppliesViewModel()
         
         model.gotoConfirm = { }
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
         
@@ -351,6 +355,9 @@ extension BookKeepingCoordinator {
     
     public func goToAddSupplierCategory() {
         let model = AddSupplierCategoryViewModel()
+        model.goToAddCategorySuccess = { [weak self] item in
+            self?.goToShowSuccessScreen()
+        }
         model.gotoConfirm = { }
         
         let vc = AddSupplierCategoryViewController()
@@ -364,6 +371,7 @@ extension BookKeepingCoordinator {
     
     public func goToAddExpenseCategory() {
         let model = AddExpenseCategoryViewModel()
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         model.gotoConfirm = { }
         
         let vc = AddExpenseCategoryViewController()
@@ -375,29 +383,51 @@ extension BookKeepingCoordinator {
         router.push(vc)
     }
     
+    private func goToShowSuccessScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert() { [weak self] in
+            self?.router.pop()
+        }
+    }
+    
+    private func goToShowErrorScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentErrorAlert(
+            onPrimaryAction:  { [weak self] in
+                self?.router.pop()
+            },
+            onSecondaryAction:  { [weak self] in
+                self?.router.pop()
+            }
+        )
+    }
 }
 
 extension BookKeepingCoordinator {
     
     @MainActor
     public func goToReportTypes(_ payload: ReportSelectionPayload) {
-
+        
         switch payload.report {
         case .sales:
             goToSalesReport(payload)
-
+            
         case .expenses:
             goToExpensesReport(payload)
-
+            
         case .stock:
             goToStockReport(payload)
-
+            
         case .profitLoss:
             goToProfitLossReport(payload)
-
+            
         case .customers:
             goToCustomersReport(payload)
-
+            
         case .suppliers:
             goToSuppliersReport(payload)
         }
@@ -405,7 +435,7 @@ extension BookKeepingCoordinator {
     
     @MainActor
     public func goToSalesReport(_ payload: ReportSelectionPayload) {
-
+        
         let model = SalesReportsViewModel(payload: payload)
         model.gotoConfirm = { }
         model.goToDateSelection = gotoSelectDate
@@ -415,7 +445,7 @@ extension BookKeepingCoordinator {
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
     
@@ -427,11 +457,11 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
     
@@ -443,11 +473,11 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
     
@@ -459,11 +489,11 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
     
@@ -475,11 +505,11 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
     
@@ -491,11 +521,11 @@ extension BookKeepingCoordinator {
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
-
+        
         let vc = BookKeepingReportsViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in self?.router.pop() }
-
+        
         router.push(vc)
     }
 }

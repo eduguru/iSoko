@@ -215,23 +215,27 @@ extension ModalCoordinator {
         router.present(nav)
     }
     
+    
     func presentSuccessAlert(
         title: String = "Successful",
         message: String = "Your action was completed successfully.",
         onPrimaryAction: (() -> Void)? = nil
     ) {
-        guard let topVC = router.topViewController() else { return }
 
-        let model = BottomSheetFactory.success(
-            title: title,
-            message: message,
-            icon: UIImage(systemName: "checkmark.circle.fill"),
-        )  {
-            print("OK tapped")
-            onPrimaryAction?()
+        DispatchQueue.main.async { [weak self] in
+            guard let topVC = self?.router.topViewController() else { return }
+
+            let model = BottomSheetFactory.success(
+                title: title,
+                message: message,
+                icon: UIImage(systemName: "checkmark.circle.fill"),
+            )  {
+                print("OK tapped")
+                onPrimaryAction?()
+            }
+
+            BottomSheetCoordinator(presenter: topVC).present(model)
         }
-
-        BottomSheetCoordinator(presenter: topVC).present(model)
     }
     
     func presentErrorAlert(
@@ -240,27 +244,31 @@ extension ModalCoordinator {
         onPrimaryAction: (() -> Void)? = nil,
         onSecondaryAction: (() -> Void)? = nil
     ) {
-        guard let topVC = router.topViewController() else { return }
-
-        let model = BottomSheetModel(
-            style: .bottomSheet,
-            icon: UIImage(systemName: "xmark.circle.fill"),
-            title: title,
-            message: message,
-            showCloseButton: true,
-            state: .error,
-            buttons: [
-                .init(title: "Retry", style: .primary) {
-                    print("Retry tapped")
-                    onSecondaryAction?()
-                },
-                .init(title: "Close", style: .primary) {
-                    print("Close tapped")
-                    onPrimaryAction?()
-                }
-            ]
-        )
         
-        BottomSheetCoordinator(presenter: topVC).present(model)
+        DispatchQueue.main.async { [weak self] in
+            guard let topVC = self?.router.topViewController() else { return }
+
+            let model = BottomSheetModel(
+                style: .bottomSheet,
+                icon: UIImage(systemName: "xmark.circle.fill"),
+                title: title,
+                message: message,
+                showCloseButton: true,
+                state: .error,
+                buttons: [
+                    .init(title: "Retry", style: .primary) {
+                        print("Retry tapped")
+                        onSecondaryAction?()
+                    },
+                    .init(title: "Close", style: .primary) {
+                        print("Close tapped")
+                        onPrimaryAction?()
+                    }
+                ]
+            )
+            
+            BottomSheetCoordinator(presenter: topVC).present(model)
+        }
+        
     }
 }

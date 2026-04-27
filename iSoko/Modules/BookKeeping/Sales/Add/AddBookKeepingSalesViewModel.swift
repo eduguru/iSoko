@@ -23,7 +23,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
 
     var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
+    
     var gotoConfirm: (() -> Void)?
+    var goToShowSuccessScreen: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     @MainActor private let countryHelper = CountryHelper()
@@ -204,7 +206,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         config: DropdownFormConfig(
             title: "Payment Method",
             placeholder: "Method",
-            rightImage: UIImage(systemName: "chevron.down"),
+            rightImage: UIImage(systemName: "chevron.down" ),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
                 self?.handlePaymentsSelection()
@@ -425,7 +427,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-
+        goToShowSuccessScreen?()
     }
 
     // MARK: - State

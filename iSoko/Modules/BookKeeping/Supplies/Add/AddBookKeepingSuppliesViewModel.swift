@@ -20,6 +20,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     var gotoSelectSystemCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
 
     var gotoConfirm: (() -> Void)?
+    var goToShowSuccessScreen: (() -> Void)?
     var goToAddCategory: (() -> Void)? = { }
     
     // MARK: - Services
@@ -270,6 +271,8 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
             return false
         }
 
+        showLoader()
+        
         let payload: [String : Any] = [
             "name": state.supplierName,
             "phoneNumber": state.phoneNumber,
@@ -283,10 +286,13 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         
         do {
             let response = try await bookKeepingService.addSupplier(parameters: payload, accessToken: state.oauthToken)
-                
+            
+            hideLoader()
+            goToShowSuccessScreen?()
             return true
             
         } catch {
+            hideLoader()
             print("❌ Error: ", error)
             return false
         }

@@ -263,6 +263,7 @@ extension AddProductImagesViewModel {
         files: [PickedFile]
     ) async -> Bool {
 
+        showLoader()
         print("📦 Payload:", params)
 
         do {
@@ -271,8 +272,12 @@ extension AddProductImagesViewModel {
                 pickedFiles: files,
                 accessToken: state.oauthToken
             )
+            
+            hideLoader()
+            
             return true
         } catch {
+            hideLoader()
             print("❌ Error:", error)
             return false
         }

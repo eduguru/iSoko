@@ -384,7 +384,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     // MARK: - Network
     @discardableResult
     private func performNetworkRequest() async -> Bool {
-        
+        showLoader()
         let payload: [String: Any] = [
             "categoryId": state.categories?.id ?? "",
             "amount": state.amount,
@@ -398,10 +398,12 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         
         do {
             let response = try await bookKeepingService.addExpense(parameters: payload, pickedFiles: state.additionalImages, accessToken: state.oauthToken)
-                
+            
+            hideLoader()
             return true
             
         } catch {
+            hideLoader()
             print("❌ Error: ", error)
             return false
         }
