@@ -77,7 +77,7 @@ final class MyProductDetailsViewModel: FormViewModel {
     private lazy var titleRow = TitleDescriptionFormRow(
         tag: 102,
         model: TitleDescriptionModel(
-            title: state.item.name,
+            title: state.item.name ?? "name",
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
@@ -203,14 +203,16 @@ final class MyProductDetailsViewModel: FormViewModel {
     
     // MARK: - Image Handling
     private func prepareProductImages() -> [ProductImage] {
-        guard let images = state.item.images else {
+        guard state.item.images.count > 0 else {
             return placeholderImages()
         }
+        
+        let images = state.item.images
         
         let mapped = images.compactMap { image -> ProductImage? in
             let urlString = image.url
             
-            guard image.active == true, let url = URL(string: urlString) else { return nil }
+            guard image.active == true, let url = URL(string: urlString ?? "") else { return nil }
             
             return ProductImage(
                 url: url,

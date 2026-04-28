@@ -141,20 +141,20 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         return state.items.enumerated().map { index, item in
             
-            let isInStock = item.inStock
+            let isInStock = item.inStock ?? false
             
             // Map images (optional: use first image if needed later)
             let items = [
                 OrderItem(
-                    quantity: item.minimumOrderQuantity,
-                    name: item.name,
-                    amount: "Ksh \(Int(item.price))"
+                    quantity: item.minimumOrderQuantity ?? 1,
+                    name: item.name ?? "name",
+                    amount: "Ksh \(Int(item.price ?? 0.0))"
                 )
             ]
             
             let config = OrderSummaryCellConfig(
-                orderTitle: item.name,
-                amount: "Ksh \(Int(item.price))",
+                orderTitle: item.name ?? "name",
+                amount: "Ksh \(Int(item.price ?? 0.0))",
                 dateString: item.description ?? "No description",
                 itemCountString: "\(items.count) item",
                 statusText: isInStock ? "In Stock" : "Out of Stock",

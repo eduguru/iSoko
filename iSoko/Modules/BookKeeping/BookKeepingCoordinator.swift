@@ -223,6 +223,30 @@ extension BookKeepingCoordinator {
         }
     }
     
+    private func goToProductSelection(_ type: CommonUtilityOption, _ completion: @escaping (StockResponse?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .products(let model):
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            self?.router.pop(animated: true)
+        }
+
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     private func gotoSelectSystemCountry(_ type: CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) {
         let viewModel = CommonOptionPickerViewModel(option: type)
         
@@ -295,6 +319,7 @@ extension BookKeepingCoordinator {
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
+        model.goToProductSelection = goToProductSelection
         
         model.goToAddCustomer = goToAddBookKeepingCustomer
         

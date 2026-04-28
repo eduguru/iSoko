@@ -13,4 +13,6 @@ enum CommonSelection {
     case organisationType(OrganisationTypeResponse)
     case commodityCategories(CommodityCategoryResponse)
     case commodities(CommodityV1Response)
+    case products(StockResponse)
+    
 }

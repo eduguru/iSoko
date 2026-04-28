@@ -148,7 +148,8 @@ final class MyProductListingsViewModel: FormViewModel {
         guard !query.isEmpty else { return state.items }
         
         return state.items.filter {
-            $0.name.localizedCaseInsensitiveContains(query)
+            let name = $0.name ?? ""
+            return name.localizedCaseInsensitiveContains(query)
         }
     }
     
@@ -220,13 +221,13 @@ final class MyProductListingsViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         filteredItems.enumerated().map { index, item in
             
-            let isInStock = item.inStock
+            let isInStock = item.inStock ?? false
             let unit = item.measurementUnit?.name ?? ""
             
             let config = TransactionActionsCellConfig(
-                title: item.name,
+                title: item.name ?? "name",
                 subtitle: "\(item.minimumOrderQuantity) \(unit) available",
-                amount: "Ksh \(Int(item.price))",
+                amount: "Ksh \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",
                 statusColor: isInStock ? .systemGreen : .systemRed,

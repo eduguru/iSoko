@@ -19,16 +19,6 @@ final class CartItemFormRow: FormRow {
     init(tag: Int, viewModel: CartItemViewModel) {
         self.tag = tag
         self.viewModel = viewModel
-        bind()
-    }
-
-    private func bind() {
-        viewModel.onUpdate = { vm in
-            print("Updated quantity for \(vm.title): \(vm.quantity)")
-        }
-        viewModel.onDelete = { vm in
-            print("Delete tapped for \(vm.title)")
-        }
     }
 
     func configure(_ cell: UITableViewCell,
@@ -40,7 +30,6 @@ final class CartItemFormRow: FormRow {
         return cell
     }
 
-    @MainActor
     func preferredHeight(for indexPath: IndexPath) -> CGFloat {
         150
     }

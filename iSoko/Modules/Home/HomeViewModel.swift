@@ -162,12 +162,12 @@ final class HomeViewModel: FormViewModel {
             FormSection(id: Tags.Section.search.rawValue, title: nil, cells: [searchRow]),
             makeBannerSection(),
             makeCategoriesQuickActionsSection(),
-            makeServicesQuickActionsSection(),
+            // makeServicesQuickActionsSection(),
             // makeTopDealsSection(),
             makeExportCardsSection(),
             // makeOpportunitySection(),
             makeTrendingProductsSection(),
-            makeTrendingServicesSection()
+            // makeTrendingServicesSection()
         ]
     }
     

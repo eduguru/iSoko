@@ -28,4 +28,5 @@ public enum CommonUtilityOption {
     case paymentOptions(page: Int, count: Int)
     
     case customers(page: Int, count: Int)
+    case products(page: Int, count: Int)
 }

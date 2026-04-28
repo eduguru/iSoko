@@ -122,13 +122,13 @@ final class LowBookKeepingStockViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         return state.items.enumerated().map { index, item in
             
-            let isInStock = item.inStock
+            let isInStock = item.inStock ?? false
             let unit = item.measurementUnit?.name ?? ""
             
             let config = TransactionActionsCellConfig(
-                title: item.name,
+                title: item.name ?? "name",
                 subtitle: "\(item.minimumOrderQuantity) \(unit) available",
-                amount: "Ksh \(Int(item.price))",
+                amount: "Ksh \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",
                 statusColor: isInStock ? .systemGreen : .systemRed,

@@ -9,7 +9,7 @@ import UIKit
 
 final class CartItemCell: UITableViewCell {
 
-    static let reuseIdentifier = String(describing: CartItemCell.self)
+    static let reuseIdentifier = "CartItemCell"
 
     private let cardView = UIView()
     private let titleLabel = UILabel()
@@ -33,12 +33,13 @@ final class CartItemCell: UITableViewCell {
         setupActions()
     }
 
+    // MARK: - UI
     private func setupUI() {
 
         selectionStyle = .none
         backgroundColor = .clear
 
-        // MARK: - Card View
+        // MARK: Card View
         cardView.backgroundColor = .systemBackground
         cardView.layer.cornerRadius = 12
         cardView.layer.shadowColor = UIColor.black.cgColor
@@ -48,14 +49,20 @@ final class CartItemCell: UITableViewCell {
         cardView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cardView)
 
-        // MARK: - Top Row
+        // MARK: Labels
         titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        titleLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        titleLabel.adjustsFontForContentSizeCategory = true
 
-        priceLabel.font = .systemFont(ofSize: 16, weight: .bold)
+        priceLabel.font = UIFont.preferredFont(forTextStyle: .headline)
+        priceLabel.adjustsFontForContentSizeCategory = true
         priceLabel.textAlignment = .right
-        priceLabel.setContentHuggingPriority(.defaultHigh, for: .horizontal)
 
+        descriptionLabel.font = .systemFont(ofSize: 13)
+        descriptionLabel.adjustsFontForContentSizeCategory = true
+        descriptionLabel.textColor = .secondaryLabel
+        descriptionLabel.numberOfLines = 0
+
+        // MARK: Top Row
         let topRow = UIStackView(arrangedSubviews: [titleLabel, priceLabel])
         topRow.axis = .horizontal
         topRow.distribution = .fill
@@ -63,14 +70,7 @@ final class CartItemCell: UITableViewCell {
         topRow.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(topRow)
 
-        // MARK: - Description
-        descriptionLabel.font = .systemFont(ofSize: 13)
-        descriptionLabel.textColor = .secondaryLabel
-        descriptionLabel.numberOfLines = 0
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        cardView.addSubview(descriptionLabel)
-
-        // MARK: - Bottom Row
+        // MARK: Bottom Row
         deleteButton.setImage(UIImage(systemName: "trash"), for: .normal)
         deleteButton.tintColor = .systemRed
         deleteButton.translatesAutoresizingMaskIntoConstraints = false
@@ -78,10 +78,20 @@ final class CartItemCell: UITableViewCell {
         stepperView.translatesAutoresizingMaskIntoConstraints = false
         amountView.translatesAutoresizingMaskIntoConstraints = false
 
+        // 🔥 FIXED: no more fixed width for amountView
+        amountView.setContentHuggingPriority(.required, for: .horizontal)
+        amountView.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        stepperView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+        stepperView.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        deleteButton.setContentHuggingPriority(.required, for: .horizontal)
+
         let bottomRow = UIStackView(arrangedSubviews: [stepperView, amountView])
         bottomRow.axis = .horizontal
         bottomRow.spacing = 12
         bottomRow.alignment = .center
+        bottomRow.distribution = .fill
         bottomRow.translatesAutoresizingMaskIntoConstraints = false
 
         let bottomContainer = UIView()
@@ -90,87 +100,75 @@ final class CartItemCell: UITableViewCell {
         bottomContainer.addSubview(bottomRow)
         bottomContainer.addSubview(deleteButton)
 
-        // MARK: - Constraints
+        cardView.addSubview(descriptionLabel)
+        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        // MARK: Constraints
         NSLayoutConstraint.activate([
-            // Card edges
+
             cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
-            // Top row
             topRow.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
             topRow.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             topRow.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
 
-            // Description
             descriptionLabel.topAnchor.constraint(equalTo: topRow.bottomAnchor, constant: 4),
             descriptionLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             descriptionLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
 
-            // Bottom row container
             bottomContainer.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 12),
             bottomContainer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
             bottomContainer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
             bottomContainer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12),
 
-            // Bottom row
             bottomRow.leadingAnchor.constraint(equalTo: bottomContainer.leadingAnchor, constant: 12),
             bottomRow.centerYAnchor.constraint(equalTo: bottomContainer.centerYAnchor),
 
-            // Delete button
             deleteButton.centerYAnchor.constraint(equalTo: bottomRow.centerYAnchor),
             deleteButton.trailingAnchor.constraint(equalTo: bottomContainer.trailingAnchor, constant: -12),
             deleteButton.widthAnchor.constraint(equalToConstant: 28),
-            deleteButton.heightAnchor.constraint(equalToConstant: 28),
-
-            // Fixed widths
-            stepperView.widthAnchor.constraint(equalToConstant: 120),
-            amountView.widthAnchor.constraint(equalToConstant: 100)
+            deleteButton.heightAnchor.constraint(equalToConstant: 28)
         ])
     }
 
+    // MARK: - Actions
     private func setupActions() {
-        // Stepper
+
         stepperView.onValueChanged = { [weak self] value in
-            guard let self = self else { return }
-            print("🔥 Stepper tapped, value: \(value)")
-            self.viewModel?.updateQuantity(value)
+            guard let self, let vm = self.viewModel else { return }
+
+            vm.updateQuantity(value)
+            self.refreshUI(from: vm)
         }
 
-        // Delete button
         deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
     }
 
+    @objc private func deleteTapped() {
+        viewModel?.delete()
+    }
+
+    // MARK: - Config
     func configure(with viewModel: CartItemViewModel) {
         self.viewModel = viewModel
 
         titleLabel.text = viewModel.title
         descriptionLabel.text = viewModel.subtitle
-        priceLabel.text = viewModel.formattedTotal
-        stepperView.value = viewModel.quantity
-        amountView.setAmount(viewModel.formattedTotal)
 
-        // Update UI on ViewModel changes
-        viewModel.onUpdate = { [weak self] vm in
-            guard let self = self else { return }
-            print("💠 ViewModel updated quantity to \(vm.quantity)")
-
-            self.priceLabel.text = vm.formattedTotal
-            self.amountView.setAmount(vm.formattedTotal)
-
-            // Only update stepper if different to avoid loops
-            if self.stepperView.value != vm.quantity {
-                self.stepperView.value = vm.quantity
-            }
-        }
-
-        viewModel.onDelete = { vm in
-            print("💥 Delete tapped for \(vm.title)")
-        }
+        refreshUI(from: viewModel)
     }
 
-    @objc private func deleteTapped() {
-        viewModel?.delete()
+    // MARK: - Local UI Sync
+    private func refreshUI(from viewModel: CartItemViewModel) {
+
+        priceLabel.text = viewModel.formattedTotal
+        amountView.setAmount(viewModel.formattedTotal)
+
+        if stepperView.value != viewModel.quantity {
+            stepperView.value = viewModel.quantity
+        }
     }
 }

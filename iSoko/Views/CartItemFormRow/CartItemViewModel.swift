@@ -18,20 +18,25 @@ final class CartItemViewModel {
         didSet { onUpdate?(self) }
     }
 
-    var onUpdate: ((CartItemViewModel) -> Void)?
-    var onDelete: ((CartItemViewModel) -> Void)?
+    private let onUpdate: ((CartItemViewModel) -> Void)?
+    private let onDelete: ((CartItemViewModel) -> Void)?
 
-    init(id: Int,
-         title: String,
-         subtitle: String,
-         pricePerUnit: Decimal,
-         quantity: Int) {
-
+    init(
+        id: Int,
+        title: String,
+        subtitle: String,
+        pricePerUnit: Decimal,
+        quantity: Int,
+        onUpdate: ((CartItemViewModel) -> Void)? = nil,
+        onDelete: ((CartItemViewModel) -> Void)? = nil
+    ) {
         self.id = id
         self.title = title
         self.subtitle = subtitle
         self.pricePerUnit = pricePerUnit
         self.quantity = max(1, quantity)
+        self.onUpdate = onUpdate
+        self.onDelete = onDelete
     }
 
     func updateQuantity(_ newValue: Int) {

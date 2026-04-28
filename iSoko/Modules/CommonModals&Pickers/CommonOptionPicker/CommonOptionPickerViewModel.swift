@@ -132,6 +132,12 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
                 return .countries(item)
             }
             
+        case .products:
+            
+            if let item = state.rawStockResponse.first(where: { $0.id == selected.id }) {
+                return .products(item)
+            }
+            
         default:
             return .idName(selected)
         }
@@ -150,8 +156,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            guard let self = self,
-                  let selected = self.state.selectedOption else { return }
+            guard let self = self, let selected = self.state.selectedOption else { return }
             
             self.confirmSelection?(self.resolveSelection(selected))
         }
@@ -179,12 +184,14 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         var rawMeasurementMetricOptions: [MeasurementMetricResponse] = []
         var rawMeasurementUnitOptions: [MeasurementUnitResponse] = []
         
+        var rawStockResponse: [StockResponse] = []
         var rawCommonIdNameResponse: [CommonIdNameResponse] = []
         
         var selectedTag: Int?
         var commonUtilityOption: CommonUtilityOption
         
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
@@ -245,6 +252,13 @@ extension CommonOptionPickerViewModel {
         case .measurementMetrics(page: let page, count: let count):
             return try await commonUtilitiesService.getMeasurementMetrics(page: page, count: count, accessToken: state.oauthToken).data
 
+        case .products(page: let page, count: let count):
+            return try await bookKeepingService.getAllStock(
+                userId: state.userProfile?.sub ?? 0,
+                page: page,
+                count: count,
+                accessToken: state.oauthToken
+            ).data
         }
     }
     
@@ -332,6 +346,13 @@ extension CommonOptionPickerViewModel {
                 return CommonIdNameModel(id: $0.id ?? 0, name: name, description: $0.code)
             }
             
+        case .products(page: let page, count: let count):
+            guard let items = response as? [StockResponse] else { return [] }
+            state.rawStockResponse = items
+            
+            return items.compactMap {
+                return CommonIdNameModel(id: $0.id ?? 0, name: $0.name ?? "", description: $0.name)
+            }
         }
         
     }
