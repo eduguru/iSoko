@@ -4,7 +4,7 @@ A modular iOS base project in Swift designed for rapid development with reusable
 
 ---
 
-## 📦 Features
+## Features
 
 - ✅ Modular architecture using **Swift Package Manager**
 - ✅ Local reusable packages:

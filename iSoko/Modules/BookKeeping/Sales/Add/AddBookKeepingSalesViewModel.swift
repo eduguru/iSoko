@@ -34,9 +34,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     var gotoConfirm: (() -> Void)?
     var goToShowSuccessScreen: (() -> Void)?
+    
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
 
     // MARK: - State
-
     private var state = State()
 
     // MARK: - Init
@@ -44,6 +45,34 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     override init() {
         super.init()
         sections = makeSections()
+    }
+    
+    override func fetchData() {
+        Task { @MainActor in
+                await fetchSalesTypes()
+            }
+    }
+    
+    private func fetchSalesTypes() async {
+        showLoader()
+
+        do {
+            let response = try await bookKeepingService.getSalesType(
+                page: 0,
+                count: 10,
+                accessToken: state.oauthToken
+            )
+
+            state.saleTypes = response.data   // assuming already [CommonIdNameModel]
+
+            hideLoader()
+
+            reloadSegmentSection() // 🔥 important
+
+        } catch {
+            hideLoader()
+            print("❌ Failed to fetch sales types:", error)
+        }
     }
 
     // MARK: - Sections
@@ -115,8 +144,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Product Section Reload (🔥 KEY PART)
-
+    // MARK: - Section Reload
     private func reloadProductSection(animated: Bool = true) {
         guard let index = sections.firstIndex(where: {
             $0.id == SectionTag.productDetails.rawValue
@@ -126,24 +154,43 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
         reloadSection(index)
     }
+    
+    private func reloadSegmentSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.segmentControl.rawValue
+        }) else { return }
+
+        sections[index].cells = [makePillsOptionsFormRow()]
+        reloadSection(index)
+    }
 
     // MARK: - Rows
 
     private lazy var pillsOptions = makePillsOptionsFormRow()
     private lazy var summaryRows = makeSummaryRows()
     
-    
     private func makePillsOptionsFormRow() -> FormRow {
-        PillsFormRowV2(
+
+        let items: [PillItem] = state.saleTypes.map {
+            PillItem(
+                id: String($0.id),
+                title: $0.name
+            )
+        }
+
+        return PillsFormRowV2(
             tag: 98,
-            items: [
-                PillItem(id: "1", title: "Cash"),
-                PillItem(id: "2", title: "Credit")
-            ],
+            items: items,
             layoutMode: .segmentedStretch,
             selectionMode: .single
-        ) { items in
-            print(items.first(where: { $0.isSelected }))
+        ) { [weak self] items in
+            guard let self else { return }
+
+            if let selected = items.first(where: { $0.isSelected }),
+               let id = Int(selected.id) {
+
+                self.state.saleTypeId = id
+            }
         }
     }
 
@@ -218,7 +265,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             text: "",
             config: TextViewConfig(fixedHeight: 120),
             validation: ValidationConfiguration(isRequired: true),
-            titleText: ""
+            titleText: "",
+            onTextChanged: { [weak self] text in
+                self?.state.description = text
+            }
         )
     )
 
@@ -229,16 +279,22 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
         for (index, product) in state.selectedProducts.enumerated() {
 
+            let productId = product.id ?? index
+
             let vm = CartItemViewModel(
-                id: product.id ?? index,
+                id: productId,
                 title: product.name ?? "Unknown",
                 subtitle: "Price: Ksh. \(Int(product.price ?? 0))",
                 pricePerUnit: Decimal(product.price ?? 0),
-                quantity: 1,
+                quantity: Int(state.quantities[productId] ?? 1), // UI expects Int
 
-                onUpdate: { [weak self] _ in
-                    // update totals / summary if needed
-                    // self?.recalculateTotals()
+                onUpdate: { [weak self] updated in
+                    guard let self else { return }
+
+                    let qty = updated.quantity ?? 1
+                    self.state.quantities[productId] = Double(qty)
+
+                    self.reloadSummarySection()
                 },
 
                 onDelete: { [weak self] item in
@@ -248,7 +304,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                         ($0.id ?? -1) == item.id
                     }
 
+                    self.state.quantities[item.id] = nil
+
                     self.reloadProductSection()
+                    self.reloadSummarySection()
                 }
             )
 
@@ -262,12 +321,26 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
         return rows
     }
+    
+    private func reloadSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.summary.rawValue
+        }) else { return }
+
+        sections[index].cells = makeSummaryRows()
+        reloadSection(index)
+    }
 
     private func makeSummaryRows() -> [FormRow] {
-        [
-            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: "$0")),
-            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: "$0")),
-            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: "$0", isEmphasized: true))
+
+        let subtotal = state.amount
+        let tax = 0.0
+        let total = subtotal + tax
+
+        return [
+            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: "Ksh \(subtotal)")),
+            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: "Ksh \(tax)")),
+            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: "Ksh \(total)", isEmphasized: true))
         ]
     }
 
@@ -323,21 +396,89 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         formatter.dateStyle = .medium
         return formatter.string(from: date)
     }
+    
+    private func buildPayload() -> [String: Any] {
+
+        let items = state.selectedProducts.map { product in
+            [
+                "productId": product.id ?? 0,
+                "quantity": state.quantities[product.id ?? -1] ?? 1
+            ]
+        }
+
+        return [
+            "saleTypeId": state.saleTypeId,
+            "customerId": state.customer?.id ?? 0,
+            "paymentMethodId": state.paymentMethod?.id ?? 0,
+            "description": state.description,
+            "items": items,
+            "amount": state.amount,
+            "date": state.date?.toISO8601String() ?? ""
+        ]
+    }
+    
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+
+        showLoader()
+
+        let payload = buildPayload()
+        print("SALES PAYLOAD:", payload)
+
+        do {
+            let _ = try await bookKeepingService.addSales(parameters: payload, accessToken: state.oauthToken)
+
+            hideLoader()
+            return true
+
+        } catch {
+            hideLoader()
+            print("❌ SALE ERROR:", error)
+            return false
+        }
+    }
 
     // MARK: - Submit
 
     private func submit() async {
-        goToShowSuccessScreen?()
+        let success = await performNetworkRequest()
+
+        if success {
+            gotoConfirm?()
+            goToShowSuccessScreen?()
+        }
     }
 
     // MARK: - State
-
     private struct State {
         var selectedProducts: [StockResponse] = []
+        var quantities: [Int: Double] = [:]   // productId : quantity
+        
+        var saleTypes: [CommonIdNameModel] = []
+
         var customer: CommonIdNameModel?
         var paymentMethod: CommonIdNameModel?
+
         var date: Date?
         var dateString: String = ""
+
+        var description: String = ""
+
+        var saleTypeId: Int = 1 // Cash = 1, Credit = 2
+
+        var amount: Double {
+            selectedProducts.reduce(0) { total, product in
+                let qty = quantities[product.id ?? -1] ?? 1
+                return total + ((product.price ?? 0) * qty)
+            }
+        }
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
     // MARK: - Tags

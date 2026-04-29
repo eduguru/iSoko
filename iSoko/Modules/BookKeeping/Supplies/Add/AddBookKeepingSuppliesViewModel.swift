@@ -282,7 +282,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
             "town": state.town,
             "streetAddress": state.streetAddress
         ]
-        print("📦 Payload:", payload)
+        print("Payload:", payload)
         
         do {
             let response = try await bookKeepingService.addSupplier(parameters: payload, accessToken: state.oauthToken)

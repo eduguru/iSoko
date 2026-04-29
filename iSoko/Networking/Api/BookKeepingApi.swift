@@ -88,6 +88,25 @@ public struct BookKeepingApi {
 // MARK: - Sales
 public extension BookKeepingApi {
     
+    static func addSales(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SalesResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sales",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
     static func getSalesType(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameModel]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         

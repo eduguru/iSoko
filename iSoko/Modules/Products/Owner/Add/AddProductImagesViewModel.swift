@@ -264,7 +264,7 @@ extension AddProductImagesViewModel {
     ) async -> Bool {
 
         showLoader()
-        print("📦 Payload:", params)
+        print("Payload:", params)
 
         do {
             _ = try await bookKeepingService.addProduct(

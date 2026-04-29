@@ -155,7 +155,7 @@ public final class OAuthService: NSObject {
             )
 
             if let jsonString = String(data: prettyData, encoding: .utf8) {
-                print("📦 User Details JSON:\n\(jsonString)")
+                print("User Details JSON:\n\(jsonString)")
             }
         } catch {
             print("Failed to print JSON:", error)

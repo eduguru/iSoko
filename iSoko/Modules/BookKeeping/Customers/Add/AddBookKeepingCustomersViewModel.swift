@@ -220,7 +220,7 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
             "streetAddress": state.streetAddress
         ]
 
-        print("📦 Payload:", payload)
+        print("Payload:", payload)
 
         do {
             _ = try await bookKeepingService.addCustomer(

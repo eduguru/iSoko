@@ -14,6 +14,7 @@ public protocol BookKeepingService {
     func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]>
     func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
     
+    func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse
     func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]>
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
@@ -61,6 +62,10 @@ public final class BookKeepingServiceImpl: BookKeepingService {
 
 // MARK: - Sales
 public extension BookKeepingServiceImpl {
+    func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse {
+        try await manager.request(BookKeepingApi.addSales(parameters: parameters, accessToken: accessToken))
+    }
+    
     func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]> {
         let envelope = try await manager.request(
             BookKeepingApi.getSalesType(page: page, count: count, accessToken: accessToken))

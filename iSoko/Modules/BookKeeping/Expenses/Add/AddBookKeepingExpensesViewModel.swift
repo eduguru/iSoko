@@ -394,7 +394,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             "paymentMethodId": state.paymentMethod?.id ?? ""
         ]
 
-        print("📦 payload:", payload)
+        print("payload:", payload)
         
         do {
             let response = try await bookKeepingService.addExpense(parameters: payload, pickedFiles: state.additionalImages, accessToken: state.oauthToken)

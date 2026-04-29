@@ -445,7 +445,7 @@ final class HomeViewModel: FormViewModel {
         return (0..<count).compactMap { index in
             guard let category = state?.productCategories[index] else { return nil }
             
-            print("📦 Category:", category.name ?? "")
+            print("Category:", category.name ?? "")
             print("🖼 Image URL:", category.imageUrl ?? "nil")
 
             return QuickActionItem(
