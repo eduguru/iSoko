@@ -8,11 +8,11 @@
 import UIKit
 
 
-struct DatePickerConfig {
-    let mode: DatePickerMode
-    let minimumDate: Date?
-    let maximumDate: Date?
-    let initialDate: Date?
+public struct DatePickerConfig {
+    public let mode: DatePickerMode
+    public let minimumDate: Date?
+    public let maximumDate: Date?
+    public let initialDate: Date?
 
     static func year(min: Date? = nil, max: Date? = Date(), initial: Date? = nil) -> DatePickerConfig {
         .init(mode: .year, minimumDate: min, maximumDate: max, initialDate: initial)
@@ -27,7 +27,7 @@ struct DatePickerConfig {
     }
 }
 
-extension Date {
+public extension Date {
     
     var yearOnlyNormalized: Date {
         Date.from(year: Calendar.current.component(.year, from: self))

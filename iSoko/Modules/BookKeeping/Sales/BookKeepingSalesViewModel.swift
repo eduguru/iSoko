@@ -13,7 +13,7 @@ import StorageKit
 final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Navigation
-    var goToDetails: (() -> Void)?
+    var goToDetails: ((SalesResponse) -> Void)? = { _ in }
 
     // MARK: - State
     private var state = State()
@@ -208,7 +208,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
                     borderColor: .systemGray4,
                     borderWidth: 1,
                     onTap: { [weak self] in
-                        self?.goToDetails?()
+                        self?.goToDetails?(sale)
                     }
                 ),
                 secondaryAction: InlineActionConfig(

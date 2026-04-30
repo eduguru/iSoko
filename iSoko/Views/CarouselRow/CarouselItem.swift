@@ -9,15 +9,18 @@ import UIKit
 
 public struct CarouselItem {
     public let image: UIImage?
+    public let imageURL: String?  // New property for image URL
     public let text: String?
     public let textColor: UIColor
     public let didTap: (() -> Void)?
 
     public init(image: UIImage? = nil,
+                imageURL: String? = nil,  // Image URL initializer
                 text: String? = nil,
                 textColor: UIColor = .white,
                 didTap: (() -> Void)? = nil) {
         self.image = image
+        self.imageURL = imageURL
         self.text = text
         self.textColor = textColor
         self.didTap = didTap

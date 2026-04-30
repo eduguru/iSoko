@@ -294,7 +294,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                     let qty = updated.quantity ?? 1
                     self.state.quantities[productId] = Double(qty)
 
-                    self.reloadSummarySection()
+                    self.refreshCartUI()
                 },
 
                 onDelete: { [weak self] item in
@@ -306,8 +306,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
                     self.state.quantities[item.id] = nil
 
-                    self.reloadProductSection()
-                    self.reloadSummarySection()
+                    self.refreshCartUI()
                 }
             )
 
@@ -320,6 +319,11 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         rows.append(addItemButtonRow)
 
         return rows
+    }
+    
+    private func refreshCartUI() {
+        reloadProductSection()
+        reloadSummarySection()
     }
     
     private func reloadSummarySection() {
@@ -338,9 +342,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let total = subtotal + tax
 
         return [
-            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: "Ksh \(subtotal)")),
-            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: "Ksh \(tax)")),
-            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: "Ksh \(total)", isEmphasized: true))
+            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: formatCurrency(subtotal))),
+            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: formatCurrency(tax))),
+            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: formatCurrency(total), isEmphasized: true))
         ]
     }
 
@@ -352,8 +356,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
             self.state.selectedProducts.append(value)
 
-            // 🔥 THIS IS THE FIX
-            self.reloadProductSection()
+            self.refreshCartUI()
         }
     }
 
@@ -395,6 +398,13 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: date)
+    }
+    
+    private func formatCurrency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return "Ksh \(formatter.string(from: NSNumber(value: value)) ?? "0")"
     }
     
     private func buildPayload() -> [String: Any] {

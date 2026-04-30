@@ -245,7 +245,9 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                 amountColor: isPositive ? .systemGreen : .systemRed,
                 spacing: 12,
                 contentInsets: .init(top: 12, left: 16, bottom: 12, right: 16),
-                onTap: { [weak self] in self?.goToDetails?() },
+                onTap: { [weak self] in
+                    self?.goToDetails?()
+                },
                 isCardStyleEnabled: true,
                 cardCornerRadius: 12,
                 cardBackgroundColor: .systemBackground,

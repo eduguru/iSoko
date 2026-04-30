@@ -11,7 +11,7 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingSuppliesViewModel: FormViewModel {
-   var goToDetails: (() -> Void)? = { }
+   var goToDetails: ((SupplierResponse) -> Void)? = { _ in }
     
     private var state = State()
     
@@ -175,7 +175,7 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                         backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                         textColor: .app(.primary),
                         onTap: { [weak self] in
-                            self?.goToDetails?()
+                            self?.goToDetails?(supplier)
                         }
                     )
                     : nil,

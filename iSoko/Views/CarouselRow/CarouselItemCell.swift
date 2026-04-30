@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class CarouselItemCell: UICollectionViewCell {
     static let reuseIdentifier = "CarouselItemCell"
@@ -52,9 +53,16 @@ final class CarouselItemCell: UICollectionViewCell {
 
     func configure(with item: CarouselItem, contentMode: UIView.ContentMode, hideText: Bool = false) {
         imageView.contentMode = contentMode
-        imageView.image = item.image
         label.text = item.text
         label.textColor = item.textColor
         label.isHidden = hideText || (item.text == nil)
+
+        if let imageURL = item.imageURL, let url = URL(string: imageURL) {
+            // Load image from URL using Kingfisher
+            imageView.kf.setImage(with: url, placeholder: item.image)
+        } else {
+            // Fallback to the local image if no URL is provided
+            imageView.image = item.image
+        }
     }
 }

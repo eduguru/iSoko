@@ -11,7 +11,7 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingPurchasesViewModel: FormViewModel {
-    var goToDetails: (() -> Void)? = { }
+    var goToDetails: ((ExpenseResponse) -> Void)? = { _ in}
     
     private var state = State()
     

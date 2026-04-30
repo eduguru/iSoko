@@ -11,7 +11,7 @@ import UtilsKit
 import StorageKit
 
 final class LowBookKeepingStockViewModel: FormViewModel {
-    var goToDetails: (() -> Void)? = { }
+    var goToDetails: ((StockResponse) -> Void)? = { _ in }
     
     private var state = State()
     
@@ -139,7 +139,7 @@ final class LowBookKeepingStockViewModel: FormViewModel {
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),
                     onTap: { [weak self] in
-                        self?.goToDetails?()
+                        self?.goToDetails?(item)
                         print("View details tapped for \(item.name)")
                     }
                 ),

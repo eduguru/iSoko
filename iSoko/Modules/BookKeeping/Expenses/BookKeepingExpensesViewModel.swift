@@ -13,7 +13,7 @@ import StorageKit
 final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Navigation
-    var goToDetails: (() -> Void)?
+    var goToDetails: ((ExpenseResponse) -> Void)? = { _ in }
     
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
@@ -311,7 +311,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                     borderColor: .systemGray4,
                     borderWidth: 1,
                     onTap: { [weak self] in
-                        self?.goToDetails?()
+                        self?.goToDetails?(expense)
                     }
                 ),
                 secondaryAction: InlineActionConfig(

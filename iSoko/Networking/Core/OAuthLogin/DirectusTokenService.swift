@@ -12,109 +12,6 @@ struct DirectusResponse<T: Decodable>: Decodable {
     let data: [T]
 }
 
-struct DirectusAuthResponse: Decodable {
-    let data: DirectusAuthToken
-}
-
-struct DirectusAuthToken: Decodable {
-    let accessToken: String
-    let refreshToken: String
-    let expires: Int
-
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case refreshToken = "refresh_token"
-        case expires
-    }
-}
-
-struct DirectusNewsItem: Decodable {
-    let id: Int
-    let title: String?
-    let body: String?
-    let status: String?
-    let createdOn: String?
-    let newsCategory: NewsCategory?
-    let featuredImage: FeaturedImage?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case title = "Title"
-        case body = "Body"
-        case status
-        case createdOn = "created_on"
-        case newsCategory = "News_Category"
-        case featuredImage = "Featured_Image"
-    }
-}
-
-struct NewsCategory: Decodable {
-    let key: Int?
-    let collection: String?
-}
-
-struct FeaturedImage: Decodable {
-    let id: String
-    let filenameDisk: String?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case filenameDisk = "filename_disk"
-    }
-}
-
-extension FeaturedImage {
-    func url(baseURL: URL) -> URL {
-        baseURL
-            .appendingPathComponent("assets")
-            .appendingPathComponent(id)
-    }
-}
-
-struct AssociationNewsItem: Decodable {
-    let id: Int
-    let associationId: Int?
-    let createdOn: String?
-    let modifiedOn: String?
-    let newsCategory: String?
-    let newsContent: String?
-    let newsTitle: String?
-    let visibility: String?
-    let featuredImage: AssociationFeaturedImage?
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case associationId = "association_id"
-        case createdOn = "created_on"
-        case modifiedOn = "modified_on"
-        case newsCategory = "news_category"
-        case newsContent = "news_content"
-        case newsTitle = "news_title"
-        case visibility
-        case featuredImage = "featured_image"
-    }
-}
-
-struct AssociationFeaturedImage: Decodable {
-    let filenameDisk: String?
-
-    enum CodingKeys: String, CodingKey {
-        case filenameDisk = "filename_disk"
-    }
-
-    func url(baseURL: URL) -> URL? {
-        guard let id = filenameDisk else { return nil }
-        return baseURL.appendingPathComponent("assets").appendingPathComponent(id)
-    }
-
-    func url2(baseURL: URL) -> URL? {
-        guard let filename = filenameDisk else { return nil }
-        return baseURL
-            .appendingPathComponent("assets")
-            .appendingPathComponent(filename)
-    }
-}
-
 final class DirectusTokenService {
 
     private let baseURL = URL(string: "http://directus.dev.isoko.africa")!
@@ -297,5 +194,28 @@ final class DirectusTokenService {
         return try JSONDecoder()
             .decode(DirectusResponse<AssociationNewsItem>.self, from: data)
             .data
+    }
+    
+    // MARK: - Fetch Home Banners
+
+    func fetchHomeBanners() async throws -> [DirectusHomeBannerItem] {
+        var components = URLComponents(url: baseURL.appendingPathComponent("/items/Hero"), resolvingAgainstBaseURL: false)
+
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "id,btn_text,btn_url,status,title,image_link.filename_disk"),
+            URLQueryItem(name: "filter", value: "{\"status\":{\"_eq\":\"published\"}}")
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        // Use the authorized request method with the token
+        let (data, _) = try await authorizedRequest(request)
+
+        return try JSONDecoder().decode(DirectusResponse<DirectusHomeBannerItem>.self, from: data).data
     }
 }

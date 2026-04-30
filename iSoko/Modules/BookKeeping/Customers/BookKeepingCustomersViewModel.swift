@@ -11,7 +11,7 @@ import UtilsKit
 import StorageKit
 
 final class BookKeepingCustomersViewModel: FormViewModel {
-    var goToDetails: (() -> Void)? = { }
+    var goToDetails: ((CustomerResponse) -> Void)? = { _ in }
     
     private var state = State()
     
@@ -184,7 +184,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),
                     onTap: { [weak self] in
-                        self?.goToDetails?()
+                        self?.goToDetails?(customer)
                         print("View history for \(name)")
                     }
                 ),

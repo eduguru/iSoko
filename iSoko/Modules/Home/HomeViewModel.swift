@@ -31,6 +31,7 @@ final class HomeViewModel: FormViewModel {
     var onFavoriteTopDealToggle: ((Bool, TopDealItem) -> Void)?
     
     // MARK: - Services
+    private let directusService = DirectusTokenService()
     private let productsService = NetworkEnvironment.shared.productsService
     private let servicesService = NetworkEnvironment.shared.servicesService
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
@@ -51,22 +52,66 @@ final class HomeViewModel: FormViewModel {
     }
     
     // MARK: - Fetch
+    
+    override func refresh() {
+        Task { @MainActor in
+            performNetworkCalls()
+        }
+    }
+    // Update fetchData to call fetchBanners separately without holding up other processes
     override func fetchData() {
+        Task { @MainActor in
+            performNetworkCalls()
+        }
+    }
+    
+    private func performNetworkCalls() {
         showLoader()
         
         // MARK: - Fetch
         Task {
-            async let _ = fetchDataType(.featuredProducts)
-            async let _ = fetchDataType(.featuredServices)
-            async let _ = fetchDataType(.productCategories)
-            async let _ = fetchDataType(.serviceCategories)
-            async let _ = fetchDataType(.associations)
+            // Fetching all data concurrently except for fetchBanners
+            async let featuredProducts = fetchDataType(.featuredProducts)
+            async let featuredServices = fetchDataType(.featuredServices)
+            async let productCategories = fetchDataType(.productCategories)
+            async let serviceCategories = fetchDataType(.serviceCategories)
+            async let associations = fetchDataType(.associations)
             
-            _ = await ((), (), (), (), ())
+            // Wait for all data to be fetched
+            _ = await (featuredProducts, featuredServices, productCategories, serviceCategories, associations)
             
+            // Update UI on the main thread after the main fetch completes
             DispatchQueue.main.async { [weak self] in
                 self?.hideLoader()
             }
+        }
+        
+        // Fetch banners separately without waiting for it
+        Task {
+            await fetchBanners()
+        }
+    }
+    
+    // Simplify fetchBanners function (same as before, but no need for additional Task)
+    private func fetchBanners() async {
+        do {
+            try await directusService.login(
+                email: "admin@isoko.twcc-tz.org",
+                password: "s^k2HIza)KpdER5b"
+            )
+            
+            // Now, fetch the banners after successful login
+            let banners = try await directusService.fetchHomeBanners()
+            
+            // Update state with fetched banners
+            state?.banners = banners
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.updateBannerSection()
+            }
+            
+        } catch {
+            print("❌ Directus flow failed:", error)
         }
     }
     
@@ -349,6 +394,21 @@ final class HomeViewModel: FormViewModel {
         reloadSection(sectionIndex)
     }
     
+    private func updateBannerSection() {
+        
+        guard let sectionIndex = sections.firstIndex(
+            where: { $0.id == Tags.Section.banner.rawValue }
+        ) else { return }
+        
+        let updatedRow = bannerRow
+        
+        var updatedSection = sections[sectionIndex]
+        updatedSection.cells = [updatedRow]
+        sections[sectionIndex] = updatedSection
+        
+        reloadSection(sectionIndex)
+    }
+    
     // MARK: - Form Rows
     lazy var topDealsRow = TopDealsFormRow(
         tag: Tags.Cells.topDeals.rawValue,
@@ -374,12 +434,7 @@ final class HomeViewModel: FormViewModel {
     lazy var bannerRow = CarouselRow(
         tag: Tags.Section.banner.rawValue,
         model: CarouselModel(
-            items: [
-                CarouselItem(image: UIImage(named: "carousel01"), text: nil, textColor: .white) { print("Tapped A") },
-                CarouselItem(image: UIImage(named: "carousel02"), text: nil, textColor: .yellow) { print("Tapped B") },
-                CarouselItem(image: UIImage(named: "carousel03"), text: nil, textColor: .cyan) { print("Tapped C") },
-                CarouselItem(image: UIImage(named: "carousel04"), text: nil, textColor: .white) { print("Tapped D") }
-            ],
+            items: makeCarouselItems(),
             autoPlayInterval: 4,
             paginationPlacement: .inside,
             imageContentMode: .scaleAspectFill,
@@ -389,6 +444,29 @@ final class HomeViewModel: FormViewModel {
             pageDotColor: .lightGray
         )
     )
+    
+    private func makeCarouselItems() -> [CarouselItem] {
+        [
+            CarouselItem(image: UIImage(named: "carousel01"), imageURL: nil, text: nil, textColor: .white) { print("Tapped A") },
+            CarouselItem(image: UIImage(named: "carousel02"),imageURL: nil, text: nil, textColor: .yellow) { print("Tapped B") },
+            CarouselItem(image: UIImage(named: "carousel03"),imageURL: nil, text: nil, textColor: .cyan) { print("Tapped C") },
+            CarouselItem(image: UIImage(named: "carousel04"),imageURL: nil, text: nil, textColor: .white) { print("Tapped D") }
+        ]
+    }
+    
+    private func transformBannersToCarouselItems(banners: [DirectusHomeBannerItem]) -> [CarouselItem] {
+        return banners.compactMap { banner in
+            // Transform each banner into a CarouselItem
+            let imageURL = banner.imageLink?.url(baseURL: "baseURL")
+            
+            return CarouselItem(
+                imageURL: "imageURL",
+                text: banner.title,
+                textColor: .white) {
+                    print("Tapped \(banner.title ?? "Unknown")")
+                }
+        }
+    }
     
     lazy var productCategoriesFormRow = QuickActionsFormRow(
         tag: 1,
@@ -438,16 +516,16 @@ final class HomeViewModel: FormViewModel {
             )
         } ?? []
     }
-
+    
     private func makeProductCategoryItems() -> [QuickActionItem] {
         let count = min(state?.productCategories.count ?? 0, 5)
-
+        
         return (0..<count).compactMap { index in
             guard let category = state?.productCategories[index] else { return nil }
             
             print("Category:", category.name ?? "")
             print("🖼 Image URL:", category.imageUrl ?? "nil")
-
+            
             return QuickActionItem(
                 id: "\(category.id ?? 0)",
                 image: UIImage(named: "blank_rectangle"),
@@ -645,6 +723,8 @@ final class HomeViewModel: FormViewModel {
         var serviceCategories: [TradeServiceCategoryResponse] = []
         
         var associations: [AssociationResponse] = []
+        
+        var banners: [DirectusHomeBannerItem] = []
     }
     
     // MARK: - Tags
@@ -694,4 +774,8 @@ final class HomeViewModel: FormViewModel {
             }
         }
     }
+}
+
+extension HomeViewModel {
+    
 }
