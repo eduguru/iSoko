@@ -116,12 +116,14 @@ final class BookKeepingSuppliesDetailsViewModel: FormViewModel {
     
     private func makeProfileInfoRow() -> FormRow {
         let model = ProfileInfoCellConfig(
-            name: state.item.name ?? "",
-            phone: makeInfoItem(state.item.phoneNumber ?? "", icon: "phone.fill"),
-            email: makeInfoItem(state.item.email ?? "", icon: "phone.fill"),
-            location: makeInfoItem(state.item.streetAddress ?? "", icon: "phone.fill"),
+            name: state.item.name ?? "Name: N/A",  // Default name if customer name is nil
+            infoItems: [
+                makeInfoItem(state.item.phoneNumber ?? "Phone: N/A", icon: "phone.fill"),
+                makeInfoItem(state.item.email, icon: "envelope.fill" ?? "Email: N/A"),
+                makeInfoItem(state.item.streetAddress, icon: "house.fill" ?? "Street Address: N/A")
+            ],
             onEditTap: {
-                
+                // Handle the edit action here
             }
         )
         
@@ -136,13 +138,13 @@ final class BookKeepingSuppliesDetailsViewModel: FormViewModel {
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Value",
+                title: "Total Supplies",
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "0.00",
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Items Supplied",
+                title: "Total Amount",
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "0",
                 status: nil

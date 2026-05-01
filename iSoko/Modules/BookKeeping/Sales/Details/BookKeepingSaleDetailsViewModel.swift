@@ -117,12 +117,15 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
     
     private func makeProfileInfoRow() -> FormRow {
         let model = ProfileInfoCellConfig(
-            name: state.item.customer?.name ?? "",
-            phone: makeInfoItem(state.item.customer?.name, icon: "phone.fill"),
-            email: makeInfoItem(state.item.description, icon: "envelope.fill"),
-            location: makeInfoItem(state.item.paymentMethod?.name, icon: "mappin.and.ellipse"),
+            name: state.item.customer?.name ?? "Customer: N/A",  // Default name if customer name is nil
+            infoItems: [
+                // Using the correct SF Symbols for each piece of info
+                makeInfoItem(state.item.customer?.name ?? "Customer: N/A", icon: "person.fill"), // Customer name with person icon
+                makeInfoItem(state.item.description ?? "Description: N/A", icon: "doc.text.fill"), // Description or email with a document icon
+                makeInfoItem(state.item.paymentMethod?.name ?? "Payment Method: N/A", icon: "creditcard.fill") // Payment method with credit card icon
+            ],
             onEditTap: {
-                
+                // Handle the edit action here
             }
         )
         

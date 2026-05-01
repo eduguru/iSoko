@@ -116,12 +116,16 @@ final class BookKeepingStockDetailsViewModel: FormViewModel {
     
     private func makeProfileInfoRow() -> FormRow {
         let model = ProfileInfoCellConfig(
-            name: state.item.name ?? "",
-            phone: makeInfoItem("\(state.item.price)" ?? "", icon: "phone.fill"),
-            email: makeInfoItem(state.item.category?.name ?? "", icon: "phone.fill"),
-            location: makeInfoItem(state.item.measurementUnit?.name ?? "", icon: "phone.fill"),
+            name: state.item.name ?? "Name: N/A",
+            infoItems: [
+                // Using appropriate SF Symbols for each piece of info
+                makeInfoItem(state.item.trader?.firstName ?? "Supplier: N/A", icon: "person.fill"), // Icon for Supplier/Trader
+                makeInfoItem(state.item.category?.name ?? "Category: N/A", icon: "tag.fill"), // Icon for Category
+                makeInfoItem("Minimum Order: \(state.item.minimumOrderQuantity ?? 0)", icon: "cart.fill"), // Icon for Order Quantity
+                makeInfoItem(state.item.measurementUnit?.name ?? "Measurement Unit: N/A", icon: "ruler.fill"), // Icon for Measurement Unit
+            ],
             onEditTap: {
-                
+                // Edit button action here
             }
         )
         
@@ -142,7 +146,7 @@ final class BookKeepingStockDetailsViewModel: FormViewModel {
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Items Supplied",
+                title: "Current Stock",
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "0",
                 status: nil

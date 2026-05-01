@@ -82,7 +82,7 @@ final class BookKeepingExpensesDetailsViewModel: FormViewModel {
     private func makeSections() -> [FormSection] {
         [
             makeProfileSection(),
-            makeFinancialSummarySection(),
+            // makeFinancialSummarySection(),
             makeRecentActivitiesSection()
         ]
     }
@@ -115,18 +115,29 @@ final class BookKeepingExpensesDetailsViewModel: FormViewModel {
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
     private func makeProfileInfoRow() -> FormRow {
-        let model = ProfileInfoCellConfig(
-            name: state.item.supplier?.name ?? "",
-            phone: makeInfoItem(state.item.expenseDate ?? "", icon: "phone.fill"),
-            email: makeInfoItem(state.item.expenseDate ?? "", icon: "phone.fill"),
-            location: makeInfoItem(state.item.expenseDate ?? "", icon: "phone.fill"),
-            onEditTap: {
-                
-            }
+        let model = ExpenseHeaderCellConfig(
+            title: state.item.category?.name ?? "",
+            titleIcon: UIImage(systemName: "doc.text"),
+            amountText: NSAttributedString(
+                string: "\(state.item.amount ?? 0.0)",
+                attributes: [.foregroundColor: UIColor.systemRed]
+            ),
+            rows: [
+                .init(icon: UIImage(systemName: "truck"),
+                      text: NSAttributedString(string: state.item.supplier?.name ?? "Supplier: N/A"))
+            ],
+            paymentText: state.item.paymentMethod?.name ?? "Cash",
+            paymentTextColor: .systemGreen,
+            paymentBackgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
+            dateText: NSAttributedString(string: state.item.expenseDate ?? ""),
+            cardStyle: .border
         )
         
-        let row = ProfileInfoRow(tag: Tags.Cells.filter.rawValue, config: model)
-        return row
+        return ExpenseHeaderRow(
+            tag: Tags.Cells.filter.rawValue,
+            config: model
+        )
+
     }
     
     private func makeInfoItem(_ text: String?, icon: String) -> InfoItem {

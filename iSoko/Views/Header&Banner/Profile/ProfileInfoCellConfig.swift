@@ -13,9 +13,7 @@ public struct ProfileInfoCellConfig {
     public let name: String
     public let nameIcon: UIImage?
 
-    public let phone: InfoItem?
-    public let email: InfoItem?
-    public let location: InfoItem?
+    public let infoItems: [InfoItem]
 
     public let onEditTap: (() -> Void)?
 
@@ -27,9 +25,7 @@ public struct ProfileInfoCellConfig {
     public init(
         name: String,
         nameIcon: UIImage? = UIImage(systemName: "person.fill"),
-        phone: InfoItem? = nil,
-        email: InfoItem? = nil,
-        location: InfoItem? = nil,
+        infoItems: [InfoItem] = [],
         onEditTap: (() -> Void)? = nil,
         cardBackgroundColor: UIColor = .systemBackground,
         cardBorderColor: UIColor = .systemGray4,
@@ -38,9 +34,7 @@ public struct ProfileInfoCellConfig {
     ) {
         self.name = name
         self.nameIcon = nameIcon
-        self.phone = phone
-        self.email = email
-        self.location = location
+        self.infoItems = infoItems
         self.onEditTap = onEditTap
         self.cardBackgroundColor = cardBackgroundColor
         self.cardBorderColor = cardBorderColor

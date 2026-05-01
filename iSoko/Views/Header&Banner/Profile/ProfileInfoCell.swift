@@ -16,14 +16,10 @@ public final class ProfileInfoCell: UITableViewCell {
     private let nameLabel = UILabel()
     private let editButton = InlineActionButton()
 
-    private let phoneRow = IconTextRowView()
-    private let emailRow = IconTextRowView()
-    private let locationRow = IconTextRowView()
-
     private let topRow = UIStackView()
     private let contentStack = UIStackView()
 
-    private var onEditTap: (() -> Void)?
+    private var infoRowViews: [IconTextRowView] = []
 
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -34,6 +30,8 @@ public final class ProfileInfoCell: UITableViewCell {
         super.init(coder: coder)
         setup()
     }
+
+    // MARK: - Setup
 
     private func setup() {
         backgroundColor = .clear
@@ -48,6 +46,7 @@ public final class ProfileInfoCell: UITableViewCell {
 
         nameLabel.font = .preferredFont(forTextStyle: .headline)
 
+        // Top row
         topRow.axis = .horizontal
         topRow.spacing = 8
         topRow.alignment = .center
@@ -56,13 +55,11 @@ public final class ProfileInfoCell: UITableViewCell {
         topRow.addArrangedSubview(UIView())
         topRow.addArrangedSubview(editButton)
 
+        // Content stack
         contentStack.axis = .vertical
         contentStack.spacing = 12
         contentStack.translatesAutoresizingMaskIntoConstraints = false
         contentStack.addArrangedSubview(topRow)
-        contentStack.addArrangedSubview(phoneRow)
-        contentStack.addArrangedSubview(emailRow)
-        contentStack.addArrangedSubview(locationRow)
 
         containerView.addSubview(contentStack)
 
@@ -79,38 +76,34 @@ public final class ProfileInfoCell: UITableViewCell {
         ])
     }
 
+    // MARK: - Configure
+
     public func configure(with config: ProfileInfoCellConfig) {
 
         nameIconView.image = config.nameIcon
         nameLabel.text = config.name
 
-        if let phone = config.phone {
-            phoneRow.configure(
-                text: phone.text,
-                icon: phone.icon ?? UIImage(systemName: "phone.fill")
+        // 1. Clear previous dynamic rows
+        infoRowViews.forEach {
+            contentStack.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+        infoRowViews.removeAll()
+
+        // 2. Add dynamic rows
+        for item in config.infoItems {
+
+            let row = IconTextRowView()
+            row.configure(
+                text: item.text,
+                icon: item.icon
             )
-        } else {
-            phoneRow.isHidden = true
+
+            contentStack.addArrangedSubview(row)
+            infoRowViews.append(row)
         }
 
-        if let email = config.email {
-            emailRow.configure(
-                text: email.text,
-                icon: email.icon ?? UIImage(systemName: "envelope.fill")
-            )
-        } else {
-            emailRow.isHidden = true
-        }
-
-        if let location = config.location {
-            locationRow.configure(
-                text: location.text,
-                icon: location.icon ?? UIImage(systemName: "mappin.and.ellipse")
-            )
-        } else {
-            locationRow.isHidden = true
-        }
-
+        // 3. Edit button
         if let onEdit = config.onEditTap {
             editButton.configure(
                 with: InlineActionConfig(
@@ -124,6 +117,7 @@ public final class ProfileInfoCell: UITableViewCell {
             editButton.isHidden = true
         }
 
+        // 4. Styling
         containerView.backgroundColor = config.cardBackgroundColor
         containerView.layer.cornerRadius = config.cardCornerRadius
         containerView.layer.borderWidth = config.cardBorderWidth
