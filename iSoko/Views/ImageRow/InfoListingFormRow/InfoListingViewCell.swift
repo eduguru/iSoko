@@ -52,9 +52,16 @@ class InfoListingViewCell: UITableViewCell {
         containerView.backgroundColor = model.cardBackgroundColor
         containerView.layer.cornerRadius = model.cardRadius
 
-        imgView.image = model.icon ?? UIImage.addDocument
+        // Load image from URL if available, otherwise use the icon
+        if let imageURL = model.imageURL, let url = URL(string: imageURL) {
+            // Use a method like Kingfisher, SDWebImage, or any other image loader
+            imgView.kf.setImage(with: url, placeholder: model.icon)
+        } else {
+            imgView.image = model.icon ?? UIImage.addDocument
+        }
         imgView.tintColor = .app(.primary)
 
+        // Set the labels with their values
         labelTitle.text = model.title
         labelSubTitle.text = model.subtitle
         labelDesc.text = model.desc
@@ -63,9 +70,15 @@ class InfoListingViewCell: UITableViewCell {
         labelSubTitle.numberOfLines = 0
         labelDesc.numberOfLines = 0
 
+        // Apply font styling, ensuring no uppercase issues
         applyStyling(to: labelTitle, style: .body)
         applyStyling(to: labelSubTitle, style: .headline)
         applyStyling(to: labelDesc, style: .callout)
+
+        // Make sure the text is not automatically capitalized (manual fix if needed)
+        labelTitle.text = labelTitle.text?.capitalized
+        labelSubTitle.text = labelSubTitle.text?.capitalized
+        labelDesc.text = labelDesc.text?.capitalized
     }
 
     private func applyStyling(to label: UILabel, style: FontStyle) {

@@ -12,6 +12,7 @@ public struct InfoListingModel {
     public var subtitle: String?
     public var desc: String?
     public var icon: UIImage?
+    public var imageURL: String?
     public var cardBackgroundColor: UIColor?
     public var cardRadius: CGFloat
 
@@ -22,6 +23,7 @@ public struct InfoListingModel {
         subtitle: String? = nil,
         desc: String? = nil,
         icon: UIImage? = nil,
+        imageURL: String? = nil,
         cardBackgroundColor: UIColor? = .white,
         cardRadius: CGFloat = 0,
         onTap: (() -> Void)? = nil
@@ -30,6 +32,7 @@ public struct InfoListingModel {
         self.subtitle = subtitle
         self.desc = desc
         self.icon = icon
+        self.imageURL = imageURL
         self.cardBackgroundColor = cardBackgroundColor
         self.cardRadius = cardRadius
         self.onTap = onTap

@@ -84,36 +84,36 @@ final class HomeViewModel: FormViewModel {
             DispatchQueue.main.async { [weak self] in
                 self?.hideLoader()
             }
-        }
-        
-        // Fetch banners separately without waiting for it
-        Task {
+            
+            // Fetch banners separately without waiting for it
             await fetchBanners()
         }
+        
     }
     
     // Simplify fetchBanners function (same as before, but no need for additional Task)
     private func fetchBanners() async {
-        do {
-            try await directusService.login(
-                email: "admin@isoko.twcc-tz.org",
-                password: "s^k2HIza)KpdER5b"
-            )
-            
-            // Now, fetch the banners after successful login
-            let banners = try await directusService.fetchHomeBanners()
-            
-            // Update state with fetched banners
-            state?.banners = banners
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.updateBannerSection()
+            do {
+                try await directusService.login(
+                    email: "admin@isoko.twcc-tz.org",
+                    password: "s^k2HIza)KpdER5b"
+                )
+                
+                // Now fetch the banners after successful login
+                let banners = try await directusService.fetchHomeBanners()
+                
+                // Update state with fetched banners
+                state?.banners = banners
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.updateBannerSection()
+                }
+                
+            } catch {
+                print("❌ Directus flow failed:", error)
+                
             }
-            
-        } catch {
-            print("❌ Directus flow failed:", error)
         }
-    }
     
     // MARK: - Fetch Helper
     @discardableResult
@@ -295,25 +295,36 @@ final class HomeViewModel: FormViewModel {
             cells: [exportCardsRow]
         )
     }
+
+    // MARK: - Update Sections
     
-    private func updateTopDealsSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.topDeals.rawValue }) else {
-            return
-        }
+    private func updateBannerSection() {
         
-        let updatedRow = TopDealsFormRow(
-            tag: Tags.Cells.topDeals.rawValue,
-            items: makeTopDealItems()
+        guard let sectionIndex = sections.firstIndex(
+            where: { $0.id == Tags.Section.banner.rawValue }
+        ) else { return }
+        
+        let updatedRow = CarouselRow(
+            tag: Tags.Section.banner.rawValue,
+            model: CarouselModel(
+                items: makeCarouselItems(),
+                autoPlayInterval: 4,
+                paginationPlacement: .inside,
+                imageContentMode: .scaleAspectFill,
+                transitionStyle: .fade,
+                hideText: false,
+                currentPageDotColor: .red,
+                pageDotColor: .lightGray
+            )
         )
         
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
+        
         reloadSection(sectionIndex)
     }
     
-    
-    // MARK: - Update Sections
     private func updateProductCategoriesSection() {
         guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.categories.rawValue }) else {
             return
@@ -394,18 +405,19 @@ final class HomeViewModel: FormViewModel {
         reloadSection(sectionIndex)
     }
     
-    private func updateBannerSection() {
+    private func updateTopDealsSection() {
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.topDeals.rawValue }) else {
+            return
+        }
         
-        guard let sectionIndex = sections.firstIndex(
-            where: { $0.id == Tags.Section.banner.rawValue }
-        ) else { return }
-        
-        let updatedRow = bannerRow
+        let updatedRow = TopDealsFormRow(
+            tag: Tags.Cells.topDeals.rawValue,
+            items: makeTopDealItems()
+        )
         
         var updatedSection = sections[sectionIndex]
         updatedSection.cells = [updatedRow]
         sections[sectionIndex] = updatedSection
-        
         reloadSection(sectionIndex)
     }
     
@@ -446,7 +458,13 @@ final class HomeViewModel: FormViewModel {
     )
     
     private func makeCarouselItems() -> [CarouselItem] {
-        [
+        let banners = transformBannersToCarouselItems(banners: state?.banners ?? [])
+        
+        if !banners.isEmpty {
+            return banners
+        }
+        
+       return [
             CarouselItem(image: UIImage(named: "carousel01"), imageURL: nil, text: nil, textColor: .white) { print("Tapped A") },
             CarouselItem(image: UIImage(named: "carousel02"),imageURL: nil, text: nil, textColor: .yellow) { print("Tapped B") },
             CarouselItem(image: UIImage(named: "carousel03"),imageURL: nil, text: nil, textColor: .cyan) { print("Tapped C") },
@@ -457,11 +475,11 @@ final class HomeViewModel: FormViewModel {
     private func transformBannersToCarouselItems(banners: [DirectusHomeBannerItem]) -> [CarouselItem] {
         return banners.compactMap { banner in
             // Transform each banner into a CarouselItem
-            let imageURL = banner.imageLink?.url(baseURL: "baseURL")
+            let imageURL = banner.imageLink?.urlString(baseURL: "https://directus.dev.isoko.africa/")
             
             return CarouselItem(
-                imageURL: "imageURL",
-                text: banner.title,
+                imageURL: imageURL,
+                text: nil,
                 textColor: .white) {
                     print("Tapped \(banner.title ?? "Unknown")")
                 }

@@ -273,7 +273,7 @@ final class CustomersReportsViewModel: FormViewModel {
         goToDateSelection(.year()) { [weak self] date in
             guard let self, let date else { return }
             self.state.startDate = date
-            self.state.startDateString = Self.format(date)
+            self.state.startDateString = Helpers.format(date)
             self.updateFilterSection()
             self.fetchData()
         }
@@ -283,18 +283,13 @@ final class CustomersReportsViewModel: FormViewModel {
         goToDateSelection(.year()) { [weak self] date in
             guard let self, let date else { return }
             self.state.endDate = date
-            self.state.endDateString = Self.format(date)
+            self.state.endDateString = Helpers.format(date)
             self.updateFilterSection()
             self.fetchData()
         }
     }
     
     // MARK: - Helpers
-    private static func format(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
     
     // MARK: - State
     private struct State {

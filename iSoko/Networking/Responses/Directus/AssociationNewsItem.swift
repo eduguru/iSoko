@@ -7,6 +7,8 @@
 
 import Foundation
 
+import Foundation
+
 struct DirectusNewsItem: Decodable {
     let id: Int
     let title: String?
@@ -40,15 +42,24 @@ struct FeaturedImage: Decodable {
         case id
         case filenameDisk = "filename_disk"
     }
-}
 
-extension FeaturedImage {
+    // Returns a URL based on the base URL
     func url(baseURL: URL) -> URL {
         baseURL
             .appendingPathComponent("assets")
             .appendingPathComponent(id)
     }
+
+    // Optional method to return URL String
+    func urlString(baseURL: String) -> String? {
+        guard let base = URL(string: baseURL) else { return nil }
+        return base
+            .appendingPathComponent("assets")
+            .appendingPathComponent(id)
+            .absoluteString
+    }
 }
+
 
 struct AssociationNewsItem: Decodable {
     let id: Int

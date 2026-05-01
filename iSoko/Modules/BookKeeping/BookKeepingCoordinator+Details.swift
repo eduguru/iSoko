@@ -13,7 +13,7 @@ import DesignSystemKit
 public extension BookKeepingCoordinator {
     
     func goToBookKeepingCustomerDetails(_ item: CustomerResponse) {
-        let model = BookKeepingCustomerDetailsViewModel()
+        let model = BookKeepingCustomerDetailsViewModel(item)
         
         let vc = BookKeepingCustomerDetailsViewController()
         vc.viewModel = model
@@ -25,7 +25,7 @@ public extension BookKeepingCoordinator {
     }
     
     func goToBookKeepingPurchaseDetails(_ item: ExpenseResponse) {
-        let model = BookKeepingPurchasesDetailsViewModel()
+        let model = BookKeepingPurchasesDetailsViewModel(item)
         
         let vc = BookKeepingPurchasesDetailsViewController()
         vc.viewModel = model
@@ -37,7 +37,7 @@ public extension BookKeepingCoordinator {
     }
     
     func goToBookKeepingSupplierDetails(_ item: SupplierResponse) {
-        let model = BookKeepingSuppliesDetailsViewModel()
+        let model = BookKeepingSuppliesDetailsViewModel(item)
         
         let vc = BookKeepingSuppliesDetailsViewController()
         vc.viewModel = model
@@ -49,7 +49,7 @@ public extension BookKeepingCoordinator {
     }
     
     func goToBookKeepingStockDetails(_ item: StockResponse) {
-        let model = BookKeepingStockDetailsViewModel()
+        let model = BookKeepingStockDetailsViewModel(item)
         
         let vc = BookKeepingStockDetailsViewController()
         vc.viewModel = model
@@ -61,7 +61,7 @@ public extension BookKeepingCoordinator {
     }
     
     func goToBookKeepingExpenseDetails(_ item: ExpenseResponse) {
-        let model = BookKeepingExpensesDetailsViewModel()
+        let model = BookKeepingExpensesDetailsViewModel(item)
         
         let vc = BookKeepingExpensesDetailsViewController()
         vc.viewModel = model
@@ -73,7 +73,7 @@ public extension BookKeepingCoordinator {
     }
     
     func goToBookKeepingSalesDetails(_ item: SalesResponse) {
-        let model = BookKeepingSaleDetailsViewModel()
+        let model = BookKeepingSaleDetailsViewModel(item)
         
         let vc = BookKeepingSaleDetailsViewController()
         vc.viewModel = model

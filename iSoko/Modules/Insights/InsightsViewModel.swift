@@ -226,6 +226,7 @@ final class InsightsViewModel: FormViewModel {
             
             // Format the date for display
             let createdOnText = createdDate.map { formatNewsDate($0) } ?? "No Date"
+            let imageURL = item.featuredImage?.urlString(baseURL: "https://directus.dev.isoko.africa/")
 
             return InfoListingFormRow(
                 tag: 9000 + index,
@@ -234,6 +235,7 @@ final class InsightsViewModel: FormViewModel {
                     subtitle: item.newsCategory?.collection ?? "",
                     desc: createdOnText,
                     icon: .blankRectangle,
+                    imageURL: imageURL,
                     cardBackgroundColor: .white,
                     cardRadius: 0,
                     onTap: { [weak self] in

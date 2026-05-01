@@ -8,6 +8,7 @@
 import DesignSystemKit
 import NetworkingKit
 import UtilsKit
+import Foundation
 
 public struct Helpers {
     
@@ -89,7 +90,7 @@ public struct Helpers {
     }
 }
 
-
+// MARK: - -
 public extension Helpers {
     static func mapPickedFileToUploadFile(
         _ file: PickedFile?,
@@ -152,4 +153,22 @@ public extension Helpers {
             return "application/octet-stream"
         }
     }
+}
+
+// MARK: - -
+public extension Helpers {
+    
+    static func format(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
+    
+    static func formatCurrency(_ value: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        return "Ksh \(formatter.string(from: NSNumber(value: value)) ?? "0")"
+    }
+    
 }

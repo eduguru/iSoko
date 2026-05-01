@@ -27,6 +27,11 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     // MARK: -
     override init() {
         super.init()
+        
+        // ✅ Set default date
+        state.date = Date()
+        state.dateString = Helpers.format(state.date!)
+        
         sections = makeSections()
     }
 
@@ -115,7 +120,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "\(state.foundedYear ?? 0000)",
+            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
             rightImage: UIImage(systemName: "calendar"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -211,7 +216,9 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         var categories: CommonIdNameModel?
         var paymentMethod: CommonIdNameModel?
 
+        var date: Date?
         var dateString: String = ""
+        
         var amount: String = ""
         var supplierName: String = ""
         var description: String = ""

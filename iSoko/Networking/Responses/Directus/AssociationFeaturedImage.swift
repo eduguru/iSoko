@@ -7,7 +7,6 @@
 
 import Foundation
 
-
 struct AssociationFeaturedImage: Decodable {
     let filenameDisk: String?
 
@@ -16,14 +15,18 @@ struct AssociationFeaturedImage: Decodable {
     }
 
     func url(baseURL: URL) -> URL? {
-        guard let id = filenameDisk else { return nil }
-        return baseURL.appendingPathComponent("assets").appendingPathComponent(id)
-    }
-
-    func url2(baseURL: URL) -> URL? {
-        guard let filename = filenameDisk else { return nil }
+        guard let filenameDisk = filenameDisk else { return nil }
         return baseURL
             .appendingPathComponent("assets")
-            .appendingPathComponent(filename)
+            .appendingPathComponent(filenameDisk)
+    }
+
+    func urlString(baseURL: String) -> String? {
+        guard let filenameDisk = filenameDisk, let base = URL(string: baseURL) else { return nil }
+        let url = base
+            .appendingPathComponent("assets")
+            .appendingPathComponent(filenameDisk)
+        
+        return url.absoluteString
     }
 }

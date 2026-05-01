@@ -80,22 +80,36 @@ public final class ProfileInfoCell: UITableViewCell {
     }
 
     public func configure(with config: ProfileInfoCellConfig) {
+
+        nameIconView.image = config.nameIcon
         nameLabel.text = config.name
 
-        phoneRow.configure(
-            text: config.phone,
-            icon: UIImage(systemName: "phone.fill")
-        )
+        if let phone = config.phone {
+            phoneRow.configure(
+                text: phone.text,
+                icon: phone.icon ?? UIImage(systemName: "phone.fill")
+            )
+        } else {
+            phoneRow.isHidden = true
+        }
 
-        emailRow.configure(
-            text: config.email,
-            icon: UIImage(systemName: "envelope.fill")
-        )
+        if let email = config.email {
+            emailRow.configure(
+                text: email.text,
+                icon: email.icon ?? UIImage(systemName: "envelope.fill")
+            )
+        } else {
+            emailRow.isHidden = true
+        }
 
-        locationRow.configure(
-            text: config.location,
-            icon: UIImage(systemName: "mappin.and.ellipse")
-        )
+        if let location = config.location {
+            locationRow.configure(
+                text: location.text,
+                icon: location.icon ?? UIImage(systemName: "mappin.and.ellipse")
+            )
+        } else {
+            locationRow.isHidden = true
+        }
 
         if let onEdit = config.onEditTap {
             editButton.configure(

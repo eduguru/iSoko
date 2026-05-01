@@ -11,10 +11,11 @@ import UIKit
 public struct ProfileInfoCellConfig {
 
     public let name: String
+    public let nameIcon: UIImage?
 
-    public let phone: String?
-    public let email: String?
-    public let location: String?
+    public let phone: InfoItem?
+    public let email: InfoItem?
+    public let location: InfoItem?
 
     public let onEditTap: (() -> Void)?
 
@@ -25,9 +26,10 @@ public struct ProfileInfoCellConfig {
 
     public init(
         name: String,
-        phone: String? = nil,
-        email: String? = nil,
-        location: String? = nil,
+        nameIcon: UIImage? = UIImage(systemName: "person.fill"),
+        phone: InfoItem? = nil,
+        email: InfoItem? = nil,
+        location: InfoItem? = nil,
         onEditTap: (() -> Void)? = nil,
         cardBackgroundColor: UIColor = .systemBackground,
         cardBorderColor: UIColor = .systemGray4,
@@ -35,6 +37,7 @@ public struct ProfileInfoCellConfig {
         cardCornerRadius: CGFloat = 16
     ) {
         self.name = name
+        self.nameIcon = nameIcon
         self.phone = phone
         self.email = email
         self.location = location

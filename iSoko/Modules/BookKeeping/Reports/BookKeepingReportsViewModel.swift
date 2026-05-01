@@ -216,7 +216,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
         goToDateSelection(.year()) { [weak self] date in
             guard let self, let date else { return }
             self.state.startDate = date
-            self.state.startDateString = Self.format(date)
+            self.state.startDateString = Helpers.format(date)
             self.refreshUI()
         }
     }
@@ -227,7 +227,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
         goToDateSelection(.year()) { [weak self] date in
             guard let self, let date else { return }
             self.state.endDate = date
-            self.state.endDateString = Self.format(date)
+            self.state.endDateString = Helpers.format(date)
             self.refreshUI()
         }
     }
@@ -260,11 +260,6 @@ final class BookKeepingReportsViewModel: FormViewModel {
     }
 
     // MARK: - HELPERS
-    private static func format(_ date: Date) -> String {
-        let df = DateFormatter()
-        df.dateStyle = .medium
-        return df.string(from: date)
-    }
 
     // MARK: - ENUMS
     private enum SectionTag: Int {

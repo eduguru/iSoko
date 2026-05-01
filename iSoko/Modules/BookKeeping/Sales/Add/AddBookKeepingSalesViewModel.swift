@@ -44,6 +44,11 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     override init() {
         super.init()
+        
+        // ✅ Set default date
+        state.date = Date()
+        state.dateString = Helpers.format(state.date!)
+        
         sections = makeSections()
     }
     
@@ -211,7 +216,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "Date",
+            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -221,7 +226,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                     guard let date else { return }
 
                     self.state.date = date
-                    self.state.dateString = Self.format(date)
+                    self.state.dateString = Helpers.format(date)
                     self.handleDateSelection()
                 }
             }
@@ -342,9 +347,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let total = subtotal + tax
 
         return [
-            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: formatCurrency(subtotal))),
-            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: formatCurrency(tax))),
-            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: formatCurrency(total), isEmphasized: true))
+            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: Helpers.formatCurrency(subtotal))),
+            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: Helpers.formatCurrency(tax))),
+            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: Helpers.formatCurrency(total), isEmphasized: true))
         ]
     }
 
@@ -392,19 +397,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                 break
             }
         }
-    }
-
-    private static func format(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
-    }
-    
-    private func formatCurrency(_ value: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
-        return "Ksh \(formatter.string(from: NSNumber(value: value)) ?? "0")"
     }
     
     private func buildPayload() -> [String: Any] {

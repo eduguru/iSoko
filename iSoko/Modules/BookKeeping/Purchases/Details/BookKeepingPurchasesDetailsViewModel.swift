@@ -13,12 +13,14 @@ import StorageKit
 final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
     var goToDetails: (() -> Void)? = { }
     
-    private var state = State()
+    private var state: State
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
-    override init() {
+    init(_ item: ExpenseResponse) {
+        state = State(item: item)
+        
         super.init()
         self.sections = makeSections()
     }
@@ -79,16 +81,16 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
-            makeFilterSection(),
+            makeProfileSection(),
             makeFinancialSummarySection(),
             makeRecentActivitiesSection()
         ]
     }
     
-    private func makeFilterSection() -> FormSection {
+    private func makeProfileSection() -> FormSection {
         FormSection(
             id: Tags.Section.filter.rawValue,
-            cells: [filterRow]
+            cells: [profileRow]
         )
     }
     
@@ -109,16 +111,17 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
     // MARK: - Update Sections -
     
     // MARK: - Lazy Rows
-    private lazy var  filterRow: FormRow = makeFilterRowRow()
+    private lazy var  profileRow: FormRow = makeProfileInfoRow()
     private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
     
-    private func makeFilterRowRow() -> FormRow {
+    private func makeProfileInfoRow() -> FormRow {
         let model = ProfileInfoCellConfig(
-            name: "String",
-            phone: "String",
-            email: "String",
-            location: "String",
+            name: state.item.supplier?.name ?? "",
+            phone: makeInfoItem(state.item.category?.name ?? "", icon: "phone.fill"),
+            email: makeInfoItem(state.item.paymentMethod?.name ?? "", icon: "phone.fill"),
+            location: makeInfoItem(state.item.expenseDate ?? "", icon: "phone.fill"),
             onEditTap: {
+                
             }
         )
         
@@ -126,29 +129,23 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
         return row
     }
     
+    private func makeInfoItem(_ text: String?, icon: String) -> InfoItem {
+        InfoItem(text: text, icon: UIImage(systemName: icon))
+    }
+    
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Spending",
+                title: "Total Value",
                 titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
-                status: CardStatusStyle(
-                    text: "On track",
-                    textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "checkmark")
-                )
+                subtitle: "0.00",
+                status: nil
             ),
             right: DualCardItemConfig(
-                title: "Bills",
+                title: "Items Supplied",
                 titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
-                status: CardStatusStyle(
-                    text: "Action needed",
-                    textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: UIImage(systemName: "exclamationmark.triangle")
-                )
+                subtitle: "0",
+                status: nil
             )
         )
         
@@ -196,6 +193,8 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
     
     // MARK: - State
     private struct State {
+        var item: ExpenseResponse
+        
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""

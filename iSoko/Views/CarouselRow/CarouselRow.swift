@@ -36,10 +36,10 @@ public struct CarouselRow: FormRow {
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        guard let model = model else { return 180 }
+        guard let model = model else { return 200 }
         switch model.paginationPlacement {
-        case .below: return 160
-        case .inside: return 140
+        case .below: return 200
+        case .inside: return 180
         }
     }
 }

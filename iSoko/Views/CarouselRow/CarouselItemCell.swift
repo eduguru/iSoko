@@ -26,7 +26,11 @@ final class CarouselItemCell: UICollectionViewCell {
 
     private func setupUI() {
         imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 6 // Ensure a consistent corner radius
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Set contentMode based on the requirement
+        imageView.contentMode = .scaleAspectFill // Will fill the image, but might crop it if aspect ratio is off
 
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .center
@@ -38,6 +42,7 @@ final class CarouselItemCell: UICollectionViewCell {
         contentView.addSubview(imageView)
         contentView.addSubview(label)
 
+        // Adding constraints for imageView and label
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -53,15 +58,34 @@ final class CarouselItemCell: UICollectionViewCell {
 
     func configure(with item: CarouselItem, contentMode: UIView.ContentMode, hideText: Bool = false) {
         imageView.contentMode = contentMode
+        
         label.text = item.text
         label.textColor = item.textColor
         label.isHidden = hideText || (item.text == nil)
 
         if let imageURL = item.imageURL, let url = URL(string: imageURL) {
-            // Load image from URL using Kingfisher
-            imageView.kf.setImage(with: url, placeholder: item.image)
+            imageView.kf.setImage(with: url, placeholder: item.image, options: [
+                .transition(.fade(0.2)),
+                .cacheOriginalImage
+            ]) { result in
+                switch result {
+                case .success(let value):
+                    let image = value.image
+                    let imageAspectRatio = image.size.width / image.size.height
+                    let viewAspectRatio = self.imageView.frame.size.width / self.imageView.frame.size.height
+
+                    if imageAspectRatio > viewAspectRatio {
+                        // Image is wider than view, adjust accordingly
+                        self.imageView.contentMode = .scaleAspectFill
+                    } else {
+                        // Image is taller or fits well
+                        self.imageView.contentMode = .scaleAspectFit
+                    }
+                case .failure(_):
+                    break
+                }
+            }
         } else {
-            // Fallback to the local image if no URL is provided
             imageView.image = item.image
         }
     }

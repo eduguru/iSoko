@@ -50,4 +50,15 @@ struct HomeBannerImage: Decodable {
             .appendingPathComponent("assets")
             .appendingPathComponent(filenameDisk)
     }
+    
+    func urlString(baseURL: String) -> String? {
+        guard let filenameDisk,
+              let base = URL(string: baseURL) else { return nil }
+        
+        let url = base
+            .appendingPathComponent("assets")
+            .appendingPathComponent(filenameDisk)
+        
+        return url.absoluteString
+    }
 }

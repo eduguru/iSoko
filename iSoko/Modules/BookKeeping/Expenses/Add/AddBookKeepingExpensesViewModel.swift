@@ -42,6 +42,11 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         super.init()
         
         Task { @MainActor in
+            
+            // ✅ Set default date
+            state.date = Date()
+            state.dateString = Helpers.format(state.date!)
+            
             sections = makeSections()
             configureUploadHandlers()
         }
@@ -114,7 +119,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "Date",
+            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -126,7 +131,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
                     guard let date = selectedDate else { return }
 
                     self.state.date = date
-                    self.state.dateString = Self.format(date)
+                    self.state.dateString = Helpers.format(date)
 
                     self.handleDateSelection()
                 }
@@ -407,12 +412,6 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
             print("❌ Error: ", error)
             return false
         }
-    }
-    
-    private static func format(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
     }
 
     // MARK: - State

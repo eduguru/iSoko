@@ -57,7 +57,8 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
             collectionView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            collectionView.heightAnchor.constraint(equalToConstant: 120)
+            // collectionView.heightAnchor.constraint(equalToConstant: 120)
+            collectionView.heightAnchor.constraint(equalTo: contentView.heightAnchor)
         ])
 
         pageControlBelowConstraints = [
