@@ -25,6 +25,8 @@ public protocol BookKeepingService {
     func addExpenseCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
     func getExpenseCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
+    func addProduct(parameters: [String: Any], accessToken: String) async throws -> StockResponse
+    func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> StockResponse
     func getAllStock(userId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[StockResponse]>
     func getAllStockByDate(userId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[StockResponse]>
     
@@ -159,8 +161,11 @@ public extension BookKeepingServiceImpl {
 
 // MARK: - Stock
 public extension BookKeepingServiceImpl {
+    func addProduct(parameters: [String: Any], accessToken: String) async throws -> StockResponse {
+        try await manager.request(BookKeepingApi.addProduct(parameters: parameters, accessToken: accessToken))
+    }
     
-    func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse {
+    func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> StockResponse {
         try await manager.request(BookKeepingApi.addProduct(parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
     }
     

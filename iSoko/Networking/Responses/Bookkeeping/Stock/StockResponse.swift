@@ -60,6 +60,13 @@ public struct TraderResponse: Codable {
     public let email: String?
     public let firstName: String?
     public let lastName: String?
+
+    init(from model: CommonIdNameModel) {
+        self.id = model.id
+        self.email = model.description
+        self.firstName = nil
+        self.lastName = nil
+    }
 }
 
 public struct ImageResponse: Codable {

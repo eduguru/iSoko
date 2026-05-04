@@ -28,3 +28,32 @@ extension CommonIdNameModel {
         IDNamePairInt(id: self.id, name: self.name)
     }
 }
+
+extension CommonIdNameModel {
+    init?(from pair: IDNamePairInt?) {
+        guard let id = pair?.id,
+              let name = pair?.name else {
+            return nil
+        }
+
+        self.id = id
+        self.name = name
+        self.description = nil
+    }
+}
+
+extension CommonIdNameModel {
+    init?(from trader: TraderResponse) {
+        guard let id = trader.id else { return nil }
+
+        let name = [trader.firstName, trader.lastName]
+            .compactMap { $0 }
+            .joined(separator: " ")
+
+        guard !name.isEmpty else { return nil }
+
+        self.id = id
+        self.name = name
+        self.description = trader.email
+    }
+}

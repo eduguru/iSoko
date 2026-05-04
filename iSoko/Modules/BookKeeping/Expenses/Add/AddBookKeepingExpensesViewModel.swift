@@ -232,7 +232,6 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         }
     )
     
-
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(

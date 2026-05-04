@@ -51,7 +51,28 @@ public class MoreCoordinator: BaseCoordinator {
     
     
     private func gotoSignIn() {
-        showLoginFlow()
+        presentAuthBottomSheet() // showLoginFlow()
+    }
+    
+    private func gotoSignOut(completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let topVC = self?.router.topViewController() else { return }
+            
+            // Create the sign-out bottom sheet
+            let model = BottomSheetFactory.signOut(
+                onConfirm: {  // Perform the sign-out action, e.g., clear user data, log out
+                    completion(true)
+                    print("User has signed out")
+                },
+                onCancel: {  // Handle cancellation, e.g., dismiss the bottom sheet
+                    completion(false)
+                    print("Sign out cancelled")
+                }
+            )
+            
+            // Present the bottom sheet
+            BottomSheetCoordinator(presenter: topVC).present(model)
+        }
     }
     
     private func showLoginFlow() {
@@ -66,10 +87,6 @@ public class MoreCoordinator: BaseCoordinator {
 
         nav.modalPresentationStyle = .fullScreen
         self.router.present(nav, animated: true)
-    }
-    
-    private func gotoSignOut() {
-        
     }
     
     private func gotoProfile() {

@@ -298,9 +298,35 @@ public extension BookKeepingApi {
     
     static func addProduct(
         parameters: [String: Any],
+        accessToken: String
+    ) -> ValueResponseTarget<StockResponse> {
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
+
+        let target = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "products",
+            method: .post,
+            jsonPartName: "product",
+            jsonData: paramsJson,
+            files: [],
+            headers: headers,
+            requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: target.asAnyTarget())
+    }
+    
+    static func addProduct(
+        parameters: [String: Any],
         pickedFiles: [PickedFile]?,
         accessToken: String
-    ) -> ValueResponseTarget<ExpenseResponse> {
+    ) -> ValueResponseTarget<StockResponse> {
         
         let headers: [String: String] = [
             "Accept": "application/json",

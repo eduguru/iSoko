@@ -18,20 +18,19 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     var gotoConfirm: (() -> Void)?
     var goToShowSuccessScreen: (() -> Void)?
 
-    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
+    var showCountryPicker: ((@escaping (Country) -> Void) -> Void) -> Void = { _ in }
     @MainActor private let countryHelper = CountryHelper()
-
-    // MARK: -
+    
+    // MARK: - Services
+    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    // MARK: - State
     private var state = State()
 
-    // MARK: -
     override init() {
         super.init()
-        
-        // ✅ Set default date
         state.date = Date()
         state.dateString = Helpers.format(state.date!)
-        
         sections = makeSections()
     }
 
@@ -208,7 +207,34 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        goToShowSuccessScreen?()
+        // Prepare the parameters for the network request
+        let record: [String: Any] = [
+            "name": state.supplierName,
+            "price": state.amount,
+            "quantity": state.amount,
+            "supplierId": state.categories?.id ?? 0,
+            "measurementUnitId": state.categories?.id ?? 0,
+            "description": "n\\a",
+            "minimumOrderQuantity": state.amount,
+            "stockAlertThreshold": state.amount
+        ]
+
+        // Submit via your network call
+        let success = await submitStockRecord(parameters: record)
+        
+        if success {
+            goToShowSuccessScreen?()
+        }
+    }
+
+    private func submitStockRecord(parameters: [String: Any]) async -> Bool {
+        do {
+            let response = try await bookKeepingService.addProduct(parameters: parameters, accessToken: state.oauthToken)
+            return true
+        } catch {
+            print("❌ Error submitting stock record: ", error)
+            return false
+        }
     }
 
     // MARK: - State
@@ -247,5 +273,3 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         case continueButton = 12
     }
 }
-
-

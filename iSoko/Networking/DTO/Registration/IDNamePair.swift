@@ -13,3 +13,11 @@ public struct IDNamePair<ID: Codable & Hashable>: Codable {
 // Explicit aliases
 public typealias IDNamePairInt = IDNamePair<Int>       // For Int-based IDs
 public typealias IDNamePairString = IDNamePair<String> // For String-based IDs
+
+
+extension IDNamePair where ID == Int {
+    init(from model: CommonIdNameModel) {
+        self.id = model.id
+        self.name = model.name
+    }
+}

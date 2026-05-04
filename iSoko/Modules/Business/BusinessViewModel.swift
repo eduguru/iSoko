@@ -11,7 +11,7 @@ import UtilsKit
 
 final class BusinessViewModel: FormViewModel {
     var gotoSignIn: (() -> Void)? = { }
-    var gotoSignOut: (() -> Void)? = { }
+    var gotoSignOut: ((Bool) -> Void)? = { _ in }
     var goToBookKeeping: (() -> Void)? = { }
     
     var goToReports: (() -> Void)? = { }

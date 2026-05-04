@@ -50,6 +50,23 @@ enum BottomSheetFactory {
         )
     }
     
+    static func signOut(
+           onConfirm: @escaping () -> Void,
+           onCancel: @escaping () -> Void
+       ) -> BottomSheetModel {
+           
+           BottomSheetModel(
+               style: .bottomSheet,
+               title: "Sign Out",
+               message: "Are you sure you want to sign out?",
+               showCloseButton: true,
+               buttons: [
+                   .init(title: "Cancel", style: .secondary) { onCancel() },
+                   .init(title: "Sign Out", style: .primary) { onConfirm() }
+               ]
+           )
+       }
+    
     static func success(
         title: String,
         message: String?,
@@ -70,11 +87,13 @@ enum BottomSheetFactory {
             ]
         )
     }
+    
+    
 }
 
 //Here’s how you actually use your updated bottom sheet system with the success state.
 //
-//✅ 1. Auth sheet (unchanged)
+//✅ 1. Auth sheet 
 //
 //You don’t need to touch anything here:
 //

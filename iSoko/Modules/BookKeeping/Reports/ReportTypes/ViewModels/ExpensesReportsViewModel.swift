@@ -12,7 +12,7 @@ import StorageKit
 
 final class ExpensesReportsViewModel: FormViewModel {
     
-    // MARK: - Navigation Callbacks (UNCHANGED)
+    // MARK: - Navigation Callbacks 
     var goToDetails: (() -> Void)?
     
     var goToCommonSelectionOptions: (

@@ -73,7 +73,7 @@ final class TwoStatusCardsViewCell: UITableViewCell {
         rootStack.addArrangedSubview(stackView)
     }
 
-    // Existing usage (unchanged)
+    // Existing usage 
     func configure(with model: TwoStatusCardsViewModel) {
         applyHeader(title: nil, description: nil)
         applyCards(model)

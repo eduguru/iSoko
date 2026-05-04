@@ -11,3 +11,11 @@ public struct CommonIdNameResponse: Codable {
     public let description: String?
     public let active: Bool?
 }
+
+extension CommonIdNameModel {
+    init(from response: CommonIdNameResponse) {
+        self.id = response.id
+        self.name = response.name
+        self.description = response.description
+    }
+}

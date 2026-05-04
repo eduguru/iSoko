@@ -215,7 +215,6 @@ extension ModalCoordinator {
         router.present(nav)
     }
     
-    
     func presentSuccessAlert(
         title: String = "Successful",
         message: String = "Your action was completed successfully.",

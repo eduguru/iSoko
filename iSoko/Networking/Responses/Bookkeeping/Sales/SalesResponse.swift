@@ -7,8 +7,6 @@
 
 import Foundation
 
-import Foundation
-
 public struct SalesResponse: Codable {
     public let id: Int
     

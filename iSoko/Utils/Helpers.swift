@@ -170,5 +170,11 @@ public extension Helpers {
         formatter.maximumFractionDigits = 2
         return "Ksh \(formatter.string(from: NSNumber(value: value)) ?? "0")"
     }
-    
+
+    // MARK: - Parse Date from String (helper)
+    static func parseDate(_ dateString: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: dateString)
+    }
 }
