@@ -87,23 +87,6 @@ public extension BookKeepingCoordinator {
         }
     }
     
-    func goToAddBookKeepingExpense() {
-        let model = AddBookKeepingExpensesViewModel()
-        model.goToDateSelection = gotoSelectDate
-        model.goToCommonSelectionOptions = goToCommonSelection
-        
-        model.goToAddSupplier = goToAddBookKeepingSupplier
-        model.goToAddExpenseCategory = goToAddExpenseCategory
-        
-        let vc = AddBookKeepingExpensesViewController()
-        vc.viewModel = model
-        vc.closeAction = { [weak self] in
-            self?.router.pop()
-        }
-        
-        router.push(vc)
-    }
-    
     public func goToSelectExpenseCategory() {
         goToCommonSelection(CommonUtilityOption.ageGroups, nil) { [weak self]_ in
             

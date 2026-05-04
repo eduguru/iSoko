@@ -14,8 +14,10 @@ public extension BookKeepingCoordinator {
     
     func goToBookKeepingCustomerDetails(_ item: CustomerResponse) {
         let model = BookKeepingCustomerDetailsViewModel(item)
+        model.goToEdit = goToEditBookKeepingCustomer
         
         let vc = BookKeepingCustomerDetailsViewController()
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -28,6 +30,11 @@ public extension BookKeepingCoordinator {
         let model = BookKeepingPurchasesDetailsViewModel(item)
         
         let vc = BookKeepingPurchasesDetailsViewController()
+        
+//        vc.goToEditAction = { [weak self] in
+//            self?.goToEditBookKeepingPurchases(stock: item)
+//        }
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -40,6 +47,9 @@ public extension BookKeepingCoordinator {
         let model = BookKeepingSuppliesDetailsViewModel(item)
         
         let vc = BookKeepingSuppliesDetailsViewController()
+        
+        model.goToEdit = goToEditBookKeepingSupplier
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -52,6 +62,9 @@ public extension BookKeepingCoordinator {
         let model = BookKeepingStockDetailsViewModel(item)
         
         let vc = BookKeepingStockDetailsViewController()
+        
+        model.goToEdit = goToEditBookKeepingStock
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -64,6 +77,9 @@ public extension BookKeepingCoordinator {
         let model = BookKeepingExpensesDetailsViewModel(item)
         
         let vc = BookKeepingExpensesDetailsViewController()
+        
+        model.goToEdit = goToEditBookKeepingExpenses
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -76,6 +92,9 @@ public extension BookKeepingCoordinator {
         let model = BookKeepingSaleDetailsViewModel(item)
         
         let vc = BookKeepingSaleDetailsViewController()
+        
+        model.goToEdit = goToEditBookKeepingSales
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()

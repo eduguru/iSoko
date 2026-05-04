@@ -48,6 +48,8 @@ final class QuantityStepperView: UIView {
 
         minusButton.setTitle("–", for: .normal)
         plusButton.setTitle("+", for: .normal)
+        minusButton.setTitleColor(.app(.primary), for: .normal)
+        plusButton.setTitleColor(.app(.primary), for: .normal)
         minusButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
         plusButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
 

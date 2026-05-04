@@ -75,6 +75,16 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
 
         rightSearchButton.translatesAutoresizingMaskIntoConstraints = false
         rightFilterButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        // Set the tint color to .app(.primary) to avoid default blue
+        leftIconButton.tintColor = .app(.primary)
+        rightSearchButton.tintColor = .app(.primary)
+        rightFilterButton.tintColor = .app(.primary)
+
+        // Use .alwaysTemplate so that icons will respect tint color
+        leftIconButton.setImage(leftIconButton.image(for: .normal)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        rightSearchButton.setImage(rightSearchButton.image(for: .normal)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        rightFilterButton.setImage(rightFilterButton.image(for: .normal)?.withRenderingMode(.alwaysTemplate), for: .normal)
 
         rightIconStackView.addArrangedSubview(rightSearchButton)
         rightIconStackView.addArrangedSubview(rightFilterButton)

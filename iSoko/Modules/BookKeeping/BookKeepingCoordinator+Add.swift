@@ -35,6 +35,7 @@ public extension BookKeepingCoordinator {
         model.goToShowSuccessScreen = goToShowSuccessScreen
         
         let vc = AddBookKeepingStockViewController()
+        
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
@@ -106,6 +107,23 @@ public extension BookKeepingCoordinator {
         router.push(vc)
     }
     
+    func goToAddBookKeepingExpense() {
+        let model = AddBookKeepingExpensesViewModel()
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        
+        model.goToAddSupplier = goToAddBookKeepingSupplier
+        model.goToAddExpenseCategory = goToAddExpenseCategory
+        
+        let vc = AddBookKeepingExpensesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
     func goToShowSuccessScreen() {
         let coordinator = ModalCoordinator(router: router)
         addChild(coordinator)
@@ -127,5 +145,105 @@ public extension BookKeepingCoordinator {
                 self?.router.pop()
             }
         )
+    }
+}
+
+//MARK: - -
+public extension BookKeepingCoordinator {
+    
+    func goToEditBookKeepingSales(sale: SalesResponse) {
+        let model = EditBookKeepingSalesViewModel(sale: sale)
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.goToProductSelection = goToProductSelection
+        
+        model.goToAddCustomer = goToAddBookKeepingCustomer
+        
+        let vc = EditBookKeepingSalesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    func goToEditBookKeepingStock(stock: StockResponse) {
+        let model = EditBookKeepingStockViewModel(stock: stock)
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        
+        let vc = EditBookKeepingStockViewComtroller()
+        
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    func goToEditBookKeepingPurchases(stock: StockResponse) {
+        let model = EditBookKeepingStockViewModel(stock: stock)
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        
+        let vc = EditBookKeepingStockViewComtroller()
+        
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    func goToEditBookKeepingCustomer(customer: CustomerResponse) {
+        let model = EditBookKeepingCustomersViewModel(customer: customer)
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+        
+        let vc = EditBookKeepingCustomersViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    func goToEditBookKeepingSupplier(supplier: SupplierResponse) {
+        let model = EditBookKeepingSuppliesViewModel(supplier: supplier)
+        
+        model.gotoConfirm = { }
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.gotoSelectSystemCountry = gotoSelectSystemCountry
+        
+        model.goToAddCategory = goToAddSupplierCategory
+        
+        let vc = EditBookKeepingSuppliesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    func goToEditBookKeepingExpenses(expense: ExpenseResponse) {
+        let model = EditBookKeepingExpensesViewModel(expense: expense)
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        
+        model.goToAddSupplier = goToAddBookKeepingSupplier
+        model.goToAddExpenseCategory = goToAddExpenseCategory
+        
+        let vc = EditBookKeepingExpensesViewController()
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
     }
 }

@@ -50,6 +50,10 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         leftImageView.contentMode = .scaleAspectFit
         rightImageView.contentMode = .scaleAspectFit
         
+        // Apply app primary tint
+        leftImageView.tintColor = .app(.primary)
+        rightImageView.tintColor = .app(.primary)
+        
         // Vertical content stack (inside container)
         verticalStack.axis = .vertical
         verticalStack.spacing = 8
@@ -87,7 +91,7 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         containerView.addGestureRecognizer(tap)
         
         // Action button setup
-        actionButton.setImage(UIImage(systemName: "plus"), for: .normal)
+        actionButton.setImage(UIImage(systemName: "plus")?.withRenderingMode(.alwaysTemplate), for: .normal)
         actionButton.tintColor = .app(.primary)
         actionButton.backgroundColor = .secondarySystemBackground
         actionButton.layer.cornerRadius = 10
@@ -146,7 +150,7 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         // Value / placeholder
         if let value = config.value, !value.isEmpty {
             valueLabel.text = value
-            valueLabel.textColor = .label
+            valueLabel.textColor = .app(.primary) // selected value color
         } else {
             valueLabel.text = config.placeholder
             valueLabel.textColor = .secondaryLabel
@@ -165,7 +169,7 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         // Left image
         if let image = config.leftImage {
             leftImageView.isHidden = false
-            leftImageView.image = image
+            leftImageView.image = image.withRenderingMode(.alwaysTemplate)
         } else {
             leftImageView.isHidden = true
         }
@@ -173,7 +177,7 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         // Right image (dropdown arrow)
         if let image = config.rightImage {
             rightImageView.isHidden = false
-            rightImageView.image = image
+            rightImageView.image = image.withRenderingMode(.alwaysTemplate)
         } else {
             rightImageView.isHidden = true
         }
@@ -199,7 +203,7 @@ public class DropdownFormCellWithExternalTitle: UITableViewCell {
         // Action button visibility
         if config.showsActionButton {
             actionButton.isHidden = false
-            actionButton.setImage(config.actionImage ?? UIImage(systemName: "plus"), for: .normal)
+            actionButton.setImage((config.actionImage ?? UIImage(systemName: "plus"))?.withRenderingMode(.alwaysTemplate), for: .normal)
         } else {
             actionButton.isHidden = true
         }

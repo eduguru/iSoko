@@ -49,6 +49,10 @@ public class DropdownFormCell: UITableViewCell {
         leftImageView.contentMode = .scaleAspectFit
         rightImageView.contentMode = .scaleAspectFit
         
+        // Apply tint color
+        leftImageView.tintColor = .app(.primary)
+        rightImageView.tintColor = .app(.primary)
+        
         // Configure stacks
         verticalStack.axis = .vertical
         verticalStack.spacing = 8
@@ -113,7 +117,7 @@ public class DropdownFormCell: UITableViewCell {
         // Value / placeholder
         if let value = config.value, !value.isEmpty {
             valueLabel.text = value
-            valueLabel.textColor = .label
+            valueLabel.textColor = .app(.primary) // selected value color
         } else {
             valueLabel.text = config.placeholder
             valueLabel.textColor = .secondaryLabel
@@ -132,7 +136,7 @@ public class DropdownFormCell: UITableViewCell {
         // Left image
         if let image = config.leftImage {
             leftImageView.isHidden = false
-            leftImageView.image = image
+            leftImageView.image = image.withRenderingMode(.alwaysTemplate) // ensures tint applies
         } else {
             leftImageView.isHidden = true
         }
@@ -140,7 +144,7 @@ public class DropdownFormCell: UITableViewCell {
         // Right image
         if let image = config.rightImage {
             rightImageView.isHidden = false
-            rightImageView.image = image
+            rightImageView.image = image.withRenderingMode(.alwaysTemplate) // ensures tint applies
         } else {
             rightImageView.isHidden = true
         }

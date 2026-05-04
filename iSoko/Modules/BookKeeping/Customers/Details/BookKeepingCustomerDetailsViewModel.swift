@@ -13,6 +13,9 @@ import StorageKit
 final class BookKeepingCustomerDetailsViewModel: FormViewModel {
     var goToDetails: (() -> Void)? = { }
     
+    var goToEdit: ((CustomerResponse) -> Void)? = { _ in }
+    func goToEditAction() {  goToEdit?(state.item) }
+    
     private var state: State
     
     // MARK: - Services

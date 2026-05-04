@@ -13,13 +13,52 @@ final class MainTabsViewModel {
     var showsCenterButton: Bool = false
     var tabBarViewModel: CustomTabBarViewModel?
     
-    private func appTabs() -> [TabBarItemModel] { // private static var appTabs = CustomTabBarViewModel.defaultTabs()
+    private func appTabs() -> [TabBarItemModel] {
         return [
-            TabBarItemModel(icon: .marketTabIcon, title: "Market", color: .app(.primary), badgeCount: 0, showBadge: false),
-            TabBarItemModel(icon: .businessTabIcon, title: "Business", color: .app(.primary)),
-            TabBarItemModel(icon: .insightsTabIcon, title: "Insight", color: .app(.primary), badgeCount: 0, showBadge: false),
-            TabBarItemModel(icon: .servicesTabIcon, title: "Services", color: .app(.primary)),
-            TabBarItemModel(icon: .accountTabIcon, title: "Account", color: .app(.primary))
+            // Market Tab - New icon with house and filled when selected
+            TabBarItemModel(
+                icon: UIImage(systemName: "house")!, // House icon for normal state
+                selectedIcon: UIImage(systemName: "house.fill"), // House icon filled for selected state
+                title: "Market",
+                color: .app(.primary),
+                badgeCount: 0,
+                showBadge: false,
+                showTitleOnlyWhenSelected: true // Title only shows when selected
+            ),
+            
+            // Business Tab
+            TabBarItemModel(
+                icon: .businessTabIcon,
+                title: "Business",
+                color: .app(.primary),
+                showTitleOnlyWhenSelected: true // Title only shows when selected
+            ),
+            
+            // Insight Tab
+            TabBarItemModel(
+                icon: .insightsTabIcon,
+                title: "Insight",
+                color: .app(.primary),
+                badgeCount: 0,
+                showBadge: false,
+                showTitleOnlyWhenSelected: true // Title only shows when selected
+            ),
+            
+            // Services Tab
+            TabBarItemModel(
+                icon: .servicesTabIcon,
+                title: "Services",
+                color: .app(.primary),
+                showTitleOnlyWhenSelected: true // Title only shows when selected
+            ),
+            
+            // Account Tab
+            TabBarItemModel(
+                icon: .accountTabIcon,
+                title: "Account",
+                color: .app(.primary),
+                showTitleOnlyWhenSelected: true // Title only shows when selected
+            )
         ]
     }
 
