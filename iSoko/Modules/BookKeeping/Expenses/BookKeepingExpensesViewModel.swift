@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Navigation
@@ -27,10 +28,14 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
 
     override init() {
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     // MARK: - Fetch
@@ -135,12 +140,12 @@ final class BookKeepingExpensesViewModel: FormViewModel {
 
         let expenses = state.expenses
 
-        // Total = raw sum from backend (already signed correctly)
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let totalAmount: Double = expenses.compactMap { $0.amount }.reduce(0, +)
 
         let count = expenses.count
 
-        let totalText = "Ksh. \(Int(totalAmount))"
+        let totalText = "\(currency). \(Int(totalAmount))"
         let countText = "\(count)"
 
         let subtitle = buildSummarySubtitle()
@@ -289,7 +294,9 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         state.expenses.map { expense in
             
-            let amountText = expense.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+            
+            let amountText = expense.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let dateText = formatDate(expense)
             let supplierName = expense.supplier?.name ?? "Unknown Supplier"
             let categoryName = expense.category?.name ?? "Expense"

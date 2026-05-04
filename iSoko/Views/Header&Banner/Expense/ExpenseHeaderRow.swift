@@ -41,7 +41,7 @@ final class ExpenseHeaderRow: FormRow {
 //        title: "Office Supplies",
 //        titleIcon: UIImage(systemName: "doc.text"),
 //        amountText: NSAttributedString(
-//            string: "Ksh. 12,987",
+//            string: "\(currency). 12,987",
 //            attributes: [.foregroundColor: UIColor.systemRed]
 //        ),
 //        rows: [

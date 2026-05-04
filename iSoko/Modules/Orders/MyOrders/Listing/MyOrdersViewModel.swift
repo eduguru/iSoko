@@ -154,7 +154,7 @@ final class MyOrdersViewModel: FormViewModel {
                     title: order.displayTitle,
                     subtitle: order.displaySubtitle,
                     
-                    amount: order.formattedAmount(),
+                    amount: "\(order.amount)",
                     amountColor: .label,
                     
                     status: order.displayStatus,

@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Navigation
@@ -36,6 +37,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     var goToShowSuccessScreen: (() -> Void)?
     
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
 
     // MARK: - State
     private var state = State()
@@ -49,7 +51,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         state.date = Date()
         state.dateString = Helpers.format(state.date!)
         
-        sections = makeSections()
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     override func fetchData() {
@@ -285,11 +289,12 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         for (index, product) in state.selectedProducts.enumerated() {
 
             let productId = product.id ?? index
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
             let vm = CartItemViewModel(
                 id: productId,
                 title: product.name ?? "Unknown",
-                subtitle: "Price: Ksh. \(Int(product.price ?? 0))",
+                subtitle: "Price: \(currency). \(Int(product.price ?? 0))",
                 pricePerUnit: Decimal(product.price ?? 0),
                 quantity: Int(state.quantities[productId] ?? 1), // UI expects Int
 
@@ -345,11 +350,12 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let subtotal = state.amount
         let tax = 0.0
         let total = subtotal + tax
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
         return [
-            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: Helpers.formatCurrency(subtotal))),
-            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: Helpers.formatCurrency(tax))),
-            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: Helpers.formatCurrency(total), isEmphasized: true))
+            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: Helpers.formatCurrency(subtotal, currency: currency))),
+            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: Helpers.formatCurrency(tax, currency: currency))),
+            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: Helpers.formatCurrency(total, currency: currency), isEmphasized: true))
         ]
     }
 

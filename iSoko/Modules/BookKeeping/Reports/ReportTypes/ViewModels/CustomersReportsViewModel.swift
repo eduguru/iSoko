@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class CustomersReportsViewModel: FormViewModel {
     var goToDetails: (() -> Void)?
     
@@ -31,13 +32,19 @@ final class CustomersReportsViewModel: FormViewModel {
     // MARK: - Service
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
+    @MainActor private let countryHelper = CountryHelper()
+    
     // MARK: - State
     private var state: State
     
     init(payload: ReportSelectionPayload) {
         self.state = State(payload: payload)
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
+        
     }
     
     // MARK: - Fetch
@@ -234,10 +241,12 @@ final class CustomersReportsViewModel: FormViewModel {
             let purchasesCount = history.sales ?? 0
             let totalAmount = history.amount ?? 0
             
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+            
             let config = TransactionActionsCellConfig(
                 title: name,
                 subtitle: phone,
-                amount: "Ksh \(Int(totalAmount))",
+                amount: "\(currency) \(Int(totalAmount))",
                 amountColor: .label,
                 status: "\(purchasesCount) Purchases",
                 statusColor: .app(.hex("#717171")),

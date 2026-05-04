@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BookKeepingExpensesDetailsViewModel: FormViewModel {
     var goToDetails: (() -> Void)? = { }
     
@@ -20,6 +21,7 @@ final class BookKeepingExpensesDetailsViewModel: FormViewModel {
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
     
     init(_ item: ExpenseResponse) {
         state = State(item: item)
@@ -176,19 +178,19 @@ final class BookKeepingExpensesDetailsViewModel: FormViewModel {
         return state.items.enumerated().map { index, item in
             
             let isInStock = item.inStock ?? false
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             
-            // Map images (optional: use first image if needed later)
             let items = [
                 OrderItem(
                     quantity: item.minimumOrderQuantity ?? 1,
                     name: item.name ?? "name",
-                    amount: "Ksh \(Int(item.price ?? 0.0))"
+                    amount: "\(currency) \(Int(item.price ?? 0.0))"
                 )
             ]
             
             let config = OrderSummaryCellConfig(
                 orderTitle: item.name ?? "name",
-                amount: "Ksh \(Int(item.price ?? 0.0))",
+                amount: "\(currency) \(Int(item.price ?? 0.0))",
                 dateString: item.description ?? "No description",
                 itemCountString: "\(items.count) item",
                 statusText: isInStock ? "In Stock" : "Out of Stock",

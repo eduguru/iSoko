@@ -51,7 +51,7 @@ final class ShareAppViewModel: FormViewModel {
     /// Generates a reusable ImageTitleDescriptionRow
     private func makeImageTitleDescriptionRow(
         tag: Int,
-        image: UIImage,
+        image: UIImage?,
         title: String,
         description: String,
         onTap: (() -> Void)? = nil

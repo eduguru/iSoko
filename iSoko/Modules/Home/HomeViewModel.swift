@@ -579,7 +579,7 @@ final class HomeViewModel: FormViewModel {
         return state?.featuredProducts.map { product in
             
             let imageUrl = product.primaryImageURL ?? ""
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "") ?? "$"
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             
             return FeaturedDealItem(
                 id: "\(product.id ?? 0)",

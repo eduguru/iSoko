@@ -46,7 +46,7 @@ public struct HubCardConfig {
         actions: [Action] = [],
         numberOfColumns: Int = 3,
         cornerRadius: CGFloat = 16,
-        backgroundColor: UIColor = .systemGray6,
+        backgroundColor: UIColor = UIColor.app(.hex("#fffff9")),
         borderColor: UIColor = .clear,
         borderWidth: CGFloat = 0
     ) {

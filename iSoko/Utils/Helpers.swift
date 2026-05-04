@@ -164,11 +164,11 @@ public extension Helpers {
         return formatter.string(from: date)
     }
     
-    static func formatCurrency(_ value: Double) -> String {
+    static func formatCurrency(_ value: Double, currency: String) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 2
-        return "Ksh \(formatter.string(from: NSNumber(value: value)) ?? "0")"
+        return "\(currency) \(formatter.string(from: NSNumber(value: value)) ?? "0")"
     }
 
     // MARK: - Parse Date from String (helper)

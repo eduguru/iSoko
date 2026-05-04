@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BookKeepingDashboardViewModel: FormViewModel {
     
     // MARK: - Navigation
@@ -35,11 +36,15 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
     
     // MARK: - Init
     override init() {
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     // MARK: - Fetch
@@ -262,15 +267,19 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     // MARK: - Helpers
     
     private func formatCurrency(_ value: Double) -> String {
-        "Ksh. \(Int(value))"
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+        
+        return "\(currency). \(Int(value))"
     }
     
     private func formatAmount(_ value: String, type: String?) -> String {
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+        
         guard let number = Double(value),
               type == "sale" || type == "expense" else {
             return value
         }
-        return "Ksh. \(Int(number))"
+        return "\(currency). \(Int(number))"
     }
     
     private func isPositive(_ type: String?) -> Bool {

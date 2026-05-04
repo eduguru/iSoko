@@ -34,16 +34,16 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
     public override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
-        setupOuterConstraints()
+        setupConstraints()
     }
 
     required public init?(coder: NSCoder) {
         super.init(coder: coder)
         setupViews()
-        setupOuterConstraints()
+        setupConstraints()
     }
 
-    // MARK: - Setup
+    // MARK: - Setup Views
     private func setupViews() {
         backgroundColor = .clear
         selectionStyle = .none
@@ -71,6 +71,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
 
         textStack.axis = .vertical
         textStack.spacing = 8
+        textStack.alignment = .fill
         textStack.translatesAutoresizingMaskIntoConstraints = false
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(descriptionLabel)
@@ -80,6 +81,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
         // Bottom stack
         bottomStack.axis = .vertical
         bottomStack.spacing = 6
+        bottomStack.alignment = .fill // full width buttons
         bottomStack.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(bottomStack)
 
@@ -88,7 +90,8 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
         containerView.addGestureRecognizer(tap)
     }
 
-    private func setupOuterConstraints() {
+    // MARK: - Constraints
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -112,12 +115,13 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
 
             // Bottom stack
             bottomStack.leadingAnchor.constraint(equalTo: textStack.leadingAnchor),
-            bottomStack.trailingAnchor.constraint(equalTo: textStack.trailingAnchor),
+            bottomStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -internalPadding.right),
             bottomStack.topAnchor.constraint(equalTo: textStack.bottomAnchor, constant: 8),
             bottomStack.bottomAnchor.constraint(lessThanOrEqualTo: containerView.bottomAnchor, constant: -internalPadding.bottom)
         ])
     }
 
+    // MARK: - Configure
     // MARK: - Configure
     public func configure(with config: ImageTitleDescriptionBottomConfig) {
         // Callbacks
@@ -139,7 +143,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
         bottomLabel = nil
         bottomButton = nil
 
-        // MARK: Bottom label
+        // Bottom label
         if let bottomText = config.bottomLabelText {
             let label = UILabel()
             label.font = .preferredFont(forTextStyle: .footnote)
@@ -150,14 +154,12 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
             bottomLabel = label
         }
 
-        // MARK: Bottom button
+        // Bottom button
         if let buttonTitle = config.bottomButtonTitle {
             let button = UIButton(type: .system)
             button.setTitle(buttonTitle, for: .normal)
             button.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
             button.layer.cornerRadius = 6
-            button.layer.borderWidth = 0
-            button.addTarget(self, action: #selector(bottomButtonTapped), for: .touchUpInside)
 
             switch config.bottomButtonStyle {
             case .primary:
@@ -178,22 +180,43 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
 
             button.translatesAutoresizingMaskIntoConstraints = false
             button.heightAnchor.constraint(equalToConstant: 34).isActive = true
+
+            // Full-width inside stack
+            button.setContentHuggingPriority(.defaultLow, for: .horizontal)
+            button.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
+
+            button.addTarget(self, action: #selector(bottomButtonTapped), for: .touchUpInside)
             bottomStack.addArrangedSubview(button)
             bottomButton = button
         }
 
-        // MARK: Accessory inside the card
+        // Accessory
         if let accessoryType = config.accessoryType {
             applyAccessory(accessoryType)
         }
 
-        // MARK: Icon
-        iconImageView.image = config.image
+        // Icon
+        if let image = config.image {
+            iconImageView.image = image
+        } else {
+            let initials = config.title
+            iconImageView.image = UIImage.fromInitials(
+                initials,
+                size: CGSize(width: 50, height: 50),
+                textColor: .app(.primary),
+                backgroundColor: nil,
+                borderColor: .app(.primary),
+                borderWidth: 2,
+                shape: config.imageStyle == .rounded ? .circle : .square
+            )
+            
+            // iconImageView.image = nil
+        }
+        
         iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? 20 : 0
         iconImageView.layer.masksToBounds = true
-        iconImageView.contentMode = .scaleAspectFit
 
-        // Accessory position inside container
+        // Accessory inside container
         if let accessory = accessory {
             containerView.addSubview(accessory)
             NSLayoutConstraint.activate([
@@ -201,11 +224,9 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
                 accessory.centerYAnchor.constraint(equalTo: textStack.centerYAnchor),
                 textStack.trailingAnchor.constraint(lessThanOrEqualTo: accessory.leadingAnchor, constant: -spacing)
             ])
-        } else {
-            textStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -internalPadding.right).isActive = true
         }
 
-        // Card style
+        // Card styling
         if config.isCardStyleEnabled {
             containerView.layer.cornerRadius = config.cardCornerRadius
             containerView.layer.borderWidth = config.cardBorderWidth
@@ -221,12 +242,10 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
         isUserInteractionEnabled = config.isEnabled
     }
 
-    // MARK: - Accessory helper
+    // MARK: - Accessory
     private func applyAccessory(_ type: AppAccessoryType) {
         switch type {
-        case .none:
-            accessory = nil
-
+        case .none: accessory = nil
         case .chevron:
             let chevron = UIImageView(image: UIImage(systemName: "chevron.right"))
             chevron.tintColor = .tertiaryLabel
@@ -237,10 +256,7 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
                 chevron.heightAnchor.constraint(equalToConstant: 16)
             ])
             accessory = chevron
-
-        case .custom(let view):
-            accessory = view
-
+        case .custom(let view): accessory = view
         case .image(let image):
             let imageView = UIImageView(image: image.withRenderingMode(.alwaysTemplate))
             imageView.tintColor = UIColor.app(.primary)
@@ -255,11 +271,6 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
     }
 
     // MARK: - Actions
-    @objc private func handleTap() {
-        onTap?()
-    }
-
-    @objc private func bottomButtonTapped() {
-        onBottomButtonTap?()
-    }
+    @objc private func handleTap() { onTap?() }
+    @objc private func bottomButtonTapped() { onBottomButtonTap?() }
 }

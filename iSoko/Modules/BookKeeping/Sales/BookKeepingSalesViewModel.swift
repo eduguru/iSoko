@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Navigation
@@ -20,11 +21,16 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    @MainActor private let countryHelper = CountryHelper()
 
     // MARK: - Init
     override init() {
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
 
     // MARK: - Fetch
@@ -143,10 +149,11 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
         let sales = state.sales
 
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let totalAmount: Double = sales.compactMap { $0.totalAmount }.reduce(0, +)
         let totalSales = sales.count
 
-        let totalText = "Ksh. \(Int(totalAmount))"
+        let totalText = "\(currency). \(Int(totalAmount))"
         let countText = "\(totalSales)"
 
         let config = DualCardCellConfig(
@@ -181,7 +188,8 @@ final class BookKeepingSalesViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         state.sales.map { sale in
 
-            let amountText = sale.totalAmount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+            let amountText = sale.totalAmount.map { "\(currency). \($0)" } ?? "\(currency). 0"
 
             let customerName = sale.customer?.name ?? "Walk-in Customer"
             let saleType = sale.type?.name ?? "Sale"

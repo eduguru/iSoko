@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UtilsKit
 
 final class CartItemViewModel {
 
@@ -52,6 +53,6 @@ final class CartItemViewModel {
     }
 
     var formattedTotal: String {
-        "Ksh. \(totalPrice)"
+        "\(totalPrice)"
     }
 }

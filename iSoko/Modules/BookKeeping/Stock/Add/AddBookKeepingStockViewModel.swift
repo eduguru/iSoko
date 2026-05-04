@@ -12,10 +12,20 @@ import StorageKit
 
 final class AddBookKeepingStockViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-    var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
-    var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     
     var gotoConfirm: (() -> Void)?
+    
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+
+    var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
+
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+
+    
     var goToShowSuccessScreen: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void) -> Void = { _ in }
@@ -177,22 +187,9 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - handle selections
     private func handleSupplierSelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.categories = value
-            self.supplierDropdownRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.supplierDropdownRow.tag)
-        }
     }
     
     private func handleDateYearSelection() {
-        selectFoundedYear? { [weak self] value in
-            guard let self, let value else { return }
-            state.foundedYear = value
-            dataRow.config.placeholder = "\(value)"
-            reloadRow(withTag: dataRow.tag)
-        }
     }
 
     // MARK: - Reload

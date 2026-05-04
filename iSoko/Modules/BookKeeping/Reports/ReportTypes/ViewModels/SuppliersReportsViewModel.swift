@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class SuppliersReportsViewModel: FormViewModel {
     var goToDetails: (() -> Void)?
     
@@ -30,6 +31,7 @@ final class SuppliersReportsViewModel: FormViewModel {
     
     // MARK: - Service
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
     
     // MARK: - State
     private var state: State
@@ -37,6 +39,8 @@ final class SuppliersReportsViewModel: FormViewModel {
     init(payload: ReportSelectionPayload) {
         self.state = State(payload: payload)
         super.init()
+        
+        
         self.sections = makeSections()
     }
     
@@ -191,6 +195,7 @@ final class SuppliersReportsViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         
         let totalSuppliers = state.summary?.suppliers ?? 0
         let totalAmount = state.summary?.amount ?? 0
@@ -207,10 +212,11 @@ final class SuppliersReportsViewModel: FormViewModel {
                     icon: UIImage(systemName: "person.3")
                 )
             ),
+            
             right: DualCardItemConfig(
                 title: "Total Supplied",
                 titleIcon: nil,
-                subtitle: "Ksh. \(Int(totalAmount))",
+                subtitle: "\(currency). \(Int(totalAmount))",
                 status: CardStatusStyle(
                     text: totalAmount >= 0 ? "Positive" : "Negative",
                     textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
@@ -230,11 +236,12 @@ final class SuppliersReportsViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         state.suppliers.map { history in
             
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             let supplier = history.supplier
             
             let name = supplier?.name ?? "Unknown Supplier"
             let phone = supplier?.phoneNumber ?? "No phone"
-            let amountText = history.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let amountText = history.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let itemsText = "\(history.items ?? 0) items supplied"
             
             let config = TransactionActionsCellConfig(

@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class LowBookKeepingStockViewModel: FormViewModel {
     var goToDetails: ((StockResponse) -> Void)? = { _ in }
     
@@ -18,9 +19,14 @@ final class LowBookKeepingStockViewModel: FormViewModel {
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
+    @MainActor private let countryHelper = CountryHelper()
+    
     override init() {
         super.init()
-        self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     // MARK: - Fetch
@@ -124,11 +130,12 @@ final class LowBookKeepingStockViewModel: FormViewModel {
             
             let isInStock = item.inStock ?? false
             let unit = item.measurementUnit?.name ?? ""
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "name",
                 subtitle: "\(item.minimumOrderQuantity) \(unit) available",
-                amount: "Ksh \(Int(item.price ?? 0.0))",
+                amount: "\(currency) \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",
                 statusColor: isInStock ? .systemGreen : .systemRed,

@@ -60,16 +60,6 @@ public extension CustomerOrderResponse {
             .trimmingCharacters(in: .whitespaces)
     }
 
-    // MARK: Formatted Amount
-    func formattedAmount(currency: String = "Ksh") -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 2
-
-        let value = formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
-        return "\(currency) \(value)"
-    }
-
     // MARK: Status formatting
     var displayStatus: String {
         status.capitalized

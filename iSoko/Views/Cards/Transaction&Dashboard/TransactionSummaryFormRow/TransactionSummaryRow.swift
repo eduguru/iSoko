@@ -44,7 +44,7 @@ final class TransactionSummaryRow: FormRow {
 
 //let config = TransactionSummaryCellConfig(
 //    title: "John Doe",
-//    amount: "Ksh. 12,987",
+//    amount: "\(currency). 12,987",
 //    amountColor: .green,
 //    dateText: "Oct 27, 2025",
 //    saleTypeText: "Cash Sale",

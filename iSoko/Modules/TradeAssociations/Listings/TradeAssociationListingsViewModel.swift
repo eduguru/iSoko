@@ -159,7 +159,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
             RowItemModel(
                 title: item.name ?? "",
                 description: item.description ?? "",
-                image: .questionCircleIcon,
+                image: nil,
                 bottomButtonTitle: "Join",
                 bottomButtonStyle: .primary,
                 onBottomButtonTap: { [weak self] in
@@ -178,7 +178,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
             RowItemModel(
                 title: item.name ?? "",
                 description: item.registrationStatus ?? "",
-                image: .settingsGearIcon,
+                image: nil,
                 bottomLabelText: "Member since \(item.foundedIn ?? "")",
                 onTap: { [weak self] in
                     self?.goToMoreDetails?(item)
@@ -192,7 +192,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
             RowItemModel(
                 title: item.name ?? "",
                 description: item.status ?? "Awaiting approval",
-                image: .legalIcon,
+                image: nil,
                 bottomButtonTitle: "Cancel",
                 bottomButtonStyle: .secondary,
                 onBottomButtonTap: { [weak self] in

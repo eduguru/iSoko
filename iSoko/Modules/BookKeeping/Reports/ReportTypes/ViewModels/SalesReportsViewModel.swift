@@ -10,6 +10,7 @@ import DesignSystemKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class SalesReportsViewModel: FormViewModel {
     var goToDetails: (() -> Void)?
     
@@ -30,6 +31,7 @@ final class SalesReportsViewModel: FormViewModel {
     
     // MARK: - Service
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
     
     // MARK: - State
     private var state: State
@@ -218,6 +220,7 @@ final class SalesReportsViewModel: FormViewModel {
         
         let totalSales = state.summary?.sales ?? 0
         let totalRevenue = state.summary?.revenue ?? 0
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
@@ -234,7 +237,7 @@ final class SalesReportsViewModel: FormViewModel {
             right: DualCardItemConfig(
                 title: "Total Revenue",
                 titleIcon: UIImage(systemName: "banknote"),
-                subtitle: "Ksh. \(Int(totalRevenue))",
+                subtitle: "\(currency). \(Int(totalRevenue))",
                 status: CardStatusStyle(
                     text: totalRevenue >= 0 ? "Positive" : "Negative",
                     textColor: totalRevenue >= 0 ? .systemGreen : .systemRed,
@@ -255,10 +258,11 @@ final class SalesReportsViewModel: FormViewModel {
         state.sales.map { sale in
             
             let customer = sale.customer
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             
             let name = customer?.name ?? "Walk-in Customer"
             let phone = customer?.phoneNumber ?? ""
-            let amountText = sale.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let amountText = sale.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let itemsText = "\(sale.items ?? 0) items"
             let dateText = sale.date ?? ""
             

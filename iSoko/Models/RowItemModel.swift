@@ -10,7 +10,7 @@ import UIKit
 public struct RowItemModel {
     let title: String
     let description: String
-    let image: UIImage
+    let image: UIImage?
     let bottomLabelText: String?
     let bottomButtonTitle: String?
     let bottomButtonStyle: AppBottomButtonStyle?
@@ -20,7 +20,7 @@ public struct RowItemModel {
     public init(
         title: String,
         description: String,
-        image: UIImage,
+        image: UIImage? = nil,
         bottomLabelText: String? = nil,
         bottomButtonTitle: String? = nil,
         bottomButtonStyle: AppBottomButtonStyle? = nil,

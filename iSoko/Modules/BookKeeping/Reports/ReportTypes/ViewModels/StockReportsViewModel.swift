@@ -10,7 +10,7 @@ import DesignSystemKit
 import UtilsKit
 import StorageKit
 
-// MARK: - Stock Report VM
+@MainActor
 final class StockReportsViewModel: FormViewModel {
     
     var goToDetails: (() -> Void)?
@@ -28,6 +28,7 @@ final class StockReportsViewModel: FormViewModel {
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    @MainActor private let countryHelper = CountryHelper()
     
     // MARK: -
     private var state: State
@@ -175,6 +176,7 @@ final class StockReportsViewModel: FormViewModel {
     private func makeSelectionGrid() -> FormRow {
 
         let summary = state.stockSummary
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
         let items: [SelectableCardItemConfig] = [
             .init(
@@ -191,7 +193,7 @@ final class StockReportsViewModel: FormViewModel {
             ),
             .init(
                 title: "Stock Value",
-                subtitle: "Ksh \(summary?.value ?? 0)",
+                subtitle: "\(currency) \(summary?.value ?? 0)",
                 icon: UIImage(systemName:"banknote"),
                 iconTintColor: .systemBlue,
                 selectionColor: .clear,
@@ -203,7 +205,7 @@ final class StockReportsViewModel: FormViewModel {
             ),
             .init(
                 title: "Profit",
-                subtitle: "Ksh \(summary?.profit ?? 0)",
+                subtitle: "\(currency) \(summary?.profit ?? 0)",
                 icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
                 iconTintColor: .systemBlue,
                 selectionColor: .clear,
@@ -266,11 +268,12 @@ final class StockReportsViewModel: FormViewModel {
 
             let qty = item.quantity ?? 0
             let price = item.price ?? 0
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "Item",
                 subtitle: "\(qty) units",
-                amount: "Ksh. \(price)",
+                amount: "\(currency). \(price)",
                 amountColor: .label,
                 status: "",
                 statusColor: .app(.hex("#717171")),

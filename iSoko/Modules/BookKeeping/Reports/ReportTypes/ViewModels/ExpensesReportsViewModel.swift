@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class ExpensesReportsViewModel: FormViewModel {
     
     // MARK: - Navigation Callbacks 
@@ -34,13 +35,18 @@ final class ExpensesReportsViewModel: FormViewModel {
     // MARK: - Service
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     
+    @MainActor private let countryHelper = CountryHelper()
+    
     // MARK: - State
     private var state: State
     
     init(payload: ReportSelectionPayload) {
         self.state = State(payload: payload)
         super.init()
-        self.sections = makeSections()
+        
+        Task{ @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     // MARK: - Fetch
@@ -147,6 +153,7 @@ final class ExpensesReportsViewModel: FormViewModel {
 
         let expenses = state.expenses
 
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let totalAmount = expenses.compactMap { $0.amount }.reduce(0, +)
         let count = expenses.count
 
@@ -154,7 +161,7 @@ final class ExpensesReportsViewModel: FormViewModel {
             left: DualCardItemConfig(
                 title: "Total Expenses",
                 titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "Ksh. \(Int(totalAmount))",
+                subtitle: "\(currency). \(Int(totalAmount))",
                 status: CardStatusStyle(
                     text: totalAmount >= 0 ? "Net Positive" : "Net Negative",
                     textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
@@ -277,7 +284,8 @@ final class ExpensesReportsViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         state.expenses.map { expense in
             
-            let amountText = expense.amount.map { "Ksh. \($0)" } ?? "Ksh. 0"
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+            let amountText = expense.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let dateText = expense.date ?? ""
             let categoryName = expense.category?.name ?? "Expense"
             
