@@ -282,6 +282,7 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
         }
 
         showLoader()
+        defer { hideLoader() }
 
         let payload: [String: Any] = [
             "id": state.supplier.id,
@@ -300,13 +301,26 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
 //                accessToken: state.oauthToken
 //            )
 
-            hideLoader()
             goToShowSuccessScreen?()
             return true
 
+        } catch let NetworkError.server(response) {
+            print("UPDATE Supplier ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("UPDATE Supplier ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }
@@ -325,6 +339,9 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
         var selectedCategory: CommonIdNameModel?
 
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
 
         init(supplier: SupplierResponse) {
             self.supplier = supplier

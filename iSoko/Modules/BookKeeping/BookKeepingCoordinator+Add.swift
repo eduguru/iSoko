@@ -32,9 +32,11 @@ public extension BookKeepingCoordinator {
     
     func goToAddBookKeepingStock() {
         let model = AddBookKeepingStockViewModel()
+        
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
+        model.goToAddSupplier = goToAddBookKeepingSupplier
         
         let vc = AddBookKeepingStockViewController()
         

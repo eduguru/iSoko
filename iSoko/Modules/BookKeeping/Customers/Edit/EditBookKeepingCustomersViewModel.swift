@@ -203,6 +203,7 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
         }
 
         showLoader()
+        defer { hideLoader() }
 
         let payload: [String: Any] = [
             "id": state.customer.id,
@@ -221,12 +222,25 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
 //            )
 
             goToShowSuccessScreen?()
-            hideLoader()
             return true
 
+        } catch let NetworkError.server(response) {
+            print("Edit Customer ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Edit Customer ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }
@@ -265,6 +279,9 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
         var streetAddress: String
         
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
         
         init(customer: CustomerResponse) {
             self.customer = customer

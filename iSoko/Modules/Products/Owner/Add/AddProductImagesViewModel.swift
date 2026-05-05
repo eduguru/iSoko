@@ -264,6 +264,8 @@ extension AddProductImagesViewModel {
     ) async -> Bool {
 
         showLoader()
+        defer { hideLoader() }
+        
         print("Payload:", params)
 
         do {
@@ -272,13 +274,25 @@ extension AddProductImagesViewModel {
                 pickedFiles: files,
                 accessToken: state.oauthToken
             )
-            
-            hideLoader()
-            
+                        
             return true
+        } catch let NetworkError.server(response) {
+            print("Add Product ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Add Product ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }
@@ -307,6 +321,9 @@ extension AddProductImagesViewModel {
         var additionalImages: [PickedFile] = []
 
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 }
 

@@ -272,6 +272,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         }
 
         showLoader()
+        defer { hideLoader() }
         
         let payload: [String : Any] = [
             "name": state.supplierName,
@@ -287,13 +288,26 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
         do {
             let response = try await bookKeepingService.addSupplier(parameters: payload, accessToken: state.oauthToken)
             
-            hideLoader()
             goToShowSuccessScreen?()
             return true
             
+        } catch let NetworkError.server(response) {
+            print("Add Supplier ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error: ", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Add Supplier ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }

@@ -14,6 +14,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     
     var gotoConfirm: (() -> Void)?
+    var goToAddSupplier: (() -> Void)? = { }
     
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
@@ -50,11 +51,12 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             FormSection(
                 id: SectionTag.main.rawValue,
                 cells: [
-                    dataRow,
+                    dateRow,
                     productNameInputRow,
                     supplierDropdownRow,
                     unitCostInputRow,
-                    filterFormRow,
+                    measurementUnitRow,
+                    quantityInputRow,
                     lowStockLevelInputRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
@@ -64,12 +66,16 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     }
 
     // MARK: - Rows
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
-
     private lazy var productNameInputRow = makeInputRow(
         tag: CellTag.productName.rawValue,
         title: "Product Name",
         placeholder: "Product Name"
+    )
+    
+    private lazy var quantityInputRow = makeInputRow(
+        tag: CellTag.quantity.rawValue,
+        title: "Quantity",
+        placeholder: "Quantity"
     )
     
     private lazy var unitCostInputRow = makeInputRow(
@@ -101,12 +107,19 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
                     switch tag {
                     case CellTag.lowStockLevel.rawValue:
-                        self.state.amount = newText
+                        self.state.lowStockLevel = newText
                     case CellTag.unitCost.rawValue:
+                        self.state.unitCost = newText
+                    case CellTag.quantity.rawValue:
+                        self.state.quantity = newText
+                    case CellTag.productName.rawValue:
+                        self.state.productName = newText
+                    case CellTag.supplierName.rawValue:
                         self.state.supplierName = newText
                     default:
                         break
                     }
+                    
                 }
             )
         )
@@ -116,24 +129,49 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.supplierName.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
-            placeholder: state.categories?.name ?? "Select Supplier",
+            placeholder: "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
             onTap: { [weak self] in
                 self?.handleSupplierSelection()
-            }
+            },
+            onActionTap: { [weak self] in
+                self?.goToAddSupplier?()
+            },
+            actionImage: UIImage(systemName: "person.badge.plus"),
+            showsActionButton: true
         )
     )
     
-    private lazy var dataRow = DropdownFormRow(
+    private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
             placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
-            rightImage: UIImage(systemName: "calendar"),
+            rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
-                self?.handleDateYearSelection()
+                guard let self else { return }
+
+                self.goToDateSelection(.year()) { date in
+                    guard let date else { return }
+
+                    self.state.date = date
+                    self.state.dateString = Helpers.format(date)
+                    self.handleDateSelection()
+                }
+            }
+        )
+    )
+    
+    private lazy var measurementUnitRow = DropdownFormRow(
+        tag: CellTag.measurementUnit.rawValue,
+        config: DropdownFormConfig(
+            title: "Measurement Unit",
+            placeholder: "Select unit",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleMeasurementSelection()
             }
         )
     )
@@ -153,43 +191,37 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         }
     )
     
-    private func makeFilterFormRow() -> FormRow {
-        let row = FiltersFormRow(
-            tag: 1,
-            config: FiltersCellConfig(
-                title: nil,
-                rows: [
-                    [
-                        FilterFieldConfig(
-                            placeholder: "Quantity",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: {
-                                print("Sale Type tapped")
-                            }
-                        ),
-                        FilterFieldConfig(
-                            placeholder: "Unit of Measure",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: {
-                                print("Time Period tapped")
-                            }
-                        )
-                    ]
-                ],
-                message: nil
-            )
-        )
-
-        return row
-    }
-
     // MARK: - handle selections
     private func handleSupplierSelection() {
+        goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+
+            self.state.supplier = value
+
+            self.supplierDropdownRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: self.supplierDropdownRow.tag)
+        }
     }
     
-    private func handleDateYearSelection() {
+    private func handleDateSelection() {
+        var config = dateRow.config
+        config.placeholder = state.dateString
+        dateRow.config = config
+
+        reloadRow(withTag: CellTag.date.rawValue)
+    }
+    
+    private func handleMeasurementSelection() {
+        goToCommonSelectionOptions(.measurementUnits(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+            
+            self.state.selectedMeasurement = value
+            
+            let row = self.measurementUnitRow
+            row.config.placeholder = value?.name ?? ""
+            
+            self.reloadRow(withTag: row.tag)
+        }
     }
 
     // MARK: - Reload
@@ -204,19 +236,30 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        // Prepare the parameters for the network request
+        // Make sure required fields exist
+        guard
+            let supplierId = state.supplier?.id,
+            let measurementUnitId = state.selectedMeasurement?.id,
+            let price = Double(state.unitCost),       // convert to number if needed
+            let quantity = Int(state.quantity)        // convert to number
+        else {
+            showError("Please fill all required fields correctly")
+            return
+        }
+        
+        // Prepare the parameters
         let record: [String: Any] = [
-            "name": state.supplierName,
-            "price": state.amount,
-            "quantity": state.amount,
-            "supplierId": state.categories?.id ?? 0,
-            "measurementUnitId": state.categories?.id ?? 0,
-            "description": "n\\a",
-            "minimumOrderQuantity": state.amount,
-            "stockAlertThreshold": state.amount
+            "name": state.productName,
+            "price": price,
+            "quantity": quantity,
+            "supplierId": supplierId,
+            "measurementUnitId": measurementUnitId,
+            "description": state.description.isEmpty ? "n/a" : state.description,
+            "minimumOrderQuantity": quantity,
+            "stockAlertThreshold": Int(state.lowStockLevel) ?? 0
         ]
-
-        // Submit via your network call
+        
+        // Submit
         let success = await submitStockRecord(parameters: record)
         
         if success {
@@ -225,32 +268,55 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     }
 
     private func submitStockRecord(parameters: [String: Any]) async -> Bool {
+        showLoader()
+        defer { hideLoader() }
+        
         do {
             let response = try await bookKeepingService.addProduct(parameters: parameters, accessToken: state.oauthToken)
+           
+            if response.id == nil {
+                return false
+            }
+            
             return true
+        } catch let NetworkError.server(response) {
+            print("Add Stock ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            print("❌ Error submitting stock record: ", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Add Stock ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }
 
     // MARK: - State
     private struct State {
-        var categories: CommonIdNameModel?
-        var paymentMethod: CommonIdNameModel?
+        var supplier: CommonIdNameModel?
+        var selectedMeasurement: CommonIdNameModel?
 
         var date: Date?
         var dateString: String = ""
-        
-        var amount: String = ""
+
+        var productName: String = ""
+        var quantity: String = ""
+        var unitCost: String = ""
+        var lowStockLevel: String = ""
         var supplierName: String = ""
         var description: String = ""
-        var foundedYear: Int?
 
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
+
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }
@@ -268,5 +334,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         case unitMeasure = 9
         case lowStockLevel = 11
         case continueButton = 12
+        case measurementUnit
     }
+    
 }

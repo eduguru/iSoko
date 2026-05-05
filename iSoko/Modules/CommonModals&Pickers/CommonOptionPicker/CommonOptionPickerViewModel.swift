@@ -43,6 +43,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
     override func fetchData() {
         guard state.options.isEmpty else { return }
         showLoader()
+        defer { hideLoader() }
         
         Task {
             do {
@@ -52,7 +53,6 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
                 
                 self.state.options = models
                 self.sections = makeSections()
-                hideLoader()
                 
             } catch {
                 print("Error:", error)

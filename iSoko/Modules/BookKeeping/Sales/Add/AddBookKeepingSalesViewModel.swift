@@ -64,6 +64,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     
     private func fetchSalesTypes() async {
         showLoader()
+        defer { hideLoader() }
 
         do {
             let response = try await bookKeepingService.getSalesType(
@@ -73,13 +74,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             )
 
             state.saleTypes = response.data   // assuming already [CommonIdNameModel]
-
-            hideLoader()
-
             reloadSegmentSection() // 🔥 important
 
         } catch {
-            hideLoader()
             print("❌ Failed to fetch sales types:", error)
         }
     }
@@ -427,21 +424,34 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     
     @discardableResult
     private func performNetworkRequest() async -> Bool {
-
         showLoader()
+        defer { hideLoader() }
 
         let payload = buildPayload()
         print("SALES PAYLOAD:", payload)
 
         do {
             let _ = try await bookKeepingService.addSales(parameters: payload, accessToken: state.oauthToken)
-
-            hideLoader()
             return true
 
+        } catch let NetworkError.server(response) {
+            print("❌ SALE ERROR:", response.alertMessage)
+
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
+
         } catch {
-            hideLoader()
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+
             print("❌ SALE ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }

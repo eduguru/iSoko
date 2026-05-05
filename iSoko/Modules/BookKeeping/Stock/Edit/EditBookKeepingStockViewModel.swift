@@ -11,63 +11,49 @@ import UtilsKit
 import StorageKit
 
 final class EditBookKeepingStockViewModel: FormViewModel {
-    
+
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-    var selectFoundedYear: ((_ completion: @escaping (Int?) -> Void) -> Void)?
-    var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     
     var gotoConfirm: (() -> Void)?
+    var goToAddSupplier: (() -> Void)? = { }
+
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+
+    var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
+
+    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+
     var goToShowSuccessScreen: (() -> Void)?
-    
-    var showCountryPicker: ((@escaping (Country) -> Void) -> Void) -> Void = { _ in }
-    
-    @MainActor private let countryHelper = CountryHelper()
-    
+
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-    
+
     // MARK: - State
     private var state: State
-    
+
     // MARK: - Init
     init(stock: StockResponse) {
         self.state = State(stock: stock)
         super.init()
-        
-        state.date = Date()
-        state.dateString = Helpers.format(state.date!)
-        
         sections = makeSections()
-        prefill()
     }
-    
-    // MARK: - Prefill (ONLY REAL CHANGE)
-    private func prefill() {
-        
-        productNameInputRow.model.text = state.productName
-        unitCostInputRow.model.text = state.unitCost
-        lowStockLevelInputRow.model.text = state.lowStockLevel
-        
-        if let supplier = state.supplier {
-            supplierDropdownRow.config.placeholder = supplier.firstName ?? ""
-        }
-        
-        if let dateString = state.dateString as String? {
-            dataRow.config.placeholder = dateString
-        }
-    }
-    
-    // MARK: - Sections 
+
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             FormSection(
                 id: SectionTag.main.rawValue,
                 cells: [
-                    dataRow,
+                    dateRow,
                     productNameInputRow,
                     supplierDropdownRow,
                     unitCostInputRow,
-                    filterFormRow,
+                    measurementUnitRow,
+                    quantityInputRow,
                     lowStockLevelInputRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
@@ -75,93 +61,59 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             )
         ]
     }
-    
-    // MARK: - Rows 
 
-    private lazy var filterFormRow: FormRow = makeFilterFormRow()
-
+    // MARK: - Rows
     private lazy var productNameInputRow = makeInputRow(
         tag: CellTag.productName.rawValue,
         title: "Product Name",
-        placeholder: "Product Name"
+        placeholder: "Product Name",
+        initialText: state.productName
+    )
+    
+    private lazy var quantityInputRow = makeInputRow(
+        tag: CellTag.quantity.rawValue,
+        title: "Quantity",
+        placeholder: "Quantity",
+        initialText: "\(state.quantity)"
     )
     
     private lazy var unitCostInputRow = makeInputRow(
         tag: CellTag.unitCost.rawValue,
         title: "Unit Cost",
-        placeholder: "Enter Unit Cost"
+        placeholder: "Enter Unit Cost",
+        initialText: "\(state.unitCost)"
     )
     
     private lazy var lowStockLevelInputRow = makeInputRow(
         tag: CellTag.lowStockLevel.rawValue,
         title: "Low Stock Level",
-        placeholder: "Enter Low Stock Level"
+        placeholder: "Enter Low Stock Level",
+        initialText: "\(state.lowStockLevel)"
     )
     
-    private lazy var supplierDropdownRow = DropdownFormRow(
-        tag: CellTag.supplierName.rawValue,
-        config: DropdownFormConfig(
-            title: "Supplier",
-            placeholder: "Select Supplier",
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handleSupplierSelection()
-            }
-        )
-    )
-    
-    private lazy var dataRow = DropdownFormRow(
-        tag: CellTag.date.rawValue,
-        config: DropdownFormConfig(
-            title: "Date",
-            placeholder: "Date",
-            rightImage: UIImage(systemName: "calendar"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handleDateYearSelection()
-            }
-        )
-    )
-
-    private lazy var continueButtonRow = ButtonFormRow(
-        tag: CellTag.continueButton.rawValue,
-        model: ButtonFormModel(
-            title: "Update Stock",
-            style: .primary,
-            size: .medium,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            Task { await self?.submit() }
-        }
-    )
-    
-    private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+    private func makeInputRow(tag: Int, title: String, placeholder: String, initialText: String) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
-                text: "",
+                text: initialText,
                 config: TextFieldConfig(
                     placeholder: placeholder,
-                    keyboardType: .default
+                    keyboardType: .numberPad
                 ),
-                validation: ValidationConfiguration(isRequired: false),
+                validation: ValidationConfiguration(isRequired: true),
                 titleText: title,
                 useCardStyle: true,
                 onTextChanged: { [weak self] newText in
                     guard let self else { return }
-
                     switch tag {
-                    case CellTag.lowStockLevel.rawValue:
-                        self.state.lowStockLevel = newText
-                        
                     case CellTag.unitCost.rawValue:
-                        self.state.unitCost = newText
-                        
+                        self.state.unitCost = Double(newText) ?? 0
+                    case CellTag.quantity.rawValue:
+                        self.state.quantity = Double(newText) ?? 0
+                    case CellTag.lowStockLevel.rawValue:
+                        self.state.lowStockLevel = Double(newText) ?? 0
                     case CellTag.productName.rawValue:
                         self.state.productName = newText
-                        
                     default:
                         break
                     }
@@ -169,57 +121,86 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             )
         )
     }
-    
-    private func makeFilterFormRow() -> FormRow {
-        FiltersFormRow(
-            tag: 1,
-            config: FiltersCellConfig(
-                title: nil,
-                rows: [
-                    [
-                        FilterFieldConfig(
-                            placeholder: "Quantity",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: { print("Quantity tapped") }
-                        ),
-                        FilterFieldConfig(
-                            placeholder: "Unit of Measure",
-                            selectedValue: nil,
-                            iconSystemName: "tag",
-                            onTap: { print("UOM tapped") }
-                        )
-                    ]
-                ],
-                message: nil
-            )
+
+    private lazy var supplierDropdownRow = DropdownFormRow(
+        tag: CellTag.supplierName.rawValue,
+        config: DropdownFormConfig(
+            title: "Supplier",
+            placeholder: state.supplier?.name ?? "Select an option",
+            rightImage: UIImage(systemName: "chevron.down"),
+            onTap: { [weak self] in self?.handleSupplierSelection() },
+            onActionTap: { [weak self] in self?.goToAddSupplier?() },
+            actionImage: UIImage(systemName: "person.badge.plus"),
+            showsActionButton: true
         )
-    }
+    )
     
-    // MARK: - Selection Handlers 
+    private lazy var dateRow = DropdownFormRow(
+        tag: CellTag.date.rawValue,
+        config: DropdownFormConfig(
+            title: "Date",
+            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                guard let self else { return }
+                self.goToDateSelection(.year()) { date in
+                    guard let date else { return }
+                    self.state.date = date
+                    self.state.dateString = Helpers.format(date)
+                    self.handleDateSelection()
+                }
+            }
+        )
+    )
+    
+    private lazy var measurementUnitRow = DropdownFormRow(
+        tag: CellTag.measurementUnit.rawValue,
+        config: DropdownFormConfig(
+            title: "Measurement Unit",
+            placeholder: state.measurementUnit?.name ?? "Select unit",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in self?.handleMeasurementSelection() }
+        )
+    )
+    
+    private lazy var continueButtonRow = ButtonFormRow(
+        tag: CellTag.continueButton.rawValue,
+        model: ButtonFormModel(
+            title: "Update Stock",
+            style: .primary,
+            size: .medium
+        ) { [weak self] in
+            Task { await self?.submit() }
+        }
+    )
 
+    // MARK: - Handle Selections
     private func handleSupplierSelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.supplier = TraderResponse(from: value)
-            self.supplierDropdownRow.config.placeholder = value.name
+        goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+            self.state.supplier = value
+            self.supplierDropdownRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.supplierDropdownRow.tag)
         }
     }
     
-    private func handleDateYearSelection() {
-        selectFoundedYear? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.foundedYear = value
-            self.state.dateString = "\(value)"
-            self.dataRow.config.placeholder = "\(value)"
-            self.reloadRow(withTag: self.dataRow.tag)
+    private func handleMeasurementSelection() {
+        goToCommonSelectionOptions(.measurementUnits(page: 0, count: 10), nil) { [weak self] value in
+            guard let self else { return }
+            self.state.measurementUnit = value
+            self.measurementUnitRow.config.placeholder = value?.name ?? ""
+            self.reloadRow(withTag: self.measurementUnitRow.tag)
         }
     }
 
-    // MARK: - Reload 
+    private func handleDateSelection() {
+        dateRow.config.placeholder = state.dateString
+        reloadRow(withTag: CellTag.date.rawValue)
+    }
+
+    // MARK: - Reload Row
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -228,80 +209,67 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             }
         }
     }
-    
-    // MARK: - Submit 
+
+    // MARK: - Submit
     private func submit() async {
-        let success = await performNetworkRequest()
+        let params: [String: Any] = [
+            "id": state.stockId,
+            "name": state.productName,
+            "price": state.unitCost,
+            "quantity": state.quantity,
+            "supplierId": state.supplier?.id ?? 0,
+            "measurementUnitId": state.measurementUnit?.id ?? 0,
+            "lowStockLevel": state.lowStockLevel,
+            "date": state.date?.toISO8601String() ?? ""
+        ]
+
+        let success = await updateStock(parameters: params)
         if success {
             goToShowSuccessScreen?()
         }
     }
-    
-    private func performNetworkRequest() async -> Bool {
-        guard let supplier = state.supplier else {
-            print("❌ Missing supplier")
-            return false
-        }
 
-        showLoader()
-
-        let record: [String: Any] = [
-            "id": state.stock.id ?? 0,
-            "name": state.productName,
-            "price": state.unitCost,
-            "quantity": state.unitCost,
-            "supplierId": supplier.id ?? 0,
-            "measurementUnitId": supplier.id ?? 0,
-            "description": "n/a",
-            "minimumOrderQuantity": state.unitCost,
-            "stockAlertThreshold": state.lowStockLevel
-        ]
-
+    private func updateStock(parameters: [String: Any]) async -> Bool {
         do {
-//            _ = try await bookKeepingService.updateProduct(
-//                parameters: record,
+//            let _ = try await bookKeepingService.updateProduct(
+//                id: state.stockId,
+//                parameters: parameters,
 //                accessToken: state.oauthToken
 //            )
-
-            hideLoader()
+            
             return true
-
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
+            print("❌ Error updating stock: ", error)
             return false
         }
     }
-    
+
     // MARK: - State
     private struct State {
-        let stock: StockResponse
-        
-        var supplier: TraderResponse?
-        
+        var stockId: Int
         var productName: String
-        var unitCost: String
-        var lowStockLevel: String
-        
+        var quantity: Double
+        var unitCost: Double
+        var lowStockLevel: Double
+        var supplier: CommonIdNameModel?
+        var measurementUnit: CommonIdNameModel?
         var date: Date?
         var dateString: String = ""
-        
-        var foundedYear: Int?
-        
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         
         init(stock: StockResponse) {
-            self.stock = stock
-            
+            self.stockId = stock.id ?? -1
             self.productName = stock.name ?? ""
-            self.unitCost = stock.price.map { "\($0)" } ?? ""
-            self.lowStockLevel = stock.minimumOrderQuantity.map { "\($0)" } ?? ""
-            
-            self.supplier = stock.trader
+            self.quantity = Double(stock.minimumOrderQuantity ?? 0)
+            self.unitCost = stock.price ?? 0
+            self.lowStockLevel = Double(stock.minimumOrderQuantity ?? 0)
+            self.supplier = CommonIdNameModel(id: stockId, name: productName)
+            self.measurementUnit = CommonIdNameModel(from: stock.measurementUnit)
+            self.date = Date()
+            self.dateString = Helpers.format(Date())
         }
     }
-    
-    // MARK: - Tags
+
     private enum SectionTag: Int {
         case main = 0
     }
@@ -312,8 +280,8 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         case supplierName = 8
         case unitCost = 6
         case quantity = 7
-        case unitMeasure = 9
         case lowStockLevel = 11
+        case measurementUnit = 9
         case continueButton = 12
     }
 }

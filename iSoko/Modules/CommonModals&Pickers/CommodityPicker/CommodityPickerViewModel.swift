@@ -55,6 +55,7 @@ extension CommodityPickerViewModel {
     
     func fetchCategories() {
         showLoader()
+        defer { hideLoader() }
         
         Task {
             do {
@@ -67,10 +68,8 @@ extension CommodityPickerViewModel {
                 
                 state.categories = response
                 updateCategoriesSection()
-                hideLoader()
                 
             } catch {
-                hideLoader()
                 print("Categories error:", error)
             }
         }
@@ -78,6 +77,7 @@ extension CommodityPickerViewModel {
     
     func fetchCommodities(categoryId: Int) {
         showLoader()
+        defer { hideLoader() }
         
         Task {
             do {
@@ -91,10 +91,8 @@ extension CommodityPickerViewModel {
                 
                 state.commodities = response.data
                 updateCommoditiesSection()
-                hideLoader()
                 
             } catch {
-                hideLoader()
                 print("Commodities error:", error)
             }
         }

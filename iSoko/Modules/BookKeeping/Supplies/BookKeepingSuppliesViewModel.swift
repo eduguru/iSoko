@@ -25,6 +25,9 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     
     // MARK: - Fetch
     override func fetchData() {
+        showLoader()
+        defer { hideLoader() }
+        
         Task {
             let success = await performNetworkRequest()
 

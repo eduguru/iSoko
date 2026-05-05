@@ -94,6 +94,28 @@ public struct BasicResponse: Decodable {
     }
 }
 
+extension BasicResponse {
+    /// Converts the response into a displayable message for the user.
+    var alertMessage: String {
+        // Start with the main message
+        var messages: [String] = []
+        if let message = message, !message.isEmpty {
+            messages.append(message)
+        }
+        
+        // Append field-specific errors
+        if let fieldErrors = errors, !fieldErrors.isEmpty {
+            let fieldMessages = fieldErrors.compactMap { error -> String? in
+                guard let field = error.field, let msg = error.message else { return nil }
+                return "\(field.capitalized): \(msg)"
+            }
+            messages.append(contentsOf: fieldMessages)
+        }
+        
+        return messages.joined(separator: "\n")
+    }
+}
+
 public struct PagedResponse<Payload: Decodable>: Decodable {
     public let status: Int
     public let message: String?

@@ -46,7 +46,7 @@ public final class SearchFormCell: UITableViewCell, UITextFieldDelegate {
 
     private func setupUI() {
         selectionStyle = .none
-        backgroundColor = .clear
+        backgroundColor = .white
         contentView.backgroundColor = .clear
 
         // Container

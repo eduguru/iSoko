@@ -39,19 +39,33 @@ final class AddExpenseCategoryViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         showLoader()
+        defer { hideLoader() }
         
         do {
             let response = try await bookKeepingService.addExpenseCategories(name: state.name, accessToken: state.oauthToken)
                 
             state.SupplierCategory = response
             goToAddCategorySuccess?(response)
-            hideLoader()
             goToShowSuccessScreen?()
             return true
             
+        }  catch let NetworkError.server(response) {
+            print("UPDATE Expense Category ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error: ", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("UPDATE Expense Category ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }

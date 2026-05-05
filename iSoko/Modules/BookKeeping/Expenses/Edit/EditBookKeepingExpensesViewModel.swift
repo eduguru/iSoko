@@ -346,6 +346,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     
     private func performNetworkRequest() async -> Bool {
         showLoader()
+        defer { hideLoader() }
         
         let payload: [String: Any] = [
             "id": state.expense.id,
@@ -364,13 +365,24 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
 //                accessToken: state.oauthToken
 //            )
             
-            hideLoader()
             return true
             
+        } catch let NetworkError.server(response) {
+            print("UPDATE Expense ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
-            return false
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("UPDATE Expense ERROR:", error)
+            showError(error.localizedDescription)
         }
     }
     
@@ -439,6 +451,9 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
         var additionalImages: [PickedFile] = []
         
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
         
         init(expense: ExpenseResponse) {
             self.expense = expense

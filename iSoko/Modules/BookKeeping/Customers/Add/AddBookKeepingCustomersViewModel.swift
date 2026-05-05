@@ -210,6 +210,7 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
         }
 
         showLoader()
+        defer { hideLoader() }
         
         let payload: [String : Any] = [
             "name": state.customerName,
@@ -229,11 +230,24 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
             )
             
             goToShowSuccessScreen?()
-            hideLoader()
             return true
+        } catch let NetworkError.server(response) {
+            print("Add Customer ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error:", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Add Customer ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }

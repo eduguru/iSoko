@@ -389,6 +389,8 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         showLoader()
+        defer { hideLoader() }
+        
         let payload: [String: Any] = [
             "categoryId": state.categories?.id ?? "",
             "amount": state.amount,
@@ -403,12 +405,25 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         do {
             let response = try await bookKeepingService.addExpense(parameters: payload, pickedFiles: state.additionalImages, accessToken: state.oauthToken)
             
-            hideLoader()
             return true
             
+        } catch let NetworkError.server(response) {
+            print("Add Expense ERROR:", response.alertMessage)
+            
+            await MainActor.run {
+                state.errorMessage = response.message
+                state.fieldErrors = response.errors
+            }
+
+            showError(response.alertMessage)
+            return false
         } catch {
-            hideLoader()
-            print("❌ Error: ", error)
+            await MainActor.run {
+                state.errorMessage = "Something went wrong. Please try again."
+            }
+            
+            print("Add Expense ERROR:", error)
+            showError(error.localizedDescription)
             return false
         }
     }

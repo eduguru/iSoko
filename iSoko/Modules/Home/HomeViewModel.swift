@@ -67,6 +67,7 @@ final class HomeViewModel: FormViewModel {
     
     private func performNetworkCalls() {
         showLoader()
+        defer { hideLoader() }
         
         // MARK: - Fetch
         Task {
@@ -79,11 +80,6 @@ final class HomeViewModel: FormViewModel {
             
             // Wait for all data to be fetched
             _ = await (featuredProducts, featuredServices, productCategories, serviceCategories, associations)
-            
-            // Update UI on the main thread after the main fetch completes
-            DispatchQueue.main.async { [weak self] in
-                self?.hideLoader()
-            }
             
             // Fetch banners separately without waiting for it
             await fetchBanners()
