@@ -10,111 +10,181 @@ import UtilsKit
 import StorageKit
 
 final class MoreViewModel: FormViewModel {
-    // Callback closures for navigation
+    // MARK: - Navigation callbacks
     var gotoSignIn: (() -> Void)?
     var gotoSignOut: ((@escaping (Bool) -> Void) -> Void)?
     var gotoProfile: (() -> Void)?
-    var gotoOrganisations: (() -> Void)?
     var gotoTradeAssociations: (() -> Void)?
     var gotoMyOrders: (() -> Void)?
     var gotoShareApp: (() -> Void)?
-    var gotoLegal: (() -> Void)?
     var gotoSettings: (() -> Void)?
     var gotoHelpFeedback: (() -> Void)?
     var showAuthSheet: (() -> Void)?
-    
-    // Internal state
+
+    // MARK: - Internal state
     private var state: State
-    
+
     // MARK: - Initialization
     override init() {
         self.state = State()
         super.init()
-        self.sections = makeSections() // Initial section setup
+        self.sections = makeSections()
     }
-    
+
     // MARK: - Public API
-    
-    /// Use this to update login state and refresh UI
     func setLoggedIn(_ isLoggedIn: Bool) {
         state.isLoggedIn = isLoggedIn
-        self.sections = makeSections() // Regenerate sections based on login state
+        self.sections = makeSections()
     }
-    
+
     // MARK: - Sections Creation
-    
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = []
-        
-        if !state.isLoggedIn {
-            sections.append(FormSection(id: Tags.Section.header.rawValue, cells: [headerTitleRow]))
+
+        // Only show header section if logged in
+        if state.isLoggedIn {
+            sections.append(makeHeaderSection())
         }
-        
-        sections.append(FormSection(id: Tags.Section.body.rawValue, cells: makeImageRows()))
-        sections.append(FormSection(id: Tags.Section.submit.rawValue, cells: [loginButtonRow]))
-        
+
+        // Account & Settings section only visible if logged in
+        if state.isLoggedIn {
+            sections.append(makeAccountSection())
+        }
+
+        // More Options section visible to everyone
+        sections.append(makeMoreOptionsSection())
+
+        // Logout/Login section always visible
+        sections.append(makeLogoutSection())
+
         return sections
     }
     
-    // MARK: - Lazy or Computed Rows
+    private func makeHeaderSection() -> FormSection {
+        let row = makeImageTitleDescriptionRow(
+            tag: 1000,
+            image: UIImage(systemName: "person.circle.fill"),
+            title: "Profile",
+            description: "Manage your account details",
+            onTap: { [weak self] in self?.gotoProfile?() }
+        )
+        return FormSection(id: Tags.Section.header.rawValue, cells: [
+            makeUserCardRow(),
+            row
+        ]
+        )
+    }
     
-    private lazy var headerTitleRow: FormRow = {
-        return TitleDescriptionFormRow(
-            tag: Tags.Cells.headerTitle.rawValue,
-            model: TitleDescriptionModel(
-                title: "",
-                description: "Sign in to connect with sellers, explore the iSOKO community, and get personalized recommendations.",
-                maxTitleLines: 2,
-                maxDescriptionLines: 0,
-                titleEllipsis: .none,
-                descriptionEllipsis: .none,
-                layoutStyle: .stackedVertical,
-                textAlignment: .left
+    private func makeUserCardRow() -> FormRow {
+        let profile = state.userProfile
+        
+        return ImageIdentityHeaderRow(
+            tag: -00010,
+            config: ImageIdentityHeaderConfig(
+                image: .user,
+                title: profile?.name ?? "John Doe",
+                subtitle: profile?.email ?? "email@example.com",
+                leadingChip: PaddedChipView(
+                    text: profile?.verified ?? false ? "Verified" : "Not Verified",
+                    icon: UIImage(systemName: "checkmark.seal.fill"),
+                    tint: .systemGreen
+                ),
+                trailingChip: PaddedChipView(
+                    text: "Since May 2026",
+                    tint: .secondaryLabel
+                ),
+                onTap: {
+                }
             )
         )
-    }()
-    
+    }
+
+    private func makeAccountSection() -> FormSection {
+        let rows: [FormRow] = [
+            makeImageTitleDescriptionRow(
+                tag: 2000,
+                image: UIImage(systemName: "bell.fill"),
+                title: "Notifications",
+                description: "Manage your notifications",
+                onTap: { [weak self] in self?.gotoSettings?() }
+            ),
+            makeImageTitleDescriptionRow(
+                tag: 2001,
+                image: UIImage(systemName: "person.2.fill"),
+                title: "Trade Associations",
+                description: "Manage your associations",
+                onTap: { [weak self] in self?.gotoTradeAssociations?() }
+            ),
+            makeImageTitleDescriptionRow(
+                tag: 2002,
+                image: UIImage(systemName: "bag.fill"),
+                title: "My Orders",
+                description: "View your orders and wishlist",
+                onTap: { [weak self] in self?.gotoMyOrders?() }
+            )
+        ]
+        return FormSection(id: Tags.Section.account.rawValue, cells: rows)
+    }
+
+    private func makeMoreOptionsSection() -> FormSection {
+        let rows: [FormRow] = [
+            makeImageTitleDescriptionRow(
+                tag: 3000,
+                image: UIImage(systemName: "globe"),
+                title: "Language Settings",
+                description: "Change your preferred language",
+                onTap: { [weak self] in self?.gotoSettings?() }
+            ),
+            makeImageTitleDescriptionRow(
+                tag: 3001,
+                image: UIImage(systemName: "questionmark.circle.fill"),
+                title: "Help & Support",
+                description: "Get assistance and support",
+                onTap: { [weak self] in self?.gotoHelpFeedback?() }
+            ),
+            makeImageTitleDescriptionRow(
+                tag: 3002,
+                image: UIImage(systemName: "square.and.arrow.up"),
+                title: "Share App",
+                description: "Invite friends and earn rewards",
+                onTap: { [weak self] in self?.gotoShareApp?() }
+            )
+        ]
+        return FormSection(id: Tags.Section.more.rawValue, cells: rows)
+    }
+
+    private func makeLogoutSection() -> FormSection {
+        return FormSection(id: Tags.Section.logout.rawValue, cells: [loginButtonRow])
+    }
+
+    // MARK: - Lazy / Computed Rows
     private lazy var loginButtonRow: FormRow = {
         let title = state.isLoggedIn ? "Log out" : "Log in or sign up"
         let style: ButtonStyleType = state.isLoggedIn ? .primary : .outlined
-        
+
         let buttonModel = ButtonFormModel(
             title: title,
             style: style,
             size: .medium,
-            icon: UIImage(systemName: "email.fill"),
+            icon: UIImage(systemName: "arrow.right.square"),
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            self?.state.isLoggedIn ?? false ? self?.signOut() : self?.gotoSignIn?()
-        }
-        
-        return ButtonFormRow(tag: Tags.Cells.submit.rawValue, model: buttonModel)
-    }()
-    
-    // MARK: - Sign Out Logic
-    
-    func signOut() {
-        gotoSignOut? { success in
-            if success {
-                print("Successfully signed out.")
-                // Clear user data on successful sign-out
-                AppStorage.hasLoggedIn = false
-                AppStorage.userProfile = nil
-                AppStorage.oauthToken = nil
-                
-                // After signing out, update sections to reflect login state
-                DispatchQueue.main.async { [weak self] in
-                    self?.setLoggedIn(false)  // Re-generate sections after sign-out
-                }
+            guard let self = self else { return }
+            if self.state.isLoggedIn {
+                self.signOut()
             } else {
-                print("Sign-out failed or canceled.")
+                if let showSheet = self.showAuthSheet {
+                    showSheet()
+                } else {
+                    self.gotoSignIn?()
+                }
             }
         }
-    }
-    
-    // MARK: - Image Row Creation
-    
+
+        return ButtonFormRow(tag: Tags.Cells.submit.rawValue, model: buttonModel)
+    }()
+
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage?,
@@ -135,76 +205,41 @@ final class MoreViewModel: FormViewModel {
             )
         )
     }
-    
-    private func makeImageRows() -> [FormRow] {
-        let items = makeRowItemsArray()
-        return items.enumerated().map { index, item in
-            makeImageTitleDescriptionRow(
-                tag: 2000 + index,
-                image: item.image,
-                title: item.title,
-                description: item.description,
-                onTap: item.onTap
-            )
+
+    // MARK: - Sign Out Logic
+    func signOut() {
+        gotoSignOut? { [weak self] success in
+            if success {
+                AppStorage.hasLoggedIn = false
+                AppStorage.userProfile = nil
+                AppStorage.oauthToken = nil
+                DispatchQueue.main.async { [weak self] in
+                    self?.setLoggedIn(false)
+                }
+            }
         }
     }
-    
-    private func makeRowItemsArray() -> [RowItemModel] {
-        var items: [RowItemModel] = [
-            RowItemModel(title: "Legal", description: "See terms, policies, and privacy", image: .legalIcon, onTap: { [weak self] in
-                self?.gotoLegal?()
-            }),
-            RowItemModel(title: "Security and settings", description: "Update your personal details", image: .settingsGearIcon, onTap: { [weak self] in
-                self?.gotoSettings?()
-            }),
-            RowItemModel(title: "Help and feedback", description: "Get customer support", image: .questionCircleIcon, onTap: { [weak self] in
-                self?.gotoHelpFeedback?()
-            })
-        ]
-        
-        // Add additional rows when logged in
-        if state.isLoggedIn {
-            items.insert(contentsOf: [
-                RowItemModel(title: "Profile Information", description: "Manage your account details", image: .profile, onTap: { [weak self] in
-                    self?.gotoProfile?()
-                }),
-                RowItemModel(title: "Trade Associations", description: "Caption about association", image: .tradeIcon, onTap: { [weak self] in
-                    self?.gotoTradeAssociations?()
-                }),
-                RowItemModel(title: "My Orders", description: "View your wishlist", image: .bagAddIcon, onTap: { [weak self] in
-                    self?.gotoMyOrders?()
-                }),
-                RowItemModel(title: "Share App & Earn", description: "Get customer support", image: .shareAppIcon, onTap: { [weak self] in
-                    self?.gotoShareApp?()
-                })
-            ], at: 0)
-        }
-        
-        return items
-    }
-    
+
     // MARK: - State
-    
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
-    
+
     // MARK: - Tags
-    
     enum Tags {
         enum Section: Int {
             case header = 0
-            case body = 1
-            case submit
+            case account = 1
+            case more = 2
+            case logout = 3
         }
-        
+
         enum Cells: Int {
-            case headerImage = 0
-            case headerTitle = 1
-            case submit
+            case headerTitle = 0
+            case submit = 1
         }
     }
 }

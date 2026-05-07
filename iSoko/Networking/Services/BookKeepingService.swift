@@ -15,25 +15,31 @@ public protocol BookKeepingService {
     func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
     
     func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse
+    func updateSales(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SalesResponse
     func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]>
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     
     func addExpense(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse
+    func updateExpense(itemId: Int, parameters: [String : Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
     func getAllExpensesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
     func addExpenseCategories(name: String, accessToken: String) async throws -> SupplierCategoryResponse
     func getExpenseCategories(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     func addProduct(parameters: [String: Any], accessToken: String) async throws -> StockResponse
+    func updateProduct(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> StockResponse
     func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> StockResponse
     func getAllStock(userId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[StockResponse]>
     func getAllStockByDate(userId: Int, startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[StockResponse]>
     
+    func addCustomer(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse
+    func updateCustomer(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SupplierResponse
     func getAllCustomers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CustomerResponse]>
     func getAllCustomersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[CustomerResponse]>
     
     func addSupplier(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse
+    func updateSupplier(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SupplierResponse
     func getAllSuppliers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SupplierResponse]>
     func getAllSuppliersReportByDate(startDate: String, endDate: String, accessToken: String)  async throws -> SupplierReportResponse
@@ -64,6 +70,11 @@ public final class BookKeepingServiceImpl: BookKeepingService {
 
 // MARK: - Sales
 public extension BookKeepingServiceImpl {
+    
+    func updateSales(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SalesResponse {
+        try await manager.request(BookKeepingApi.updateSales(itemId: itemId, parameters: parameters, accessToken: accessToken))
+    }
+    
     func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse {
         try await manager.request(BookKeepingApi.addSales(parameters: parameters, accessToken: accessToken))
     }
@@ -125,6 +136,10 @@ public extension BookKeepingServiceImpl {
     func addExpense(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse {
         try await manager.request(BookKeepingApi.addExpense(parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
     }
+    
+    func updateExpense(itemId: Int, parameters: [String : Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse {
+        try await manager.request(BookKeepingApi.updateExpense(itemId: itemId, parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
+    }
 
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]> {
         let envelope = try await manager.request(
@@ -165,6 +180,10 @@ public extension BookKeepingServiceImpl {
         try await manager.request(BookKeepingApi.addProduct(parameters: parameters, accessToken: accessToken))
     }
     
+    func updateProduct(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> StockResponse {
+        try await manager.request(BookKeepingApi.updateProduct(itemId: itemId, parameters: parameters, accessToken: accessToken))
+    }
+    
     func addProduct(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> StockResponse {
         try await manager.request(BookKeepingApi.addProduct(parameters: parameters, pickedFiles: pickedFiles, accessToken: accessToken))
     }
@@ -202,6 +221,14 @@ public extension BookKeepingServiceImpl {
         return envelope
     }
     
+    func updateCustomer(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SupplierResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.updateCustomer(itemId: itemId, parameters: parameters, accessToken: accessToken)
+        )
+        
+        return envelope
+    }
+    
     func getAllCustomers(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CustomerResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllCustomers(
@@ -229,6 +256,14 @@ public extension BookKeepingServiceImpl {
     func addSupplier(parameters: [String: Any], accessToken: String) async throws -> SupplierResponse {
         let envelope = try await manager.request(
             BookKeepingApi.addSupplier(parameters: parameters, accessToken: accessToken)
+        )
+        
+        return envelope
+    }
+    
+    func updateSupplier(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SupplierResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.updateSupplier(itemId: itemId, parameters: parameters, accessToken: accessToken)
         )
         
         return envelope

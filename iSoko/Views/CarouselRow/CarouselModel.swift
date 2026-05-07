@@ -49,14 +49,3 @@ public struct CarouselModel {
         self.pageDotColor = pageDotColor
     }
 }
-
-extension CarouselModel: Equatable {
-
-    public static func == (lhs: CarouselModel, rhs: CarouselModel) -> Bool {
-        return lhs.items == rhs.items &&
-               lhs.autoPlayInterval == rhs.autoPlayInterval &&
-               lhs.paginationPlacement == rhs.paginationPlacement &&
-               lhs.imageContentMode == rhs.imageContentMode
-    }
-}
-

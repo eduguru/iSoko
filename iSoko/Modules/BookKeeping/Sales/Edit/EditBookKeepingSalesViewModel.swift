@@ -425,11 +425,12 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
 
         do {
             // Call the update sales API here
-//            _ = try await bookKeepingService.updateSales(
-//                id: state.sale.id,
-//                parameters: payload,
-//                accessToken: state.oauthToken
-//            )
+            _ = try await bookKeepingService.updateSales(
+                itemId: state.sale.id,
+                parameters: payload,
+                accessToken: state.oauthToken
+            )
+            
             return true
 
         } catch let NetworkError.server(response) {
@@ -440,7 +441,8 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
                 state.fieldErrors = response.errors
             }
 
-            showError(response.alertMessage) 
+            showError(response.alertMessage)
+            return false
         } catch {
             await MainActor.run {
                 state.errorMessage = "Something went wrong. Please try again."
@@ -448,6 +450,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             
             print("UPDATE SALES ERROR:", error)
             showError(error.localizedDescription)
+            return false
         }
     }
 

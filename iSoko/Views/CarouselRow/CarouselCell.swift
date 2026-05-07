@@ -7,10 +7,10 @@
 
 import UIKit
 
+// MARK: - Carousel UITableViewCell
 final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     private var model: CarouselModel?
-    private var savedModel: CarouselModel?
     private var savedPage: Int = 0
     private var timer: Timer?
 
@@ -57,7 +57,6 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
             collectionView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            // collectionView.heightAnchor.constraint(equalToConstant: 120)
             collectionView.heightAnchor.constraint(equalTo: contentView.heightAnchor)
         ])
 
@@ -76,14 +75,10 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
     public func configure(with model: CarouselModel) {
         self.model = model
 
-        // Setup page control colors
-        pageControl.currentPageIndicatorTintColor = model.currentPageDotColor ?? .app(.primary)
+        pageControl.currentPageIndicatorTintColor = model.currentPageDotColor ?? .systemBlue
         pageControl.pageIndicatorTintColor = model.pageDotColor ?? .systemGray3
 
-        if savedModel != model {
-            savedModel = model
-            collectionView.reloadData()
-        }
+        collectionView.reloadData()
 
         let index = min(savedPage, model.items.count - 1)
         let path = IndexPath(item: index, section: 0)
@@ -96,7 +91,6 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
 
         NSLayoutConstraint.deactivate(pageControlBelowConstraints)
         NSLayoutConstraint.deactivate(pageControlInsideConstraints)
-
         switch model.paginationPlacement {
         case .below: NSLayoutConstraint.activate(pageControlBelowConstraints)
         case .inside: NSLayoutConstraint.activate(pageControlInsideConstraints)
@@ -112,61 +106,10 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
 
     private func scrollToNext() {
         guard let model = model, model.items.count > 1 else { return }
-
-        let currentPage = savedPage
-        let nextItem = (currentPage + 1) % model.items.count
-
-        switch model.transitionStyle {
-        case .fade:
-            fadeTransitionToPage(nextItem)
-        case .slideLeft:
-            slideTransitionToPage(nextItem, direction: .left)
-        case .slideRight:
-            slideTransitionToPage(nextItem, direction: .right)
-        default:
-            let indexPath = IndexPath(item: nextItem, section: 0)
-            collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
-            updatePageControlManually(nextItem)
-        }
-    }
-
-    private func fadeTransitionToPage(_ page: Int) {
-        guard let model = model else { return }
-        guard let currentCell = collectionView.visibleCells.first else { return }
-        let snapshot = currentCell.snapshotView(afterScreenUpdates: false)
-        snapshot?.frame = currentCell.frame
-
-        if let snapshot = snapshot {
-            collectionView.addSubview(snapshot)
-        }
-
-        let indexPath = IndexPath(item: page, section: 0)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-
-        UIView.animate(withDuration: 0.4, animations: {
-            snapshot?.alpha = 0
-        }, completion: { _ in
-            snapshot?.removeFromSuperview()
-            self.updatePageControlManually(page)
-        })
-    }
-
-    private enum SlideDirection {
-        case left, right
-    }
-
-    private func slideTransitionToPage(_ page: Int, direction: SlideDirection) {
-        guard let model = model else { return }
-
-        let transition = CATransition()
-        transition.type = .push
-        transition.subtype = direction == .left ? .fromRight : .fromLeft
-        transition.duration = 0.35
-        collectionView.layer.add(transition, forKey: kCATransition)
-
-        let indexPath = IndexPath(item: page, section: 0)
-        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-        updatePageControlManually(page)
+        let nextItem = (savedPage + 1) % model.items.count
+        let indexPath = IndexPath(item: nextItem, section: 0)
+        collectionView.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: true)
+        updatePageControlManually(nextItem)
     }
 
     private func updatePageControlManually(_ page: Int) {
@@ -174,20 +117,12 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         pageControl.currentPage = page
     }
 
-    // MARK: ScrollView Delegate
-
-    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        updatePageControlFromScroll()
-    }
-
-    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
-        updatePageControlFromScroll()
-    }
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) { updatePageControlFromScroll() }
+    func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) { updatePageControlFromScroll() }
 
     private func updatePageControlFromScroll() {
         let pageWidth = collectionView.frame.width
-        let fractionalPage = collectionView.contentOffset.x / pageWidth
-        let page = Int(round(fractionalPage))
+        let page = Int(round(collectionView.contentOffset.x / pageWidth))
         guard let model = model, page < model.items.count else { return }
         updatePageControlManually(page)
     }
@@ -198,7 +133,7 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         timer = nil
     }
 
-    // MARK: Collection View
+    // MARK: - UICollectionView
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return model?.items.count ?? 0
@@ -208,10 +143,9 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         guard
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CarouselItemCell.reuseIdentifier, for: indexPath) as? CarouselItemCell,
             let item = model?.items[indexPath.item]
-        else {
-            return UICollectionViewCell()
-        }
-        cell.configure(with: item, contentMode: model?.imageContentMode ?? .scaleAspectFill, hideText: model?.hideText ?? false)
+        else { return UICollectionViewCell() }
+
+        cell.configure(with: item, hideText: model?.hideText ?? false)
         return cell
     }
 
@@ -223,4 +157,3 @@ final class CarouselCell: UITableViewCell, UICollectionViewDelegate, UICollectio
         model?.items[indexPath.item].didTap?()
     }
 }
-

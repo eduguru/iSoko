@@ -44,6 +44,7 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
         iconContainerView.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(iconContainerView)
 
+        iconImageView.tintColor = UIColor.app(.primary)
         iconImageView.contentMode = .scaleAspectFit
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconContainerView.addSubview(iconImageView)

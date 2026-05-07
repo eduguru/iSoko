@@ -20,6 +20,7 @@ struct ServiceItem {
 final class InsightsViewModel: FormViewModel {
     var gotoConfirm: ((ReportSelectionPayload) -> Void)?
     var goToDetails: (() -> Void)? = { }
+    var goToAnalytics: (() -> Void)? = { }
     
     var goToNewsDetails: ((DirectusNewsItem) -> Void)? = { _ in }
     
@@ -63,8 +64,9 @@ final class InsightsViewModel: FormViewModel {
     // MARK: - Section Builder
     private func makeSections() -> [FormSection] {
         [
-            makeTitleSection(),
-            makeSelectionSection(),
+            // makeTitleSection(),
+            // makeSelectionSection(),
+            makeAnalyticsSection(),
             makeBodySection()
         ]
     }
@@ -75,6 +77,13 @@ final class InsightsViewModel: FormViewModel {
             cells: [
                 titleDescriptionFormRow
             ]
+        )
+    }
+    
+    private func makeAnalyticsSection() -> FormSection {
+        FormSection(
+            id: SectionTag.analytics.rawValue,
+            cells: makeImageRows()
         )
     }
     
@@ -92,11 +101,63 @@ final class InsightsViewModel: FormViewModel {
         FormSection(
             id: SectionTag.body.rawValue,
             title: "Latest Business News",
-            actionTitle: "See All",
+            actionTitle:nil,
             onActionTapped: {
                 
             },
             cells: []
+        )
+    }
+    
+    private func makeImageRows() -> [FormRow] {
+        let items = makeRowItemsArray()
+        
+        return items.enumerated().map { index, item in
+            makeImageTitleDescriptionRow(
+                tag: 2000 + index,
+                image: item.image,
+                title: item.title,
+                description: item.description,
+                onTap: item.onTap
+            )
+        }
+    }
+    
+    private func makeRowItemsArray() -> [RowItemModel] {
+        var items: [RowItemModel] = []
+        
+        items.append(contentsOf: [
+            RowItemModel(
+                title: "Analytics",
+                description: "View analytics for your business",
+                image: .profile,
+                onTap: { [weak self] in
+                    self?.goToAnalytics?()
+            })
+        ])
+        
+        return items
+    }
+    
+    // Generates a reusable ImageTitleDescriptionRow
+    private func makeImageTitleDescriptionRow(
+        tag: Int,
+        image: UIImage?,
+        title: String,
+        description: String,
+        onTap: (() -> Void)? = nil
+    ) -> FormRow {
+        return ImageTitleDescriptionRow(
+            tag: tag,
+            config: ImageTitleDescriptionConfig(
+                image: image,
+                imageStyle: .rounded,
+                title: title,
+                description: description,
+                accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
+                onTap: onTap,
+                isCardStyleEnabled: true
+            )
         )
     }
     
@@ -297,6 +358,7 @@ final class InsightsViewModel: FormViewModel {
         case selection
         case financialSummary
         case body
+        case analytics
     }
 
     private enum CellTag: Int {

@@ -160,20 +160,20 @@ final class BusinessViewModel: FormViewModel {
                     self?.goToCurrencyExchange?()
             }),
             
-            RowItemModel(
-                title: "Analytics",
-                description: "View analytics for your business",
-                image: .profile,
-                onTap: { [weak self] in
-                    self?.goToReports?()
-            }),
-            RowItemModel(
-                title: "Tax Calculator",
-                description: "Calculate value of your Taxable goods",
-                image: .tradeIcon,
-                onTap: { [weak self] in
-                    self?.goToTaxCalculator?()
-            })
+//            RowItemModel(
+//                title: "Analytics",
+//                description: "View analytics for your business",
+//                image: .profile,
+//                onTap: { [weak self] in
+//                    self?.goToReports?()
+//            }),
+//            RowItemModel(
+//                title: "Tax Calculator",
+//                description: "Calculate value of your Taxable goods",
+//                image: .tradeIcon,
+//                onTap: { [weak self] in
+//                    self?.goToTaxCalculator?()
+//            })
         ])
         
         return items

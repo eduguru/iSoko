@@ -216,10 +216,11 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
         ]
 
         do {
-//            _ = try await bookKeepingService.updateCustomer(
-//                parameters: payload,
-//                accessToken: state.oauthToken
-//            )
+            _ = try await bookKeepingService.updateCustomer(
+                itemId: state.customer.id,
+                parameters: payload,
+                accessToken: state.oauthToken
+            )
 
             goToShowSuccessScreen?()
             return true

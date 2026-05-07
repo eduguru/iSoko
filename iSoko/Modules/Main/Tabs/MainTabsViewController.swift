@@ -33,17 +33,6 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
         bindViewModel()
     }
 
-//    private func setupViewControllers() {
-//        // These should correspond to the number/order of your tab items
-//        let vc1 = BaseNavigationController(rootViewController: HomeCoordinator().primaryViewController())
-//        let vc2 = BaseNavigationController(rootViewController: BusinessCoordinator().primaryViewController())
-//        let vc3 = BaseNavigationController(rootViewController: InsightsCoordinator().primaryViewController())
-//        let vc4 = BaseNavigationController(rootViewController: ServicesCoordinator().primaryViewController())
-//        let vc5 = BaseNavigationController(rootViewController: MoreCoordinator().primaryViewController())
-//
-//        viewControllers = [vc1, vc2, vc3, vc4, vc5]
-//    }
-    
     private func setupViewControllers() {
         // 1. Home
         let homeNav = BaseNavigationController()
@@ -64,10 +53,10 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
         insightsCoordinator.start()
 
         // 4. Services
-        let servicesNav = BaseNavigationController()
-        let servicesRouter = Router(navigationController: servicesNav)
-        let servicesCoordinator = ServicesCoordinator(router: servicesRouter)
-        servicesCoordinator.start()
+//        let servicesNav = BaseNavigationController()
+//        let servicesRouter = Router(navigationController: servicesNav)
+//        let servicesCoordinator = ServicesCoordinator(router: servicesRouter)
+//        servicesCoordinator.start()
 
         // 5. More (this is where your issue was)
         let moreNav = BaseNavigationController()
@@ -76,7 +65,13 @@ final class MainTabsViewController: UITabBarController, CustomTabBarDelegate {
         moreCoordinator.start()
 
         // Final assignment
-        viewControllers = [homeNav, businessNav, insightsNav, servicesNav, moreNav]
+        viewControllers = [
+            homeNav,
+            businessNav,
+            insightsNav,
+            // servicesNav,
+            moreNav
+        ]
     }
 
 

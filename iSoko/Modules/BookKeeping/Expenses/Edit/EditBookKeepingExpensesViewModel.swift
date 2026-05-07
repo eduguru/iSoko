@@ -359,11 +359,12 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
         ]
         
         do {
-//            _ = try await bookKeepingService.updateExpense(
-//                parameters: payload,
-//                pickedFiles: state.additionalImages,
-//                accessToken: state.oauthToken
-//            )
+            _ = try await bookKeepingService.updateExpense(
+                itemId: state.expense.id,
+                parameters: payload,
+                pickedFiles: state.additionalImages,
+                accessToken: state.oauthToken
+            )
             
             return true
             
@@ -376,6 +377,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             }
 
             showError(response.alertMessage)
+            return false
         } catch {
             await MainActor.run {
                 state.errorMessage = "Something went wrong. Please try again."
@@ -383,6 +385,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             
             print("UPDATE Expense ERROR:", error)
             showError(error.localizedDescription)
+            return false
         }
     }
     

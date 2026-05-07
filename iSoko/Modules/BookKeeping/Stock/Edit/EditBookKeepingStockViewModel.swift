@@ -231,11 +231,11 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
     private func updateStock(parameters: [String: Any]) async -> Bool {
         do {
-//            let _ = try await bookKeepingService.updateProduct(
-//                id: state.stockId,
-//                parameters: parameters,
-//                accessToken: state.oauthToken
-//            )
+            let _ = try await bookKeepingService.updateProduct(
+                itemId: state.stockId,
+                parameters: parameters,
+                accessToken: state.oauthToken
+            )
             
             return true
         } catch {

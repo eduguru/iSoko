@@ -45,12 +45,12 @@ final class MainTabsViewModel {
             ),
             
             // Services Tab
-            TabBarItemModel(
-                icon: .servicesTabIcon,
-                title: "Services",
-                color: .app(.primary),
-                showTitleOnlyWhenSelected: true // Title only shows when selected
-            ),
+//            TabBarItemModel(
+//                icon: .servicesTabIcon,
+//                title: "Services",
+//                color: .app(.primary),
+//                showTitleOnlyWhenSelected: true // Title only shows when selected
+//            ),
             
             // Account Tab
             TabBarItemModel(

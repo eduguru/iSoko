@@ -107,6 +107,25 @@ public extension BookKeepingApi {
         return ValueResponseTarget(target: target)
     }
     
+    static func updateSales(itemId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SalesResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sales/\(itemId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
     static func getSalesType(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameModel]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
@@ -195,6 +214,35 @@ public extension BookKeepingApi {
             baseURL: ApiEnvironment.apiBaseURL,
             path: "bookkeeping/expenses",
             method: .post,
+            jsonPartName: "expense",
+            jsonData: paramsJson,
+            files: files,
+            headers: headers,
+            requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: target.asAnyTarget())
+    }
+    
+    static func updateExpense(
+        itemId: Int,
+        parameters: [String: Any],
+        pickedFiles: [PickedFile]?,
+        accessToken: String
+    ) -> ValueResponseTarget<ExpenseResponse> {
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
+        var files: [UploadFile] = Helpers.mapPickedFile2UploadFile(pickedFiles, name: "documents")
+
+        let target = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/expenses",
+            method: .patch,
             jsonPartName: "expense",
             jsonData: paramsJson,
             files: files,
@@ -295,6 +343,33 @@ public extension BookKeepingApi {
 
 // MARK: - Stock
 public extension BookKeepingApi {
+    
+    static func updateProduct(
+        itemId: Int,
+        parameters: [String: Any],
+        accessToken: String
+    ) -> ValueResponseTarget<StockResponse> {
+        
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
+
+        let target = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "products\(itemId)",
+            method: .post,
+            jsonPartName: "product",
+            jsonData: paramsJson,
+            files: [],
+            headers: headers,
+            requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: target.asAnyTarget())
+    }
     
     static func addProduct(
         parameters: [String: Any],
@@ -418,6 +493,25 @@ public extension BookKeepingApi {
         return ValueResponseTarget(target: target)
     }
     
+    static func updateCustomer(itemId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SupplierResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/customers\(itemId)",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
     static func getAllCustomers(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CustomerResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         
@@ -477,6 +571,25 @@ public extension BookKeepingApi {
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
             path: "bookkeeping/suppliers",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func updateSupplier(itemId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SupplierResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/suppliers\(itemId)",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,

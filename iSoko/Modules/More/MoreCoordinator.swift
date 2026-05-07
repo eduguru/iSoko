@@ -18,11 +18,11 @@ public class MoreCoordinator: BaseCoordinator {
         model.gotoSignIn = gotoSignIn
         model.gotoSignOut = gotoSignOut
         model.gotoProfile = gotoProfile
-        model.gotoOrganisations = gotoOrganisations
+        // model.gotoOrganisations = gotoOrganisations
         model.gotoTradeAssociations = gotoTradeAssociations
         model.gotoMyOrders = gotoMyOrders
         model.gotoShareApp = gotoShareApp
-        model.gotoLegal = gotoLegal
+        // model.gotoLegal = gotoLegal
         model.gotoSettings = gotoSettings
         model.gotoHelpFeedback = gotoHelpFeedback
         
@@ -147,24 +147,17 @@ public class MoreCoordinator: BaseCoordinator {
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
-    
+
     private func gotoTradeAssociations() {
         guard AppStorage.hasLoggedIn == true else {
             presentAuthBottomSheet()
             return
         }
         
-        guard let presentingVC = navigationController?.tabBarController else { return }
-        
-        let flow = TradeAssociationFlowCoordinator(presentingVC: presentingVC)
-        addChild(flow)
-        
-        let nav = flow.rootNavigationController
-        nav.modalPresentationStyle = .fullScreen
-        
-        presentingVC.present(nav, animated: true) {
-            flow.start()
-        }
+        let router = Router(navigationController: navigationController)
+        let cordinator = TradeAssociationFlowCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.start()
     }
     
     @MainActor
