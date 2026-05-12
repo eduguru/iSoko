@@ -54,7 +54,7 @@ public final class ImageFormCell: UITableViewCell {
     }
 
     public func configure(with config: ImageFormRowConfig) {
-        imageViewContainer.image = config.image
+
         heightConstraint?.constant = config.imageHeight
 
         // Fill width vs centered
@@ -71,11 +71,7 @@ public final class ImageFormCell: UITableViewCell {
         }
 
         // Background
-        if let bgColor = config.backgroundColor {
-            imageViewContainer.backgroundColor = bgColor
-        } else {
-            imageViewContainer.backgroundColor = .clear
-        }
+        imageViewContainer.backgroundColor = config.backgroundColor ?? .clear
 
         // Corner radius
         if let radius = config.cornerRadius {
@@ -83,18 +79,48 @@ public final class ImageFormCell: UITableViewCell {
             imageViewContainer.clipsToBounds = true
         } else {
             imageViewContainer.layer.cornerRadius = 0
-            imageViewContainer.clipsToBounds = config.fillWidth // only clip if needed
+            imageViewContainer.clipsToBounds = config.fillWidth
         }
 
-        // Aspect ratio (width / height)
+        // Aspect ratio
         if let ratio = config.aspectRatio {
-            // Remove old constraint
             if let old = aspectRatioConstraint {
                 imageViewContainer.removeConstraint(old)
             }
 
-            aspectRatioConstraint = imageViewContainer.widthAnchor.constraint(equalTo: imageViewContainer.heightAnchor, multiplier: ratio)
+            aspectRatioConstraint = imageViewContainer.widthAnchor.constraint(
+                equalTo: imageViewContainer.heightAnchor,
+                multiplier: ratio
+            )
             aspectRatioConstraint?.isActive = true
+        }
+
+        if let url = config.imageURL {
+
+            imageViewContainer.kf.indicatorType = .activity
+
+            imageViewContainer.kf.setImage(
+                with: url,
+                placeholder: config.image,
+                options: [
+                    .transition(.fade(0.2)),
+                    .cacheOriginalImage
+                ]
+            ) { [weak self] result in
+                switch result {
+                case .success(let value):
+                    self?.onModelUpdate?(value.image, config.imageHeight)
+
+                case .failure:
+                    // fallback already handled by placeholder
+                    self?.imageViewContainer.image = config.image
+                }
+            }
+
+        } else {
+            // fallback local image
+            imageViewContainer.kf.cancelDownloadTask()
+            imageViewContainer.image = config.image
         }
 
         layoutIfNeeded()

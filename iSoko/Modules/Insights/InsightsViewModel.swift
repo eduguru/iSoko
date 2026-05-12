@@ -43,6 +43,9 @@ final class InsightsViewModel: FormViewModel {
     }
     
     override func fetchData() {
+        showLoader()
+        defer{ hideLoader() }
+        
         Task {
             do {
                 try await directusService.login(
@@ -168,7 +171,9 @@ final class InsightsViewModel: FormViewModel {
             return
         }
 
-        sections[sectionIndex].cells = makeNewsCells()
+        var cells = makeNewsCells()
+        cells.append(SpacerFormRow(tag: 000, height: 40))
+        sections[sectionIndex].cells = cells
 
         reloadSection(sectionIndex)
     }

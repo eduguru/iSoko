@@ -152,6 +152,18 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
     }
 
     // MARK: - About
+    
+    private lazy var bodyText: FormRow = makeBodyTextRow()
+    private func makeBodyTextRow() -> FormRow {
+        RichDescriptionFormRow(
+            tag: 3001,
+            model: RichDescriptionModel(
+                title: "",
+                htmlDescription: state.data.description ?? "",
+                textAlignment: .left
+            )
+        )
+    }
 
     private func makeAboutCells() -> [FormRow] {
         [
@@ -172,7 +184,9 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
                 image: .location,
                 title: state.data.physicalAddress ?? "physicalAddress",
                 description: ""
-            )
+            ),
+            SpacerFormRow(tag: -0001, height: 16),
+            makeBodyTextRow()
         ]
     }
 

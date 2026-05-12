@@ -9,15 +9,17 @@ import UIKit
 
 public struct ImageFormRowConfig {
     public var image: UIImage?
+    public var imageURL: URL?          
     public var imageHeight: CGFloat
     public var fillWidth: Bool
 
     public var backgroundColor: UIColor?
-    public var cornerRadius: CGFloat?         // ← Optional corner radius
-    public var aspectRatio: CGFloat?          // ← Optional (width / height)
+    public var cornerRadius: CGFloat?
+    public var aspectRatio: CGFloat?
 
     public init(
-        image: UIImage?,
+        image: UIImage? = nil,
+        imageURL: URL? = nil,
         height: CGFloat = 100,
         fillWidth: Bool = false,
         backgroundColor: UIColor? = nil,
@@ -25,6 +27,7 @@ public struct ImageFormRowConfig {
         aspectRatio: CGFloat? = nil
     ) {
         self.image = image
+        self.imageURL = imageURL
         self.imageHeight = height
         self.fillWidth = fillWidth
         self.backgroundColor = backgroundColor

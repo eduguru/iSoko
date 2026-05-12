@@ -38,6 +38,6 @@ public final class InfoListingFormRow: FormRow {
     
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return 130 // Adjust height for your navigation bar cell
+        return 150 // Adjust height for your navigation bar cell
     }
 }

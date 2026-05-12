@@ -9,8 +9,25 @@ import UIKit
 
 public struct StoreProfileCardConfig {
 
+    public var image: UIImage?
+    public var title: String
+    public let headerTitle: String?
+    public let description: String?
+
+    // Verified badge image (optional)
+    public var verifiedImage: UIImage?
+
+    // Reusable badge pills (uses your BadgeView)
+    public var badges: [(text: String, textColor: UIColor, backgroundColor: UIColor)]
+
+    // Trailing button
+    public var trailingButtonTitle: String?
+    public var onTrailingButtonTap: (() -> Void)?
+
+    // Bottom actions
     public struct Action {
         public let title: String
+        
         public let image: UIImage?
         public let handler: (() -> Void)?
 
@@ -24,21 +41,7 @@ public struct StoreProfileCardConfig {
             self.handler = handler
         }
     }
-
-    public var image: UIImage?
-    public var title: String
-
-    // Verified badge image (optional)
-    public var verifiedImage: UIImage?
-
-    // Reusable badge pills (uses your BadgeView)
-    public var badges: [(text: String, textColor: UIColor, backgroundColor: UIColor)]
-
-    // Trailing button
-    public var trailingButtonTitle: String?
-    public var onTrailingButtonTap: (() -> Void)?
-
-    // Bottom actions
+    
     public var actions: [Action]
 
     // Card styling
@@ -49,7 +52,9 @@ public struct StoreProfileCardConfig {
 
     public init(
         image: UIImage?,
+        headerTitle: String? = nil,
         title: String,
+        description: String? = nil,
         verifiedImage: UIImage? = nil,
         badges: [(String, UIColor, UIColor)] = [],
         trailingButtonTitle: String? = nil,
@@ -71,5 +76,7 @@ public struct StoreProfileCardConfig {
         self.backgroundColor = backgroundColor
         self.borderColor = borderColor
         self.borderWidth = borderWidth
+        self.headerTitle = headerTitle
+        self.description = description
     }
 }

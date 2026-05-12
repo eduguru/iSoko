@@ -284,7 +284,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.exportCards.rawValue,
             title: "Featured Associations",
-            actionTitle: "See All",
+            actionTitle: nil, // "See All",
             onActionTapped: {
                 print("See All Export Councils")
             },
@@ -360,8 +360,11 @@ final class HomeViewModel: FormViewModel {
             columns: 2
         )
         
+        var cells: [FormRow] = [updatedRow]
+        cells.append(SpacerFormRow(tag: 000, height: 40))
+        
         var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
+        updatedSection.cells = cells
         sections[sectionIndex] = updatedSection
         
         reloadSection(sectionIndex)

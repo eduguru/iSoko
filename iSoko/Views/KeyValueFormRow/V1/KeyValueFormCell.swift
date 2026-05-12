@@ -13,6 +13,9 @@ public final class KeyValueFormCell: UITableViewCell {
     private let styleGuide: StyleGuideProtocol = DesignSystemKit.sharedStyleGuide
 
     private let cardView = UIView()
+
+    private let sectionTitleLabel = UILabel()
+
     private let leftLabel = UILabel()
     private let rightLabel = UILabel()
 
@@ -21,13 +24,11 @@ public final class KeyValueFormCell: UITableViewCell {
     private let topDivider = UIView()
     private let bottomDivider = UIView()
 
-    // Card constraints
     private var cardLeadingConstraint: NSLayoutConstraint!
     private var cardTrailingConstraint: NSLayoutConstraint!
     private var cardTopConstraint: NSLayoutConstraint!
     private var cardBottomConstraint: NSLayoutConstraint!
 
-    // Stack constraints (inside card or contentView)
     private var stackLeadingConstraint: NSLayoutConstraint!
     private var stackTrailingConstraint: NSLayoutConstraint!
     private var stackTopConstraint: NSLayoutConstraint!
@@ -44,6 +45,7 @@ public final class KeyValueFormCell: UITableViewCell {
     }
 
     private func setup() {
+
         selectionStyle = .none
         backgroundColor = .clear
         contentView.backgroundColor = .clear
@@ -53,10 +55,17 @@ public final class KeyValueFormCell: UITableViewCell {
         rightLabel.setContentHuggingPriority(.required, for: .horizontal)
         rightLabel.textAlignment = .right
 
+        // Section title
+        sectionTitleLabel.font = styleGuide.font(for: .headline)
+        sectionTitleLabel.textColor = .label
+        sectionTitleLabel.numberOfLines = 1
+        sectionTitleLabel.isHidden = true
+
         // Stack
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
+
         stackView.addArrangedSubview(leftLabel)
         stackView.addArrangedSubview(UIView()) // spacer
         stackView.addArrangedSubview(rightLabel)
@@ -68,6 +77,7 @@ public final class KeyValueFormCell: UITableViewCell {
         cardView.layer.masksToBounds = true
 
         contentView.addSubview(cardView)
+        cardView.addSubview(sectionTitleLabel)
         cardView.addSubview(stackView)
 
         // Card constraints
@@ -75,6 +85,7 @@ public final class KeyValueFormCell: UITableViewCell {
         cardTrailingConstraint = cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         cardTopConstraint = cardView.topAnchor.constraint(equalTo: contentView.topAnchor)
         cardBottomConstraint = cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+
         NSLayoutConstraint.activate([
             cardLeadingConstraint,
             cardTrailingConstraint,
@@ -82,11 +93,30 @@ public final class KeyValueFormCell: UITableViewCell {
             cardBottomConstraint
         ])
 
-        // Stack constraints (we will adjust constants later)
+        // Section title constraints
+        sectionTitleLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            sectionTitleLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12),
+            sectionTitleLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16),
+            sectionTitleLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
+        ])
+
+        // Stack constraints (FIXED spacing applied)
         stackLeadingConstraint = stackView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 16)
         stackTrailingConstraint = stackView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -16)
-        stackTopConstraint = stackView.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 12)
-        stackBottomConstraint = stackView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -12)
+
+        // FIX: reduced from 8 → 4
+        stackTopConstraint = stackView.topAnchor.constraint(
+            equalTo: sectionTitleLabel.bottomAnchor,
+            constant: 4
+        )
+
+        stackBottomConstraint = stackView.bottomAnchor.constraint(
+            equalTo: cardView.bottomAnchor,
+            constant: -12
+        )
+
         NSLayoutConstraint.activate([
             stackLeadingConstraint,
             stackTrailingConstraint,
@@ -97,10 +127,13 @@ public final class KeyValueFormCell: UITableViewCell {
         // Dividers
         topDivider.backgroundColor = .separator
         bottomDivider.backgroundColor = .separator
+
         topDivider.translatesAutoresizingMaskIntoConstraints = false
         bottomDivider.translatesAutoresizingMaskIntoConstraints = false
+
         contentView.addSubview(topDivider)
         contentView.addSubview(bottomDivider)
+
         NSLayoutConstraint.activate([
             topDivider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             topDivider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
@@ -115,6 +148,14 @@ public final class KeyValueFormCell: UITableViewCell {
     }
 
     public func configure(with model: KeyValueRowModel) {
+
+        // SECTION TITLE
+        if let title = model.sectionTitle, !title.isEmpty {
+            sectionTitleLabel.text = title.uppercased()
+            sectionTitleLabel.isHidden = false
+        } else {
+            sectionTitleLabel.isHidden = true
+        }
 
         leftLabel.text = model.leftText
         rightLabel.text = model.rightText
@@ -152,8 +193,10 @@ public final class KeyValueFormCell: UITableViewCell {
 
             cardLeadingConstraint.constant = 16
             cardTrailingConstraint.constant = -16
-            cardTopConstraint.constant = 6
-            cardBottomConstraint.constant = -6
+
+            //FIX: reduced from 6 → 4
+            cardTopConstraint.constant = 4
+            cardBottomConstraint.constant = -4
 
             stackLeadingConstraint.constant = card.contentInsets.left
             stackTrailingConstraint.constant = -card.contentInsets.right
@@ -161,7 +204,7 @@ public final class KeyValueFormCell: UITableViewCell {
             stackBottomConstraint.constant = -card.contentInsets.bottom
 
         } else {
-            // No card styling
+
             cardView.backgroundColor = .clear
             cardView.layer.cornerRadius = 0
             cardView.layer.borderWidth = 0
@@ -173,8 +216,10 @@ public final class KeyValueFormCell: UITableViewCell {
 
             stackLeadingConstraint.constant = 16
             stackTrailingConstraint.constant = -16
-            stackTopConstraint.constant = 12
-            stackBottomConstraint.constant = -12
+
+            //reduced from 12 → 8
+            stackTopConstraint.constant = 8
+            stackBottomConstraint.constant = -8
         }
     }
 

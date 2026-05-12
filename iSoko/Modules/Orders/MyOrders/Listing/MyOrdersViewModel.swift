@@ -144,47 +144,148 @@ final class MyOrdersViewModel: FormViewModel {
     }()
     
     private func makeTransactionActionRows() -> [FormRow] {
+
         filteredItems.enumerated().map { index, order in
-            
-            TransactionActionsRow(
-                tag: 3000 + index,
-                config: TransactionActionsCellConfig(
-                    
-                    //Clean usage from model
-                    title: order.displayTitle,
-                    subtitle: order.displaySubtitle,
-                    
-                    amount: "\(order.amount)",
-                    amountColor: .label,
-                    
+
+            let firstProduct = order.products?.first
+
+            let statusStyle = makeStatusStyle(for: order.status)
+
+            let actions: [ActionButtonConfig] = {
+
+                switch order.status.lowercased() {
+
+                case "pending":
+
+                    return [
+
+                        ActionButtonConfig(
+                            title: "Confirm",
+                            style: .subtle,
+                            backgroundColor: UIColor.systemGreen.withAlphaComponent(0.12),
+                            textColor: .systemGreen,
+                            onTap: { [weak self] in
+                                self?.confirmOrder(order)
+                            }
+                        ),
+
+                        ActionButtonConfig(
+                            title: "Reject",
+                            style: .outlined,
+                            textColor: .systemOrange,
+                            borderColor: .systemOrange,
+                            onTap: { [weak self] in
+                                self?.rejectOrder(order)
+                            }
+                        )
+                    ]
+
+                default:
+
+                    return [
+
+                        ActionButtonConfig(
+                            title: "View Details",
+                            style: .subtle,
+                            backgroundColor: UIColor.systemGray5,
+                            textColor: .systemGreen,
+                            onTap: { [weak self] in
+                                self?.goToDetails?(order)
+                            }
+                        )
+                    ]
+                }
+            }()
+
+            return OrderItemFormRow(
+
+                tag: 5000 + index,
+
+                config: OrderItemCellConfig(
+
+                    customerName: order.buyerFullName,
+
+                    orderNumber: "#\(order.orderNumber)",
+
+                    date: order.formattedDate,
+
                     status: order.displayStatus,
-                    statusColor: order.statusColor,
-                    
-                    primaryAction: ActionCardConfig(
-                        title: "View details",
-                        icon: UIImage(systemName: "eye"),
-                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.1),
-                        textColor: .app(.primary),
-                        onTap: { [weak self] in
-                            self?.goToDetails?(order)
-                        }
-                    ),
-                    
-                    secondaryAction: InlineActionConfig(
-                        title: "Contact",
-                        icon: UIImage(systemName: "message"),
-                        onTap: {
-                            print("Contact tapped for order \(order.orderNumber)")
-                        }
-                    ),
-                    
-                    cardBackgroundColor: .systemBackground,
-                    cardBorderColor: .systemGray5,
-                    cardBorderWidth: 1,
-                    cardCornerRadius: 12
+
+                    statusTextColor: statusStyle.textColor,
+
+                    statusBorderColor: statusStyle.borderColor,
+
+                    statusBackgroundColor: statusStyle.backgroundColor,
+
+                    amount: "KES \(order.amount)",
+
+                    amountColor: .systemGreen,
+
+                    productImage: UIImage(named: "placeholder-product"),
+
+                    productName: firstProduct?.name ?? "Unknown Product",
+
+                    productQuantityText:
+                        "\(firstProduct?.quantity ?? 0) x KES \(firstProduct?.price ?? 0)",
+
+                    productAmount: "KES \(order.amount)",
+
+                    actions: actions
                 )
             )
         }
+    }
+    
+    private func makeStatusStyle(
+        for status: String
+    ) -> (
+        textColor: UIColor,
+        borderColor: UIColor,
+        backgroundColor: UIColor
+    ) {
+
+        switch status.lowercased() {
+
+        case "pending":
+
+            return (
+                textColor: .systemOrange,
+                borderColor: UIColor.systemOrange.withAlphaComponent(0.35),
+                backgroundColor: UIColor.systemOrange.withAlphaComponent(0.08)
+            )
+
+        case "completed", "delivered":
+
+            return (
+                textColor: .systemGreen,
+                borderColor: UIColor.systemGreen.withAlphaComponent(0.35),
+                backgroundColor: UIColor.systemGreen.withAlphaComponent(0.08)
+            )
+
+        case "rejected", "cancelled", "failed":
+
+            return (
+                textColor: .systemRed,
+                borderColor: UIColor.systemRed.withAlphaComponent(0.35),
+                backgroundColor: UIColor.systemRed.withAlphaComponent(0.08)
+            )
+
+        default:
+
+            return (
+                textColor: .systemBlue,
+                borderColor: UIColor.systemBlue.withAlphaComponent(0.35),
+                backgroundColor: UIColor.systemBlue.withAlphaComponent(0.08)
+            )
+        }
+    }
+    
+    private func confirmOrder(_ order: CustomerOrderResponse) {
+        print("Confirm order \(order.orderNumber)")
+    }
+
+    private func rejectOrder(_ order: CustomerOrderResponse) {
+        print("Reject order \(order.orderNumber)")
     }
     
     // MARK: - State

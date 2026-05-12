@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Callbacks
     var onProductTap: ((ProductResponseV1) -> Void)?
@@ -19,6 +20,8 @@ final class ProductDetailsViewModel: FormViewModel {
     
     // MARK: - Services
     private let productsService = NetworkEnvironment.shared.productsService
+    
+    @MainActor private let countryHelper = CountryHelper()
     
     init(_ product: ProductResponseV1) {
         self.state = State(product: product)
@@ -162,10 +165,11 @@ final class ProductDetailsViewModel: FormViewModel {
     }
     
     private func makePriceRow() -> FormRow {
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         
         let priceText: String = {
             if let price = state.product.price {
-                return "KES \(String(format: "%.2f", price))"
+                return "\(currency) \(String(format: "%.2f", price))"
             }
             return "Price on request"
         }()
@@ -206,10 +210,11 @@ final class ProductDetailsViewModel: FormViewModel {
     private func makeMinimumQuantityRow() -> FormRow {
         
         let product = state.product
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         
         let priceText: String = {
             if let price = product.price {
-                return "KES \(String(format: "%.2f", price))"
+                return "\(currency) \(String(format: "%.2f", price))"
             }
             return "Price on request"
         }()

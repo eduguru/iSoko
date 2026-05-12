@@ -111,7 +111,7 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
     }
     
     private func goToNewsDetails(_ item: AssociationNewsItem) {
-        let viewModel = NewsDetailsViewModel(item)
+        let viewModel = NewsDetailsViewModel(item.toDomain())
         
         let vc = NewsDetailsViewController()
         vc.viewModel = viewModel

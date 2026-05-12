@@ -14,6 +14,7 @@ class NewsDetailsViewController: FormViewController, CloseableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "News Details"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         

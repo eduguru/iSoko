@@ -28,6 +28,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
 
         AppBootstrap.setup()
+        UIFont.overrideFonts()
 
         window.rootViewController = SplashScreenViewController()
         window.makeKeyAndVisible()

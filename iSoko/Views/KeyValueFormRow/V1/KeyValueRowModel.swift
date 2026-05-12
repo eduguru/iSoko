@@ -12,19 +12,28 @@ public struct KeyValueRowModel {
 
     public var leftText: String
     public var rightText: String
+
     public var leftFontStyle: FontStyle
     public var rightFontStyle: FontStyle
+
     public var leftColor: UIColor?
     public var rightColor: UIColor?
+
     public var maxLeftLines: Int
     public var maxRightLines: Int
+
     public var leftEllipsis: AppEllipsisType
     public var rightEllipsis: AppEllipsisType
+
     public var card: CardSettings?
+
     public var showsTopDivider: Bool
     public var showsBottomDivider: Bool
+
     public var isEmphasized: Bool
     public var usesMonospacedDigits: Bool
+
+    public var sectionTitle: String?
 
     public init(
         leftText: String,
@@ -41,7 +50,8 @@ public struct KeyValueRowModel {
         showsTopDivider: Bool = false,
         showsBottomDivider: Bool = false,
         isEmphasized: Bool = false,
-        usesMonospacedDigits: Bool = false
+        usesMonospacedDigits: Bool = false,
+        sectionTitle: String? = nil 
     ) {
         self.leftText = leftText
         self.rightText = rightText
@@ -58,5 +68,6 @@ public struct KeyValueRowModel {
         self.showsBottomDivider = showsBottomDivider
         self.isEmphasized = isEmphasized
         self.usesMonospacedDigits = usesMonospacedDigits
+        self.sectionTitle = sectionTitle
     }
 }

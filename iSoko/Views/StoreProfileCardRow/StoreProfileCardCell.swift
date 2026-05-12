@@ -11,9 +11,13 @@ public final class StoreProfileCardCell: UITableViewCell {
 
     private let containerView = UIView()
 
+    // MARK: - NEW: Optional header (above everything)
+    private let headerLabel = UILabel()
+
     // Top section
     private let avatarImageView = UIImageView()
     private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
     private let verifiedImageView = UIImageView()
     private let trailingButton = UIButton(type: .system)
 
@@ -61,10 +65,29 @@ public final class StoreProfileCardCell: UITableViewCell {
         containerView.layer.cornerRadius = 16
         containerView.layer.masksToBounds = true
 
+        setupHeader()
         setupTopSection()
         setupBadgesSection()
         setupDivider()
         setupActionsSection()
+    }
+
+    // MARK: - HEADER (NEW)
+
+    private func setupHeader() {
+
+        headerLabel.font = .systemFont(ofSize: 13, weight: .semibold)
+        headerLabel.textColor = .secondaryLabel
+        headerLabel.numberOfLines = 1
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        containerView.addSubview(headerLabel)
+
+        NSLayoutConstraint.activate([
+            headerLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
+            headerLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            headerLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
+        ])
     }
 
     // MARK: - Top Section
@@ -78,20 +101,26 @@ public final class StoreProfileCardCell: UITableViewCell {
         avatarImageView.heightAnchor.constraint(equalToConstant: 56).isActive = true
 
         titleLabel.font = .preferredFont(forTextStyle: .headline)
-        titleLabel.numberOfLines = 2
+        titleLabel.numberOfLines = 1
+
+        // NEW: description under title
+        descriptionLabel.font = .systemFont(ofSize: 13)
+        descriptionLabel.textColor = .secondaryLabel
+        descriptionLabel.numberOfLines = 2
 
         verifiedImageView.contentMode = .scaleAspectFit
         verifiedImageView.translatesAutoresizingMaskIntoConstraints = false
         verifiedImageView.heightAnchor.constraint(equalToConstant: 18).isActive = true
 
-        //vertical stack now
+        // Title stack (UPDATED)
         titleStack.axis = .vertical
-        titleStack.spacing = 4
+        titleStack.spacing = 2
         titleStack.alignment = .leading
+
         titleStack.addArrangedSubview(titleLabel)
+        titleStack.addArrangedSubview(descriptionLabel)
         titleStack.addArrangedSubview(verifiedImageView)
 
-        // Spacer
         let spacer = UIView()
 
         topRowStack.axis = .horizontal
@@ -107,12 +136,12 @@ public final class StoreProfileCardCell: UITableViewCell {
         containerView.addSubview(topRowStack)
 
         NSLayoutConstraint.activate([
-            topRowStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
+            topRowStack.topAnchor.constraint(equalTo: headerLabel.bottomAnchor, constant: 12),
             topRowStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
             topRowStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16)
         ])
 
-        //Styled capsule button
+        // Button
         trailingButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         trailingButton.layer.cornerRadius = 14
         trailingButton.layer.borderWidth = 1
@@ -167,7 +196,7 @@ public final class StoreProfileCardCell: UITableViewCell {
         containerView.addSubview(actionsStack)
 
         NSLayoutConstraint.activate([
-            actionsStack.topAnchor.constraint(equalTo: dividerView.bottomAnchor, constant: 12), //spacing
+            actionsStack.topAnchor.constraint(equalTo: dividerView.bottomAnchor, constant: 12),
             actionsStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             actionsStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             actionsStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12)
@@ -178,10 +207,24 @@ public final class StoreProfileCardCell: UITableViewCell {
 
     public func configure(with config: StoreProfileCardConfig) {
 
+        if let header = config.headerTitle, !header.isEmpty {
+            headerLabel.text = header
+            headerLabel.isHidden = false
+        } else {
+            headerLabel.isHidden = true
+        }
+
         avatarImageView.image = config.image
         titleLabel.text = config.title
 
-        //Verified auto collapse
+        if let desc = config.description, !desc.isEmpty {
+            descriptionLabel.text = desc
+            descriptionLabel.isHidden = false
+        } else {
+            descriptionLabel.isHidden = true
+        }
+
+        // Verified
         if let verifiedImage = config.verifiedImage {
             verifiedImageView.image = verifiedImage
             verifiedImageView.isHidden = false
@@ -189,7 +232,7 @@ public final class StoreProfileCardCell: UITableViewCell {
             verifiedImageView.isHidden = true
         }
 
-        //Button
+        // Button
         trailingButton.setTitle(config.trailingButtonTitle, for: .normal)
         trailingButton.isHidden = config.trailingButtonTitle == nil
         trailingButton.removeTarget(nil, action: nil, for: .allEvents)
@@ -200,7 +243,7 @@ public final class StoreProfileCardCell: UITableViewCell {
             }, for: .touchUpInside)
         }
 
-        //Badges
+        // Badges
         badgesStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
 
         for badge in config.badges {
@@ -215,7 +258,7 @@ public final class StoreProfileCardCell: UITableViewCell {
 
         badgesStack.isHidden = config.badges.isEmpty
 
-        //Actions
+        // Actions
         actionsStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
         actionHandlers.removeAll()
 
@@ -228,14 +271,14 @@ public final class StoreProfileCardCell: UITableViewCell {
         actionsStack.isHidden = !hasActions
         dividerView.isHidden = !hasActions
 
-        //Card styling
+        // Card styling
         containerView.backgroundColor = config.backgroundColor
         containerView.layer.borderColor = config.borderColor.cgColor
         containerView.layer.borderWidth = config.borderWidth
         containerView.layer.cornerRadius = config.cornerRadius
     }
 
-    // MARK: - Action View
+    // MARK: Action View
 
     private func makeActionView(action: StoreProfileCardConfig.Action) -> UIView {
 

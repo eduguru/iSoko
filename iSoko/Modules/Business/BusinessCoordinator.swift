@@ -76,6 +76,8 @@ public class BusinessCoordinator: BaseCoordinator {
         }
         
         let viewModel = MyOrdersViewModel()
+        viewModel.goToDetails = goToOrderDetails
+        
         let vc = MyOrdersViewController()
         vc.viewModel = viewModel
         
@@ -84,6 +86,21 @@ public class BusinessCoordinator: BaseCoordinator {
         }
         
         router.push(vc, animated: true)
+    }
+    
+    func goToOrderDetails(_ item: CustomerOrderResponse) {
+        let model = MyOrderDetailsViewModel(item)
+        
+        let vc = MyOrderDetailsViewController()
+        
+        // model.goToEdit = { }
+        
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
     }
     
     private func dismiss() {

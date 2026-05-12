@@ -26,7 +26,7 @@ final class CarouselItemCell: UICollectionViewCell {
     // MARK: - Constants
 
     private let horizontalPadding: CGFloat = 16
-    private let cornerRadius: CGFloat = 12
+    private let cornerRadius: CGFloat = 14
 
     // MARK: - Init
 
@@ -48,15 +48,16 @@ final class CarouselItemCell: UICollectionViewCell {
         contentView.backgroundColor = .clear
 
         // MARK: Container View
-        // Owns rounded corners
+
         containerView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.backgroundColor = .clear
+        containerView.backgroundColor = .secondarySystemBackground
         containerView.layer.cornerRadius = cornerRadius
         containerView.layer.cornerCurve = .continuous
         containerView.layer.masksToBounds = true
         containerView.clipsToBounds = true
 
         // MARK: Image View
+
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
         imageView.clipsToBounds = true
@@ -64,6 +65,7 @@ final class CarouselItemCell: UICollectionViewCell {
         imageView.layer.cornerCurve = .continuous
 
         // MARK: Label
+
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = .systemFont(ofSize: 16, weight: .semibold)
         label.textAlignment = .center
@@ -73,6 +75,7 @@ final class CarouselItemCell: UICollectionViewCell {
         label.layer.masksToBounds = true
 
         // MARK: Hierarchy
+
         contentView.addSubview(containerView)
         containerView.addSubview(imageView)
         contentView.addSubview(label)
@@ -81,7 +84,7 @@ final class CarouselItemCell: UICollectionViewCell {
 
         NSLayoutConstraint.activate([
 
-            // Container fills cell
+            // Container
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
             containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -99,7 +102,8 @@ final class CarouselItemCell: UICollectionViewCell {
             label.heightAnchor.constraint(equalToConstant: 28)
         ])
 
-        // Horizontal padding
+        // Horizontal image padding
+
         imageLeadingConstraint = imageView.leadingAnchor.constraint(
             equalTo: containerView.leadingAnchor,
             constant: horizontalPadding
@@ -123,29 +127,31 @@ final class CarouselItemCell: UICollectionViewCell {
 
         imageView.kf.cancelDownloadTask()
         imageView.image = nil
+
         label.text = nil
 
-        // Reset default mode
+        // Reset defaults
         imageView.contentMode = .scaleAspectFit
+
+        imageLeadingConstraint.constant = horizontalPadding
+        imageTrailingConstraint.constant = -horizontalPadding
     }
 
     // MARK: - Configure
 
     func configure(with item: CarouselItem, hideText: Bool = false) {
 
-        // Label
+        // MARK: Label
+
         label.text = item.text
         label.textColor = item.textColor
         label.isHidden = hideText || item.text == nil
 
-        // Reset padding
-        imageLeadingConstraint.constant = horizontalPadding
-        imageTrailingConstraint.constant = -horizontalPadding
+        // MARK: Downsampling
 
-        // Better downsampling target
         let targetSize = CGSize(
-            width: UIScreen.main.bounds.width - (horizontalPadding * 2),
-            height: max(bounds.height, 150)
+            width: UIScreen.main.bounds.width,
+            height: max(bounds.height, 180)
         )
 
         let processor = DownsamplingImageProcessor(size: targetSize)
@@ -169,15 +175,17 @@ final class CarouselItemCell: UICollectionViewCell {
                 ]
             ) { [weak self] result in
 
+                guard let self else { return }
+
                 switch result {
 
                 case .success(let value):
 
-                    self?.updateContentMode(for: value.image)
+                    self.updateLayout(for: value.image)
 
                 case .failure:
 
-                    self?.imageView.contentMode = .scaleAspectFit
+                    self.imageView.contentMode = .scaleAspectFit
                 }
             }
 
@@ -185,30 +193,58 @@ final class CarouselItemCell: UICollectionViewCell {
 
             // MARK: Local Image
 
-            updateContentMode(for: image)
+            updateLayout(for: image)
             imageView.image = image
         }
     }
 
-    // MARK: - Smart Content Mode
+    // MARK: - Adaptive Layout
 
-    private func updateContentMode(for image: UIImage) {
+    private func updateLayout(for image: UIImage) {
 
         let ratio = image.size.width / image.size.height
 
         switch ratio {
 
-        // Ultra-wide banners
-        case 2.0...:
+        // MARK: Ultra-wide banners
+        // Example: 1710x362 (~4.7)
+
+        case 3.0...:
+
             imageView.contentMode = .scaleAspectFit
 
-        // Standard landscape
+            imageLeadingConstraint.constant = 4
+            imageTrailingConstraint.constant = -4
+
+        // MARK: Wide banners
+        // Example: 2117x742 (~2.8)
+
+        case 2.0..<3.0:
+
+            imageView.contentMode = .scaleAspectFit
+
+            imageLeadingConstraint.constant = 8
+            imageTrailingConstraint.constant = -8
+
+        // MARK: Standard landscape
+
         case 1.2..<2.0:
+
             imageView.contentMode = .scaleAspectFill
 
-        // Square / portrait
+            imageLeadingConstraint.constant = horizontalPadding
+            imageTrailingConstraint.constant = -horizontalPadding
+
+        // MARK: Square / Portrait
+
         default:
+
             imageView.contentMode = .scaleAspectFill
+
+            imageLeadingConstraint.constant = horizontalPadding
+            imageTrailingConstraint.constant = -horizontalPadding
         }
+
+        layoutIfNeeded()
     }
 }

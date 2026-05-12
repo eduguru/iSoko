@@ -8,21 +8,6 @@
 import UIKit
 import DesignSystemKit
 
-// MARK: - OrderSummaryCellConfig & Item Struct
-
-public struct OrderItem {
-    public let quantity: Int
-    public let name: String
-    public let amount: String
-    
-    public init(quantity: Int, name: String, amount: String) {
-        self.quantity = quantity
-        self.name = name
-        self.amount = amount
-    }
-}
-
-
 // MARK: - FormRow integration
 
 public final class OrderSummaryRow: FormRow {
