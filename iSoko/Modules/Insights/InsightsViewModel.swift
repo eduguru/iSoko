@@ -42,6 +42,10 @@ final class InsightsViewModel: FormViewModel {
         sections = makeSections()
     }
     
+    override func refresh() {
+        fetchData()
+    }
+    
     override func fetchData() {
         showLoader()
         defer{ hideLoader() }
@@ -49,8 +53,8 @@ final class InsightsViewModel: FormViewModel {
         Task {
             do {
                 try await directusService.login(
-                    email: "admin@isoko.twcc-tz.org",
-                    password: "s^k2HIza)KpdER5b"
+                    email: AppStorage.email,
+                    password: AppStorage.password
                 )
 
                 let news = try await directusService.fetchNews()

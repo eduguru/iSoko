@@ -86,4 +86,9 @@ extension AppStorage {
     
     @UserDefault(StorageKeys.UserDefaults.verifier)
     public static var verifier: String?
+    
+    
+    // MARK: - Testing Keys
+    public static let email = "admin@isoko.twcc-tz.org"
+    public static let password = "s^k2HIza)KpdER5b"
 }

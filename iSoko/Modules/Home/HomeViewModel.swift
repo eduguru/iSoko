@@ -91,8 +91,8 @@ final class HomeViewModel: FormViewModel {
     private func fetchBanners() async {
             do {
                 try await directusService.login(
-                    email: "admin@isoko.twcc-tz.org",
-                    password: "s^k2HIza)KpdER5b"
+                    email: AppStorage.email,
+                    password: AppStorage.password
                 )
                 
                 // Now fetch the banners after successful login

@@ -152,21 +152,20 @@ final class BusinessViewModel: FormViewModel {
         var items: [RowItemModel] = []
         
         items.append(contentsOf: [
-            RowItemModel(
-                title: "Currency Exchange",
-                description: "Convert between East african and International currencies",
-                image: .bagAddIcon,
-                onTap: { [weak self] in
-                    self?.goToCurrencyExchange?()
-            }),
-            
 //            RowItemModel(
-//                title: "Analytics",
-//                description: "View analytics for your business",
-//                image: .profile,
+//                title: "Currency Exchange",
+//                description: "Convert between East african and International currencies",
+//                image: .bagAddIcon,
 //                onTap: { [weak self] in
-//                    self?.goToReports?()
+//                    self?.goToCurrencyExchange?()
 //            }),
+            RowItemModel(
+                title: "Analytics",
+                description: "View analytics for your business",
+                image: .profile,
+                onTap: { [weak self] in
+                    self?.goToReports?()
+            }),
 //            RowItemModel(
 //                title: "Tax Calculator",
 //                description: "Calculate value of your Taxable goods",

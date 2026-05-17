@@ -18,7 +18,7 @@ public class MoreCoordinator: BaseCoordinator {
         model.gotoSignIn = gotoSignIn
         model.gotoSignOut = gotoSignOut
         model.gotoProfile = gotoProfile
-        // model.gotoOrganisations = gotoOrganisations
+        model.goToLanguageSelection = goToLanguageSelection
         model.gotoTradeAssociations = gotoTradeAssociations
         model.gotoMyOrders = gotoMyOrders
         model.gotoShareApp = gotoShareApp
@@ -44,9 +44,13 @@ public class MoreCoordinator: BaseCoordinator {
         router.setRoot(primaryViewController())
     }
     
-    
     private func dismiss() {
         dismissModal()
+    }
+    
+    private func finish() {
+        dismissModal() // will call router.dismiss()
+        parentCoordinator?.removeChild(self)
     }
     
     
@@ -117,8 +121,34 @@ public class MoreCoordinator: BaseCoordinator {
         }
         
         let viewModel = ProfileEditViewModel()
+        viewModel.goToCommonSelectionOptions = goToCommonSelection
         
         let vc = ProfileEditViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func goToCommonSelection(_ type: CommonUtilityOption, _ staticOptions: [CommonIdNameModel]? = nil, _ completion: @escaping (CommonIdNameModel?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type, options: staticOptions)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .idName(let model):
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            // Pop the screen
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
@@ -198,6 +228,12 @@ public class MoreCoordinator: BaseCoordinator {
     private func gotoShareApp() {
         let viewModel = ShareAppViewModel()
         
+        viewModel.onShareRequested = { [weak self] items in
+            guard let self = self else { return }
+            let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
+            router.present(activityVC, animated: true)
+        }
+        
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -234,17 +270,40 @@ public class MoreCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func gotoHelpFeedback() {
-        let viewModel = HelpFeedbackViewModel()
-        
-        let vc = HelpFeedbackViewController()
-        vc.viewModel = viewModel
+    // MARK: - Language Selection
+    public func goToLanguageSelection(completion: @escaping (Language) -> Void) {
+        let model = LanguagePickerViewModel()
+        model.confirmSelection = { [weak self] language in
+            completion(language)
+            self?.finish()
+        }
+
+        let vc = LanguagePickerViewController()
+        vc.viewModel = model
         vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
+            self?.finish()
+        }
+
+        // Wrap dashboard in a navigation controller
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        
+        // Present from the topmost view controller in the main flow
+        if let top = router.topViewController() {
+            top.present(nav, animated: true)
+            
+            // Update router so internal pushes go to this modal nav
+            self.router = Router(navigationController: nav)
         }
         
-        router.navigationControllerInstance?.navigationBar.isHidden = false
-        router.push(vc, animated: true)
+        // router.push(vc)
+    }
+    
+    private func gotoHelpFeedback() {
+        let router = Router(navigationController: navigationController)
+        let cordinator = HelpFeedbackCoordinator(router: router)
+        addChild(cordinator)
+        cordinator.start()
     }
     
     private func presentAuthBottomSheet() {

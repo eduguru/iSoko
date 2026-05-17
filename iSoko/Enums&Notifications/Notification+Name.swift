@@ -14,11 +14,3 @@ public extension Notification.Name {
 
     static let languageDidChangeNotification = Notification.Name("LocalizationManager.languageDidChange")
 }
-
-//NotificationCenter.default.addObserver(
-//    forName: .didLogoutDueToAuthFailure,
-//    object: nil,
-//    queue: .main
-//) { _ in
-//    // Navigate to login / reset app state
-//}

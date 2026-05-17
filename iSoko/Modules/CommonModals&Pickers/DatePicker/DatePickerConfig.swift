@@ -26,21 +26,3 @@ public struct DatePickerConfig {
         .init(mode: .fullDate, minimumDate: min, maximumDate: max, initialDate: initial)
     }
 }
-
-public extension Date {
-    
-    var yearOnlyNormalized: Date {
-        Date.from(year: Calendar.current.component(.year, from: self))
-    }
-
-    var yearComponent: Int { Calendar.current.component(.year, from: self) }
-    var monthComponent: Int { Calendar.current.component(.month, from: self) }
-    
-    static func from(year: Int) -> Date {
-        Calendar.current.date(from: DateComponents(year: year))!
-    }
-
-    static func from(year: Int, month: Int) -> Date {
-        Calendar.current.date(from: DateComponents(year: year, month: month, day: 1))!
-    }
-}

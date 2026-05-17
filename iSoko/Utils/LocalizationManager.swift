@@ -8,20 +8,6 @@
 import Foundation
 import StorageKit
 
-//public final class LocalizationManager {
-//    private static var _language: String = "en"
-//
-//    private init() {}
-//
-//    public static var currentLanguage: String {
-//        get { AppStorage.currentLanguage ?? _language }
-//        set { AppStorage.currentLanguage = newValue }
-//    }
-//}
-
-import Foundation
-import StorageKit
-
 public final class LocalizationManager {
     private init() {}
     

@@ -20,43 +20,49 @@ final class MoreViewModel: FormViewModel {
     var gotoSettings: (() -> Void)?
     var gotoHelpFeedback: (() -> Void)?
     var showAuthSheet: (() -> Void)?
-
+    
+    var goToLanguageSelection: ((@escaping (Language) -> Void) -> Void)?
+    
     // MARK: - Internal state
     private var state: State
-
+    
     // MARK: - Initialization
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
     }
-
+    
     // MARK: - Public API
     func setLoggedIn(_ isLoggedIn: Bool) {
         state.isLoggedIn = isLoggedIn
         self.sections = makeSections()
+        
+        Task { @MainActor in
+            self.updateLogoutSection()
+        }
     }
-
+    
     // MARK: - Sections Creation
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = []
-
+        
         // Only show header section if logged in
         if state.isLoggedIn {
             sections.append(makeHeaderSection())
         }
-
+        
         // Account & Settings section only visible if logged in
         if state.isLoggedIn {
             sections.append(makeAccountSection())
         }
-
+        
         // More Options section visible to everyone
         sections.append(makeMoreOptionsSection())
-
+        
         // Logout/Login section always visible
         sections.append(makeLogoutSection())
-
+        
         return sections
     }
     
@@ -73,6 +79,14 @@ final class MoreViewModel: FormViewModel {
             row
         ]
         )
+    }
+    
+    @MainActor
+    private func updateLogoutSection() {
+        guard let index = sections.firstIndex(where: { $0.id == Tags.Section.logout.rawValue }) else { return }
+        
+        sections[index].cells = [makeLoginButtonRow()]
+        reloadSection(index)
     }
     
     private func makeUserCardRow() -> FormRow {
@@ -98,7 +112,7 @@ final class MoreViewModel: FormViewModel {
             )
         )
     }
-
+    
     private func makeAccountSection() -> FormSection {
         let rows: [FormRow] = [
             makeImageTitleDescriptionRow(
@@ -125,7 +139,7 @@ final class MoreViewModel: FormViewModel {
         ]
         return FormSection(id: Tags.Section.account.rawValue, cells: rows)
     }
-
+    
     private func makeMoreOptionsSection() -> FormSection {
         let rows: [FormRow] = [
             makeImageTitleDescriptionRow(
@@ -133,7 +147,10 @@ final class MoreViewModel: FormViewModel {
                 image: UIImage(systemName: "globe"),
                 title: "Language Settings",
                 description: "Change your preferred language",
-                onTap: { [weak self] in self?.gotoSettings?() }
+                onTap: { [weak self] in self?.goToLanguageSelection?() { _ in
+                    
+                }
+                }
             ),
             makeImageTitleDescriptionRow(
                 tag: 3001,
@@ -152,13 +169,15 @@ final class MoreViewModel: FormViewModel {
         ]
         return FormSection(id: Tags.Section.more.rawValue, cells: rows)
     }
-
+    
     private func makeLogoutSection() -> FormSection {
-        return FormSection(id: Tags.Section.logout.rawValue, cells: [loginButtonRow])
+        return FormSection(id: Tags.Section.logout.rawValue, cells: [ makeLoginButtonRow()])
     }
-
+    
+    
     // MARK: - Lazy / Computed Rows
-    private lazy var loginButtonRow: FormRow = {
+    
+    private func makeLoginButtonRow() -> FormRow {
         let title = state.isLoggedIn ? "Log out" : "Log in or sign up"
         let style: ButtonStyleType = state.isLoggedIn ? .primary : .outlined
 
@@ -166,7 +185,6 @@ final class MoreViewModel: FormViewModel {
             title: title,
             style: style,
             size: .medium,
-            icon: UIImage(systemName: "arrow.right.square"),
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
@@ -183,8 +201,8 @@ final class MoreViewModel: FormViewModel {
         }
 
         return ButtonFormRow(tag: Tags.Cells.submit.rawValue, model: buttonModel)
-    }()
-
+    }
+    
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage?,
@@ -205,7 +223,7 @@ final class MoreViewModel: FormViewModel {
             )
         )
     }
-
+    
     // MARK: - Sign Out Logic
     func signOut() {
         gotoSignOut? { [weak self] success in
@@ -219,7 +237,7 @@ final class MoreViewModel: FormViewModel {
             }
         }
     }
-
+    
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
@@ -227,7 +245,7 @@ final class MoreViewModel: FormViewModel {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
-
+    
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
@@ -236,7 +254,7 @@ final class MoreViewModel: FormViewModel {
             case more = 2
             case logout = 3
         }
-
+        
         enum Cells: Int {
             case headerTitle = 0
             case submit = 1

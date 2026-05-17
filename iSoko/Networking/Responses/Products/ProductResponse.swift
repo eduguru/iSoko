@@ -91,6 +91,11 @@ public struct TraderV1: Decodable {
     let email: String?
     let firstName: String?
     let lastName: String?
+    
+    let phoneNumber: String?
+    let whatsappNumber: String?
+    let storeUrl: String?
+    
 }
 
 // MARK: - Product Image

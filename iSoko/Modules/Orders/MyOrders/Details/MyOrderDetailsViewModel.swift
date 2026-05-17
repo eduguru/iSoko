@@ -142,6 +142,9 @@ final class MyOrderDetailsViewModel: FormViewModel {
     private func makeStoreProfileRow() -> FormRow {
         
         let traderName = state.item.sellerFullName
+        let phoneNumber = state.item.seller.phoneNumber ?? "0000000000"
+        let email = state.item.seller.email ?? ""
+        let whatsappNumber = state.item.seller.whatsappNumber ?? "0000000000"
         
         return StoreProfileCardRow(
             tag: Tags.Cells.storeProfile.rawValue,

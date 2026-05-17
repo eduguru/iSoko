@@ -143,8 +143,6 @@ final class DirectusTokenService {
 
     // MARK: - Fetch News
 
-    // MARK: - Fetch News
-
     func fetchNews() async throws -> [DirectusNewsItem] {
 
         var components = URLComponents(
@@ -217,5 +215,72 @@ final class DirectusTokenService {
         let (data, _) = try await authorizedRequest(request)
 
         return try JSONDecoder().decode(DirectusResponse<DirectusHomeBannerItem>.self, from: data).data
+    }
+}
+
+
+// MARK: - Settings API
+extension DirectusTokenService {
+
+    func fetchContactUs() async throws -> [ContactUsItem] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/items/Contact_us"))
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<ContactUsItem>.self, from: data)
+            .data
+    }
+
+    func fetchAboutUs() async throws -> [AboutUsItem] {
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("/items/About_us"),
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "quote,about_content,page_title,featured_title,featured_image.filename_disk,header_background_image.filename_disk")
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<AboutUsItem>.self, from: data)
+            .data
+    }
+
+    func fetchFAQs() async throws -> [FaqItem] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/items/FAQ_items"))
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<FaqItem>.self, from: data)
+            .data
+    }
+
+    func fetchTermsAndConditions() async throws -> [TermsAndConditionsItem] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/items/Terms_and_conditions"))
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<TermsAndConditionsItem>.self, from: data)
+            .data
+    }
+
+    func fetchPrivacyPolicy() async throws -> [PrivacyPolicyItem] {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/items/Privacy_policy"))
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<PrivacyPolicyItem>.self, from: data)
+            .data
     }
 }

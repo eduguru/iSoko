@@ -1,23 +1,21 @@
 //
-//  LanguagePickerViewController.swift
+//  ChangeLanguageViewController.swift
 //  
 //
-//  Created by Edwin Weru on 18/09/2025.
+//  Created by Edwin Weru on 14/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class LanguagePickerViewController: FormViewController, CloseableViewController {
+class ChangeLanguageViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = ""
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -30,3 +28,4 @@ class LanguagePickerViewController: FormViewController, CloseableViewController 
     
     deinit { }
 }
+

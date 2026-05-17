@@ -109,38 +109,31 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func authenticate(verifier: String) {
-        startOAuth(verifier: verifier) { [weak self] authResult in
-            switch authResult {
+        oauthService = OAuthService()
+        
+        oauthService?.startAuthorization(verifier: verifier) { [weak self] result in
+            switch result {
             case .success(let code):
-                self?.exchangeCode(code) { tokenResult in
-                    
+                // Exchange code for token
+                self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
                     switch tokenResult {
-                    case .success(let token):
-                        
-                        print("authenticate Access token:", token.accessToken)
-                        
-                        self?.fetchUserDetails(accessToken: token.accessToken) { userResult in
+                    case .success:
+                        // Fetch user and update AppStorage
+                        self?.oauthService?.fetchUserAndUpdateStorage { userResult in
                             switch userResult {
                             case .success(let user):
-                                
-                                print("User:", user)
-                                AppStorage.userProfile = user
-                                AppStorage.hasLoggedIn = true
-                                
+                                print("✅ User logged in:", user)
                                 self?.goToMainTabs()
-                                
                             case .failure(let error):
-                                print("User details error:", error)
+                                print("❌ Failed to fetch user:", error)
                             }
                         }
-                        
                     case .failure(let error):
-                        print("Token exchange error:", error)
+                        print("❌ Token exchange failed:", error)
                     }
                 }
-                
             case .failure(let error):
-                print("Authorization error:", error)
+                print("❌ Authorization failed:", error)
             }
         }
     }

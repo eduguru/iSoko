@@ -28,8 +28,8 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         Task {
             do {
                 try await directusService.login(
-                    email: "admin@isoko.twcc-tz.org",
-                    password: "s^k2HIza)KpdER5b"
+                    email: AppStorage.email,
+                    password: AppStorage.password
                 )
 
                 let id: Int = state.data.id ?? 0

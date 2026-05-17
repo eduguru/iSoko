@@ -236,9 +236,12 @@ final class ProductDetailsViewModel: FormViewModel {
     }
     
     private func makeStoreProfileRow() -> FormRow {
-        
+
         let traderName = state.product.traderFullName ?? "Seller"
-        
+        let phoneNumber = state.product.trader?.phoneNumber ?? "0000000000"
+        let email = state.product.trader?.email ?? ""
+        let whatsappNumber = state.product.trader?.whatsappNumber ?? "0000000000"
+
         return StoreProfileCardRow(
             tag: 400,
             config: StoreProfileCardConfig(
@@ -247,24 +250,43 @@ final class ProductDetailsViewModel: FormViewModel {
                 verifiedImage: nil,
                 badges: [],
                 trailingButtonTitle: "View Store",
-                onTrailingButtonTap: {
-                    print("Go to seller: \(traderName)")
+                onTrailingButtonTap: { [weak self] in
+                    if let url = URL(string: self?.state.product.trader?.storeUrl ?? "") {
+                        UIApplication.shared.open(url)
+                    }
                 },
                 actions: [
                     .init(
                         title: "WhatsApp",
                         image: UIImage(systemName: "message.fill"),
-                        handler: { print("WhatsApp tapped") }
+                        handler: {
+                            // Open WhatsApp with number
+                            let whatsappURL = URL(string: "https://wa.me/\(whatsappNumber)")!
+                            if UIApplication.shared.canOpenURL(whatsappURL) {
+                                UIApplication.shared.open(whatsappURL)
+                            } else {
+                                print("WhatsApp not installed, opening web...")
+                                UIApplication.shared.open(whatsappURL)
+                            }
+                        }
                     ),
                     .init(
                         title: "Call",
                         image: UIImage(systemName: "phone.fill"),
-                        handler: { print("Call tapped") }
+                        handler: {
+                            if let phoneURL = URL(string: "tel://\(phoneNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
+                                UIApplication.shared.open(phoneURL)
+                            }
+                        }
                     ),
                     .init(
                         title: "Email",
                         image: UIImage(systemName: "envelope.fill"),
-                        handler: { print("Email tapped") }
+                        handler: {
+                            if let emailURL = URL(string: "mailto:\(email)"), UIApplication.shared.canOpenURL(emailURL) {
+                                UIApplication.shared.open(emailURL)
+                            }
+                        }
                     )
                 ],
                 cornerRadius: 20,

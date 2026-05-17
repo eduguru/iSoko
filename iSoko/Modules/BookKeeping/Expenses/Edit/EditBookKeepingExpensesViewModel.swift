@@ -12,48 +12,39 @@ import StorageKit
 
 @MainActor
 final class EditBookKeepingExpensesViewModel: FormViewModel {
-    
+
+    // MARK: - Navigation Closures
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
-        _ completion: @escaping (CommonIdNameModel?) -> Void)
-    -> Void = { _, _, _ in }
-    
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
-    
+
     var goToAddExpenseCategory: (() -> Void)? = { }
     var goToAddSupplier: (() -> Void)? = { }
-    
+
     var gotoConfirm: (() -> Void)? = { }
-    
-    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
-    
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
-    
-    @MainActor private let countryHelper = CountryHelper()
-    
+
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-    
+
     // MARK: - State
     private var state: State
-    
-    // MARK: - Init 
+
+    // MARK: - Init
     init(expense: ExpenseResponse) {
         self.state = State(expense: expense)
         super.init()
-        
-        Task { @MainActor in
-            state.date = expense.expenseDate.flatMap { Helpers.parseDate($0) } ?? Date()
-            state.dateString = Helpers.format(state.date!)
-            
-            sections = makeSections()
-            configureUploadHandlers()
-        }
+        // Build sections with state prefilled
+        sections = makeSections()
+        configureUploadHandlers()
     }
-    
-    // MARK: - Section Builder 
+
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             FormSection(
@@ -75,41 +66,20 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             )
         ]
     }
-    
-    // MARK: - Prefill 
-    private func prefill() {
-        
-        amountInputRow.model.text = state.amount
-        descriptionRow.model.text = state.description
-        
-        if let supplier = state.supplier {
-            supplierRow.config.placeholder = supplier.name ?? ""
-        }
-        
-        if let category = state.categories {
-            categoryRow.config.placeholder = category.name ?? ""
-        }
-        
-        if let payment = state.paymentMethod {
-            paymentOptionsRow.config.placeholder = payment.name ?? ""
-        }
-        
-        dateRow.config.placeholder = state.dateString
-    }
-    
-    // MARK: - Rows 
 
+    // MARK: - Rows
     private lazy var amountInputRow = makeInputRow(
         tag: CellTag.amount.rawValue,
         title: "Amount *",
-        placeholder: "Enter Amount"
+        placeholder: "Enter Amount",
+        initialText: state.amount
     )
 
-    private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+    private func makeInputRow(tag: Int, title: String, placeholder: String, initialText: String) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
-                text: "",
+                text: initialText,
                 config: TextFieldConfig(
                     placeholder: placeholder,
                     keyboardType: .default
@@ -119,7 +89,6 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
                 useCardStyle: true,
                 onTextChanged: { [weak self] newText in
                     guard let self else { return }
-                    
                     switch tag {
                     case CellTag.amount.rawValue:
                         self.state.amount = newText
@@ -130,61 +99,48 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             )
         )
     }
-    
-    // MARK: - Dropdown Rows 
-    
+
     private lazy var supplierRow = DropdownFormRow(
         tag: CellTag.supplier.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
-            placeholder: "Select an option",
+            placeholder: state.supplier?.name ?? "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
-            onTap: { [weak self] in
-                self?.handleSupplierSelection()
-            },
-            onActionTap: { [weak self] in
-                self?.goToAddSupplier?()
-            },
+            onTap: { [weak self] in self?.handleSupplierSelection() },
+            onActionTap: { [weak self] in self?.goToAddSupplier?() },
             actionImage: UIImage(systemName: "person.badge.plus"),
             showsActionButton: true
         )
     )
-    
+
     private lazy var categoryRow = DropdownFormRow(
         tag: CellTag.categoryRow.rawValue,
         config: DropdownFormConfig(
             title: "Category",
-            placeholder: "Select an option",
+            placeholder: state.categories?.name ?? "Select an option",
             rightImage: UIImage(systemName: "chevron.down"),
-            onTap: { [weak self] in
-                self?.handleExpenseSelection()
-            },
-            onActionTap: { [weak self] in
-                self?.goToAddExpenseCategory?()
-            },
+            onTap: { [weak self] in self?.handleExpenseSelection() },
+            onActionTap: { [weak self] in self?.goToAddExpenseCategory?() },
             actionImage: UIImage(systemName: "plus.square"),
             showsActionButton: true
         )
     )
-    
+
     private lazy var paymentOptionsRow = DropdownFormRow(
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
             title: "Payment Method",
-            placeholder: "Method",
+            placeholder: state.paymentMethod?.name ?? "Method",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handlePaymentsSelection()
-            }
+            onTap: { [weak self] in self?.handlePaymentsSelection() }
         )
     )
-    
-    // Description input (multiline)  RichDescriptionFormRow LongInputDescriptionFormRow
+
     private lazy var descriptionRow = LongInputDescriptionFormRow(
         tag: CellTag.description.rawValue,
         model: LongInputDescriptionModel(
-            text: "",
+            text: state.description,
             config: TextViewConfig(
                 prefixText: "",
                 accessoryImage: nil,
@@ -198,9 +154,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             cardCornerRadius: 12,
             cardBorderColor: .app(.primary),
             cardShadowColor: .gray,
-            onTextChanged: {[weak self] newText in
-                self?.state.description = newText
-            },
+            onTextChanged: { [weak self] newText in self?.state.description = newText },
             onValidationError: { error in
                 if let error = error {
                     print("Validation error: \(error)")
@@ -208,36 +162,31 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             }
         )
     )
-    
+
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
             title: "Date",
-            placeholder: "Date",
+            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
                 guard let self else { return }
-                
-                let config = DatePickerConfig.year()
-                
-                self.goToDateSelection(config) { selectedDate in
+                self.goToDateSelection(.year()) { selectedDate in
                     guard let date = selectedDate else { return }
-                    
                     self.state.date = date
                     self.state.dateString = Helpers.format(date)
-                    
                     self.handleDateSelection()
                 }
             }
         )
     )
-    
+
     private lazy var otherImagesTitleFormRow: FormRow = makeTitleRow(
         title: "Add Receipt Images",
         description: ""
     )
-    
+
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
             tag: UUID().hashValue,
@@ -251,7 +200,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             )
         )
     }
-    
+
     private lazy var additionalImagesRow = UploadFormRow(
         tag: CellTag.attachment.rawValue,
         config: UploadFormRowConfig(
@@ -266,19 +215,21 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
         )
     )
 
-    // PREVIEW ROW (with remove + tap)
     private lazy var imagePreviewRow = ImagePreviewFormRow(
         tag: CellTag.preview.rawValue,
-        items: [],
-        onRemove: { [weak self] index in
-            self?.removeImage(at: index)
+        items: state.additionalImages.map { file in
+            ImagePreviewItem(
+                image: file.fileData.flatMap { UIImage(data: $0) },
+                fileName: file.fileName
+            )
         },
+        onRemove: { [weak self] index in self?.removeImage(at: index) },
         onTap: { [weak self] index in
             guard let image = self?.state.additionalImages[index] else { return }
             self?.onPreviewImage?(image)
         }
     )
-    
+
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
@@ -288,66 +239,94 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            Task {
-                await self?.submit()
-            }
+            Task { await self?.submit() }
         }
     )
-    
+
     // MARK: - Selection Handlers
     private func handleSupplierSelection() {
         goToCommonSelectionOptions(.suppliers(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
             self.state.supplier = value
-
             self.supplierRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.supplierRow.tag)
         }
     }
-    
+
     private func handleExpenseSelection() {
         goToCommonSelectionOptions(.expenses(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
             self.state.categories = value
-
             self.categoryRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.categoryRow.tag)
         }
     }
-    
+
     private func handlePaymentsSelection() {
         goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
             self.state.paymentMethod = value
-
             self.paymentOptionsRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.paymentOptionsRow.tag)
         }
     }
-    
+
     private func handleDateSelection() {
         var config = dateRow.config
         config.placeholder = state.dateString
         dateRow.config = config
-
         reloadRow(withTag: CellTag.date.rawValue)
     }
-    
-    // MARK: - Submit 
-    private func submit() async {
-        let success = await performNetworkRequest()
-        if success {
-            gotoConfirm?()
+
+    // MARK: - Reload Row
+    private func reloadRow(withTag tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
+                break
+            }
         }
     }
-    
+
+    // MARK: - Upload Handlers
+    private func configureUploadHandlers() {
+        additionalImagesRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+            if case .pick = result {
+                self.pickFile? { picked in
+                    guard let picked else { return }
+                    self.state.additionalImages.append(picked)
+                    self.updatePreview()
+                }
+            }
+        }
+    }
+
+    private func removeImage(at index: Int) {
+        guard index < state.additionalImages.count else { return }
+        state.additionalImages.remove(at: index)
+        updatePreview()
+    }
+
+    private func updatePreview() {
+        imagePreviewRow.items = state.additionalImages.map { file in
+            ImagePreviewItem(
+                image: file.fileData.flatMap { UIImage(data: $0) },
+                fileName: file.fileName
+            )
+        }
+        reloadRow(withTag: imagePreviewRow.tag)
+    }
+
+    // MARK: - Submit
+    private func submit() async {
+        let success = await performNetworkRequest()
+        if success { gotoConfirm?() }
+    }
+
     private func performNetworkRequest() async -> Bool {
         showLoader()
         defer { hideLoader() }
-        
         let payload: [String: Any] = [
             "id": state.expense.id,
             "categoryId": state.categories?.id ?? "",
@@ -357,7 +336,6 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             "supplierId": state.supplier?.id ?? "",
             "paymentMethodId": state.paymentMethod?.id ?? ""
         ]
-        
         do {
             _ = try await bookKeepingService.updateExpense(
                 itemId: state.expense.id,
@@ -365,126 +343,56 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
                 pickedFiles: state.additionalImages,
                 accessToken: state.oauthToken
             )
-            
             return true
-            
         } catch let NetworkError.server(response) {
             print("UPDATE Expense ERROR:", response.alertMessage)
-            
             await MainActor.run {
                 state.errorMessage = response.message
                 state.fieldErrors = response.errors
             }
-
             showError(response.alertMessage)
             return false
         } catch {
             await MainActor.run {
                 state.errorMessage = "Something went wrong. Please try again."
             }
-            
             print("UPDATE Expense ERROR:", error)
             showError(error.localizedDescription)
             return false
         }
     }
-    
-    // MARK: - Reload // MARK: - Helpers
-    private func reloadRow(withTag tag: Int) {
-        for (sectionIndex, section) in sections.enumerated() {
-            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
-                break
-            }
-        }
-    }
-    
-    // MARK: - Upload Handlers
-    private func configureUploadHandlers() {
-        // ADDITIONAL IMAGES (ARRAY)
-        additionalImagesRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
 
-            if case .pick = result {
-                self.pickFile? { picked in
-                    guard let picked else { return }
-
-                    self.state.additionalImages.append(picked)
-                    self.updatePreview()
-                }
-            }
-        }
-    }
-    
-    // MARK: - Actions
-
-    private func removeImage(at index: Int) {
-        guard index < state.additionalImages.count else { return }
-        state.additionalImages.remove(at: index)
-        updatePreview()
-    }
-
-    // MARK: - Preview Sync
-
-    private func updatePreview() {
-        imagePreviewRow.items = state.additionalImages.map { file in
-            ImagePreviewItem(
-                image: file.fileData.flatMap { UIImage(data: $0) },
-                fileName: file.fileName
-            )
-        }
-
-        reloadRow(withTag: imagePreviewRow.tag)
-    }
-    
-    // MARK: - State (EXTENDED ONLY)
+    // MARK: - State
     private struct State {
         let expense: ExpenseResponse
-        
         var categories: CommonIdNameModel?
         var supplier: CommonIdNameModel?
         var paymentMethod: CommonIdNameModel?
-        
         var date: Date?
         var dateString: String = ""
-        
         var amount: String = ""
         var description: String = ""
-        
         var additionalImages: [PickedFile] = []
-        
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
-        
+
         init(expense: ExpenseResponse) {
             self.expense = expense
-            
             self.amount = expense.amount.map { "\($0)" } ?? ""
             self.description = expense.description ?? ""
             self.categories = CommonIdNameModel(from: expense.category) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
             self.paymentMethod = CommonIdNameModel(from: expense.paymentMethod) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
             self.supplier = CommonIdNameModel(from: expense.supplier) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
+            self.date = expense.expenseDate.flatMap { Helpers.parseDate($0) } ?? Date()
+            self.dateString = Helpers.format(self.date!)
         }
     }
-    
-    // MARK: - Tags 
-    private enum SectionTag: Int {
-        case main = 0
-    }
-    
+
+    // MARK: - Tags
+    private enum SectionTag: Int { case main = 0 }
     private enum CellTag: Int {
-        case date
-        case category = 4
-        case supplier = 5
-        case paymentMethod = 6
-        case amount = 7
-        case supplierName = 8
-        case continueButton = 9
-        case attachment = 11
-        case description = 12
-        case preview
-        case categoryRow
+        case date, category = 4, supplier = 5, paymentMethod = 6, amount = 7, supplierName = 8
+        case continueButton = 9, attachment = 11, description = 12, preview, categoryRow
     }
 }

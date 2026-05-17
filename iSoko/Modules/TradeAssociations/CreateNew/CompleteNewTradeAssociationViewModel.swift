@@ -1,6 +1,6 @@
 //
 //  CompleteNewTradeAssociationViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 12/11/2025.
 //
@@ -12,35 +12,74 @@ import StorageKit
 
 @MainActor
 final class CompleteNewTradeAssociationViewModel: FormViewModel {
-
-    // MARK: - Upload
+    
+    // MARK: - Callbacks
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
-
-    // MARK: - Navigation
-    var gotoSelectLocation: ((_ completion: @escaping (CommonIdNameModel?) -> Void) -> Void)?
     var gotoConfirm: (() -> Void)?
-
-    // MARK: - Country Picker
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
-    private let countryHelper = CountryHelper()
-
-    // MARK: - Services
+    
     private let associationsService = NetworkEnvironment.shared.associationsService
-
+    private let countryHelper = CountryHelper()
+    
     // MARK: - Internal State
     private var state = State()
-
+    
     // MARK: - Init
-    override init() {
+    init(_ data: [String: Any]) {
         super.init()
         
-        Task{ @MainActor in
+        mapStep1Data(data)
+        Task { @MainActor in
             sections = makeSections()
             configureUploadHandlers()
         }
     }
+    
+    // MARK: - Map Step 1 Data
+    private func mapStep1Data(_ data: [String: Any]) {
+        // Association Name
+        if let name = data["name"] as? String {
+            state.associationName = name
+        }
+        
+        // Association Code
+        if let code = data["code"] as? String {
+            state.code = code
+        }
+        
+        // Association Code
+        if let countryId = data["countryId"] as? Int {
+            state.countryId = countryId
+        }
 
-    // MARK: - Section Builder
+        // Association Description
+        if let description = data["description"] as? String {
+            state.associationDescription = description
+        }
+
+        // Number of Members (can come as String or Int)
+        if let members = data["members"] as? Int {
+            state.members = members
+        } else if let membersString = data["members"] as? String,
+                  let membersInt = Int(membersString) {
+            state.members = membersInt
+        }
+
+        // Founded Year (ensure it’s an Int)
+        if let foundedIn = data["foundedIn"] as? Int {
+            state.foundedIn = foundedIn
+        } else if let foundedInString = data["foundedIn"] as? String,
+                  let foundedInInt = Int(foundedInString) {
+            state.foundedIn = foundedInInt
+        } else if let foundedDate = data["foundedIn"] as? Date {
+            state.foundedIn = foundedDate.getComponent(.year)
+        }
+
+        // Debug log
+        print("Mapped Step 1 data: \(state)")
+    }
+    
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             FormSection(
@@ -49,11 +88,12 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                     headerRow,
                     stepIndicatorRow,
                     phoneDropDownRow,
+                    emailInputRow,
                     websiteInputRow,
                     instagramInputRow,
                     linkedinInputRow,
                     xInputRow,
-                    locationDropdownRow,
+                    locationRow,
                     uploadCertificateRow,
                     uploadLogoRow,
                     SpacerFormRow(tag: 20),
@@ -62,77 +102,21 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             )
         ]
     }
-
-    // MARK: - Upload Handlers
-    private func configureUploadHandlers() {
-
-        // Certificate Upload
-        uploadCertificateRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
-
-            switch result {
-            case .pick:
-                self.pickFile? { picked in
-                    guard let picked else { return }
-
-                    self.state.certificate = picked
-                    self.uploadCertificateRow.selectedDocumentName = picked.fileName
-                    self.uploadCertificateRow.selectedImage = nil
-                    self.reloadRow(withTag: self.uploadCertificateRow.tag)
-                }
-            default:
-                break
-            }
-        }
-
-        // Logo Upload
-        uploadLogoRow.modelDidUpdate = { [weak self] result in
-            guard let self else { return }
-
-            switch result {
-            case .pick:
-                self.pickFile? { picked in
-                    guard let picked else { return }
-
-                    self.state.logo = picked
-
-                    if let data = picked.fileData,
-                       let image = UIImage(data: data) {
-                        self.uploadLogoRow.selectedImage = image
-                        self.uploadLogoRow.selectedDocumentName = nil
-                    } else {
-                        self.uploadLogoRow.selectedDocumentName = picked.fileName
-                        self.uploadLogoRow.selectedImage = nil
-                    }
-
-                    self.reloadRow(withTag: self.uploadLogoRow.tag)
-                }
-            default:
-                break
-            }
-        }
-    }
-
+    
     // MARK: - Rows
-
     private lazy var stepIndicatorRow = StepStripFormRow(
         tag: CellTag.steps.rawValue,
         model: StepStripModel(totalSteps: 2, currentStep: 2)
     )
-
+    
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
-        title: "Complete Association Registration",
-        description: "Add your contact and location details to help members find your association easily.",
-        maxTitleLines: 2,
-        layoutStyle: .stackedVertical,
-        textAlignment: .left,
-        titleFontStyle: .title,
-        descriptionFontStyle: .headline
+            title: "Complete Association Registration",
+            description: "Add contact and location details to help members find your association."
         )
     )
-
+    
     private lazy var phoneDropDownRow = PhoneDropDownFormRow(
         tag: CellTag.phone.rawValue,
         model: PhoneDropDownModel(
@@ -140,103 +124,50 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             selectedCountry: countryHelper.country(forISO: "KE")!,
             placeholder: "Enter phone number",
             titleText: "Phone Number",
-            validation: ValidationConfiguration(
-                isRequired: true,
-                minLength: 5,
-                maxLength: 15,
-                errorMessageRequired: "Phone number is required",
-                errorMessageLength: "Phone number length is invalid"
-            ),
-            onPhoneChanged: { [weak self] newPhone in
-                self?.state.phoneNumber = newPhone
-            },
+            onPhoneChanged: { [weak self] text in self?.state.phoneNumber = text },
             onCountryTapped: { [weak self] in
-                self?.showCountryPicker? { selectedCountry in
-                    self?.updatePhoneCountry(selectedCountry)
+                self?.showCountryPicker? { country in
+                    self?.state.phoneCountry = country
                 }
-            },
-            onValidationError: { _ in }
+            }
         )
     )
-
-    private func updatePhoneCountry(_ newCountry: Country) {
-        state.phoneCountry = newCountry
-
-        var model = phoneDropDownRow.model
-        model.selectedCountry = newCountry
-        phoneDropDownRow.model = model
-        reloadRow(withTag: phoneDropDownRow.tag)
-    }
-
-    private lazy var websiteInputRow = makeURLInputRow(
-        tag: CellTag.website.rawValue,
-        title: "Website URL (Optional)",
-        placeholder: "Enter website URL"
-    )
-
-    private lazy var instagramInputRow = makeURLInputRow(
-        tag: CellTag.instagram.rawValue,
-        title: "Instagram URL (Optional)",
-        placeholder: "Enter Instagram URL"
-    )
-
-    private lazy var linkedinInputRow = makeURLInputRow(
-        tag: CellTag.linkedin.rawValue,
-        title: "LinkedIn URL (Optional)",
-        placeholder: "Enter LinkedIn URL"
-    )
-
-    private lazy var xInputRow = makeURLInputRow(
-        tag: CellTag.xURL.rawValue,
-        title: "X URL (Optional)",
-        placeholder: "Enter X (Twitter) URL"
-    )
-
-    private func makeURLInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+    
+    private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "Email Address")
+    private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "Website URL")
+    private lazy var instagramInputRow = makeURLInputRow(tag: CellTag.instagram.rawValue, title: "Instagram URL")
+    private lazy var linkedinInputRow = makeURLInputRow(tag: CellTag.linkedin.rawValue, title: "LinkedIn URL")
+    private lazy var xInputRow = makeURLInputRow(tag: CellTag.xURL.rawValue, title: "X (Twitter) URL")
+    
+    private lazy var locationRow = makeURLInputRow(tag: CellTag.location.rawValue, title: "Business Location")
+    
+    private func makeURLInputRow(tag: Int, title: String) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
                 text: "",
-                config: TextFieldConfig(
-                    placeholder: placeholder,
-                    keyboardType: .URL
-                ),
+                config: TextFieldConfig(placeholder: title),
                 validation: ValidationConfiguration(isRequired: false),
                 titleText: title,
                 useCardStyle: true,
-                onTextChanged: { [weak self] newText in
+                onTextChanged: { [weak self] text in
                     guard let self else { return }
-
+                    
                     switch tag {
-                    case CellTag.website.rawValue:
-                        self.state.website = newText
-                    case CellTag.instagram.rawValue:
-                        self.state.instagram = newText
-                    case CellTag.linkedin.rawValue:
-                        self.state.linkedin = newText
-                    case CellTag.xURL.rawValue:
-                        self.state.xURL = newText
-                    default:
-                        break
+                    case CellTag.website.rawValue: self.state.website = text
+                    case CellTag.instagram.rawValue: self.state.instagram = text
+                    case CellTag.linkedin.rawValue: self.state.linkedin = text
+                    case CellTag.xURL.rawValue: self.state.xURL = text
+                    case CellTag.location.rawValue: self.state.physicalAddress = text
+                    case CellTag.email.rawValue: self.state.email = text
+                    default: break
                     }
                 }
             )
         )
     }
-
-    private lazy var locationDropdownRow = DropdownFormRow(
-        tag: CellTag.location.rawValue,
-        config: DropdownFormConfig(
-            title: "Business Location",
-            placeholder: state.businessLocation?.name ?? "Select location",
-            rightImage: UIImage(systemName: "chevron.down"),
-            isCardStyleEnabled: true,
-            onTap: { [weak self] in
-                self?.handleLocationSelection()
-            }
-        )
-    )
-
+    
+    // MARK: - Uploads
     public lazy var uploadCertificateRow = UploadFormRow(
         tag: CellTag.certificate.rawValue,
         config: UploadFormRowConfig(
@@ -250,7 +181,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             height: 120
         )
     )
-
+    
     public lazy var uploadLogoRow = UploadFormRow(
         tag: CellTag.logo.rawValue,
         config: UploadFormRowConfig(
@@ -264,11 +195,42 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             height: 120
         )
     )
-
+    
+    private func configureUploadHandlers() {
+        uploadCertificateRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+            if case .pick = result {
+                self.pickFile? { picked in
+                    self.state.certificate = picked
+                    self.uploadCertificateRow.selectedDocumentName = picked?.fileName
+                    self.reloadRow(withTag: self.uploadCertificateRow.tag)
+                }
+            }
+        }
+        
+        uploadLogoRow.modelDidUpdate = { [weak self] result in
+            guard let self else { return }
+            if case .pick = result {
+                self.pickFile? { picked in
+                    self.state.logo = picked
+                    if let data = picked?.fileData, let image = UIImage(data: data) {
+                        self.uploadLogoRow.selectedImage = image
+                        self.uploadLogoRow.selectedDocumentName = nil
+                    } else {
+                        self.uploadLogoRow.selectedDocumentName = picked?.fileName
+                        self.uploadLogoRow.selectedImage = nil
+                    }
+                    self.reloadRow(withTag: self.uploadLogoRow.tag)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Continue Button
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "Submit",
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -279,18 +241,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             }
         }
     )
-
-    // MARK: - Location
-    private func handleLocationSelection() {
-        gotoSelectLocation? { [weak self] value in
-            guard let self, let value else { return }
-
-            self.state.businessLocation = value
-            self.locationDropdownRow.config.placeholder = value.name
-            self.reloadRow(withTag: self.locationDropdownRow.tag)
-        }
-    }
-
+    
     // MARK: - Reload
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
@@ -300,106 +251,87 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             }
         }
     }
+    
+    // MARK: - Parameter Mapping
+    private func makeAssociationParams() -> [String: Any] {
+        [
+            "name": state.associationName,
+            "code": state.code,
+            "countryId": state.countryId,
+            
+            "description": state.associationDescription,
+            "members": state.members,
+            "foundedIn": state.foundedIn,
+            "phoneNumber": state.phoneNumber,
+            "emailAddress": state.email,
+            "website": state.website,
+            "instagram": state.instagram,
+            "linkedin": state.linkedin,
+            "x": state.xURL,
+            "physicalAddress": state.physicalAddress
+        ]
+    }
+
+    // MARK: - Network Call
+    private func registerAssociation() async throws -> AssociationResponse? {
+        let params = makeAssociationParams()
+        
+        return try await associationsService.register(
+            association: params,
+            logo: state.logo,
+            certificate: state.certificate,
+            accessToken: state.oauthToken
+        )
+    }
 
     // MARK: - Submit
     private func submit() async {
-
-        let params: [String: Any] = [
-            "foundedIn": 2010,
-            "name": "Wheat Farmers Association",
-            "code": "WFA",
-            "countryId": 1,
-            "instagram": state.instagram,
-            "phoneNumber": state.phoneNumber,
-            "x": state.xURL,
-            "emailAddress": "wfa@gmail.com",
-            "members": 150,
-            "website": state.website,
-            "description": "An association of wheat farmers",
-            "physicalAddress": "123 Wheat St, Nairobi",
-            "linkedin": state.linkedin,
-            "locationId": "1"
-        ]
-
+        showLoader()
+        defer { hideLoader() }
+        
         do {
-            let response = try await associationsService.register(
-                association: params,
-                logo: state.logo,
-                certificate: state.certificate,
-                accessToken: state.oauthToken
-            )
-
-            gotoConfirm?()
-
+            let _ = try await registerAssociation()
+            gotoConfirm?() // Success
         } catch let NetworkError.server(response) {
-
-            print("🚫 Server error:", response.message ?? "Unknown")
-
             await MainActor.run {
                 state.errorMessage = response.message
-                state.fieldErrors = response.errors
+                showError(state.errorMessage ?? "Unknown error")
             }
-
         } catch {
             await MainActor.run {
                 state.errorMessage = "Something went wrong. Please try again."
+                showError(state.errorMessage ?? "Unknown error")
             }
         }
     }
     
-//    private func applyFieldErrors() {
-//        state.fieldErrors?.forEach { error in
-//            switch error.field {
-//            case "phoneNumber":
-//                // phoneDropDownRow.showValidationError(error.message)
-//            case "website":
-//                // websiteInputRow.showValidationError(error.message)
-//            default:
-//                break
-//            }
-//        }
-//    }
-
-
-
     // MARK: - State
     private struct State {
-        var businessLocation: CommonIdNameModel?
-
+        var associationName: String = ""
+        var code: String = ""
+        
+        var associationDescription: String = ""
+        var members: Int = 0
+        var foundedIn: Int = 0
+        var countryId: Int = 0
+        
         var phoneNumber: String = ""
         var phoneCountry: Country?
-
         var website: String = ""
         var instagram: String = ""
         var linkedin: String = ""
         var xURL: String = ""
-
+        var physicalAddress: String = ""
+        var email: String = ""
+        
         var logo: PickedFile?
         var certificate: PickedFile?
-
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
         var errorMessage: String?
-        var fieldErrors: [BasicResponse.ErrorsObject]?
     }
-
-    private enum SectionTag: Int {
-        case main = 0
-    }
-
+    
+    private enum SectionTag: Int { case main = 0 }
     private enum CellTag: Int {
-        case header = 1
-        case steps = 2
-        case phone = 3
-        case website = 4
-        case instagram = 5
-        case linkedin = 6
-        case xURL = 7
-        case location = 8
-        case continueButton = 9
-        case certificate = 10
-        case logo = 11
+        case header = 1, steps, phone, website, instagram, linkedin, xURL, location, continueButton, certificate, logo, email
     }
 }

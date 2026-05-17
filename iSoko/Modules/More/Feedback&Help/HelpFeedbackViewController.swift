@@ -1,5 +1,5 @@
 //
-//  SettingsViewController.swift
+//  HelpFeedbackViewController.swift
 //  
 //
 //  Created by Edwin Weru on 03/10/2025.
@@ -8,12 +8,13 @@
 import UIKit
 import DesignSystemKit
 
-class SettingsViewController: FormViewController, CloseableViewController {
+class HelpFeedbackViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "Help & Feedback"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
@@ -23,7 +24,7 @@ class SettingsViewController: FormViewController, CloseableViewController {
         
         let actionButton01 = UIBarButtonItem(customView: btn01)
         
-        navigationItem.rightBarButtonItems = [actionButton01]
+        // navigationItem.rightBarButtonItems = [actionButton01]
     }
     
     override func viewWillAppear(_ animated: Bool) {

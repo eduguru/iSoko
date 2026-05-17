@@ -1,15 +1,15 @@
 //
-//  LanguagePickerViewModel.swift
+//  ChangeLanguageViewModel.swift
 //  
 //
-//  Created by Edwin Weru on 18/09/2025.
+//  Created by Edwin Weru on 14/05/2026.
 //
 
 import DesignSystemKit
 import UtilsKit
 import UIKit
 
-final class LanguagePickerViewModel: FormViewModel {
+final class ChangeLanguageViewModel: FormViewModel {
     var confirmSelection: ((Language) -> Void)? = { _ in }
 
     private var state: State?

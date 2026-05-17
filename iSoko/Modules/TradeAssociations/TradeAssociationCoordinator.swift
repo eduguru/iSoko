@@ -74,21 +74,12 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         addChild(modalCoordinator)
         
         let viewModel = NewTradeAssociationViewModel()
-        viewModel.gotoConfirm = { [weak self] in
-            self?.gotoCompleteCreateTradeAssociations()
-        }
+        viewModel.goToDateSelection = gotoSelectDate
+        viewModel.gotoSelectSystemCountry = gotoSelectSystemCountry
+        viewModel.onStep1Complete = gotoCompleteCreateTradeAssociations
         
         let vc = NewTradeAssociationViewController()
         vc.viewModel = viewModel
-        
-        viewModel.selectFoundedYear = { [weak self] completion in
-            modalCoordinator.goToCalendarPicker(
-                mode: .year,
-                min: Date.from(year: 1900)
-            ) { date in
-                completion(date?.yearComponent)
-            }
-        }
         
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
@@ -98,9 +89,43 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func gotoCompleteCreateTradeAssociations() {
-        let viewModel = CompleteNewTradeAssociationViewModel()
+    private func gotoCompleteCreateTradeAssociations(_ data: [String: Any]) {
+        let viewModel = CompleteNewTradeAssociationViewModel(data)
         let vc = CompleteNewTradeAssociationViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    func gotoSelectDate(config: DatePickerConfig,completion: @escaping (Date?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToAppleStyleCalendar(config: config) { [weak self] result in
+            completion(result)
+        }
+    }
+    
+    func gotoSelectSystemCountry(_ type: CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .countries(let response):
+                let model = response
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)

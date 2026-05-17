@@ -121,4 +121,8 @@ public struct CustomerUser: Codable {
     public let email: String?
     public let firstName: String?
     public let lastName: String?
+    
+    let phoneNumber: String?
+    let whatsappNumber: String?
+    let storeUrl: String?
 }

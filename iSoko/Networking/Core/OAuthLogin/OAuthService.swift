@@ -12,33 +12,29 @@ import UIKit
 import UtilsKit
 import StorageKit
 
-extension OAuthService: ASWebAuthenticationPresentationContextProviding {
-    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        UIApplication.shared
-            .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?
-            .keyWindow ?? ASPresentationAnchor()
-    }
-}
-
 public final class OAuthService: NSObject {
 
+    // MARK: - Properties
     private var session: ASWebAuthenticationSession?
     private var verifier = ""
     public var state = ""
+    
+    /// Timer for automatic token refresh
+    private var refreshTimer: Timer?
+
+    // MARK: - Shared Instance (optional singleton)
+    public static let shared = OAuthService()
 
     // MARK: - Authorization (Step 1)
-
-    func startAuthorization(
+    public func startAuthorization(
         verifier: String,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         self.verifier = verifier
         self.state = UUID().uuidString
-
+        
         let challenge = PKCE.codeChallenge(for: verifier)
-
+        
         guard let authURL = OAuthConfig.authorizationURL(
             codeChallenge: challenge,
             state: state
@@ -46,32 +42,31 @@ public final class OAuthService: NSObject {
             completion(.failure(OAuthError.invalidAuthURL))
             return
         }
-
+        
         session = ASWebAuthenticationSession(
             url: authURL,
             callbackURLScheme: OAuthConfig.callbackScheme
         ) { [weak self] callbackURL, error in
             guard let self else { return }
-
+            
             if let error {
                 completion(.failure(error))
                 return
             }
-
+            
             guard let url = callbackURL else {
                 completion(.failure(OAuthError.missingAuthorizationCode))
                 return
             }
-
+            
             self.handleRedirect(url: url, completion: completion)
         }
-
+        
         session?.presentationContextProvider = self
         session?.start()
     }
 
-    // MARK: - Redirect handling
-
+    // MARK: - Redirect Handling
     private func handleRedirect(
         url: URL,
         completion: @escaping (Result<String, Error>) -> Void
@@ -85,26 +80,46 @@ public final class OAuthService: NSObject {
             completion(.failure(OAuthError.invalidRedirect))
             return
         }
-
         completion(.success(code))
     }
 
-    // MARK: - Token exchange (Step 2)
-
-    func exchangeCodeForToken(
+    // MARK: - Token Exchange (Step 2)
+    public func exchangeCodeForToken(
         authorizationCode: String,
         completion: @escaping (Result<TokenResponse, Error>) -> Void
     ) {
         OAuthTokenService().exchangeAuthorizationCode(
             code: authorizationCode,
-            codeVerifier: verifier,
-            completion: completion
-        )
+            codeVerifier: verifier
+        ) { [weak self] result in
+            guard let self else { return }
+            
+            switch result {
+            case .success(let tokenResponse):
+                self.saveToken(tokenResponse)
+                completion(.success(tokenResponse))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
-    // MARK: - User details (Step 3)
+    // MARK: - User Details (Step 3)
+    /// Fetch user details using access token (refreshes if needed)
+    public func fetchUserAndUpdateStorage(completion: @escaping (Result<UserDetails, Error>) -> Void) {
+        refreshTokenIfNeeded { [weak self] result in
+            guard let self else { return }
+            
+            switch result {
+            case .success(let accessToken):
+                self.getUserDetails(accessToken: accessToken, completion: completion)
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
 
-    func getUserDetails(
+    public func getUserDetails(
         accessToken: String,
         completion: @escaping (Result<UserDetails, Error>) -> Void
     ) {
@@ -112,32 +127,38 @@ public final class OAuthService: NSObject {
             completion(.failure(OAuthError.invalidAuthURL))
             return
         }
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue(
-            "Bearer \(accessToken)",
-            forHTTPHeaderField: "Authorization"
-        )
-
-        URLSession.shared.dataTask(with: request) { data, _, error in
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            guard let self else { return }
+            
             if let error {
                 completion(.failure(error))
                 return
             }
-
+            
             guard let data else {
                 completion(.failure(OAuthError.emptyResponse))
                 return
             }
-
-            // 🔍 DEBUG: Print raw JSON
-            self.printJSON(data)
-
+            
             do {
                 let user = try JSONDecoder().decode(UserDetails.self, from: data)
-                AppStorage.hasLoggedIn = true
-                RuntimeSession.authState = .authenticated
+                
+                DispatchQueue.main.async {
+                    // ✅ Update user profile and logged-in state
+                    AppStorage.userProfile = user
+                    AppStorage.hasLoggedIn = true
+                    RuntimeSession.authState = .authenticated
+                    
+                    // Ensure token refresh timer is scheduled
+                    if let token = AppStorage.oauthToken {
+                        self.scheduleTokenRefresh()
+                    }
+                }
                 
                 completion(.success(user))
             } catch {
@@ -146,20 +167,124 @@ public final class OAuthService: NSObject {
         }.resume()
     }
 
-    private func printJSON(_ data: Data) {
-        do {
-            let jsonObject = try JSONSerialization.jsonObject(with: data)
-            let prettyData = try JSONSerialization.data(
-                withJSONObject: jsonObject,
-                options: [.prettyPrinted]
-            )
-
-            if let jsonString = String(data: prettyData, encoding: .utf8) {
-                print("User Details JSON:\n\(jsonString)")
-            }
-        } catch {
-            print("Failed to print JSON:", error)
+    // MARK: - Token Refresh
+    public func refreshTokenIfNeeded(completion: @escaping (Result<String, Error>) -> Void) {
+        guard let token = AppStorage.oauthToken else {
+            completion(.failure(OAuthError.missingRefreshToken))
+            return
         }
+        
+        let now = Date()
+        if token.expiryDate > now.addingTimeInterval(30) {
+            // Token still valid
+            scheduleTokenRefresh() // ✅ Ensure timer is active
+            completion(.success(token.accessToken))
+            return
+        }
+        
+        // Token expired, refresh
+        guard let refreshToken = token.refreshToken else {
+            completion(.failure(OAuthError.missingRefreshToken))
+            return
+        }
+        
+        refreshAccessToken(refreshToken: refreshToken, completion: completion)
+    }
+    
+    private func refreshAccessToken(
+        refreshToken: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        var request = URLRequest(url: URL(string: OAuthConfig.tokenEndpoint)!)
+        request.httpMethod = "POST"
+        let body: [String: Any] = [
+            "grant_type": "refresh_token",
+            "refresh_token": refreshToken,
+            "client_id": OAuthConfig.clientId
+        ]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            guard let self else { return }
+            
+            if let error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let data else {
+                completion(.failure(OAuthError.emptyResponse))
+                return
+            }
+            
+            do {
+                let tokenResponse = try JSONDecoder().decode(TokenResponse.self, from: data)
+                
+                DispatchQueue.main.async {
+                    self.saveToken(tokenResponse)
+                }
+                
+                completion(.success(tokenResponse.accessToken))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
     }
 
+    // MARK: - Save Token & Schedule Refresh
+    private func saveToken(_ token: TokenResponse) {
+        AppStorage.oauthToken = token
+        scheduleTokenRefresh()
+    }
+
+    // MARK: - Automatic Token Refresh
+    private func scheduleTokenRefresh() {
+        refreshTimer?.invalidate()
+        
+        guard let expiry = AppStorage.oauthToken?.expiryDate else { return }
+        let interval = max(expiry.timeIntervalSinceNow - 60, 0) // Refresh 1 min before expiry
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            
+            self.refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
+                guard let refreshToken = AppStorage.oauthToken?.refreshToken else { return }
+                self.refreshAccessToken(refreshToken: refreshToken) { result in
+                    switch result {
+                    case .success:
+                        print("🔁 Token automatically refreshed")
+                    case .failure(let error):
+                        print("⚠️ Token refresh failed:", error)
+                        // Optionally, reset logged-in state
+                        DispatchQueue.main.async {
+                            AppStorage.hasLoggedIn = false
+                            RuntimeSession.authState = .guest
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - ASWebAuthenticationPresentationContextProviding
+extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        UIApplication.shared
+            .connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?
+            .keyWindow ?? ASPresentationAnchor()
+    }
+}
+
+// MARK: - Optional Helper for App Launch
+extension OAuthService {
+    /// Restore token refresh timer on app launch
+    public func restoreTokenStateIfNeeded() {
+        if AppStorage.hasLoggedIn ?? false, let _ = AppStorage.oauthToken {
+            scheduleTokenRefresh()
+        }
+    }
 }
