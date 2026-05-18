@@ -164,12 +164,22 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     )
 
     // MARK: Phone Input
-    lazy var phoneDropDownRow: PhoneDropDownFormRow = {
-        PhoneDropDownFormRow(
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
+        guard let self = self else {
+            fatalError("Self is nil in lazy initializer")
+        }
+
+        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+
+        let selectedCountry: Country = countryHelper.country(forISO: iso)
+            ?? countryHelper.defaultCountry
+            ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
+
+        return PhoneDropDownFormRow(
             tag: Tags.Cells.phoneDropDown.rawValue,
             model: PhoneDropDownModel(
                 phoneNumber: state.phoneNumber ?? "",
-                selectedCountry: countryHelper.country(forISO: "KE")!,
+                selectedCountry: selectedCountry,
                 placeholder: "Enter phone number",
                 titleText: nil,
                 validation: ValidationConfiguration(
@@ -181,7 +191,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
                 ),
                 onPhoneChanged: { [weak self] new in
                     guard let self = self else { return }
-                    self.state.phoneNumber = "+254" + new
+                    self.state.phoneNumber = "\(selectedCountry.phoneCode)" + new
                     self.state.builder.phoneNumber = self.state.phoneNumber
                 },
                 onCountryTapped: { [weak self] in
@@ -304,7 +314,6 @@ final class BasicProfileSecurityViewModel: FormViewModel {
 
             do {
                 let response = try await authenticationService.register(state.builder.build(), accessToken: state.guestToken)
-                // let response = try await AuthenticationApi.register(request: state.builder.build(), accessToken: state.accessToken)
 
                 await MainActor.run { //Success path (status == 200 guaranteed) // Proceed
                     self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }

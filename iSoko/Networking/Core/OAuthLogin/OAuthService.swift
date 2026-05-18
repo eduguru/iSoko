@@ -19,10 +19,9 @@ public final class OAuthService: NSObject {
     private var verifier = ""
     public var state = ""
     
-    /// Timer for automatic token refresh
     private var refreshTimer: Timer?
 
-    // MARK: - Shared Instance (optional singleton)
+    // MARK: - Shared Instance
     public static let shared = OAuthService()
 
     // MARK: - Authorization (Step 1)
@@ -50,12 +49,12 @@ public final class OAuthService: NSObject {
             guard let self else { return }
             
             if let error {
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
             
             guard let url = callbackURL else {
-                completion(.failure(OAuthError.missingAuthorizationCode))
+                DispatchQueue.main.async { completion(.failure(OAuthError.missingAuthorizationCode)) }
                 return
             }
             
@@ -77,10 +76,10 @@ public final class OAuthService: NSObject {
             let returnedState = components.queryItems?.first(where: { $0.name == "state" })?.value,
             returnedState == state
         else {
-            completion(.failure(OAuthError.invalidRedirect))
+            DispatchQueue.main.async { completion(.failure(OAuthError.invalidRedirect)) }
             return
         }
-        completion(.success(code))
+        DispatchQueue.main.async { completion(.success(code)) }
     }
 
     // MARK: - Token Exchange (Step 2)
@@ -97,15 +96,14 @@ public final class OAuthService: NSObject {
             switch result {
             case .success(let tokenResponse):
                 self.saveToken(tokenResponse)
-                completion(.success(tokenResponse))
+                DispatchQueue.main.async { completion(.success(tokenResponse)) }
             case .failure(let error):
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
     }
 
     // MARK: - User Details (Step 3)
-    /// Fetch user details using access token (refreshes if needed)
     public func fetchUserAndUpdateStorage(completion: @escaping (Result<UserDetails, Error>) -> Void) {
         refreshTokenIfNeeded { [weak self] result in
             guard let self else { return }
@@ -114,7 +112,7 @@ public final class OAuthService: NSObject {
             case .success(let accessToken):
                 self.getUserDetails(accessToken: accessToken, completion: completion)
             case .failure(let error):
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }
     }
@@ -124,7 +122,7 @@ public final class OAuthService: NSObject {
         completion: @escaping (Result<UserDetails, Error>) -> Void
     ) {
         guard let url = URL(string: OAuthConfig.userInfoEndpoint) else {
-            completion(.failure(OAuthError.invalidAuthURL))
+            DispatchQueue.main.async { completion(.failure(OAuthError.invalidAuthURL)) }
             return
         }
         
@@ -136,33 +134,32 @@ public final class OAuthService: NSObject {
             guard let self else { return }
             
             if let error {
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
             
             guard let data else {
-                completion(.failure(OAuthError.emptyResponse))
+                DispatchQueue.main.async { completion(.failure(OAuthError.emptyResponse)) }
                 return
             }
             
             do {
                 let user = try JSONDecoder().decode(UserDetails.self, from: data)
                 
+                // Update AppStorage safely on main thread
                 DispatchQueue.main.async {
-                    // ✅ Update user profile and logged-in state
                     AppStorage.userProfile = user
                     AppStorage.hasLoggedIn = true
                     RuntimeSession.authState = .authenticated
                     
-                    // Ensure token refresh timer is scheduled
-                    if let token = AppStorage.oauthToken {
+                    if let _ = AppStorage.oauthToken {
                         self.scheduleTokenRefresh()
                     }
+                    
+                    completion(.success(user))
                 }
-                
-                completion(.success(user))
             } catch {
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }.resume()
     }
@@ -170,21 +167,19 @@ public final class OAuthService: NSObject {
     // MARK: - Token Refresh
     public func refreshTokenIfNeeded(completion: @escaping (Result<String, Error>) -> Void) {
         guard let token = AppStorage.oauthToken else {
-            completion(.failure(OAuthError.missingRefreshToken))
+            DispatchQueue.main.async { completion(.failure(OAuthError.missingRefreshToken)) }
             return
         }
         
         let now = Date()
         if token.expiryDate > now.addingTimeInterval(30) {
-            // Token still valid
-            scheduleTokenRefresh() // ✅ Ensure timer is active
-            completion(.success(token.accessToken))
+            scheduleTokenRefresh()
+            DispatchQueue.main.async { completion(.success(token.accessToken)) }
             return
         }
         
-        // Token expired, refresh
         guard let refreshToken = token.refreshToken else {
-            completion(.failure(OAuthError.missingRefreshToken))
+            DispatchQueue.main.async { completion(.failure(OAuthError.missingRefreshToken)) }
             return
         }
         
@@ -209,12 +204,12 @@ public final class OAuthService: NSObject {
             guard let self else { return }
             
             if let error {
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
                 return
             }
             
             guard let data else {
-                completion(.failure(OAuthError.emptyResponse))
+                DispatchQueue.main.async { completion(.failure(OAuthError.emptyResponse)) }
                 return
             }
             
@@ -223,11 +218,10 @@ public final class OAuthService: NSObject {
                 
                 DispatchQueue.main.async {
                     self.saveToken(tokenResponse)
+                    completion(.success(tokenResponse.accessToken))
                 }
-                
-                completion(.success(tokenResponse.accessToken))
             } catch {
-                completion(.failure(error))
+                DispatchQueue.main.async { completion(.failure(error)) }
             }
         }.resume()
     }
@@ -243,24 +237,22 @@ public final class OAuthService: NSObject {
         refreshTimer?.invalidate()
         
         guard let expiry = AppStorage.oauthToken?.expiryDate else { return }
-        let interval = max(expiry.timeIntervalSinceNow - 60, 0) // Refresh 1 min before expiry
+        let interval = max(expiry.timeIntervalSinceNow - 60, 0)
         
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             
             self.refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
                 guard let refreshToken = AppStorage.oauthToken?.refreshToken else { return }
+                
                 self.refreshAccessToken(refreshToken: refreshToken) { result in
                     switch result {
                     case .success:
-                        print("🔁 Token automatically refreshed")
+                        print(" Token automatically refreshed")
                     case .failure(let error):
                         print("⚠️ Token refresh failed:", error)
-                        // Optionally, reset logged-in state
-                        DispatchQueue.main.async {
-                            AppStorage.hasLoggedIn = false
-                            RuntimeSession.authState = .guest
-                        }
+                        // Do NOT reset logged-in state automatically
+                        // Optional: Notify user or app of auth error
                     }
                 }
             }
@@ -281,7 +273,6 @@ extension OAuthService: ASWebAuthenticationPresentationContextProviding {
 
 // MARK: - Optional Helper for App Launch
 extension OAuthService {
-    /// Restore token refresh timer on app launch
     public func restoreTokenStateIfNeeded() {
         if AppStorage.hasLoggedIn ?? false, let _ = AppStorage.oauthToken {
             scheduleTokenRefresh()

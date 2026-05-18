@@ -116,22 +116,46 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             description: "Add contact and location details to help members find your association."
         )
     )
-    
-    private lazy var phoneDropDownRow = PhoneDropDownFormRow(
-        tag: CellTag.phone.rawValue,
-        model: PhoneDropDownModel(
-            phoneNumber: "",
-            selectedCountry: countryHelper.country(forISO: "KE")!,
-            placeholder: "Enter phone number",
-            titleText: "Phone Number",
-            onPhoneChanged: { [weak self] text in self?.state.phoneNumber = text },
-            onCountryTapped: { [weak self] in
-                self?.showCountryPicker? { country in
-                    self?.state.phoneCountry = country
+
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
+        guard let self = self else {
+            fatalError("Self is nil in lazy initializer")
+        }
+
+        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+
+        let selectedCountry: Country = countryHelper.country(forISO: iso)
+            ?? countryHelper.defaultCountry
+            ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
+
+        return PhoneDropDownFormRow(
+            tag: CellTag.phone.rawValue,
+            model: PhoneDropDownModel(
+                phoneNumber: state.phoneNumber,
+                selectedCountry: selectedCountry,
+                placeholder: "Enter phone number",
+                titleText: nil,
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 5,
+                    maxLength: 15,
+                    errorMessageRequired: "Phone is required",
+                    errorMessageLength: "Phone length invalid"
+                ),
+                onPhoneChanged: { [weak self] text in
+                    self?.state.phoneNumber = "\(selectedCountry.phoneCode)" + text
+                },
+                onCountryTapped: { [weak self] in
+                    self?.showCountryPicker? { country in
+                        self?.state.phoneCountry = country
+                    }
+                },
+                onValidationError: { err in
+                    print("Phone validation error: \(String(describing: err))")
                 }
-            }
+            )
         )
-    )
+    }()
     
     private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "Email Address")
     private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "Website URL")

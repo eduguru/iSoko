@@ -18,11 +18,16 @@ public protocol AuthenticationService {
         password: String
     ) async throws -> TokenResponse
     
+    func userAvailabilityCheck(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
     func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
     
     // MARK: - Registration
     func register(_ request: RegistrationRequest, accessToken: String) async throws -> UserRegistrationResponse?
+    
+    
+    func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable
+    func passwordResetComplete(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
 
 }
 
@@ -46,7 +51,15 @@ public final class AuthenticationServiceImp: AuthenticationService {
         return token
     }
     
-    // MARK: - Email Pre-validation
+    // MARK: - Pre-validation
+    public func userAvailabilityCheck(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.userAvailabilityCheck(parameters: parameters, accessToken: accessToken)
+        )
+        
+        return response
+    }
+    
     public func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse {
         let response: BasicResponse = try await manager.request(
             AuthenticationApi.preValidateEmail(email: email, accessToken: accessToken)
@@ -71,14 +84,18 @@ public final class AuthenticationServiceImp: AuthenticationService {
         return response
     }
     
-    public func accountVerificationOTP(type: RegistrationOTPType, contact: String, accessToken: String) async throws -> BasicResponse {
-        let response: BasicResponse = try await manager.request(
-            AuthenticationApi.accountVerificationOTP(type: type, contact: contact, accessToken: accessToken)
+    public func accountVerificationOTP(parameters: [String: Any], accessToken: String) async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.accountVerificationOTP(parameters: parameters, accessToken: accessToken)
         )
         
-        if response.status != 200 {
-            throw NetworkError.server(response)
-        }
+        return response
+    }
+    
+    public func verifyAccountOTP(parameters: [String: Any], accessToken: String) async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.verifyAccountOTP(parameters: parameters, accessToken: accessToken)
+        )
         
         return response
     }
@@ -89,34 +106,22 @@ public final class AuthenticationServiceImp: AuthenticationService {
             AuthenticationApi.register(request, accessToken: accessToken)
         )
         
-//        if response.status != 200 {
-//            throw  NetworkError.custom("error getting UserRegistrationResponse") //NetworkError.server(response)
-//        }
-        
         return response
     }
     
     //MARK: - Password Reset
-    public func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) async throws -> BasicResponse{
-        let response: BasicResponse = try await manager.request(
-            AuthenticationApi.initiatePasswordReset(type: type, value: value, accessToken: accessToken)
+    public func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.passwordResetInitiate(parameters: parameters, accessToken: accessToken)
         )
-        
-        if response.status != 200 {
-            throw NetworkError.server(response)
-        }
         
         return response
     }
 
-    public func passwordReset(type: PasswordResetType, dto: PasswordResetDto, accessToken: String)  async throws -> BasicResponse {
-        let response: BasicResponse = try await manager.request(
-            AuthenticationApi.passwordReset(type: type, dto: dto, accessToken: accessToken)
+    public func passwordResetComplete(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.passwordResetComplete(parameters: parameters, accessToken: accessToken)
         )
-        
-        if response.status != 200 {
-            throw NetworkError.server(response)
-        }
         
         return response
     }

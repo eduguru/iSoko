@@ -7,99 +7,70 @@
 
 import DesignSystemKit
 import UIKit
+import StorageKit
+import UtilsKit
 
+@MainActor
 final class BasicProfileDataViewModel: FormViewModel {
+
+    // MARK: - Callbacks
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
-        _ completion: @escaping (CommonIdNameModel?) -> Void)
-    -> Void = { _, _, _ in }
-   
-    var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
-    var gotoSelectOrgType: (CommonUtilityOption, _ completion: @escaping (OrganisationTypeModel?) -> Void) -> Void = { _, _ in }
-    var gotoSelectOrgSize: (CommonUtilityOption, _ completion: @escaping (OrganisationSizeModel?) -> Void) -> Void = { _, _ in }
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
 
+    var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
     var gotoConfirm: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
+    var showCountryPicker: ((_ completion: @escaping (Country) -> Void) -> Void)?
     
     private var state: State?
+    
+    let countryHelper = CountryHelper()
+    let authenticationService = NetworkEnvironment.shared.authenticationService
 
     // MARK: - Init
-    init(builder: RegistrationBuilder, registrationType: RegistrationType) {
-        self.state = State(registrationType: registrationType, builder: builder)
+    init(builder: RegistrationBuilder) {
+        self.state = State(registrationBuilder: builder)
         super.init()
         self.sections = makeSections()
-    }
-
-    func switchRegistrationType(to newType: RegistrationType) {
-        state?.registrationType = newType
-        sections = makeSections()
-        onReloadData?()
     }
 
     // MARK: - Form Construction
     private func makeSections() -> [FormSection] {
         guard let state = state else { return [] }
 
-        var sections: [FormSection] = []
-        sections.append(makeHeaderSection())
+        var cells: [FormRow] = [
+            makeHeaderTitleRow(),
+            firstNameInputRow,
+            lastNameInputRow,
+            selectGenderRow,
+            selectAgeRangeRow,
+            selectRoleRow,
+            selectLocationRow
+        ]
 
-        switch state.registrationType {
-        case .individual:
-            sections.append(makeNamesSection())
-            sections.append(makeRolesSection())
-        case .organisation:
-            sections.append(makeOrgFieldsSection())
+        if let referralCode = state.referralCode, !referralCode.isEmpty {
+            cells.append(referralCodeInputRow)
         }
 
-        return sections
-    }
+        // Conditionally add email or phone
+        if state.email == nil {
+            cells.append(emailInputRow)
+        } else if state.phoneNumber == nil {
+            cells.append(phoneDropDownRow)
+        }
 
-    private func makeHeaderSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.header.rawValue,
-            title: nil,
-            cells: [makeHeaderTitleRow()]
-        )
-    }
+        cells.append(SpacerFormRow(tag: 1001))
+        cells.append(continueButtonRow)
 
-    private func makeNamesSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.names.rawValue,
-            title: "Full name",
-            cells: [firstNameInputRow, lastNameInputRow]
-        )
-    }
-
-    private func makeRolesSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.roles.rawValue,
-            title: nil,
-            cells: [
-                selectGenderRow,
-                selectAgeRangeRow,
-                selectRoleRow,
-                selectLocationRow,
-                referralCodeInputRow,
-                SpacerFormRow(tag: 1001),
-                continueButtonRow
-            ]
-        )
-    }
-
-    private func makeOrgFieldsSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.org.rawValue,
-            title: "Organization Details",
-            cells: [
-                orgNameInputRow,
-                orgTypeDropdownRow,
-                orgSizeDropdownRow,
-                selectRoleRow,
-                selectLocationRow,
-                SpacerFormRow(tag: 1002),
-                continueButtonRow
-            ]
-        )
+        return [
+            FormSection(
+                id: Tags.Section.main.rawValue,
+                title: nil,
+                cells: cells
+            )
+        ]
     }
 
     // MARK: - Header
@@ -107,48 +78,88 @@ final class BasicProfileDataViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.title.rawValue,
             model: TitleDescriptionModel(
-            title: state?.registrationType.title ?? "",
-            description: state?.registrationType.subtitle ?? "",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+                title: "Create Your Profile",
+                description: "Complete your details to continue",
+                maxTitleLines: 2,
+                maxDescriptionLines: 0,
+                titleEllipsis: .none,
+                descriptionEllipsis: .none,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .title,
+                descriptionFontStyle: .headline
             )
         )
     }
 
     // MARK: - Input Rows
+    lazy var firstNameInputRow = makeFirstNameInputRow()
+    lazy var lastNameInputRow = makeLastNameInputRow()
+    lazy var referralCodeInputRow = makeReferralInputRow()
     lazy var selectAgeRangeRow = makeAgeRangeRow()
     lazy var selectRoleRow = makeRoleRow()
     lazy var selectLocationRow = makeLocationRow()
     lazy var selectGenderRow = makeGenderRow()
+    lazy var continueButtonRow = makeContinueButtonRow()
 
-    lazy var firstNameInputRow = makeFirstNameInputRow()
-    lazy var lastNameInputRow = makeLastNameInputRow()
-    lazy var referralCodeInputRow = makeReferralInputRow()
+    lazy var emailInputRow: SimpleInputFormRow = {
+        let model = SimpleInputModel(
+            text: state?.email ?? "",
+            config: TextFieldConfig(
+                placeholder: "Email Address",
+                keyboardType: .emailAddress
+            ),
+            validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+            titleText: nil,
+            useCardStyle: true,
+            onTextChanged: { [weak self] newText in
+                guard let self = self else { return }
+                self.state?.email = newText
+                self.state?.registrationBuilder.email = newText
+            }
+        )
+        return SimpleInputFormRow(tag: Tags.Cells.emailInput.rawValue, model: model)
+    }()
 
-    lazy var orgNameInputRow = makeOrgNameRow()
-    lazy var orgTypeDropdownRow = makeOrgTypeRow()
-    lazy var orgSizeDropdownRow = makeOrgSizeRow()
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
+        guard let self = self else { fatalError("Self is nil") }
+        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+        let selectedCountry: Country = countryHelper.country(forISO: iso)
+            ?? countryHelper.defaultCountry
+            ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
 
-    lazy var continueButtonRow = ButtonFormRow(
-        tag: Tags.Cells.submit.rawValue,
-        model: ButtonFormModel(
-            title: "Continue",
-            style: .primary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            guard let builder = self?.mapToRegistrationBuilder() else { return }
-            self?.gotoConfirm?(builder)
-        }
-    )
+        return PhoneDropDownFormRow(
+            tag: Tags.Cells.phoneDropDown.rawValue,
+            model: PhoneDropDownModel(
+                phoneNumber: self.state?.phoneNumber ?? "",
+                selectedCountry: selectedCountry,
+                placeholder: "Enter phone number",
+                titleText: nil,
+                validation: ValidationConfiguration(
+                    isRequired: true,
+                    minLength: 5,
+                    maxLength: 15
+                ),
+                onPhoneChanged: { [weak self] new in
+                    guard let self = self else { return }
+                    self.state?.phoneNumber = "\(selectedCountry.phoneCode)\(new)"
+                    self.state?.registrationBuilder.phoneNumber = new
+                },
+                onCountryTapped: { [weak self] in
+                    self?.showCountryPicker? { selectedCountry in
+                        self?.updatePhoneCountry(selectedCountry)
+                    }
+                }
+            )
+        )
+    }()
+
+    private func updatePhoneCountry(_ newCountry: Country) {
+        var model = phoneDropDownRow.model
+        model.selectedCountry = newCountry
+        phoneDropDownRow.model = model
+        reloadRowWithTag(phoneDropDownRow.tag)
+    }
 
     // MARK: - Row Factories
     private func makeFirstNameInputRow() -> SimpleInputFormRow {
@@ -156,21 +167,13 @@ final class BasicProfileDataViewModel: FormViewModel {
             tag: Tags.Cells.firstName.rawValue,
             model: SimpleInputModel(
                 text: state?.firstName ?? "",
-                config: TextFieldConfig(
-                    placeholder: "First name *",
-                    keyboardType: .default
-                ),
-                validation: ValidationConfiguration(
-                    isRequired: true,
-                    minLength: 2,
-                    maxLength: 50
-                ),
+                config: TextFieldConfig(placeholder: "First name *", keyboardType: .default),
+                validation: ValidationConfiguration(isRequired: true, minLength: 2, maxLength: 50),
                 titleText: "First name *",
                 useCardStyle: true,
                 onTextChanged: { [weak self] text in
-                    guard let self else { return }
-                    self.state?.firstName = text
-                    self.state?.builder.firstName = text
+                    self?.state?.firstName = text
+                    self?.state?.registrationBuilder.firstName = text
                 }
             )
         )
@@ -181,21 +184,13 @@ final class BasicProfileDataViewModel: FormViewModel {
             tag: Tags.Cells.lastName.rawValue,
             model: SimpleInputModel(
                 text: state?.lastName ?? "",
-                config: TextFieldConfig(
-                    placeholder: "Last name *",
-                    keyboardType: .default
-                ),
-                validation: ValidationConfiguration(
-                    isRequired: true,
-                    minLength: 2,
-                    maxLength: 50
-                ),
+                config: TextFieldConfig(placeholder: "Last name *", keyboardType: .default),
+                validation: ValidationConfiguration(isRequired: true, minLength: 2, maxLength: 50),
                 titleText: "Last name *",
                 useCardStyle: true,
                 onTextChanged: { [weak self] text in
-                    guard let self else { return }
-                    self.state?.lastName = text
-                    self.state?.builder.lastName = text
+                    self?.state?.lastName = text
+                    self?.state?.registrationBuilder.lastName = text
                 }
             )
         )
@@ -205,68 +200,10 @@ final class BasicProfileDataViewModel: FormViewModel {
         SimpleInputFormRow(
             tag: Tags.Cells.referralCode.rawValue,
             model: SimpleInputModel(
-                text: "",
+                text: state?.referralCode ?? "",
                 config: TextFieldConfig(placeholder: "Referral Code", keyboardType: .default),
                 titleText: "Referral Code",
                 useCardStyle: true
-            )
-        )
-    }
-
-    private func makeOrgNameRow() -> SimpleInputFormRow {
-        SimpleInputFormRow(
-            tag: Tags.Cells.orgName.rawValue,
-            model: SimpleInputModel(
-                text: "",
-                config: TextFieldConfig(placeholder: "Organization name *", keyboardType: .default),
-                validation: ValidationConfiguration(isRequired: true),
-                titleText: "Organization name",
-                useCardStyle: true
-            )
-        )
-    }
-
-    private func makeOrgTypeRow() -> DropdownFormRow {
-        DropdownFormRow(
-            tag: Tags.Cells.orgType.rawValue,
-            config: DropdownFormConfig(
-                title: "Organization Type",
-                placeholder: state?.orgType?.name ?? "Select type",
-                rightImage: UIImage(systemName: "chevron.down"),
-                isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleOrgTypeSelection()
-                }
-            )
-        )
-    }
-
-    private func makeOrgSizeRow() -> DropdownFormRow {
-        DropdownFormRow(
-            tag: Tags.Cells.orgSize.rawValue,
-            config: DropdownFormConfig(
-                title: "Organization Size",
-                placeholder: state?.orgSize?.name ?? "Select size",
-                rightImage: UIImage(systemName: "chevron.down"),
-                isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleOrgSizeSelection()
-                }
-            )
-        )
-    }
-
-    private func makeAgeRangeRow() -> DropdownFormRow {
-        DropdownFormRow(
-            tag: Tags.Cells.ageRange.rawValue,
-            config: DropdownFormConfig(
-                title: "Select Age Range",
-                placeholder: state?.ageRange?.name ?? "Age Range",
-                rightImage: UIImage(systemName: "chevron.down"),
-                isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleAgeRangeSelection()
-                }
             )
         )
     }
@@ -279,9 +216,20 @@ final class BasicProfileDataViewModel: FormViewModel {
                 placeholder: state?.gender?.name ?? "Gender",
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleGenderSelection()
-                }
+                onTap: { [weak self] in self?.handleGenderSelection() }
+            )
+        )
+    }
+
+    private func makeAgeRangeRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: Tags.Cells.ageRange.rawValue,
+            config: DropdownFormConfig(
+                title: "Select Age Range",
+                placeholder: state?.ageRange?.name ?? "Age Range",
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in self?.handleAgeRangeSelection() }
             )
         )
     }
@@ -294,9 +242,7 @@ final class BasicProfileDataViewModel: FormViewModel {
                 placeholder: state?.roles?.name ?? "Role",
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleRoleSelection()
-                }
+                onTap: { [weak self] in self?.handleRoleSelection() }
             )
         )
     }
@@ -309,10 +255,26 @@ final class BasicProfileDataViewModel: FormViewModel {
                 placeholder: state?.location?.name ?? "Location",
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
-                onTap: { [weak self] in
-                    self?.handleLocationSelection()
-                }
+                onTap: { [weak self] in self?.handleLocationSelection() }
             )
+        )
+    }
+
+    private func makeContinueButtonRow() -> ButtonFormRow {
+        ButtonFormRow(
+            tag: Tags.Cells.submit.rawValue,
+            model: ButtonFormModel(
+                title: "Continue",
+                style: .primary,
+                size: .medium,
+                icon: nil,
+                fontStyle: .headline,
+                hapticsEnabled: true
+            ) { [weak self] in
+                guard let builder = self?.mapToRegistrationBuilder() else { return }
+                
+                self?.gotoConfirm?(builder)
+            }
         )
     }
 
@@ -343,32 +305,13 @@ final class BasicProfileDataViewModel: FormViewModel {
             self.reloadRowWithTag(self.selectRoleRow.tag)
         }
     }
-    
+
     private func handleLocationSelection() {
         gotoSelectLocation(.locations(page: 0, count: 100)) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.location = value
             self.selectLocationRow.config.placeholder = value.name ?? ""
-            
             self.reloadRowWithTag(self.selectLocationRow.tag)
-        }
-    }
-    
-    private func handleOrgSizeSelection() {
-        gotoSelectOrgSize(.organisationSize(page: 0, count: 100)) {[weak self] selected in
-            guard let self = self, let value = selected else { return }
-            self.state?.orgSize = value
-            self.orgSizeDropdownRow.config.placeholder = value.name ?? "Org Size"
-            self.reloadRowWithTag(self.orgSizeDropdownRow.tag)
-        }
-    }
-    
-    private func handleOrgTypeSelection() {
-        gotoSelectOrgType(.organisationType(page: 0, count: 100)) {[weak self] selected in
-            guard let self = self, let value = selected else { return }
-            self.state?.orgType = value
-            self.orgTypeDropdownRow.config.placeholder = value.name ?? "Org Type"
-            self.reloadRowWithTag(self.orgTypeDropdownRow.tag)
         }
     }
 
@@ -382,60 +325,24 @@ final class BasicProfileDataViewModel: FormViewModel {
         }
     }
 
-    // MARK: - Mapping to RegistrationBuilder
     func mapToRegistrationBuilder() -> RegistrationBuilder? {
-        guard let state = state else { return state?.builder }
-
-        // Individual
-        state.builder.firstName = state.firstName
-        state.builder.lastName = state.lastName
-        state.builder.gender = state.gender?.toIDNamePairInt
-        state.builder.role = state.roles?.toIDNamePairInt
-        state.builder.ageGroup = state.ageRange?.toIDNamePairInt
-        state.builder.location = state.location?.toIDNamePairString
-        state.builder.referralCode = state.referralCode
-
-        // Organization
-        state.builder.isOrganization = (state.registrationType == .organisation)
-        state.builder.organizationName = state.orgName
-        state.builder.organizationType = state.orgType?.toIDNamePairInt
-        state.builder.organizationSize = state.orgSize?.toIDNamePairInt
-
-        return state.builder
-    }
-
-    // MARK: - State
-    private struct State {
-        var registrationType: RegistrationType
-        var builder: RegistrationBuilder
-
-        // Individual
-        var firstName: String?
-        var lastName: String?
-        var genderOptions: [CommonIdNameModel] = [
-            CommonIdNameModel(id: 1, name: "Male"),
-            CommonIdNameModel(id: 2, name: "Female")
-        ]
-        var gender: CommonIdNameModel?
-        var ageRange: CommonIdNameModel?
-        var roles: CommonIdNameModel?
-        var location: LocationModel?
-        var referralCode: String?
-
-        // Organization
-        var orgName: String?
-        var orgType: OrganisationTypeModel?
-        var orgSize: OrganisationSizeModel?
+        guard let state = state else { return nil }
+        
+        state.registrationBuilder.firstName = state.firstName
+        state.registrationBuilder.lastName = state.lastName
+        state.registrationBuilder.gender = state.gender?.toIDNamePairInt
+        state.registrationBuilder.role = state.roles?.toIDNamePairInt
+        state.registrationBuilder.ageGroup = state.ageRange?.toIDNamePairInt
+        state.registrationBuilder.location = state.location?.toIDNamePairString
+        state.registrationBuilder.referralCode = state.referralCode
+        
+        return state.registrationBuilder
     }
 
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
-            case header = 0
-            case names = 1
-            case gender = 2
-            case roles = 3
-            case org = 4
+            case main = 0
         }
 
         enum Cells: Int {
@@ -448,9 +355,22 @@ final class BasicProfileDataViewModel: FormViewModel {
             case location = 6
             case referralCode = 7
             case submit = 8
-            case orgName = 9
-            case orgType = 10
-            case orgSize = 11
+            case emailInput = 9
+            case phoneDropDown = 10
         }
+    }
+
+    // MARK: - State
+    private struct State {
+        var registrationBuilder: RegistrationBuilder
+        var firstName: String?
+        var lastName: String?
+        var gender: CommonIdNameModel?
+        var ageRange: CommonIdNameModel?
+        var roles: CommonIdNameModel?
+        var location: LocationModel?
+        var referralCode: String?
+        var email: String?
+        var phoneNumber: String?
     }
 }

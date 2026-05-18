@@ -17,7 +17,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     // MARK: - Callbacks
     var goToContinue: (() -> Void)? = { }
     var goBack: (() -> Void)? = { }
-    var goToOtp: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
+    var goToOtp: ((_ builder: RegistrationBuilder, OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _, _ in }
     var goToCompleteProfile: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
     
     var gotoSignUpWithGoogle: (() -> Void)? = { }
@@ -28,9 +28,8 @@ final class SignUpOptionsViewModel: FormViewModel {
     // MARK: - State
     private var state: State
     let countryHelper = CountryHelper()
-    
     let authenticationService = NetworkEnvironment.shared.authenticationService
-
+    
     // MARK: - Init
     init(builder: RegistrationBuilder) {
         self.state = State(registrationBuilder: builder)
@@ -57,7 +56,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                 navBarRow,
                 SpacerFormRow(tag: Tags.Cells.spacer1.rawValue),
                 makeHeaderTitleRow(),
-                SpacerFormRow(tag: Tags.Cells.spacer2.rawValue),
+                SpacerFormRow(tag: Tags.Cells.spacer2.rawValue)
             ]
         )
     }
@@ -71,7 +70,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             emailButtonRow,
             googleButtonRow
         ]
-
+        
         return FormSection(
             id: Tags.Section.credentials.rawValue,
             title: nil,
@@ -89,7 +88,6 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     // MARK: - Row Builders
 
-    // MARK: Email Input
     lazy var emailInputRow: SimpleInputFormRow = {
         var model = SimpleInputModel(
             text: state.email ?? "",
@@ -116,13 +114,18 @@ final class SignUpOptionsViewModel: FormViewModel {
         return SimpleInputFormRow(tag: Tags.Cells.emailInput.rawValue, model: model)
     }()
 
-    // MARK: Phone Input
-    lazy var phoneDropDownRow: PhoneDropDownFormRow = {
-        PhoneDropDownFormRow(
+    lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
+        guard let self = self else { fatalError("Self is nil") }
+        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+        let selectedCountry: Country = countryHelper.country(forISO: iso)
+            ?? countryHelper.defaultCountry
+            ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
+        
+        return PhoneDropDownFormRow(
             tag: Tags.Cells.phoneDropDown.rawValue,
             model: PhoneDropDownModel(
                 phoneNumber: state.phoneNumber ?? "",
-                selectedCountry: countryHelper.country(forISO: "KE")!,
+                selectedCountry: selectedCountry,
                 placeholder: "Enter phone number",
                 titleText: nil,
                 validation: ValidationConfiguration(
@@ -134,7 +137,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                 ),
                 onPhoneChanged: { [weak self] new in
                     guard let self = self else { return }
-                    self.state.phoneNumber = new
+                    self.state.phoneNumber = "\(selectedCountry.phoneCode)\(new)"
                     self.state.registrationBuilder.phoneNumber = new
                 },
                 onCountryTapped: { [weak self] in
@@ -142,7 +145,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                         self?.updatePhoneCountry(selectedCountry)
                     }
                 },
-                onValidationError: { err in
+                onValidationError: { [weak self] err in
                     print("Phone validation error: \(String(describing: err))")
                 }
             )
@@ -154,28 +157,27 @@ final class SignUpOptionsViewModel: FormViewModel {
         model.selectedCountry = newCountry
         phoneDropDownRow.model = model
         reloadRowWithTag(phoneDropDownRow.tag)
-        state.registrationBuilder.phoneNumberCountry = IDNamePairInt(id: Int(newCountry.id) ?? 0, name: newCountry.name)
     }
 
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
             model: TitleDescriptionModel(
-            title: "Create an Account",
-            description: "Join a network of Traders and grow your network.",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .subheadline
+                title: "Create an Account",
+                description: "Join a network of Traders and grow your network.",
+                maxTitleLines: 2,
+                maxDescriptionLines: 0,
+                titleEllipsis: .none,
+                descriptionEllipsis: .none,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .title,
+                descriptionFontStyle: .subheadline
             )
         )
     }
 
-    // MARK: Continue Button
+    // MARK: - Continue Button
     lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.continueButton.rawValue,
         model: ButtonFormModel(
@@ -188,36 +190,31 @@ final class SignUpOptionsViewModel: FormViewModel {
         ) { [weak self] in
             guard let self = self else { return }
             
-            if self.state.isUsingPhone {
-                // Get phone number and country code
-                let phone = self.phoneDropDownRow.model.phoneNumber.trimmingCharacters(in: .whitespaces)
-                let countryCode = self.phoneDropDownRow.model.selectedCountry.phoneCode
-                
-                // Combine country code with local number to form full phone number
-                let fullPhoneNumber = "\(countryCode)\(phone)"
-                
-                // Validate the full phone number
-                if !fullPhoneNumber.isValidPhoneNumber() {
-                    self.showErrorMessage("Please enter a valid phone number.")
-                    return
+            Task {
+                if self.state.isUsingPhone {
+                    let phone = self.phoneDropDownRow.model.phoneNumber.trimmingCharacters(in: .whitespaces)
+                    let countryCode = self.phoneDropDownRow.model.selectedCountry.phoneCode
+                    let fullPhoneNumber = "\(countryCode)\(phone)"
+                    
+                    if !fullPhoneNumber.isValidPhoneNumber() {
+                        self.showErrorMessage("Please enter a valid phone number.")
+                        return
+                    }
+                    _ = await self.preValidatePhone(fullPhoneNumber)
+                    
+                } else {
+                    let email = self.emailInputRow.model.text.trimmingCharacters(in: .whitespaces)
+                    if !email.isValidEmail() {
+                        self.showErrorMessage("Please enter a valid email address.")
+                        return
+                    }
+                    _ = await self.preValidateEmail(email)
                 }
-                
-                _ = self.preValidatePhone(fullPhoneNumber)
-                
-            } else {
-                // Validate email
-                let email = self.emailInputRow.model.text.trimmingCharacters(in: .whitespaces)
-                if !email.isValidEmail() {
-                    self.showErrorMessage("Please enter a valid email address.")
-                    return
-                }
-                
-                _ = self.preValidateEmail(email)
             }
         }
     )
 
-    // MARK: Email / Google Buttons
+    // MARK: - Email / Google Buttons
     lazy var emailButtonRow = ButtonFormRow(
         tag: Tags.Cells.emailButton.rawValue,
         model: makeEmailButtonModel()
@@ -242,7 +239,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         )
     )
 
-    // MARK: Navigation Bar
+    // MARK: - Navigation Bar
     lazy var leftButtonConfig = NavigationBarButtonConfig(
         image: .backArrow,
         action: { [weak self] in
@@ -257,7 +254,7 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     lazy var navBarRow = NavigationBarFormRow(tag: 1, navBarConfig: navBarConfig)
 
-    // MARK: Helpers
+    // MARK: - Helpers
     private func makeEmailButtonModel() -> ButtonFormModel {
         let title = state.isUsingPhone ? "Continue with Email" : "Continue with Phone"
         return ButtonFormModel(
@@ -277,7 +274,6 @@ final class SignUpOptionsViewModel: FormViewModel {
         )
     }
 
-    //MARK: - funcs
     private func toggleEmailPhoneInput() {
         state.isUsingPhone.toggle()
         emailButtonRow.model = makeEmailButtonModel()
@@ -286,7 +282,8 @@ final class SignUpOptionsViewModel: FormViewModel {
     }
     
     private func showErrorMessage(_ message: String) {
-        print("Pre-Validation Error: \(message)")
+        print("Error: \(message)")
+        showError(message)
     }
 
     func reloadRowWithTag(_ tag: Int) {
@@ -300,100 +297,98 @@ final class SignUpOptionsViewModel: FormViewModel {
     }
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {}
-    
-    //MARK: - calls
-    private func preValidatePhone(_ phone: String) -> Task<Void, Never> {
-        Task { [weak self] in
-            guard let self = self else { return }
 
-            do {
-                let response = try await authenticationService.preValidatePhone(
-                    phone,
-                    accessToken: state.guestToken
-                )
+    // MARK: - Availability & OTP
+    private func preValidateEmail(_ email: String) async -> Bool {
+        showLoader()
+        defer { hideLoader() }
 
-                //Success path (status == 200 guaranteed)
-                await MainActor.run {
-                    // Proceed to OTP screen if phone is valid
-                    self.goToOtp?(.phone(number: phone, title: "Verify your phone")) { [weak self] in
-                        guard let self = self else { return }
-                        self.goToCompleteProfile?(self.state.registrationBuilder)
-                    }
+        let parameters: [String: Any] = ["email": email]
+
+        do {
+            let response = try await authenticationService.userAvailabilityCheck(
+                parameters: parameters,
+                accessToken: state.guestToken
+            )
+
+            if let dict = response.asDictionary, let available = dict["available"]?.asBool {
+                if available {
+                    showErrorMessage("Email already exists.")
+                    return false
+                } else {
+                    await initiateOtp(for: email)
+                    return true
                 }
-
-            } catch let NetworkError.server(response) {
-                // ❌ Backend error
-                print("🚫 Server error:", response.message ?? "Unknown")
-
-                response.errors?.forEach {
-                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
-                }
-
-                await MainActor.run {
-                    self.state.errorMessage = response.message
-                    self.state.fieldErrors = response.errors
-                }
-
-            } catch {
-                // ❌ Network / decoding / unexpected
-                print("❌ Error:", error)
-
-                await MainActor.run {
-                    self.state.errorMessage = "Something went wrong. Please try again."
-                }
+            } else {
+                showErrorMessage("Unexpected response from server.")
+                return false
             }
-        }
-    }
-    
-    private func preValidateEmail(_ email: String) -> Task<Void, Never> {
-        Task { [weak self] in
-            guard let self = self else { return }
-
-            do {
-                let response = try await authenticationService.preValidateEmail(
-                    email,
-                    accessToken: state.guestToken
-                )
-
-                //Success (status == 200 guaranteed)
-                await MainActor.run {
-                    self.goToOtp?(.email(address: email, title: "Verify your email")) { [weak self] in
-                        guard let self = self else { return }
-                        self.goToCompleteProfile?(self.state.registrationBuilder)
-                    }
-                }
-
-            } catch let NetworkError.server(response) {
-                // ❌ Backend error
-                print("🚫 Server error:", response.message ?? "Unknown")
-
-                response.errors?.forEach {
-                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
-                }
-
-                await MainActor.run {
-                    self.state.errorMessage = response.message
-                    self.state.fieldErrors = response.errors
-                }
-
-            } catch {
-                // ❌ Network / decoding / unexpected
-                print("❌ Error:", error)
-
-                await MainActor.run {
-                    self.state.errorMessage = "Something went wrong. Please try again."
-                }
-            }
+        } catch {
+            showErrorMessage("Network error: \(error.localizedDescription)")
+            return false
         }
     }
 
-    // MARK: Nested Types
+    private func preValidatePhone(_ fullPhone: String) async -> Bool {
+        showLoader()
+        defer { hideLoader() }
+
+        let parameters: [String: Any] = ["phoneNumber": fullPhone]
+
+        do {
+            let response = try await authenticationService.userAvailabilityCheck(
+                parameters: parameters,
+                accessToken: state.guestToken
+            )
+
+            if let dict = response.asDictionary, let available = dict["available"]?.asBool {
+                if available {
+                    showErrorMessage("Phone already exists.")
+                    return false
+                } else {
+                    await initiateOtp(for: fullPhone, type: "sms")
+                    return true
+                }
+            } else {
+                showErrorMessage("Unexpected response from server.")
+                return false
+            }
+        } catch {
+            showErrorMessage("Network error: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    private func initiateOtp(for contact: String, type: String = "email") async {
+        let parameters: [String: Any] = [
+            "contact": contact,
+            "intent": "pre_registration",
+            "type": type
+        ]
+
+        do {
+            _ = try await authenticationService.accountVerificationOTP(
+                parameters: parameters,
+                accessToken: state.guestToken
+            )
+
+            goToOtp?(
+                state.registrationBuilder, 
+                type == "email" ? .email(address: contact, title: nil) : .phone(number: contact, title: nil),
+                nil
+            )
+        } catch {
+            showErrorMessage("Failed to initiate OTP: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: - State
     private struct State {
         var registrationBuilder: RegistrationBuilder
         var isUsingPhone: Bool = false
         var email: String?
         var phoneNumber: String?
-         
+        
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
@@ -402,21 +397,14 @@ final class SignUpOptionsViewModel: FormViewModel {
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
+    // MARK: - Tags
     enum Tags {
-        enum Section: Int {
-            case header = 0
-            case credentials = 1
-        }
-
+        enum Section: Int { case header = 0, credentials = 1 }
         enum Cells: Int {
-            case spacer1 = 1001
-            case spacer2 = 1002
-            case emailInput = 1003
-            case continueButton = 1004
-            case emailButton = 1005
-            case googleButton = 1006
-            case headerTitle = 101
-            case phoneDropDown = 9100
+            case spacer1 = 1001, spacer2 = 1002
+            case emailInput = 1003, continueButton = 1004
+            case emailButton = 1005, googleButton = 1006
+            case headerTitle = 101, phoneDropDown = 9100
             case divider = -1
         }
     }

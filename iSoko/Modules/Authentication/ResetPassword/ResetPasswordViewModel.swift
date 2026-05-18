@@ -8,11 +8,14 @@
 import DesignSystemKit
 import UtilsKit
 import UIKit
+import StorageKit
 
 final class ResetPasswordViewModel: FormViewModel {
     var confirmSelection: ((OTPVerificationType) -> Void)? = { _ in }
 
     private var state: State?
+    
+    let authenticationService = NetworkEnvironment.shared.authenticationService
 
     override init() {
         self.state = State()
@@ -36,16 +39,16 @@ final class ResetPasswordViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title: "Forgot password?",
-            description: "Don’t worry! It happens. Please enter the email associated with your account.",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+                title: "Forgot password?",
+                description: "Don’t worry! It happens. Please enter the email associated with your account.",
+                maxTitleLines: 2,
+                maxDescriptionLines: 0,
+                titleEllipsis: .none,
+                descriptionEllipsis: .none,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .title,
+                descriptionFontStyle: .headline
             )
         )
         
@@ -74,11 +77,7 @@ final class ResetPasswordViewModel: FormViewModel {
                 self?.state?.email = $0
             }
         )
-    
     )
-
-    // MARK: - Row Builders
-
 
     // MARK: - Button Row
 
@@ -93,16 +92,60 @@ final class ResetPasswordViewModel: FormViewModel {
             hapticsEnabled: true
         ) { [weak self] in
             guard let self = self else { return }
-            
             guard let email = self.state?.email else { return }
-            self.confirmSelection?(.email(address: email, title: nil))
-
+            self.performReset()
         }
     )
 
-    // MARK: - Helpers
+    // MARK: - Fetch
+    func performReset() {
+        showLoader()
+        
+        Task {
+            let success = await performNetworkRequest()
 
-    // MARK: - Selection Handling (optional override)
+            await MainActor.run {
+                self.hideLoader()
+                
+                if success {
+                    self.confirmSelection?(.email(address: state?.email ?? "", title: nil))
+                } else {
+                    print("❌ Failed to update password")
+                    showError("Failed to send reset code. Please try again.")
+                }
+            }
+        }
+    }
+    
+    // MARK: - Network
+    @discardableResult
+    private func performNetworkRequest() async -> Bool {
+        let parameters: [String: Any] = ["email": state?.email ?? ""]
+        
+        do {
+            let response = try await authenticationService.passwordResetInitiate(
+                parameters: parameters,
+                accessToken: state?.guestToken ?? ""
+            )
+            
+            // Check for dictionary response
+            if let dict = response.asDictionary {
+                if let status = dict.int(for: "status"), status >= 400 {
+                    let message = dict.string(for: "message") ?? "Unknown error"
+                    print("❌ Password reset failed:", message)
+                    showError(message)
+                    return false
+                }
+            }
+
+            return true
+        } catch {
+            print("❌ Network error:", error.localizedDescription)
+            return false
+        }
+    }
+
+    // MARK: - Selection Handling
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
@@ -115,6 +158,10 @@ final class ResetPasswordViewModel: FormViewModel {
 
     private struct State {
         var email: String?
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userProfile: UserDetails? = AppStorage.userProfile
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 
     // MARK: - Tags

@@ -1,8 +1,8 @@
 //
-//  OTPFormViewModel.swift
+//  SignupOTPViewModel.swift
 //  
 //
-//  Created by Edwin Weru on 23/09/2025.
+//  Created by Edwin Weru on 18/05/2026.
 //
 
 import DesignSystemKit
@@ -10,12 +10,12 @@ import UIKit
 import StorageKit
 
 @MainActor
-final class OTPFormViewModel: FormViewModel {
+final class SignupOTPViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var onResendCode: (() -> Void)?
-    var onOTPSuccess: (() -> Void)?       // Triggered after successful verification
-    var onOTPFailure: ((String) -> Void)? // Triggered on verification failure
+    var onOTPVerified: (() -> Void)?  // Called after successful verification, to navigate to complete profile
+    var onOTPFailure: ((String) -> Void)?
 
     // MARK: - State
     private var state: State
@@ -131,11 +131,20 @@ final class OTPFormViewModel: FormViewModel {
 
             if let dict = response.asDictionary, let message = dict["message"]?.asString {
                 print("✅ OTP Verified: \(message)")
-                onOTPSuccess?()
+                
+                // Navigate to complete profile only on "Email verified"
+                if message.lowercased().contains("email verified") {
+                    onOTPVerified?()
+                } else {
+                    onOTPFailure?("OTP verification succeeded, but unexpected message: \(message)")
+                    showError("Unexpected message: \(message)")
+                }
+
             } else {
                 onOTPFailure?("Unexpected response from server.")
                 showError("Unexpected response from server.")
             }
+
         } catch {
             onOTPFailure?("OTP verification failed: \(error.localizedDescription)")
             showError("OTP verification failed: \(error.localizedDescription)")
@@ -159,7 +168,7 @@ final class OTPFormViewModel: FormViewModel {
     private struct State {
         var type: OTPVerificationType
         var otp: String = ""
-        
+
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userProfile
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
@@ -168,11 +177,7 @@ final class OTPFormViewModel: FormViewModel {
 
     // MARK: - Tags
     enum Tags {
-        enum Section: Int {
-            case header = 0
-            case otp = 1
-        }
-
+        enum Section: Int { case header = 0, otp = 1 }
         enum Cells: Int {
             case headerTitle = 100
             case spacerTop = 101

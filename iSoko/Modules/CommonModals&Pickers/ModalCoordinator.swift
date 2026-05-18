@@ -97,17 +97,17 @@ public class ModalCoordinator: BaseCoordinator {
     public func goToOtpVerification( type: OTPVerificationType, onSuccess: (() -> Void)? = nil ) {
         let viewModel = OTPFormViewModel(type: type)
 
-        viewModel.gotoConfirm = { [weak self] in
+        viewModel.onOTPSuccess = { [weak self] in
             onSuccess?()
             self?.router.pop(animated: true)
         }
 
         viewModel.onResendCode = {
-            print("🔁 Resend requested for \(type.targetValue)")
+            print(" Resend requested for \(type.targetValue)")
         }
 
-        viewModel.onOTPComplete = { otp in
-            print("✅ OTP entered: \(otp)")
+        viewModel.onOTPFailure = { otp in
+            print("onOTPFailure OTP entered: \(otp)")
             // Optional: add server validation logic here
         }
 

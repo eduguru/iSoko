@@ -37,7 +37,7 @@ class WelcomeCoordinator: BaseCoordinator {
         
         router.setRoot(viewController, animated: true)
     }
-
+    
     private func showWalkthrough() {
         if AppStorage.hasViewedWalkthrough ?? false {
             showLoginFlow()
@@ -46,19 +46,25 @@ class WelcomeCoordinator: BaseCoordinator {
         
         let pages = [
             OnboardingModel(
-                title: "Explore the app",
-                description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
-                media: "onboarding01"),
+                title: "Africa trading Platform",
+                description: "Connecting and empowering entrepreneurs across the region by providing access to a vibrant marketplace and essential business tools.",
+                media: "onboarding01"
+            ),
             OnboardingModel(
-                title: "Value Prop 1",
-                description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
-                media: "onboarding02"),
-            OnboardingModel(title: "Value Prop 1",
-                            description: "Expand your reach and explore new opportunities by tapping into markets across East Africa",
-                            media: "onboarding03"),
-            OnboardingModel(title: "Your Journey to Success",
-                            description: "It only takes a few minutes to create your profile and start connecting with the iSOKO community.",
-                            media: "onboarding04")
+                title: "Buy & Sell",
+                description: "Access a vibrant marketplace where you can buy quality products from trusted sellers or showcase your own goods and services to thousands of potential customers.",
+                media: "onboarding02"
+            ),
+            OnboardingModel(
+                title: "Expand Your Business",
+                description: "Get real-time market prices, use a currency converter, and a simple bookkeeping tool to keep your business organized and profitable.",
+                media: "onboarding03"
+            ),
+            OnboardingModel(
+                title: "Connect, Share & Grow",
+                description: "Join a trade association, participate in trade events and forums to expand your network and grow your business.",
+                media: "onboarding04"
+            )
         ]
         
         let buttonStyle: ButtonLayoutStyle = ButtonLayoutStyle(
@@ -75,7 +81,7 @@ class WelcomeCoordinator: BaseCoordinator {
             AppStorage.hasViewedWalkthrough = true
             self?.showLoginFlow()
         }
-
+        
         viewModel.didSkipButtonTapped = { [ weak self ] in
             AppStorage.hasViewedWalkthrough = true
             self?.showLoginFlow()
@@ -164,7 +170,7 @@ class WelcomeCoordinator: BaseCoordinator {
 extension WelcomeCoordinator: CoordinatorDelegate {
     func coordinatorDidFinish(_ coordinator: Coordinator) {
         removeChild(coordinator)
-
+        
         if coordinator is WelcomeCoordinator {
             showLoginFlow()
         }

@@ -43,6 +43,30 @@ public struct AuthenticationApi {
         
         return ValueResponseTarget(target: t)
     }
+}
+
+
+//MARK: - validation
+public extension AuthenticationApi {
+    
+    static func userAvailabilityCheck(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/availability",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
     
     //MARK: - pre validation
     public static func preValidateEmail(email: String, accessToken: String) -> BasicResponseTarget {
@@ -96,33 +120,47 @@ public struct AuthenticationApi {
         return BasicResponseTarget(target: t)
     }
     
-    public static func accountVerificationOTP(type: RegistrationOTPType, contact: String, accessToken: String) -> BasicResponseTarget {
+    static func accountVerificationOTP(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let parameters: [String: Any] = [
-            "type": type.rawValue,
-            "contact": contact,
-            "autoDetectionHash": "defaultSmsHashXYZ"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "account-verification/pre-registration",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "otp",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
-        return BasicResponseTarget(target: t)
+        return ValueResponseTarget(target: t)
     }
+    
+    static func verifyAccountOTP(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let t = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "contact-methods/verification",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: t)
+    }
+    
 }
 
-//MARK: - New Registration
+//MARK: - Registration
 public extension AuthenticationApi {
     //MARK: - pre validation
     static func register(_ request: RegistrationRequest, accessToken: String) -> ValueResponseTarget<UserRegistrationResponse> {
@@ -153,26 +191,15 @@ public extension AuthenticationApi {
     }
 
 //MARK: - Password Reset
-    static func initiatePasswordReset(type: PasswordResetType, value: String, accessToken: String) -> BasicResponseTarget {
+    static func initiatePasswordReset( value: String, accessToken: String) -> BasicResponseTarget {
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
-        let parameters: [String: Any] = [
-            "\(type.rawValue)": value
-        ]
+        let parameters: [String: Any] = [:]
         
-        var path: String {
-           switch type {
-                case .email:
-               return "api/password/request/email"
-           case .phoneNumber:
-               return "api/password/request/reset"
-           @unknown default:
-               fatalError()
-            }
-        }
+        var path: String = "api/password/request/reset"
         
         let t = AnyTarget(
             baseURL: ApiEnvironment.baseURL,
@@ -185,99 +212,47 @@ public extension AuthenticationApi {
         
         return BasicResponseTarget(target: t)
     }
-
-    public static func passwordReset(type: PasswordResetType, dto: PasswordResetDto, accessToken: String) -> BasicResponseTarget {
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        let parameters: [String: Any] = dto.asDictionary
-        
-        let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/password/reset",
-            method: .post,
-            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return BasicResponseTarget(target: t)
-    }
 }
 
 // MARK: - Authentication API
 extension AuthenticationApi {
-
-    /// Upload or update a user with optional profile image
-    /// - Parameters:
-    ///   - userJSON: JSON data for user object (nil if only uploading image)
-    ///   - profileImage: Optional UIImage
-    ///   - completion: Returns UserResponse or Error
-    static func uploadUser( userJSON: Data?, profileImage: UIImage?, completion: @escaping (Result<UserV1Response, Error>) -> Void) {
-
-        let url = URL(string: "https://api.dev.isoko.africa/v1/users")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-
-        // 🔹 Boundary for multipart/form-data
-        let boundary = "Boundary-\(UUID().uuidString)"
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        request.setValue("application/json", forHTTPHeaderField: "Accept")
-
-        // 🔹 Build multipart body
-        var body = Data()
-
-        if let userJSON = userJSON {
-            body.append("--\(boundary)\r\n")
-            body.append("Content-Disposition: form-data; name=\"user\"\r\n")
-            body.append("Content-Type: application/json\r\n\r\n")
-            body.append(userJSON)
-            body.append("\r\n")
-        }
-
-        if let image = profileImage,
-           let imageData = image.jpegData(compressionQuality: 0.8) {
-            body.append("--\(boundary)\r\n")
-            body.append("Content-Disposition: form-data; name=\"profileImage\"; filename=\"profile.jpg\"\r\n")
-            body.append("Content-Type: image/jpeg\r\n\r\n")
-            body.append(imageData)
-            body.append("\r\n")
-        }
-
-        body.append("--\(boundary)--\r\n")
-        request.httpBody = body
-
-        // 🔹 Send request
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-
-            guard let data = data else {
-                completion(.failure(OAuthError.emptyResponse))
-                return
-            }
-
-            // 🔹 Print raw response
-            if let string = String(data: data, encoding: .utf8) {
-                print("Raw response:", string)
-            }
-
-            do {
-                let userResponse = try JSONDecoder().decode(UserV1Response.self, from: data)
-                completion(.success(userResponse))
-            } catch {
-                print("Decoding failed:", error)
-                completion(.failure(error))
-            }
-        }.resume()
-
+    
+    static func passwordResetInitiate(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "auth/password-reset/request",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
     }
+    
+    static func passwordResetComplete(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "auth/password-reset/confirm",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+       
 }
-
-//{"data":null,"status":400,"message":"email already in use","errors":null}
-//{"data":null,"status":400,"message":"phone number already in use","errors":null}
-//{"id":"14","email":"user60@example.co","firstName":"Gregory","middleName":null,"lastName":"Malacia","phoneNumber":"+254700345678","username":null,"profileImage":null,"gender":{"id":1,"name":"Male"},"ageGroup":{"id":1,"name":"18-34 Years"},"role":{"id":1,"name":"Trader"},"location":{"id":1,"name":"Nairobi"},"country":{"id":1,"name":"Kenya"},"verified":false,"referralCode":"FHKEIZXKBU","status":"Active"}

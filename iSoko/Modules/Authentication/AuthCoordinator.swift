@@ -120,14 +120,17 @@ class AuthCoordinator: BaseCoordinator {
                     case .success:
                         // Fetch user and update AppStorage
                         self?.oauthService?.fetchUserAndUpdateStorage { userResult in
-                            switch userResult {
-                            case .success(let user):
-                                print("✅ User logged in:", user)
-                                self?.goToMainTabs()
-                            case .failure(let error):
-                                print("❌ Failed to fetch user:", error)
+                            DispatchQueue.main.async { // Force main thread
+                                switch userResult {
+                                case .success(let user):
+                                    print("✅ User logged in:", user)
+                                    self?.goToMainTabs()
+                                case .failure(let error):
+                                    print("❌ Failed to fetch user:", error)
+                                }
                             }
                         }
+                        
                     case .failure(let error):
                         print("❌ Token exchange failed:", error)
                     }
@@ -163,11 +166,21 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = SignUpOptionsViewModel(builder: builder)
         viewModel.showCountryPicker = gotoSelectCountry
         
-        viewModel.goToOtp = goToOtpVerification
+        // When continuing, go to OTP and then move on success
+        viewModel.goToOtp = { [weak self] builder, type, onSuccess in
+            self?.goToSignupOtpVerification(type) {
+                onSuccess?() // Forward the success callback
+                self?.goToCompleteIndividualProfile(builder: builder)
+            }
+        }
+        
         viewModel.goBack = { [weak self] in
             self?.router.pop(animated: true)
         }
-        viewModel.goToCompleteProfile = goToCompleteIndividualProfile
+        
+        viewModel.goToCompleteProfile = { [weak self] builder in
+            self?.goToCompleteIndividualProfile(builder: builder)
+        }
         
         let vc = SignUpOptionsViewController()
         vc.viewModel = viewModel
@@ -175,9 +188,35 @@ class AuthCoordinator: BaseCoordinator {
             self?.router.pop(animated: true)
         }
         
-        // router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+
+    private func goToSignupOtpVerification(_ type: OTPVerificationType, onSuccess: (() -> Void)? = nil) {
+        let viewModel = SignupOTPViewModel(type: type)
         
+        // OTP verified → trigger success callback
+        viewModel.onOTPVerified = {
+            onSuccess?() // Report back to caller
+        }
+        
+        viewModel.onResendCode = {
+            print("🔄 Resend requested for \(type.targetValue)")
+            // Optionally re-trigger OTP send logic here
+        }
+        
+        viewModel.onOTPFailure = { otp in
+            print("❌ OTP verification failed for entered OTP: \(otp)")
+            // Add validation or API logic here if needed
+        }
+        
+        let vc = OTPFormViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
     private func gotoSelectCountry(completion: @escaping (Country) -> Void) {
@@ -194,7 +233,7 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = SignupViewModel()
         viewModel.confirmSelection = { [weak self] builder, selection, type in
             //self?.router.pop(animated: true)
-            self?.goToCompleteProfile(builder: builder, selection, registrationType: type)
+            self?.goToCompleteProfile(builder: builder, selection)
         }
         
         let vc = SignupViewController()
@@ -209,14 +248,12 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func goToCompleteIndividualProfile(builder: RegistrationBuilder) {
-        let viewModel = BasicProfileDataViewModel(builder: builder, registrationType: .individual)
+        let viewModel = BasicProfileDataViewModel(builder: builder)
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.goToCommonSelectionOptions = goToCommonSelection
        
         viewModel.gotoSelectLocation = gotoSelectLocation
-        viewModel.gotoSelectOrgSize = gotoSelectOrgSize
-        viewModel.gotoSelectOrgType = gotoSelectOrgType
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -229,15 +266,13 @@ class AuthCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func goToCompleteProfile(builder: RegistrationBuilder, _ selectedType: CommonIdNameModel, registrationType: RegistrationType) {
-        let viewModel = BasicProfileDataViewModel(builder: builder, registrationType: registrationType)
+    private func goToCompleteProfile(builder: RegistrationBuilder, _ selectedType: CommonIdNameModel) {
+        let viewModel = BasicProfileDataViewModel(builder: builder)
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.goToCommonSelectionOptions = goToCommonSelection
        
         viewModel.gotoSelectLocation = gotoSelectLocation
-        viewModel.gotoSelectOrgSize = gotoSelectOrgSize
-        viewModel.gotoSelectOrgType = gotoSelectOrgType
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -280,17 +315,17 @@ class AuthCoordinator: BaseCoordinator {
     private func goToOtpVerification(_ type: OTPVerificationType, onSuccess: (() -> Void)? = nil) {
         let viewModel = OTPFormViewModel(type: type)
         
-        viewModel.gotoConfirm = { [weak self] in
+        viewModel.onOTPSuccess = { [weak self] in
             onSuccess?()
         }
         
         viewModel.onResendCode = {
-            print("🔁 Resend requested for \(type.targetValue)")
+            print(" Resend requested for \(type.targetValue)")
             // Optionally re-trigger OTP send logic here
         }
         
-        viewModel.onOTPComplete = { otp in
-            print("✅ OTP entered: \(otp)")
+        viewModel.onOTPFailure = { otp in
+            print("onOTPFailure OTP entered: \(otp)")
             // Add validation or API logic here if needed
         }
         
@@ -441,12 +476,12 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToResetPasswordOtpVerification(_ verification: OTPVerificationType) {
         let viewModel = OTPFormViewModel(type: verification)
-        viewModel.gotoConfirm = { [weak self] in
+        viewModel.onOTPSuccess = { [weak self] in
             self?.gotoVerifyForgotPassword(verification.targetValue)
         }
         
         viewModel.onResendCode = {
-            print("🔁 Resend requested for \(verification.targetValue)")
+            print(" Resend requested for \(verification.targetValue)")
         }
         
         let vc = OTPFormViewController()

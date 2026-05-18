@@ -92,7 +92,7 @@ public struct GuestTokenService {
                 }
 
                 await backoff(attempt)
-                print("🔁 Retrying guest token (attempt \(attempt))")
+                print(" Retrying guest token (attempt \(attempt))")
 
             } catch {
                 attempt += 1
@@ -101,7 +101,7 @@ public struct GuestTokenService {
                 }
 
                 await backoff(attempt)
-                print("🔁 Retrying guest token (attempt \(attempt))")
+                print(" Retrying guest token (attempt \(attempt))")
             }
         }
     }
