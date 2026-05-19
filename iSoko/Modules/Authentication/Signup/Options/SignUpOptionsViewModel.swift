@@ -68,7 +68,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             continueButtonRow,
             DividerWithTextFormRow(tag: Tags.Cells.divider.rawValue, text: "Or"),
             emailButtonRow,
-            googleButtonRow
+            // googleButtonRow
         ]
         
         return FormSection(

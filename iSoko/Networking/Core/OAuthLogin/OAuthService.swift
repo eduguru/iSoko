@@ -11,6 +11,7 @@ import AuthenticationServices
 import UIKit
 import UtilsKit
 import StorageKit
+import WebKit
 
 public final class OAuthService: NSObject {
 
@@ -22,11 +23,19 @@ public final class OAuthService: NSObject {
 
     public static let shared = OAuthService()
     let userDetailsService = NetworkEnvironment.shared.userDetailsService
+    
+    public var freshLoginEachTime: Bool = true
 
     // MARK: - Authorization (Step 1)
     public func startAuthorization(verifier: String) async throws -> String {
         self.verifier = verifier
         self.state = UUID().uuidString
+        
+        // Cancel previous session if fresh login is requested
+               if freshLoginEachTime {
+                   session?.cancel()
+                   session = nil
+               }
 
         let challenge = PKCE.codeChallenge(for: verifier)
         guard let authURL = OAuthConfig.authorizationURL(codeChallenge: challenge, state: state) else {
@@ -57,7 +66,9 @@ public final class OAuthService: NSObject {
 
                 continuation.resume(returning: code)
             }
+            
             self.session?.presentationContextProvider = self
+            self.session?.prefersEphemeralWebBrowserSession = freshLoginEachTime
             self.session?.start()
         }
     }
@@ -185,17 +196,6 @@ public final class OAuthService: NSObject {
     }
 }
 
-// MARK: - ASWebAuthenticationPresentationContextProviding
-extension OAuthService: ASWebAuthenticationPresentationContextProviding {
-    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        UIApplication.shared
-            .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?
-            .keyWindow ?? ASPresentationAnchor()
-    }
-}
-
 // MARK: - OAuthTokenService Async Wrapper
 extension OAuthTokenService {
     func exchangeAuthorizationCodeAsync(code: String, codeVerifier: String) async throws -> TokenResponse {
@@ -206,3 +206,75 @@ extension OAuthTokenService {
         }
     }
 }
+
+// MARK: - ASWebAuthenticationPresentationContextProviding
+
+extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        if #available(iOS 15.0, *) {
+            // iOS 15+ version uses newer Scene API
+            return UIApplication.shared
+                .connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first?
+                .windows
+                .first(where: { $0.isKeyWindow }) ?? ASPresentationAnchor()
+        } else {
+            // iOS 14 fallback
+            var anchor: UIWindow?
+            let getKeyWindow = {
+                anchor = UIApplication.shared
+                    .connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .first?
+                    .windows
+                    .first(where: { $0.isKeyWindow })
+            }
+            
+            if Thread.isMainThread {
+                getKeyWindow()
+            } else {
+                DispatchQueue.main.sync {
+                    getKeyWindow()
+                }
+            }
+            return anchor ?? ASPresentationAnchor()
+        }
+    }
+}
+
+public extension OAuthService {
+    func logout(clearCookies: Bool = true) {
+        session?.cancel()
+        session = nil
+
+        AppStorage.oauthToken = nil
+        AppStorage.userDetail = nil
+        AppStorage.userProfile = nil
+        AppStorage.hasLoggedIn = false
+        RuntimeSession.authState = .guest
+
+        refreshTimer?.invalidate()
+        refreshTimer = nil
+
+        if clearCookies {
+            HTTPCookieStorage.shared.cookies?.forEach { HTTPCookieStorage.shared.deleteCookie($0) }
+            WKWebsiteDataStore.default().httpCookieStore.getAllCookies { cookies in
+                cookies.forEach { WKWebsiteDataStore.default().httpCookieStore.delete($0) }
+            }
+        }
+
+        print("✅ User logged out successfully")
+    }
+}
+
+//extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+//    public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+//        UIApplication.shared
+//            .connectedScenes
+//            .compactMap { $0 as? UIWindowScene }
+//            .first?
+//            .keyWindow ?? ASPresentationAnchor()
+//    }
+//}
+

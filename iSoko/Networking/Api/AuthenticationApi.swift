@@ -219,5 +219,24 @@ extension AuthenticationApi {
         
         return ValueResponseTarget(target: target)
     }
+    
+    static func userLogout(accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "oauth2/logout",
+            method: .post,
+            task: .requestParameters(parameters: [:], encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
        
 }

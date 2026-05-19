@@ -12,6 +12,7 @@ public protocol UserDetailsService {
     
     //MARK: - get user details
     func getUserProfile(id: Int, accessToken: String) async throws -> UserProfileResponse?
+    
     func getTraderVerificationDocuments(accessToken: String) async throws -> [TraderVerificationDocResponse]?
 
     //MARK: - update user details

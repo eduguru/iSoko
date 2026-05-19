@@ -18,6 +18,8 @@ public protocol AuthenticationService {
         password: String
     ) async throws -> TokenResponse
     
+    func userLogout(accessToken: String) async throws -> AnyCodable
+    
     func userAvailabilityCheck(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
     func preValidateEmail(_ email: String, accessToken: String) async throws -> BasicResponse
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
@@ -125,5 +127,12 @@ public final class AuthenticationServiceImp: AuthenticationService {
         return response
     }
     
+    public func userLogout(accessToken: String) async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.userLogout(accessToken: accessToken)
+        )
+        
+        return response
+    }
 }
 

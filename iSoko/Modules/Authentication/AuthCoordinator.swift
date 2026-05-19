@@ -229,7 +229,7 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.goToLogin = { [weak self] in
 //            let verifier = AppStorage.verifier ?? ""
 //            self?.authenticate(verifier: verifier)
-            self?.goToLogin(makeRoot: true)
+            self?.goToAuthOptions()
         }
         
         let vc = BasicProfileViewController()
@@ -406,7 +406,13 @@ class AuthCoordinator: BaseCoordinator {
     
     private func gotoForgotPassword() {
         let viewModel = ResetPasswordViewModel()
-        viewModel.confirmSelection = goToResetPasswordOtpVerification
+        // viewModel.confirmSelection = goToResetPasswordOtpVerification
+        viewModel.confirmSelection = { [weak self] value in
+            // self?.goToResetPasswordSuccess()
+            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
+                self?.goToAuthOptions()
+            }
+        }
         
         let vc = ResetPasswordViewController()
         vc.viewModel = viewModel
@@ -459,7 +465,8 @@ class AuthCoordinator: BaseCoordinator {
     private func goToResetPasswordSuccess() {
         let viewModel = ResetPasswordSuccessViewModel()
         viewModel.gotoSignIn = { [weak self] in
-            self?.goToLogin(makeRoot: true)
+            // self?.goToLogin(makeRoot: true)
+            self?.goToAuthOptions()
         }
         
         let vc = ResetPasswordSuccessViewController()
@@ -503,6 +510,15 @@ class AuthCoordinator: BaseCoordinator {
             
             // 4. Start flow
             mainCoordinator.start()
+        }
+    }
+    
+    func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
+            onDismiss?()
         }
     }
 }

@@ -26,6 +26,8 @@ final class MoreViewModel: FormViewModel {
     // MARK: - Internal state
     private var state: State
     
+    let authenticationService = NetworkEnvironment.shared.authenticationService
+    
     // MARK: - Initialization
     override init() {
         self.state = State()
@@ -226,14 +228,27 @@ final class MoreViewModel: FormViewModel {
     
     // MARK: - Sign Out Logic
     func signOut() {
-        gotoSignOut? { [weak self] success in
-            if success {
+        Task { @MainActor in
+            do {
+                // 1️⃣ Call logout API
+                let _ = try await authenticationService.userLogout(accessToken: state.oauthToken)
+                OAuthService().logout()
+                
+                // 2️⃣ Clear stored user data
                 AppStorage.hasLoggedIn = false
                 AppStorage.userDetail = nil
                 AppStorage.oauthToken = nil
-                DispatchQueue.main.async { [weak self] in
-                    self?.setLoggedIn(false)
-                }
+                
+                // 3️⃣ Update UI
+                self.setLoggedIn(false)
+                
+                print("✅ User logged out successfully")
+            } catch {
+                // Handle errors from logout API
+                print("❌ Logout failed:", error)
+                
+                // Optionally, show an alert to the user
+                showError("Failure logging out")
             }
         }
     }
