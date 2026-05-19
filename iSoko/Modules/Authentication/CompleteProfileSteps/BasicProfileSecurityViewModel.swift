@@ -14,31 +14,22 @@ import StorageKit
 final class BasicProfileSecurityViewModel: FormViewModel {
 
     // MARK: - Navigation callbacks
-    var gotoTerms: (() -> Void)? = { }
-    var gotoPrivacyPolicy: (() -> Void)? = { }
-    
-    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)? = { _ in }
-
-    var gotoVerify: ((OTPVerificationType, _ onSuccess: (() -> Void)?) -> Void)? = { _, _ in }
-    var goToLogin: (() -> Void)? = { }
-    var gotoConfirm: (() -> Void)? = { }
+    var gotoTerms: (() -> Void)?
+    var gotoPrivacyPolicy: (() -> Void)?
+    var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
+    var gotoVerify: ((OTPVerificationType, (() -> Void)?) -> Void)?
+    var goToLogin: (() -> Void)?
+    var gotoConfirm: (() -> Void)?
 
     // MARK: - Internal State
-    let countryHelper = CountryHelper()
-    let authenticationService = NetworkEnvironment.shared.authenticationService
-    
+    private let countryHelper = CountryHelper()
+    private let authenticationService = NetworkEnvironment.shared.authenticationService
     private var state: State
 
     // MARK: - UI Text
     private let fullText = "You acknowledge you have read and agreed to our terms of use and privacy policy"
-
-    lazy var termsRange: NSRange = {
-        (fullText as NSString).range(of: "terms of use")
-    }()
-
-    lazy var privacyRange: NSRange = {
-        (fullText as NSString).range(of: "privacy policy")
-    }()
+    lazy var termsRange = (fullText as NSString).range(of: "terms of use")
+    lazy var privacyRange = (fullText as NSString).range(of: "privacy policy")
 
     // MARK: - Init
     init(builder: RegistrationBuilder, registrationType: RegistrationType) {
@@ -50,162 +41,41 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             confirmPassword: builder.confirmPassword,
             agreedToTerms: false
         )
-        
         super.init()
-        Task { @MainActor in
-            self.sections = self.makeSections()
-        }
+        self.sections = makeSections()
     }
 
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
-            makeHeaderSection(),
-            makeSecuritySection()
+            FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]),
+            FormSection(
+                id: Tags.Section.security.rawValue,
+                title: "Set Your Password",
+                cells: [
+                    passwordRow,
+                    confirmPasswordRow,
+                    requirementsListRow,
+                    termsRow,
+                    SpacerFormRow(tag: -1),
+                    continueButtonRow
+                ]
+            )
         ]
     }
 
-    private func makeHeaderSection() -> FormSection {
-        FormSection(
-            id: Tags.Section.header.rawValue,
-            title: nil,
-            cells: [
-                makeHeaderTitleRow(),
-                phoneDropDownRow, // phoneNumberRow,
-                emailRow
-            ]
-        )
-    }
-
-    private func makeSecuritySection() -> FormSection {
-        FormSection(
-            id: Tags.Section.security.rawValue,
-            title: "Set Your Password",
-            cells: [
-                passwordRow,
-                confirmPasswordRow,
-                requirementsListRow,
-                termsRow,
-                SpacerFormRow(tag: -1),
-                continueButtonRow
-            ]
-        )
-    }
-
-    // MARK: - Header Row
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: -101,
             model: TitleDescriptionModel(
-            title: "Verify",
-            description: "",
-            maxTitleLines: 2
+                title: "Verify",
+                description: "",
+                maxTitleLines: 2
             )
         )
     }
 
     // MARK: - Rows
-    lazy var continueButtonRow = ButtonFormRow(
-        tag: Tags.Cells.submit.rawValue,
-        model: ButtonFormModel(
-            title: "Continue",
-            style: .primary,
-            size: .medium
-        ) { [weak self] in
-            guard let self else { return }
-            guard let phone = state.phoneNumber, !phone.isEmpty else {
-                print("❌ No phone number provided")
-                return
-            }
-
-            let otpType: OTPVerificationType = .phone(number: phone, title: "Verify your phone")
-            
-            self.performRegistration()
-        }
-    )
-
-    private lazy var emailRow = TitleDescriptionFormRow(
-        tag: -00012,
-        model: TitleDescriptionModel(
-        title: "Email Address",
-        description: "Enter your email",
-        maxTitleLines: 2,
-        maxDescriptionLines: 0,
-        titleEllipsis: .none,
-        descriptionEllipsis: .none,
-        layoutStyle: .stackedVertical,
-        textAlignment: .left
-        )
-    )
-    
-    lazy var emailInputRow = SimpleInputFormRow(
-        tag: Tags.Cells.email.rawValue,
-        model: SimpleInputModel(
-            text: "",
-            config: TextFieldConfig(
-                placeholder:  "Enter email",
-                keyboardType: .emailAddress,
-                accessoryImage: nil
-            ),
-            validation: ValidationConfiguration(
-                isRequired: true,
-                minLength: 3,
-                maxLength: 50,
-                errorMessageRequired: "Email is required",
-                errorMessageLength: "Must be 5–50 characters"
-            ),
-            titleText: "Email address",
-            useCardStyle: true,
-            onTextChanged: { [weak self] in
-                self?.state.builder.email = $0
-            }
-        )
-    
-    )
-
-    // MARK: Phone Input
-    lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
-        guard let self = self else {
-            fatalError("Self is nil in lazy initializer")
-        }
-
-        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
-
-        let selectedCountry: Country = countryHelper.country(forISO: iso)
-            ?? countryHelper.defaultCountry
-            ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
-
-        return PhoneDropDownFormRow(
-            tag: Tags.Cells.phoneDropDown.rawValue,
-            model: PhoneDropDownModel(
-                phoneNumber: state.phoneNumber ?? "",
-                selectedCountry: selectedCountry,
-                placeholder: "Enter phone number",
-                titleText: nil,
-                validation: ValidationConfiguration(
-                    isRequired: true,
-                    minLength: 5,
-                    maxLength: 15,
-                    errorMessageRequired: "Phone is required",
-                    errorMessageLength: "Phone length invalid"
-                ),
-                onPhoneChanged: { [weak self] new in
-                    guard let self = self else { return }
-                    self.state.phoneNumber = "\(selectedCountry.phoneCode)" + new
-                    self.state.builder.phoneNumber = self.state.phoneNumber
-                },
-                onCountryTapped: { [weak self] in
-                    self?.showCountryPicker? { selectedCountry in
-                        self?.updatePhoneCountry(selectedCountry)
-                    }
-                },
-                onValidationError: { err in
-                    print("Phone validation error: \(String(describing: err))")
-                }
-            )
-        )
-    }()
-
     lazy var passwordRow = SimpleInputFormRow(
         tag: Tags.Cells.password.rawValue,
         model: SimpleInputModel(
@@ -245,7 +115,9 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             validation: ValidationConfiguration(
                 isRequired: true,
                 minLength: 6,
-                maxLength: 20
+                maxLength: 20,
+                errorMessageRequired: "Confirm password is required",
+                errorMessageLength: "Confirm password must be 6–20 characters"
             ),
             useCardStyle: true,
             cardStyle: .border,
@@ -257,7 +129,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     )
 
     // Password requirements UI
-    let config = RequirementsListRowConfig(
+    private let config = RequirementsListRowConfig(
         title: "Password Requirements",
         items: [
             RequirementItem(title: "Must be at least 8 characters", isSatisfied: true),
@@ -284,68 +156,72 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         )
     )
 
-    // MARK: - Builder Mapping & more funcs
-    func mapToRegistrationBuilder() -> RegistrationBuilder {
-        return state.builder
-    }
-    
-    private func updatePhoneCountry(_ newCountry: Country) {
-        var model = phoneDropDownRow.model
-        model.selectedCountry = newCountry
-        phoneDropDownRow.model = model
-        reloadRowWithTag(phoneDropDownRow.tag)
-    }
-
-    // MARK: - Row Reload Helper
-    func reloadRowWithTag(_ tag: Int) {
-        for (sectionIndex, section) in sections.enumerated() {
-            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-                let indexPath = IndexPath(row: rowIndex, section: sectionIndex)
-                onReloadRow?(indexPath)
+    lazy var continueButtonRow = ButtonFormRow(
+        tag: Tags.Cells.submit.rawValue,
+        model: ButtonFormModel(
+            title: "Continue",
+            style: .primary,
+            size: .medium
+        ) { [weak self] in
+            guard let self = self else { return }
+            guard self.state.agreedToTerms else {
+                print("❌ User must agree to terms")
                 return
             }
-        }
-    }
-    
-    // MARK: - network calls -
-    private func performRegistration() -> Task<Void, Never> {
-        Task { [weak self] in
-            guard let self = self else { return }
-
-            do {
-                let response = try await authenticationService.register(state.builder.build(), accessToken: state.guestToken)
-
-                await MainActor.run { //Success path (status == 200 guaranteed) // Proceed
-                    self.goToLogin?() // gotoVerify?(otpType) { [weak self] in self?.goToLogin?() }
-                }
-
-            } catch let NetworkError.server(response) { // ❌ Backend error
-                print("🚫 Server error:", response.message ?? "Unknown")
-
-                response.errors?.forEach {
-                    print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
-                }
-
-                await MainActor.run {
-                    self.state.errorMessage = response.message
-                    self.state.fieldErrors = response.errors
-                }
-
-            } catch {
-                print("❌ Registration Error:", error)
-
-                await MainActor.run {
-                    self.state.errorMessage = "Something went wrong. Please try again."
-                }
+            guard self.state.password == self.state.confirmPassword else {
+                print("❌ Passwords do not match")
+                showError("Passwords do not match")
+                return
+            }
+            
+            Task {
+                let success = await self.performRegistration()
+                if success { self.goToLogin?() }
             }
         }
+    )
+
+    // MARK: - Registration
+    @discardableResult
+    private func performRegistration() async -> Bool {
+        showLoader()
+        defer { hideLoader() }
+
+        do {
+            // Explicit type so Swift knows which map function to call
+            let built: RegistrationRequest = try state.builder.build()
+            
+            // Map to server dictionary
+            let params: [String: Any] = built.mapToCreateUserRequest()
+            
+            // Call API
+            let _ = try await authenticationService.registerUser(params, accessToken: state.guestToken)
+            
+            return true
+        } catch let NetworkError.server(response) {
+            print("🚫 Server error:", response.message ?? "Unknown")
+            response.errors?.forEach {
+                print("Field:", $0.field ?? "-", "Message:", $0.message ?? "-")
+            }
+            state.errorMessage = response.message
+            state.fieldErrors = response.errors
+            
+            showError(state.errorMessage ?? "An error occurred. Please try again.")
+            return false
+        } catch {
+            print("❌ Registration Error:", error)
+            state.errorMessage = "Something went wrong. Please try again."
+            showError(state.errorMessage ?? "An error occurred. Please try again.")
+            
+            return false
+        }
     }
-    
+
     // MARK: - State
     private struct State {
         var registrationType: RegistrationType
         var builder: RegistrationBuilder
-        
+
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
@@ -354,26 +230,16 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         var password: String?
         var confirmPassword: String?
         var agreedToTerms: Bool
-        
+
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }
 
     // MARK: - Tags
     enum Tags {
-        enum Section: Int {
-            case header = 0
-            case security = 1
-        }
-
+        enum Section: Int { case header = 0, security = 1 }
         enum Cells: Int {
-            case phoneNumber = 1
-            case password = 2
-            case confirmPassword = 3
-            case terms = 4
-            case submit = 5
-            case email = 6
-            case phoneDropDown = 7
+            case phoneNumber = 1, password = 2, confirmPassword = 3, terms = 4, submit = 5, email = 6, phoneDropDown = 7
         }
     }
 }

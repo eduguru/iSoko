@@ -163,24 +163,12 @@ public extension AuthenticationApi {
 //MARK: - Registration
 public extension AuthenticationApi {
     //MARK: - pre validation
-    static func register(_ request: RegistrationRequest, accessToken: String) -> ValueResponseTarget<UserRegistrationResponse> {
-        let userDict: [String: Any] = request.mapToCreateUserRequest().asDictionary
-        let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
-
-//        let imageFile = profileImage.flatMap {
-//            UploadFile(
-//                data: $0.jpegData(compressionQuality: 0.8)!,
-//                name: "profileImage",
-//                fileName: "profile.jpg",
-//                mimeType: "image/jpeg"
-//            )
-//        }
-//        
-//        let files = imageFile.map { [$0] } ?? []
-
+    static func registerUser(_ params: [String: Any], accessToken: String) -> ValueResponseTarget<UserProfileResponse> {
+        let userJSON = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
+        
         let t = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/users",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users",
             jsonPartName: "user",
             jsonData: userJSON,
             files: [],
@@ -188,29 +176,6 @@ public extension AuthenticationApi {
         )
 
         return ValueResponseTarget(target: t.asAnyTarget())
-    }
-
-//MARK: - Password Reset
-    static func initiatePasswordReset( value: String, accessToken: String) -> BasicResponseTarget {
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        let parameters: [String: Any] = [:]
-        
-        var path: String = "api/password/request/reset"
-        
-        let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: path,
-            method: .post,
-            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return BasicResponseTarget(target: t)
     }
 }
 

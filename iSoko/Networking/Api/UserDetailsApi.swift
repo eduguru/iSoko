@@ -13,25 +13,23 @@ import NetworkingKit
 public struct UserDetailsApi {
     
     //MARK: - get user details
-    public static func getUserDetails(accessToken: String) -> OptionalObjectResponseTarget<UserDetailsResponse> {
+    public static func getUserProfile(id: Int, accessToken: String) -> ValueResponseTarget<UserProfileResponse> {
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
-        
-        let parameters: [String: Any] = [:]
-        
+                
         let t = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/user/auth-details",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(id)",
             method: .get,
             task: .requestPlain,
             headers: headers,
             authorizationType: .bearer
         )
         
-        return OptionalObjectResponseTarget(target: t)
+        return ValueResponseTarget(target: t)
     }
     
     public static func getTraderVerificationDocuments(accessToken: String) -> OptionalObjectResponseTarget<[TraderVerificationDocResponse]> {

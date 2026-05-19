@@ -217,7 +217,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userProfile
+        var userProfile: UserDetails? = AppStorage.userDetail
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         

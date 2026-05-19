@@ -21,6 +21,8 @@ final class BasicProfileDataViewModel: FormViewModel {
     ) -> Void = { _, _, _ in }
 
     var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
+    var gotoSelectCountry: (CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) -> Void = { _, _ in }
+    
     var gotoConfirm: ((_ builder: RegistrationBuilder) -> Void)? = { _ in }
     var showCountryPicker: ((_ completion: @escaping (Country) -> Void) -> Void)?
     
@@ -47,7 +49,9 @@ final class BasicProfileDataViewModel: FormViewModel {
             selectGenderRow,
             selectAgeRangeRow,
             selectRoleRow,
+            selectCountryRow,
             selectLocationRow
+            
         ]
 
         if let referralCode = state.referralCode, !referralCode.isEmpty {
@@ -55,7 +59,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         }
 
         // Conditionally add email or phone
-        if state.email == nil {
+        if state.registrationBuilder.email == nil {
             cells.append(emailInputRow)
         } else if state.phoneNumber == nil {
             cells.append(phoneDropDownRow)
@@ -99,6 +103,7 @@ final class BasicProfileDataViewModel: FormViewModel {
     lazy var selectAgeRangeRow = makeAgeRangeRow()
     lazy var selectRoleRow = makeRoleRow()
     lazy var selectLocationRow = makeLocationRow()
+    lazy var selectCountryRow = makeCountryRow() // <-- New
     lazy var selectGenderRow = makeGenderRow()
     lazy var continueButtonRow = makeContinueButtonRow()
 
@@ -142,8 +147,9 @@ final class BasicProfileDataViewModel: FormViewModel {
                 ),
                 onPhoneChanged: { [weak self] new in
                     guard let self = self else { return }
+                    
                     self.state?.phoneNumber = "\(selectedCountry.phoneCode)\(new)"
-                    self.state?.registrationBuilder.phoneNumber = new
+                    self.state?.registrationBuilder.phoneNumber = self.state?.phoneNumber ?? new
                 },
                 onCountryTapped: { [weak self] in
                     self?.showCountryPicker? { selectedCountry in
@@ -260,6 +266,19 @@ final class BasicProfileDataViewModel: FormViewModel {
         )
     }
 
+    private func makeCountryRow() -> DropdownFormRow {
+        DropdownFormRow(
+            tag: Tags.Cells.country.rawValue,
+            config: DropdownFormConfig(
+                title: "Select Country",
+                placeholder: state?.registrationBuilder.country?.name ?? "Country",
+                rightImage: UIImage(systemName: "chevron.down"),
+                isCardStyleEnabled: true,
+                onTap: { [weak self] in self?.handleCountrySelection() }
+            )
+        )
+    }
+
     private func makeContinueButtonRow() -> ButtonFormRow {
         ButtonFormRow(
             tag: Tags.Cells.submit.rawValue,
@@ -289,7 +308,7 @@ final class BasicProfileDataViewModel: FormViewModel {
     }
 
     private func handleAgeRangeSelection() {
-        goToCommonSelectionOptions(.ageGroups, nil) { [weak self] value in
+        goToCommonSelectionOptions(.ageGroups(page: 0, count: 100), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state?.ageRange = value
             self.selectAgeRangeRow.config.placeholder = value.name
@@ -312,6 +331,17 @@ final class BasicProfileDataViewModel: FormViewModel {
             self.state?.location = value
             self.selectLocationRow.config.placeholder = value.name ?? ""
             self.reloadRowWithTag(self.selectLocationRow.tag)
+        }
+    }
+
+    private func handleCountrySelection() {
+        gotoSelectCountry(.countries(page: 0, count: 100)) { [weak self] selectedCountry in
+            guard let self = self, let selectedCountry = selectedCountry else { return }
+            
+            self.state?.registrationBuilder.country = IDNamePair(id: selectedCountry.id, name: selectedCountry.name)
+            
+            self.selectCountryRow.config.placeholder = selectedCountry.name ?? ""
+            self.reloadRowWithTag(self.selectCountryRow.tag)
         }
     }
 
@@ -353,6 +383,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             case ageRange = 4
             case roles = 5
             case location = 6
+            case country = 11
             case referralCode = 7
             case submit = 8
             case emailInput = 9

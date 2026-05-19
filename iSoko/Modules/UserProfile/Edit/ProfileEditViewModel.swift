@@ -25,7 +25,7 @@ final class ProfileEditViewModel: FormViewModel {
     private var state: State
 
     // MARK: - Init
-    init(userProfile: UserDetails? = AppStorage.userProfile) {
+    init(userProfile: UserDetails? = AppStorage.userDetail) {
         self.state = State(userProfile: userProfile)
         super.init()
         self.sections = makeSections()
@@ -163,7 +163,7 @@ final class ProfileEditViewModel: FormViewModel {
     }
 
     private func handleAgeRangeSelection() {
-        goToCommonSelectionOptions(.ageGroups, nil) { [weak self] value in
+        goToCommonSelectionOptions(.ageGroups(page: 0, count: 100), nil) { [weak self] value in
             guard let self = self, let value = value else { return }
             self.state.ageRange = value
             self.selectAgeRangeRow.config.placeholder = value.name

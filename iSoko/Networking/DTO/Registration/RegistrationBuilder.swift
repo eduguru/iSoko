@@ -21,7 +21,7 @@ final class RegistrationBuilder {
     var firstName: String?
     var middleName: String?
     var lastName: String?
-    
+    var country: IDNamePairInt?
     // Optional
     var referralCode: String?
     var otpRequestId: String?
@@ -36,26 +36,29 @@ final class RegistrationBuilder {
             throw ValidationError.missingFields(missing)
         }
 
-        // Fill defaults for optional fields required by API
+        // Provide default values for optional fields
+        let safeMiddleName = middleName?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let middleNameValue = (safeMiddleName?.isEmpty ?? true) ? "null" : safeMiddleName!
+
         return RegistrationRequest(
-            email: email ?? "",
-            phoneNumber: phoneNumber ?? "",
+            email: email ?? "N/A",
+            phoneNumber: phoneNumber ?? "N/A",
             phoneNumberCountry: nil,
-            password: password ?? "",
-            confirmPassword: confirmPassword ?? password ?? "",
+            password: password ?? "12345678",
+            confirmPassword: confirmPassword ?? password ?? "12345678",
             languagePreference: 0,
             verificationMode: "email",
-            country: IDNamePairInt(id: 0, name: ""),
-            location: location!,
-            role: role!,
-            gender: gender!,
-            ageGroup: ageGroup!,
-            firstName: firstName ?? "",
-            middleName: middleName ?? "",
-            lastName: lastName ?? "",
-            otpRequestId: otpRequestId ?? "",
-            code: code ?? "",
-            referralCode: referralCode,
+            country: country ?? IDNamePairInt(id: 0, name: "N/A"),
+            location: location ?? IDNamePairString(id: "0", name: "N/A"),
+            role: role ?? IDNamePairInt(id: 0, name: "N/A"),
+            gender: gender ?? IDNamePairInt(id: 0, name: "N/A"),
+            ageGroup: ageGroup ?? IDNamePairInt(id: 0, name: "N/A"),
+            firstName: firstName ?? "N/A",
+            middleName: middleNameValue,
+            lastName: lastName ?? "N/A",
+            otpRequestId: otpRequestId ?? "N/A",
+            code: code ?? "N/A",
+            referralCode: referralCode ?? "N/A",
             isOrganization: false,
             organizationName: nil,
             organizationType: nil,
@@ -83,7 +86,26 @@ final class RegistrationBuilder {
         check(firstName, name: "firstName")
         check(lastName, name: "lastName")
         check(gender, name: "gender")
+        check(country, name: "country") // <-- now required
 
         return missing
+    }
+}
+
+extension RegistrationRequest {
+    func mapToCreateUserRequest() -> [String: Any] {
+        return [
+            "email": email ?? "",
+            "phoneNumber": phoneNumber ?? "",
+            "password": password ?? "",
+            "firstName": firstName ?? "",
+            "middleName": middleName ?? "null",
+            "lastName": lastName ?? "",
+            "countryId": country.id ?? 0,
+            "locationId": location.id ?? 0,
+            "roleId": role.id ?? 0,
+            "genderId": gender.id ?? 0,
+            "ageGroupId": ageGroup.id ?? 0
+        ]
     }
 }

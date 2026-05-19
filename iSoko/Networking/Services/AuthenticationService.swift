@@ -23,8 +23,7 @@ public protocol AuthenticationService {
     func preValidatePhone(_ phone: String, accessToken: String) async throws -> BasicResponse
     
     // MARK: - Registration
-    func register(_ request: RegistrationRequest, accessToken: String) async throws -> UserRegistrationResponse?
-    
+    func registerUser(_ params: [String: Any], accessToken: String) async throws -> UserProfileResponse?
     
     func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable
     func passwordResetComplete(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
@@ -101,9 +100,9 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     //MARK: - New Registration
-    public func register(_ request: RegistrationRequest, accessToken: String) async throws -> UserRegistrationResponse? {
-        let response: UserRegistrationResponse = try await manager.request(
-            AuthenticationApi.register(request, accessToken: accessToken)
+    public func registerUser(_ params: [String: Any], accessToken: String) async throws -> UserProfileResponse? {
+        let response: UserProfileResponse = try await manager.request(
+            AuthenticationApi.registerUser(params, accessToken: accessToken)
         )
         
         return response

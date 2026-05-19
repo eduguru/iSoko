@@ -36,10 +36,10 @@ extension AppStorage {
     
     //MARK: KeychainStored
     @KeychainStored(StorageKeys.Keychain.userProfile)
-    public static var userProfile: UserDetails?
+    public static var userDetail: UserDetails?
     
     @KeychainStored(StorageKeys.Keychain.userResponseObject)
-    public static var userResponseObject: UserV1Response?
+    public static var userProfile: UserProfileResponse?
 }
 
 extension AppStorage {

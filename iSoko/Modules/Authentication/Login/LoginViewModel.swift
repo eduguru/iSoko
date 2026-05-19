@@ -22,49 +22,11 @@ final class LoginViewModel: FormViewModel {
     let userDetailsService = NetworkEnvironment.shared.userDetailsService
     let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
     
-    private func getToken() {
-        Task {
-            do {
-                
-                    let token = try await authenticationService.login(
-                        grant_type: AppConstants.GrantType.login.rawValue,
-                        client_id: ApiEnvironment.clientId,
-                        client_secret: ApiEnvironment.clientSecret,
-                        username: "+254712270408",
-                        password: "12345678"
-                    )
-
-                print("🔑 Logged in with token:", token.accessToken)
-                
-                let response = try await userDetailsService.getUserDetails(accessToken: token.accessToken)
-                if let response = response {
-                    print("User Details: \(response)")
-                } else {
-                    print("No user details returned")
-                }
-                
-                let respo = try await commonUtilitiesService.getAllLocations(page: 1, count: 10, accessToken: token.accessToken)
-                print("respo returned: \(respo) \(respo.count)")
-                
-
-            } catch let NetworkError.server(apiError) {
-                // ❌ API returned error body
-                print("API error:", apiError.message ?? "")
-            } catch {
-                // ❌ Networking/decoding
-                print("Unexpected error:", error)
-            }
-        }
-    }
-    
     override init() {
         self.state = State()
         super.init()
         
         self.sections = makeSections()
-        
-        getToken()
-
     }
     
     // MARK: -  make sections

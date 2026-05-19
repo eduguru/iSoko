@@ -88,7 +88,7 @@ public extension BookKeepingCoordinator {
     }
     
     public func goToSelectExpenseCategory() {
-        goToCommonSelection(CommonUtilityOption.ageGroups, nil) { [weak self]_ in
+        goToCommonSelection(CommonUtilityOption.ageGroups(page: 0, count: 100), nil) { [weak self]_ in
             
         }
     }

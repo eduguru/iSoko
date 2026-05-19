@@ -19,7 +19,7 @@ public struct LocationModel: Decodable {
     public init(with model: LocationResponse) {
         self.id = model.id
         self.name = model.name
-        self.codeName = model.codeName
+        self.codeName = model.code
     }
 }
 

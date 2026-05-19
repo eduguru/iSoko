@@ -40,7 +40,7 @@ class AuthCoordinator: BaseCoordinator {
         vc.viewModel = viewModel
         
         viewModel.gotoSignIn = { [weak self] verifier in
-            self?.authenticate(verifier: verifier)
+            Task { await self?.authenticate(verifier: verifier) }
         }
         
         viewModel.gotoSignUp = goToSignupOptions
@@ -53,90 +53,29 @@ class AuthCoordinator: BaseCoordinator {
         router.setRoot(vc, animated: true)
     }
     
-    private func exchangeCodeForToken(verifier: String) {
-        oauthService = OAuthService()
-        
-        oauthService?.startAuthorization(verifier: verifier) { [weak self] result in
-            switch result {
-            case .success(let code):
-                self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
-                    switch tokenResult {
-                    case .success(let token):
-                        // Handle successful token exchange
-                        print("Access token:", token.accessToken)
-                        
-                        // You can now navigate to the main screen or do other tasks
-                        self?.goToMainTabs()
-                        
-                    case .failure(let error):
-                        // Handle failure to exchange code for token
-                        print("Token error:", error)
-                    }
-                }
-            case .failure(let error):
-                print("Authorization error:", error)
-            }
-        }
-    }
-    
-    private func startOAuth(
-        verifier: String,
-        completion: @escaping (Result<String, Error>) -> Void
-    ) {
-        oauthService = OAuthService()
-        
-        oauthService?.startAuthorization(verifier: verifier) { result in
-            completion(result)
-        }
-    }
-    
-    private func exchangeCode(
-        _ code: String,
-        completion: @escaping (Result<TokenResponse, Error>) -> Void
-    ) {
-        oauthService?.exchangeCodeForToken(authorizationCode: code) { result in
-            completion(result)
-        }
-    }
-    
-    private func fetchUserDetails(
-        accessToken: String,
-        completion: @escaping (Result<UserDetails, Error>) -> Void
-    ) {
-        oauthService?.getUserDetails(accessToken: accessToken) { result in
-            completion(result)
-        }
-    }
-    
-    private func authenticate(verifier: String) {
-        oauthService = OAuthService()
-        
-        oauthService?.startAuthorization(verifier: verifier) { [weak self] result in
-            switch result {
-            case .success(let code):
-                // Exchange code for token
-                self?.oauthService?.exchangeCodeForToken(authorizationCode: code) { tokenResult in
-                    switch tokenResult {
-                    case .success:
-                        // Fetch user and update AppStorage
-                        self?.oauthService?.fetchUserAndUpdateStorage { userResult in
-                            DispatchQueue.main.async { // Force main thread
-                                switch userResult {
-                                case .success(let user):
-                                    print("✅ User logged in:", user)
-                                    self?.goToMainTabs()
-                                case .failure(let error):
-                                    print("❌ Failed to fetch user:", error)
-                                }
-                            }
-                        }
-                        
-                    case .failure(let error):
-                        print("❌ Token exchange failed:", error)
-                    }
-                }
-            case .failure(let error):
-                print("❌ Authorization failed:", error)
+    // MARK: - Async OAuth Flow
+    private func authenticate(verifier: String) async {
+        do {
+            oauthService = OAuthService.shared
+            // Step 1: Get authorization code
+            let code = try await oauthService!.startAuthorization(verifier: verifier)
+            
+            // Step 2: Exchange code for token
+            let token = try await oauthService!.exchangeCodeForToken(authorizationCode: code)
+            print("✅ Token received: \(token.accessToken)")
+            
+            // Step 3: Fetch user details
+            let user = try await oauthService!.fetchUserAndUpdateStorage()
+            print("✅ User logged in: \(user)")
+            
+            // Navigate to main tabs
+            goToMainTabs()
+            
+        } catch {
+            print("❌ OAuth flow failed:", error)
+            // Optionally show an error alert to the user
+            await MainActor.run {
+                // show error UI
             }
         }
     }
@@ -190,7 +129,7 @@ class AuthCoordinator: BaseCoordinator {
         
         router.push(vc, animated: true)
     }
-
+    
     private func goToSignupOtpVerification(_ type: OTPVerificationType, onSuccess: (() -> Void)? = nil) {
         let viewModel = SignupOTPViewModel(type: type)
         
@@ -252,8 +191,8 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.goToCommonSelectionOptions = goToCommonSelection
-       
         viewModel.gotoSelectLocation = gotoSelectLocation
+        viewModel.gotoSelectCountry = gotoSelectCountry
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -271,7 +210,6 @@ class AuthCoordinator: BaseCoordinator {
         viewModel.gotoConfirm = goToConfirmProfile
         
         viewModel.goToCommonSelectionOptions = goToCommonSelection
-       
         viewModel.gotoSelectLocation = gotoSelectLocation
         
         let vc = BasicProfileViewController()
@@ -289,8 +227,9 @@ class AuthCoordinator: BaseCoordinator {
         let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
         viewModel.gotoVerify = goToOtpVerification
         viewModel.goToLogin = { [weak self] in
-            let verifier = AppStorage.verifier ?? ""
-            self?.authenticate(verifier: verifier)
+//            let verifier = AppStorage.verifier ?? ""
+//            self?.authenticate(verifier: verifier)
+            self?.goToLogin(makeRoot: true)
         }
         
         let vc = BasicProfileViewController()
@@ -375,22 +314,45 @@ class AuthCoordinator: BaseCoordinator {
             default:
                 completion(nil)
             }
-
+            
             self?.router.pop(animated: true)
         }
-
+        
         let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-
+        
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
-
-
-
+    
+    private func gotoSelectCountry(_ type: CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .countries(let response):
+                let model = response
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     private func gotoSelectOrgType(_ type: CommonUtilityOption, _ completion: @escaping (OrganisationTypeModel?) -> Void) {
         let viewModel = CommonOptionPickerViewModel(option: type)
         
@@ -405,17 +367,17 @@ class AuthCoordinator: BaseCoordinator {
             // Pop the screen
             self?.router.pop(animated: true)
         }
-
+        
         let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-
+        
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
-
+    
     private func gotoSelectOrgSize(_ type: CommonUtilityOption, _ completion: @escaping (OrganisationSizeModel?) -> Void) {
         let viewModel = CommonOptionPickerViewModel(option: type)
         
@@ -430,17 +392,17 @@ class AuthCoordinator: BaseCoordinator {
             // Pop the screen
             self?.router.pop(animated: true)
         }
-
+        
         let vc = CommonOptionPickerViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-
+        
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
-
+    
     
     private func gotoForgotPassword() {
         let viewModel = ResetPasswordViewModel()

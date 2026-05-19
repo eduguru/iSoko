@@ -191,7 +191,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
         var commonUtilityOption: CommonUtilityOption
         
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userProfile
+        var userProfile: UserDetails? = AppStorage.userDetail
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
@@ -216,19 +216,19 @@ extension CommonOptionPickerViewModel {
     func fetchCommonUtility(option: CommonUtilityOption) async throws -> [Any] {
         switch option {
         case let .userRoles(page, count):
-            return try await commonUtilitiesService.getUserRoles(page: page, count: count, accessToken: state.guestToken)
+            return try await commonUtilitiesService.getUserRoles(page: page, count: count, accessToken: state.guestToken).data
         case let .userTypes(page, count):
             return try await commonUtilitiesService.getUserTypes(page: page, count: count, accessToken: state.guestToken)
         case let .userGender(page, count):
-            return try await commonUtilitiesService.getUserGender(page: page, count: count, accessToken: state.guestToken)
+            return try await commonUtilitiesService.getUserGender(page: page, count: count, accessToken: state.guestToken).data
         case let .organisationType(page, count):
             return try await commonUtilitiesService.getOrganisationType(page: page, count: count, accessToken: state.guestToken)
         case let .organisationSize(page, count):
             return try await commonUtilitiesService.getOrganisationSize(page: page, count: count, accessToken: state.guestToken)
-        case .ageGroups:
-            return try await commonUtilitiesService.getUserAgeGroups(accessToken: state.guestToken)
+        case .ageGroups(let page, count: let count):
+            return try await commonUtilitiesService.getUserAgeGroups(page: page, count: count, accessToken: state.guestToken).data
         case let .locations(page, count):
-            return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken)
+            return try await commonUtilitiesService.getAllLocations(page: page, count: count, accessToken: state.guestToken).data
         case let .countries(page, count):
             return try await commonUtilitiesService.getSystemCountries(page: page, count: count, accessToken: state.guestToken).data
             
@@ -307,9 +307,10 @@ extension CommonOptionPickerViewModel {
             state.rawLocationOptions = items
             
             return items.compactMap {
-                guard let id = $0.id, let name = $0.name else { return nil }
-                return CommonIdNameModel(id: id, name: name, description: $0.codeName)
+                guard let name = $0.name else { return nil }
+                return CommonIdNameModel(id: $0.id ?? -1, name: name, description: $0.code)
             }
+            
             
         case .countries:
             guard let items = response as? [CountryResponse] else { return [] }
@@ -357,3 +358,4 @@ extension CommonOptionPickerViewModel {
         
     }
 }
+

@@ -9,7 +9,7 @@ import NetworkingKit
 
 public protocol CommonUtilitiesService {
     //MARK: - locations
-    func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse]
+    func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[LocationResponse]> 
     func getLocationLevels(page: Int, count: Int, accessToken: String) async throws -> [LocationLevelsResponse]
     func getLocationsByLevel(page: Int, count: Int, locationLevel: String, accessToken: String) async throws -> [LocationResponse]
     func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]>
@@ -24,10 +24,10 @@ public protocol CommonUtilitiesService {
     
     
     //MARK: - Common (user - roles - gender)
-    func getUserAgeGroups( accessToken: String) async throws -> [CommonIdNameResponse]
+    func getUserAgeGroups(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     func getUserTypes(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse]
-    func getUserRoles(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse]
-    func getUserGender(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse]
+    func getUserRoles(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
+    func getUserGender(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]>
     
     
     //MARK: - Commodities
@@ -62,13 +62,18 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         self.tokenProvider = tokenProvider
     }
     
-    public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> [LocationResponse] {
-        let response: NewPagedResponse<[LocationResponse]> =
-        try await manager.request(
-            CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken)
+    public func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]> {
+        let envelope = try await manager.request(
+            CommonUtilitiesApi.getSystemCountries(page: page, count: count, accessToken: accessToken)
         )
         
-        return response.data
+        return envelope.toPagedResult()
+    }
+    
+    public func getAllLocations(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[LocationResponse]> {
+        let response = try await manager.request(CommonUtilitiesApi.getAllLocations(page: page, count: count, accessToken: accessToken))
+        
+        return response.toPagedResult()
     }
     
     public func getLocationLevels(page: Int, count: Int, accessToken: String) async throws -> [LocationLevelsResponse] {
@@ -107,10 +112,10 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         return response
     }
     
-    public func getUserAgeGroups(accessToken: String) async throws -> [CommonIdNameResponse] {
-        let response: [CommonIdNameResponse] = try await manager.request(CommonUtilitiesApi.getUserAgeGroups(accessToken: accessToken)) ?? []
+    public func getUserAgeGroups(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let response = try await manager.request(CommonUtilitiesApi.getUserAgeGroups(page: page, count: count, accessToken: accessToken))
         
-        return response
+        return response.toPagedResult()
     }
     
     public func getUserTypes(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse] {
@@ -119,16 +124,16 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
         return response
     }
     
-    public func getUserRoles(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse] {
-        let response: [CommonIdNameResponse] = try await manager.request(CommonUtilitiesApi.getUserRoles(page: page, count: count, accessToken: accessToken)) ?? []
+    public func getUserRoles(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let response = try await manager.request(CommonUtilitiesApi.getUserRoles(page: page, count: count, accessToken: accessToken))
         
-        return response
+        return response.toPagedResult()
     }
     
-    public func getUserGender(page: Int, count: Int, accessToken: String) async throws -> [CommonIdNameResponse] {
-        let response: [CommonIdNameResponse] = try await manager.request(CommonUtilitiesApi.getUserGender(page: page, count: count, accessToken: accessToken)) ?? []
+    public func getUserGender(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
+        let response = try await manager.request(CommonUtilitiesApi.getUserGender(page: page, count: count, accessToken: accessToken))
         
-        return response
+        return response.toPagedResult()
     }
     
     public func getCommodityCategory(page: Int, count: Int, module: String, accessToken: String) async throws -> [CommodityCategoryResponse] {
@@ -160,14 +165,6 @@ public final class CommonUtilitiesServiceImpl: CommonUtilitiesService {
     func getPaymentOptions(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CommonIdNameResponse]> {
         let envelope = try await manager.request(
             CommonUtilitiesApi.getPaymentOptions(page: page, count: count, accessToken: accessToken)
-        )
-        
-        return envelope.toPagedResult()
-    }
-    
-    public func getSystemCountries(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[CountryResponse]> {
-        let envelope = try await manager.request(
-            CommonUtilitiesApi.getSystemCountries(page: page, count: count, accessToken: accessToken)
         )
         
         return envelope.toPagedResult()

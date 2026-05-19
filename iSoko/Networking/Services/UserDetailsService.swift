@@ -11,7 +11,7 @@ import NetworkingKit
 public protocol UserDetailsService {
     
     //MARK: - get user details
-    func getUserDetails(accessToken: String) async throws -> UserDetailsResponse?
+    func getUserProfile(id: Int, accessToken: String) async throws -> UserProfileResponse?
     func getTraderVerificationDocuments(accessToken: String) async throws -> [TraderVerificationDocResponse]?
 
     //MARK: - update user details
@@ -31,9 +31,9 @@ public class UserDetailsServiceImpl: UserDetailsService {
         self.tokenProvider = tokenProvider
     }
     
-    public func getUserDetails(accessToken: String) async throws -> UserDetailsResponse? {
-        let response: UserDetailsResponse? = try await manager.request(
-            UserDetailsApi.getUserDetails(accessToken: accessToken)
+    public func getUserProfile(id: Int, accessToken: String) async throws -> UserProfileResponse? {
+        let response: UserProfileResponse? = try await manager.request(
+            UserDetailsApi.getUserProfile(id: id, accessToken: accessToken)
         )
         
         return response

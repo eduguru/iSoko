@@ -229,7 +229,7 @@ final class MoreViewModel: FormViewModel {
         gotoSignOut? { [weak self] success in
             if success {
                 AppStorage.hasLoggedIn = false
-                AppStorage.userProfile = nil
+                AppStorage.userDetail = nil
                 AppStorage.oauthToken = nil
                 DispatchQueue.main.async { [weak self] in
                     self?.setLoggedIn(false)
@@ -241,7 +241,7 @@ final class MoreViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userProfile
+        var userProfile: UserDetails? = AppStorage.userDetail
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }

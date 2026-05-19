@@ -133,7 +133,7 @@ final class ProfileInfoViewModel: FormViewModel {
 
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userProfile
+        var userProfile: UserDetails? = AppStorage.userDetail
     }
 
     // MARK: - Tags

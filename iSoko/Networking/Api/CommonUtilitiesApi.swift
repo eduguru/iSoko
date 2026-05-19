@@ -1,6 +1,6 @@
 //
 //  CommonUtilitiesApi.swift
-//  
+//
 //
 //  Created by Edwin Weru on 27/08/2025.
 //
@@ -9,37 +9,56 @@ import Moya
 import Foundation
 import NetworkingKit
 
+//MARK: - locations
 public struct CommonUtilitiesApi {
     
-    //MARK: - locations
-    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[LocationResponse]> {
-
+    public static func getSystemCountries(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CountryResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "countries",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+    
+    public static func getAllLocations(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[LocationResponse]> {
+        
         let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json"
         ]
         
-        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
         let target = AnyTarget(
-            baseURL: locationUrl,
-            path: "v1/countries", // "locations",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "locations", // "locations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            requiresAuth: false
+            authorizationType: .none
         )
-
-        return NewPagedResponseTarget(target: target)
+        
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getLocationLevels(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[LocationLevelsResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+        let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
@@ -48,14 +67,15 @@ public struct CommonUtilitiesApi {
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
         return OptionalObjectResponseTarget(target: target)
     }
     
     public static func getLocationsByLevel(page: Int, count: Int, locationLevel: String, accessToken: String) -> OptionalObjectResponseTarget<[LocationResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+        let parameters: [String: Any] = ["page": page, "size": count]
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -73,11 +93,15 @@ public struct CommonUtilitiesApi {
         
         return OptionalObjectResponseTarget(target: target)
     }
-    
-    //MARK: - Measurement
+}
+
+
+//MARK: - Measurement
+public extension CommonUtilitiesApi {
     
     public static func getMeasurementMetrics(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[MeasurementMetricResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+        let parameters: [String: Any] = ["page": page, "size": count]
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -115,9 +139,10 @@ public struct CommonUtilitiesApi {
         
         return UnifiedPagedResponseTarget(target: target)
     }
-    
-    //MARK: - Organisation
-    
+}
+
+//MARK: - Organisation
+public extension CommonUtilitiesApi {
     public static func getOrganisationType(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[OrganisationTypeResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
         let headers = [
@@ -157,20 +182,22 @@ public struct CommonUtilitiesApi {
         
         return OptionalObjectResponseTarget(target: target)
     }
-    
-    
-    //MARK: - Common (user - roles - gender)
-    
-    public static func getUserAgeGroups( accessToken: String) -> OptionalObjectResponseTarget<[CommonIdNameResponse]> {
+}
+
+//MARK: - Common (user - roles - gender)
+public extension CommonUtilitiesApi {
+    public static func getUserAgeGroups(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+        let parameters: [String: Any] = ["page": page, "size": count]
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/user-age-group",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "age-groups",
             method: .get,
             task: .requestPlain,
             headers: headers,
@@ -178,7 +205,7 @@ public struct CommonUtilitiesApi {
             authorizationType: .none
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getUserTypes(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[CommonIdNameResponse]> {
@@ -201,49 +228,49 @@ public struct CommonUtilitiesApi {
         return OptionalObjectResponseTarget(target: target)
     }
     
-    public static func getUserRoles(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[CommonIdNameResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+    static func getUserRoles(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+        let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/roles",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "roles",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getUserGender(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[CommonIdNameResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+    static func getUserGender(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
+        let parameters: [String: Any] = ["page": page, "size": count]
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/gender",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "genders",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
-    
-    
-    //MARK: - Commodities
-    
+}
+
+//MARK: - Commodities
+public extension CommonUtilitiesApi {
     public static func getCommodityCategory(page: Int, count: Int, module: String, accessToken: String) -> OptionalObjectResponseTarget<[CommodityCategoryResponse]> {
         let parameters: [String: Any] = [
             "page": page,
@@ -360,7 +387,7 @@ public struct CommonUtilitiesApi {
     
     public static func getPaymentOptions(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CommonIdNameResponse]> {
         let parameters: [String: Any] = ["page": page, "count": count]
-
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -379,25 +406,4 @@ public struct CommonUtilitiesApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getSystemCountries(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[CountryResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
-
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            // "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let target = AnyTarget(
-            baseURL: ApiEnvironment.apiBaseURL,
-            path: "countries",
-            method: .get,
-            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers,
-            authorizationType: .none
-        )
-        
-        return UnifiedPagedResponseTarget(target: target)
-    }
-
 }
