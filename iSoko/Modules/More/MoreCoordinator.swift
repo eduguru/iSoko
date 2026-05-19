@@ -271,32 +271,26 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     // MARK: - Language Selection
+    @MainActor
     public func goToLanguageSelection(completion: @escaping (Language) -> Void) {
         let model = LanguagePickerViewModel()
         model.confirmSelection = { [weak self] language in
             completion(language)
-            self?.finish()
+            self?.dismissModal() // dismiss instead of finish
         }
 
         let vc = LanguagePickerViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
-            self?.finish()
+            self?.dismissModal()
         }
 
-        // Wrap dashboard in a navigation controller
+        // Wrap in its own navigation controller for modal flow
         let nav = BaseNavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        
-        // Present from the topmost view controller in the main flow
-        if let top = router.topViewController() {
-            top.present(nav, animated: true)
-            
-            // Update router so internal pushes go to this modal nav
-            self.router = Router(navigationController: nav)
-        }
-        
-        // router.push(vc)
+
+        // Present using BaseCoordinator helper
+        presentModal(nav)
     }
     
     private func gotoHelpFeedback() {

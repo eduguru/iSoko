@@ -60,63 +60,63 @@ public class ModalCoordinator: BaseCoordinator {
         
         router.push(vc, animated: true)
     }
-
+    
     // MARK: - Country Selection
     public func goToCountrySelection(completion: @escaping (Country) -> Void) {
         let model = CountryPickerViewModel()
         model.confirmSelection = { [weak self] country in
             completion(country)
         }
-
+        
         let vc = CountryPickerViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
-
+    
     // MARK: - Language Selection
     public func goToLanguageSelection(completion: @escaping (Language) -> Void) {
         let model = LanguagePickerViewModel()
         model.confirmSelection = { [weak self] language in
             completion(language)
         }
-
+        
         let vc = LanguagePickerViewController()
         vc.makeRoot = true
         vc.viewModel = model
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-
+        
         router.push(vc)
     }
-
+    
     public func goToOtpVerification( type: OTPVerificationType, onSuccess: (() -> Void)? = nil ) {
         let viewModel = OTPFormViewModel(type: type)
-
+        
         viewModel.onOTPSuccess = { [weak self] in
             onSuccess?()
             self?.router.pop(animated: true)
         }
-
+        
         viewModel.onResendCode = {
             print(" Resend requested for \(type.targetValue)")
         }
-
+        
         viewModel.onOTPFailure = { otp in
             print("onOTPFailure OTP entered: \(otp)")
             // Optional: add server validation logic here
         }
-
+        
         let vc = OTPFormViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-
+        
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -127,10 +127,10 @@ public class ModalCoordinator: BaseCoordinator {
         modalVC.view.backgroundColor = .systemPurple
         modalVC.title = "Modal Flow"
         modalVC.modalPresentationStyle = .fullScreen
-
+        
         presentModal(modalVC)
     }
-
+    
     private func dismiss() {
         dismissModal()
     }
@@ -138,25 +138,25 @@ public class ModalCoordinator: BaseCoordinator {
 
 // ModalCoordinator+DatePicker.swift
 extension ModalCoordinator {
-
+    
     func goToDateSelection(
         config: DatePickerConfig,
         completion: @escaping (Date?) -> Void
     ) {
         let vc = DatePickerViewController()
         vc.config = config
-
+        
         vc.onComplete = { [weak self] date in
             completion(date)
             self?.dismissModal()
         }
-
+        
         let nav = UINavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .pageSheet
-
+        
         router.present(nav)
     }
-
+    
     func goToCalendarPicker(
         mode: CalendarPickerMode,
         min: Date? = nil,
@@ -164,30 +164,30 @@ extension ModalCoordinator {
         initial: Date? = nil,
         completion: @escaping (Date?) -> Void
     ) {
-
+        
         let picker = CalendarPickerFactory.makePicker()
-
+        
         picker.configure(
             mode: mode,
             minDate: min,
             maxDate: max,
             initialDate: initial
         )
-
+        
         picker.onConfirm = { [weak self] date in
             completion(date)
             self?.dismissModal()
         }
-
+        
         picker.onCancel = { [weak self] in
             completion(nil)
             self?.dismissModal()
         }
-
+        
         let nav = UINavigationController(rootViewController: picker)
         nav.modalPresentationStyle = .pageSheet
         nav.modalTransitionStyle = .coverVertical
-
+        
         router.present(nav)
     }
     
@@ -197,9 +197,9 @@ extension ModalCoordinator {
         pickerVC.onComplete = { date in
             completion(date)
         }
-
+        
         let nav = UINavigationController(rootViewController: pickerVC)
-
+        
         if #available(iOS 15.0, *) {
             nav.modalPresentationStyle = .pageSheet
             if let sheet = nav.sheetPresentationController {
@@ -211,7 +211,7 @@ extension ModalCoordinator {
             nav.modalPresentationStyle = .formSheet
             nav.preferredContentSize = CGSize(width: 350, height: 400) // adjust height as needed
         }
-
+        
         router.present(nav)
     }
     
@@ -220,10 +220,10 @@ extension ModalCoordinator {
         message: String = "Your action was completed successfully.",
         onPrimaryAction: (() -> Void)? = nil
     ) {
-
+        
         DispatchQueue.main.async { [weak self] in
             guard let topVC = self?.router.topViewController() else { return }
-
+            
             let model = BottomSheetFactory.success(
                 title: title,
                 message: message,
@@ -232,7 +232,7 @@ extension ModalCoordinator {
                 print("OK tapped")
                 onPrimaryAction?()
             }
-
+            
             BottomSheetCoordinator(presenter: topVC).present(model)
         }
     }
@@ -246,7 +246,7 @@ extension ModalCoordinator {
         
         DispatchQueue.main.async { [weak self] in
             guard let topVC = self?.router.topViewController() else { return }
-
+            
             let model = BottomSheetModel(
                 style: .bottomSheet,
                 icon: UIImage(systemName: "xmark.circle.fill"),
@@ -269,5 +269,23 @@ extension ModalCoordinator {
             BottomSheetCoordinator(presenter: topVC).present(model)
         }
         
+    }
+    
+    func presentConfirmationBottomSheet(title: String, message: String?, onConfirm: @escaping () -> Void, onCancel: @escaping () -> Void) {
+        DispatchQueue.main.async { [weak self] in
+            guard let topVC = self?.router.topViewController() else { return }
+            
+            let model = BottomSheetFactory.confirmation(
+                title: title,
+                message: message
+            ) {
+                onConfirm()
+            } onCancel: {
+                onCancel()
+            }
+            
+            // Present the bottom sheet
+            BottomSheetCoordinator(presenter: topVC).present(model)
+        }
     }
 }

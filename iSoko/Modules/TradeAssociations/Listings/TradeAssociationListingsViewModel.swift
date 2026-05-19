@@ -14,7 +14,8 @@ final class TradeAssociationListingsViewModel: FormViewModel {
 
     // MARK: - Navigation
     var goToMoreDetails: ((AssociationResponse) -> Void)? = { _ in }
-    var goToButtonAction: ((String, String, @escaping (Bool) -> Void) -> Void)?
+    
+    var goToButtonAction: ((String, AssociationResponse, @escaping (Bool) -> Void) -> Void)?
 
     // MARK: - Services
     private let associationsService = NetworkEnvironment.shared.associationsService
@@ -44,6 +45,9 @@ final class TradeAssociationListingsViewModel: FormViewModel {
 
     // MARK: - Fetch
     override func fetchData() {
+        showLoader()
+        defer { hideLoader() }
+        
         Task {
             await fetchAssociations(for: .approved, reset: true)
             await fetchAssociations(for: .pending, reset: true)
@@ -163,7 +167,15 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 bottomButtonTitle: "Join",
                 bottomButtonStyle: .primary,
                 onBottomButtonTap: { [weak self] in
-                    self?.goToButtonAction?("", "") { _ in }
+                    self?.goToButtonAction?("Join", item) { confirmed in
+                        if confirmed {
+                            self?.enroll(into: item) { success in
+                                if success {
+                                    print("Enrolled successfully")
+                                }
+                            }
+                        }
+                    }
                 },
                 onTap: { [weak self] in
                     self?.goToMoreDetails?(item)
@@ -196,7 +208,15 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 bottomButtonTitle: "Cancel",
                 bottomButtonStyle: .secondary,
                 onBottomButtonTap: { [weak self] in
-                    self?.goToButtonAction?("", "") { _ in }
+                    self?.goToButtonAction?("Cancel", item) { confirmed in
+                        if confirmed {
+                            self?.cancelMembership(for: item) { success in
+                                if success {
+                                    print("Cancelled membership successfully")
+                                }
+                            }
+                        }
+                    }
                 },
                 onTap: { [weak self] in self?.goToMoreDetails?(item) }
             )
@@ -288,4 +308,60 @@ final class TradeAssociationListingsViewModel: FormViewModel {
         var isLoading: Bool = false
     }
 
+}
+
+
+// MARK: - Membership Actions
+extension TradeAssociationListingsViewModel {
+
+    /// Enroll into an association
+    func enroll(into association: AssociationResponse, completion: @escaping (Bool) -> Void) {
+        guard let associationId = association.id else {
+            completion(false)
+            return
+        }
+
+        showLoader()
+        Task {
+            defer { hideLoader() }
+            do {
+                let _ = try await associationsService.enrollIntoAssociation(
+                    associationId: associationId,
+                    accessToken: state.oauthToken
+                )
+                // Optionally update local state or refresh feeds
+                await fetchAssociations(for: .approved, reset: true)
+                completion(true)
+            } catch {
+                showError(error.localizedDescription)
+                completion(false)
+            }
+        }
+    }
+
+    /// Cancel membership request
+    func cancelMembership(for member: AssociationResponse, comment: String = "User requested cancellation", completion: @escaping (Bool) -> Void) {
+        guard let memberId = member.id else {
+            completion(false)
+            return
+        }
+
+        showLoader()
+        Task {
+            defer { hideLoader() }
+            do {
+                let _ = try await associationsService.cancelMembership(
+                    memberId: memberId,
+                    comment: comment,
+                    accessToken: state.oauthToken
+                )
+                // Optionally refresh pending feed
+                await fetchAssociations(for: .pending, reset: true)
+                completion(true)
+            } catch {
+                showError(error.localizedDescription)
+                completion(false)
+            }
+        }
+    }
 }

@@ -271,3 +271,50 @@ public extension AssociationsApi {
         return ValueResponseTarget(target: target)
     }
 }
+
+// MARK: - Enrollment / Membership
+public extension AssociationsApi {
+    
+    /// Enroll a user into an association
+    public static func enrollIntoAssociation(associationId: Int, accessToken: String) -> ValueResponseTarget<AssociationMemberResponse> {
+        let parameters: [String: Any] = ["associationId": associationId]
+        let headers: [String: String] = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
+            path: "associations/\(associationId)/members",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            requiresAuth: true
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    /// Cancel membership for a member with a comment
+    public static func cancelMembershipRequest(memberId: Int, comment: String, accessToken: String) -> ValueResponseTarget<AssociationMemberResponse> {
+        let parameters: [String: Any] = ["comment": comment]
+        
+        let headers: [String: String] = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
+            path: "members/\(memberId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            requiresAuth: true
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+}

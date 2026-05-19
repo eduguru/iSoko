@@ -14,7 +14,6 @@ import StorageKit
 final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Navigation
-
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
@@ -43,7 +42,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private var state = State()
 
     // MARK: - Init
-
     override init() {
         super.init()
         
@@ -58,10 +56,11 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     
     override func fetchData() {
         Task { @MainActor in
-                await fetchSalesTypes()
-            }
+            await fetchSalesTypes()
+        }
     }
     
+    // MARK: - Fetch Sales Types
     private func fetchSalesTypes() async {
         showLoader()
         defer { hideLoader() }
@@ -74,7 +73,15 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             )
 
             state.saleTypes = response.data   // assuming already [CommonIdNameModel]
-            reloadSegmentSection() // 🔥 important
+
+            // ✅ Automatically select "Cash" if exists
+            if let cashType = state.saleTypes.first(where: { $0.name.lowercased().contains("cash") }) {
+                state.saleTypeId = cashType.id
+            } else if let firstType = state.saleTypes.first {
+                state.saleTypeId = firstType.id
+            }
+
+            reloadSegmentSection() // important to refresh pills with selection
 
         } catch {
             print("❌ Failed to fetch sales types:", error)
@@ -82,7 +89,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
 
     // MARK: - Sections
-
     private func makeSections() -> [FormSection] {
         [
             makeSegmentSection(),
@@ -152,35 +158,28 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Section Reload
     private func reloadProductSection(animated: Bool = true) {
-        guard let index = sections.firstIndex(where: {
-            $0.id == SectionTag.productDetails.rawValue
-        }) else { return }
-
+        guard let index = sections.firstIndex(where: { $0.id == SectionTag.productDetails.rawValue }) else { return }
         sections[index].cells = makeCartItemsRow()
-
         reloadSection(index)
     }
     
     private func reloadSegmentSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == SectionTag.segmentControl.rawValue
-        }) else { return }
-
+        guard let index = sections.firstIndex(where: { $0.id == SectionTag.segmentControl.rawValue }) else { return }
         sections[index].cells = [makePillsOptionsFormRow()]
         reloadSection(index)
     }
 
     // MARK: - Rows
-
     private lazy var pillsOptions = makePillsOptionsFormRow()
     private lazy var summaryRows = makeSummaryRows()
     
     private func makePillsOptionsFormRow() -> FormRow {
 
-        let items: [PillItem] = state.saleTypes.map {
+        let items: [PillItem] = state.saleTypes.map { saleType in
             PillItem(
-                id: String($0.id),
-                title: $0.name
+                id: String(saleType.id),
+                title: saleType.name,
+                isSelected: saleType.id == state.saleTypeId // ✅ mark selected
             )
         }
 
@@ -189,10 +188,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             items: items,
             layoutMode: .segmentedStretch,
             selectionMode: .single
-        ) { [weak self] items in
+        ) { [weak self] selectedItems in
             guard let self else { return }
 
-            if let selected = items.first(where: { $0.isSelected }),
+            if let selected = selectedItems.first(where: { $0.isSelected }),
                let id = Int(selected.id) {
 
                 self.state.saleTypeId = id
@@ -222,10 +221,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             isCardStyleEnabled: true,
             onTap: { [weak self] in
                 guard let self else { return }
-
                 self.goToDateSelection(.year()) { date in
                     guard let date else { return }
-
                     self.state.date = date
                     self.state.dateString = Helpers.format(date)
                     self.handleDateSelection()
@@ -250,9 +247,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         model: ButtonFormModel(
             title: "Add Another Item",
             style: .outlined
-        ) { [weak self] in
-            self?.handleProductSelection()
-        }
+        ) { [weak self] in self?.handleProductSelection() }
     )
 
     private lazy var continueButtonRow = ButtonFormRow(
@@ -260,9 +255,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         model: ButtonFormModel(
             title: "Continue",
             style: .primary
-        ) { [weak self] in
-            Task { await self?.submit() }
-        }
+        ) { [weak self] in Task { await self?.submit() } }
     )
 
     private lazy var descriptionRow = LongInputDescriptionFormRow(
@@ -272,19 +265,15 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             config: TextViewConfig(fixedHeight: 120),
             validation: ValidationConfiguration(isRequired: true),
             titleText: "",
-            onTextChanged: { [weak self] text in
-                self?.state.description = text
-            }
+            onTextChanged: { [weak self] text in self?.state.description = text }
         )
     )
 
     // MARK: - Dynamic Cart Rows
     private func makeCartItemsRow() -> [FormRow] {
-
         var rows: [FormRow] = []
 
         for (index, product) in state.selectedProducts.enumerated() {
-
             let productId = product.id ?? index
             let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
@@ -293,38 +282,26 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                 title: product.name ?? "Unknown",
                 subtitle: "Price: \(currency). \(Int(product.price ?? 0))",
                 pricePerUnit: Decimal(product.price ?? 0),
-                quantity: Int(state.quantities[productId] ?? 1), // UI expects Int
-
+                quantity: Int(state.quantities[productId] ?? 1),
                 onUpdate: { [weak self] updated in
                     guard let self else { return }
-
                     let qty = updated.quantity ?? 1
                     self.state.quantities[productId] = Double(qty)
-
                     self.refreshCartUI()
                 },
-
                 onDelete: { [weak self] item in
                     guard let self else { return }
-
-                    self.state.selectedProducts.removeAll {
-                        ($0.id ?? -1) == item.id
-                    }
-
+                    self.state.selectedProducts.removeAll { ($0.id ?? -1) == item.id }
                     self.state.quantities[item.id] = nil
-
                     self.refreshCartUI()
                 }
             )
 
-            rows.append(
-                CartItemFormRow(tag: 1000 + index, viewModel: vm)
-            )
+            rows.append(CartItemFormRow(tag: 1000 + index, viewModel: vm))
         }
 
         rows.append(SpacerFormRow(tag: -100))
         rows.append(addItemButtonRow)
-
         return rows
     }
     
@@ -334,16 +311,12 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
     
     private func reloadSummarySection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == SectionTag.summary.rawValue
-        }) else { return }
-
+        guard let index = sections.firstIndex(where: { $0.id == SectionTag.summary.rawValue }) else { return }
         sections[index].cells = makeSummaryRows()
         reloadSection(index)
     }
 
     private func makeSummaryRows() -> [FormRow] {
-
         let subtotal = state.amount
         let tax = 0.0
         let total = subtotal + tax
@@ -357,13 +330,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
 
     // MARK: - Actions
-
     private func handleProductSelection() {
         goToProductSelection(.products(page: 0, count: 100)) { [weak self] selected in
             guard let self, let value = selected else { return }
-
             self.state.selectedProducts.append(value)
-
             self.refreshCartUI()
         }
     }
@@ -391,8 +361,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         reloadRow(withTag: CellTag.date.rawValue)
     }
 
-    // MARK: - Helpers
-
     private func reloadRow(withTag tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -402,8 +370,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         }
     }
     
+    // MARK: - Payload & Network
     private func buildPayload() -> [String: Any] {
-
         let items = state.selectedProducts.map { product in
             [
                 "productId": product.id ?? 0,
@@ -433,34 +401,24 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         do {
             let _ = try await bookKeepingService.addSales(parameters: payload, accessToken: state.oauthToken)
             return true
-
         } catch let NetworkError.server(response) {
             print("❌ SALE ERROR:", response.alertMessage)
-
             await MainActor.run {
                 state.errorMessage = response.message
                 state.fieldErrors = response.errors
             }
-
             showError(response.alertMessage)
             return false
-
         } catch {
-            await MainActor.run {
-                state.errorMessage = "Something went wrong. Please try again."
-            }
-
+            await MainActor.run { state.errorMessage = "Something went wrong. Please try again." }
             print("❌ SALE ERROR:", error)
             showError(error.localizedDescription)
             return false
         }
     }
 
-    // MARK: - Submit
-
     private func submit() async {
         let success = await performNetworkRequest()
-
         if success {
             gotoConfirm?()
             goToShowSuccessScreen?()
@@ -500,7 +458,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
 
     // MARK: - Tags
-
     private enum SectionTag: Int {
         case segmentControl = 0
         case salesDetails = 1

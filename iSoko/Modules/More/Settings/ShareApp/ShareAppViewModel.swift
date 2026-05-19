@@ -54,7 +54,7 @@ final class ShareAppViewModel: FormViewModel {
         config: ContentCardModel(
             title: "Share the iSOKO app invite code",
             text: "Share the iSOKO app by inviting your friends to check it out.",
-            image: .carousel01,
+            image: .promoPage,
             imagePosition: .center,
             imageHeight: 340,
             cardSettings: .default

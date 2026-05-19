@@ -11,82 +11,92 @@ import StorageKit
 
 @MainActor
 final class TradeAssociationFlowCoordinator: BaseCoordinator {
-    
+
+    // Track if the main modal is already shown
+    private var isModalPresented = false
+
     override func start() {
         gotoTradeAssociations()
     }
-    
+
     private func gotoTradeAssociations() {
-        guard AppStorage.hasLoggedIn == true else {
+        guard AppStorage.hasLoggedIn ?? false else {
             presentAuthBottomSheet()
             return
         }
-        
+
+        // Avoid presenting again if already presented
+        guard !isModalPresented else { return }
+
         let viewModel = TradeAssociationListingsViewModel()
         viewModel.goToMoreDetails = { [weak self] in
             self?.gotoTradeAssociationDetails($0)
         }
-        
-        viewModel.goToButtonAction = showConfirmationBottomSheet
-        
+
+        viewModel.goToButtonAction = { [weak self] actionTitle, item, completion in
+            guard let self else { return }
+
+            let message = "Are you sure you want to \(actionTitle.lowercased()) \(item.name ?? "")?"
+
+            self.presentConfirmaionAlert(
+                title: actionTitle,
+                message: message,
+                onConfirm: { completion(true) },
+                onCancel: { completion(false) }
+            )
+        }
+
         let vc = TradeAssociationListingsViewController()
         vc.viewModel = viewModel
-        
+
         vc.goToCreateAction = { [weak self] in
             self?.gotoCreateTradeAssociations()
         }
-        
+
         vc.closeAction = { [weak self] in
             self?.router.dismiss(animated: true)
-            // self?.router.pop(animated: true)
+            self?.isModalPresented = false
         }
-        
-        // Wrap dashboard in a navigation controller
+
+        // Present modally using BaseCoordinator helper
         let nav = BaseNavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
-        
-        // Present from the topmost view controller in the main flow
-        if let top = router.topViewController() {
-            top.present(nav, animated: true)
-            
-            // Update router so internal pushes go to this modal nav
-            self.router = Router(navigationController: nav)
-        }
+
+        isModalPresented = true
+        presentModal(nav)
     }
 
     private func gotoTradeAssociationDetails(_ data: AssociationResponse) {
         let viewModel = TradeAssociationDetailsViewModel(data)
         viewModel.goToNewsDetails = goToNewsDetails
-        
+
         let vc = TradeAssociationDetailsViewController()
         vc.viewModel = viewModel
-        
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
-        router.navigationControllerInstance?.navigationBar.isHidden = false
+
         router.push(vc, animated: true)
+        router.navigationControllerInstance?.navigationBar.isHidden = false
     }
-    
+
     private func gotoCreateTradeAssociations() {
-        let modalCoordinator = ModalCoordinator(router: router)  // coordinator.delegate = self
+        let modalCoordinator = ModalCoordinator(router: router)
         addChild(modalCoordinator)
-        
+
         let viewModel = NewTradeAssociationViewModel()
         viewModel.goToDateSelection = gotoSelectDate
         viewModel.gotoSelectSystemCountry = gotoSelectSystemCountry
         viewModel.onStep1Complete = gotoCompleteCreateTradeAssociations
-        
+
         let vc = NewTradeAssociationViewController()
         vc.viewModel = viewModel
-        
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
-        router.navigationControllerInstance?.navigationBar.isHidden = false
+
         router.push(vc, animated: true)
+        router.navigationControllerInstance?.navigationBar.isHidden = false
     }
     
     private func gotoCompleteCreateTradeAssociations(_ data: [String: Any]) {
@@ -183,5 +193,40 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
                 AppStorage.hasLoggedIn = false
             }
         )
+    }
+    
+    func goToShowSuccessScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert() { [weak self] in
+            self?.router.pop()
+        }
+    }
+    
+    func goToShowErrorScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentErrorAlert(
+            onPrimaryAction:  { [weak self] in
+                self?.router.pop()
+            },
+            onSecondaryAction:  { [weak self] in
+                self?.router.pop()
+            }
+        )
+    }
+    
+    func presentConfirmaionAlert(title: String, message: String?, onConfirm: @escaping () -> Void, onCancel: @escaping () -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentConfirmationBottomSheet(title: title, message: message, onConfirm: { [weak self] in
+            onConfirm()
+        }, onCancel: { [weak self] in
+            onCancel()
+        })
+            
     }
 }

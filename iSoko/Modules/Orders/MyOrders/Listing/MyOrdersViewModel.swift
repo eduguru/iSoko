@@ -27,7 +27,6 @@ final class MyOrdersViewModel: FormViewModel {
     }
     
     // MARK: - Fetch
-    
     override func fetchData() {
         Task {
             let didFetchOrders = await fetchOrders()
@@ -42,8 +41,6 @@ final class MyOrdersViewModel: FormViewModel {
             }
         }
     }
-    
-    // MARK: - Network
     
     @discardableResult
     private func fetchOrders() async -> Bool {
@@ -65,12 +62,15 @@ final class MyOrdersViewModel: FormViewModel {
     }
     
     // MARK: - Sections
-    
     private func makeSections() -> [FormSection] {
         [
             FormSection(
                 id: Tags.Section.search.rawValue,
                 cells: [searchRow]
+            ),
+            FormSection(
+                id: Tags.Section.filterPills.rawValue,
+                cells: [makeFilterPillsRow()]
             ),
             FormSection(
                 id: Tags.Section.recentActivities.rawValue,
@@ -79,8 +79,50 @@ final class MyOrdersViewModel: FormViewModel {
         ]
     }
     
-    // MARK: - Section Updates
+    // MARK: - Filter Pills
+    private let orderStatuses = ["All", "Pending", "Completed", "Rejected"]
     
+    private func makeFilterPillsRow() -> FormRow {
+        let items = orderStatuses.map { status in
+            PillItem(
+                id: status,
+                title: status,
+                isSelected: status == state.selectedStatus
+            )
+        }
+        
+        return PillsFormRowV2(
+            tag: 9000,
+            items: items,
+            layoutMode: .segmentedStretch,
+            selectionMode: .single
+        ) { [weak self] selectedItems in
+            guard let self else { return }
+            if let selected = selectedItems.first(where: { $0.isSelected }) {
+                self.state.selectedStatus = selected.id
+                self.updateRecentActivitiesSection()
+            }
+        }
+    }
+    
+    private var filteredItems: [CustomerOrderResponse] {
+        var results = state.items
+        
+        // Filter by search
+        let query = state.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !query.isEmpty {
+            results = results.filter { $0.orderNumber.localizedCaseInsensitiveContains(query) }
+        }
+        
+        // Filter by selected status
+        if state.selectedStatus != "All" {
+            results = results.filter { $0.status.localizedCaseInsensitiveContains(state.selectedStatus) }
+        }
+        
+        return results
+    }
+    
+    // MARK: - Section Updates
     private func updateRecentActivitiesSection() {
         guard let sectionIndex = sections.firstIndex(where: {
             $0.id == Tags.Section.recentActivities.rawValue
@@ -89,8 +131,6 @@ final class MyOrdersViewModel: FormViewModel {
         sections[sectionIndex].cells = makeTransactionActionRows()
         reloadSection(sectionIndex)
     }
-    
-    // MARK: - Search
     
     private func handleSearchInput(_ text: String) {
         state.searchQuery = text
@@ -109,17 +149,7 @@ final class MyOrdersViewModel: FormViewModel {
         }
     }
     
-    private var filteredItems: [CustomerOrderResponse] {
-        let query = state.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return state.items }
-        
-        return state.items.filter {
-            $0.orderNumber.localizedCaseInsensitiveContains(query)
-        }
-    }
-    
     // MARK: - Rows
-    
     private lazy var searchRow: SearchFormRow = {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
@@ -144,92 +174,58 @@ final class MyOrdersViewModel: FormViewModel {
     }()
     
     private func makeTransactionActionRows() -> [FormRow] {
-
         filteredItems.enumerated().map { index, order in
-
             let firstProduct = order.products?.first
-
             let statusStyle = makeStatusStyle(for: order.status)
-
+            
             let actions: [ActionButtonConfig] = {
-
                 switch order.status.lowercased() {
-
                 case "pending":
-
                     return [
-
                         ActionButtonConfig(
                             title: "Confirm",
                             style: .subtle,
                             backgroundColor: UIColor.systemGreen.withAlphaComponent(0.12),
                             textColor: .systemGreen,
-                            onTap: { [weak self] in
-                                self?.confirmOrder(order)
-                            }
+                            onTap: { [weak self] in self?.confirmOrder(order) }
                         ),
-
                         ActionButtonConfig(
                             title: "Reject",
                             style: .outlined,
                             textColor: .systemOrange,
                             borderColor: .systemOrange,
-                            onTap: { [weak self] in
-                                self?.rejectOrder(order)
-                            }
+                            onTap: { [weak self] in self?.rejectOrder(order) }
                         )
                     ]
-
                 default:
-
                     return [
-
                         ActionButtonConfig(
                             title: "View Details",
                             style: .subtle,
                             backgroundColor: UIColor.systemGray5,
                             textColor: .systemGreen,
-                            onTap: { [weak self] in
-                                self?.goToDetails?(order)
-                            }
+                            onTap: { [weak self] in self?.goToDetails?(order) }
                         )
                     ]
                 }
             }()
-
+            
             return OrderItemFormRow(
-
                 tag: 5000 + index,
-
                 config: OrderItemCellConfig(
-
                     customerName: order.buyerFullName,
-
                     orderNumber: "#\(order.orderNumber)",
-
                     date: order.formattedDate,
-
                     status: order.displayStatus,
-
                     statusTextColor: statusStyle.textColor,
-
                     statusBorderColor: statusStyle.borderColor,
-
                     statusBackgroundColor: statusStyle.backgroundColor,
-
                     amount: "KES \(order.amount)",
-
                     amountColor: .systemGreen,
-
                     productImage: UIImage(named: "placeholder-product"),
-
                     productName: firstProduct?.name ?? "Unknown Product",
-
-                    productQuantityText:
-                        "\(firstProduct?.quantity ?? 0) x KES \(firstProduct?.price ?? 0)",
-
+                    productQuantityText: "\(firstProduct?.quantity ?? 0) x KES \(firstProduct?.price ?? 0)",
                     productAmount: "KES \(order.amount)",
-
                     actions: actions
                 )
             )
@@ -243,53 +239,22 @@ final class MyOrdersViewModel: FormViewModel {
         borderColor: UIColor,
         backgroundColor: UIColor
     ) {
-
         switch status.lowercased() {
-
         case "pending":
-
-            return (
-                textColor: .systemOrange,
-                borderColor: UIColor.systemOrange.withAlphaComponent(0.35),
-                backgroundColor: UIColor.systemOrange.withAlphaComponent(0.08)
-            )
-
+            return (.systemOrange, UIColor.systemOrange.withAlphaComponent(0.35), UIColor.systemOrange.withAlphaComponent(0.08))
         case "completed", "delivered":
-
-            return (
-                textColor: .systemGreen,
-                borderColor: UIColor.systemGreen.withAlphaComponent(0.35),
-                backgroundColor: UIColor.systemGreen.withAlphaComponent(0.08)
-            )
-
+            return (.systemGreen, UIColor.systemGreen.withAlphaComponent(0.35), UIColor.systemGreen.withAlphaComponent(0.08))
         case "rejected", "cancelled", "failed":
-
-            return (
-                textColor: .systemRed,
-                borderColor: UIColor.systemRed.withAlphaComponent(0.35),
-                backgroundColor: UIColor.systemRed.withAlphaComponent(0.08)
-            )
-
+            return (.systemRed, UIColor.systemRed.withAlphaComponent(0.35), UIColor.systemRed.withAlphaComponent(0.08))
         default:
-
-            return (
-                textColor: .systemBlue,
-                borderColor: UIColor.systemBlue.withAlphaComponent(0.35),
-                backgroundColor: UIColor.systemBlue.withAlphaComponent(0.08)
-            )
+            return (.systemBlue, UIColor.systemBlue.withAlphaComponent(0.35), UIColor.systemBlue.withAlphaComponent(0.08))
         }
     }
     
-    private func confirmOrder(_ order: CustomerOrderResponse) {
-        print("Confirm order \(order.orderNumber)")
-    }
-
-    private func rejectOrder(_ order: CustomerOrderResponse) {
-        print("Reject order \(order.orderNumber)")
-    }
+    private func confirmOrder(_ order: CustomerOrderResponse) { print("Confirm order \(order.orderNumber)") }
+    private func rejectOrder(_ order: CustomerOrderResponse) { print("Reject order \(order.orderNumber)") }
     
     // MARK: - State
-    
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userDetail
@@ -298,14 +263,15 @@ final class MyOrdersViewModel: FormViewModel {
         
         var items: [CustomerOrderResponse] = []
         var searchQuery: String = ""
+        var selectedStatus: String = "All"
     }
     
     // MARK: - Tags
-    
     enum Tags {
         enum Section: Int {
             case search = 0
-            case recentActivities = 1
+            case filterPills = 1
+            case recentActivities = 2
         }
         
         enum Cells: Int {

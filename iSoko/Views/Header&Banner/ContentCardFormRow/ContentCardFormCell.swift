@@ -8,38 +8,21 @@
 import Kingfisher
 import UIKit
 
-import UIKit
-import Kingfisher
-
 public final class ContentCardFormCell: UITableViewCell {
 
     // MARK: - Views
-
     private let cardView = UIView()
-
     private let stackView = UIStackView()
-
     private let cardImageView = UIImageView()
-
     private let titleLabel = UILabel()
-
     private let bodyLabel = UILabel()
 
     // MARK: - Constraints
-
     private var imageHeightConstraint: NSLayoutConstraint?
 
     // MARK: - Init
-
-    override init(
-        style: UITableViewCell.CellStyle,
-        reuseIdentifier: String?
-    ) {
-        super.init(
-            style: style,
-            reuseIdentifier: reuseIdentifier
-        )
-
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
         setup()
     }
 
@@ -49,84 +32,56 @@ public final class ContentCardFormCell: UITableViewCell {
     }
 
     // MARK: - Setup
-
     private func setup() {
-
         selectionStyle = .none
-
         backgroundColor = .clear
         contentView.backgroundColor = .clear
 
-        // Card
+        setupCardView()
+        setupStackView()
+        setupImageView()
+        setupLabels()
+    }
 
+    private func setupCardView() {
         cardView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(cardView)
 
         NSLayoutConstraint.activate([
-
-            cardView.topAnchor.constraint(
-                equalTo: contentView.topAnchor,
-                constant: 8
-            ),
-
-            cardView.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor,
-                constant: 16
-            ),
-
-            cardView.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor,
-                constant: -16
-            ),
-
-            cardView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor,
-                constant: -8
-            )
+            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            cardView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            cardView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
+    }
 
-        // Stack
-
+    private func setupStackView() {
         stackView.axis = .vertical
         stackView.spacing = 12
         stackView.translatesAutoresizingMaskIntoConstraints = false
-
+        stackView.isLayoutMarginsRelativeArrangement = true
         cardView.addSubview(stackView)
 
         NSLayoutConstraint.activate([
-
-            stackView.topAnchor.constraint(
-                equalTo: cardView.topAnchor
-            ),
-
-            stackView.leadingAnchor.constraint(
-                equalTo: cardView.leadingAnchor
-            ),
-
-            stackView.trailingAnchor.constraint(
-                equalTo: cardView.trailingAnchor
-            ),
-
-            stackView.bottomAnchor.constraint(
-                equalTo: cardView.bottomAnchor
-            )
+            stackView.topAnchor.constraint(equalTo: cardView.topAnchor),
+            stackView.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
+            stackView.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
+            stackView.bottomAnchor.constraint(equalTo: cardView.bottomAnchor)
         ])
+    }
 
-        // Image
-
+    private func setupImageView() {
         cardImageView.translatesAutoresizingMaskIntoConstraints = false
-        cardImageView.contentMode = .scaleAspectFit
+        cardImageView.contentMode = .scaleAspectFill // show central part of image
         cardImageView.clipsToBounds = true
 
-        imageHeightConstraint =
-            cardImageView.heightAnchor.constraint(
-                equalToConstant: 180
-            )
-
+        imageHeightConstraint = cardImageView.heightAnchor.constraint(equalToConstant: 180)
         imageHeightConstraint?.isActive = true
 
-        // Labels
+        stackView.addArrangedSubview(cardImageView)
+    }
 
+    private func setupLabels() {
         titleLabel.numberOfLines = 0
         titleLabel.font = .boldSystemFont(ofSize: 28)
 
@@ -134,121 +89,66 @@ public final class ContentCardFormCell: UITableViewCell {
         bodyLabel.font = .systemFont(ofSize: 18)
         bodyLabel.textColor = .secondaryLabel
 
-        // Add views
-
-        stackView.addArrangedSubview(cardImageView)
         stackView.addArrangedSubview(titleLabel)
         stackView.addArrangedSubview(bodyLabel)
     }
 
     // MARK: - Reuse
-
     public override func prepareForReuse() {
         super.prepareForReuse()
-
         cardImageView.kf.cancelDownloadTask()
         cardImageView.image = nil
     }
 
     // MARK: - Configure
-
-    public func configure(
-        with model: ContentCardModel
-    ) {
-
+    public func configure(with model: ContentCardModel) {
         // Card Style
-
-        cardView.backgroundColor =
-            model.cardSettings.backgroundColor
-
-        cardView.layer.cornerRadius =
-            model.cardSettings.cornerRadius
-
+        cardView.backgroundColor = model.cardSettings.backgroundColor
+        cardView.layer.cornerRadius = model.cardSettings.cornerRadius
         if let borderColor = model.cardSettings.borderColor {
-
-            cardView.layer.borderColor =
-                borderColor.cgColor
-
-            cardView.layer.borderWidth =
-                model.cardSettings.borderWidth
-
+            cardView.layer.borderColor = borderColor.cgColor
+            cardView.layer.borderWidth = model.cardSettings.borderWidth
         } else {
-
             cardView.layer.borderWidth = 0
         }
-
-        stackView.layoutMargins =
-            model.cardSettings.contentInsets
-
-        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = model.cardSettings.contentInsets
 
         // Text
-
         titleLabel.text = model.title
-
         bodyLabel.text = model.text
-
-        bodyLabel.isHidden =
-            model.text?.isEmpty ?? true
+        bodyLabel.isHidden = model.text?.isEmpty ?? true
 
         // Image Height
+        let maxHeight = model.maxImageHeight ?? 180
+        let height = model.imageHeight ?? maxHeight
+        imageHeightConstraint?.constant = min(height, maxHeight)
 
-        let maxHeight =
-            model.maxImageHeight ?? 180
-
-        let height =
-            model.imageHeight ?? maxHeight
-
-        imageHeightConstraint?.constant =
-            min(height, maxHeight)
-
-        // Image Alignment
-
-        switch model.imagePosition {
-
-        case .left:
-            cardImageView.layer.contentsGravity = .left
-
-        case .center:
-            cardImageView.layer.contentsGravity = .center
-
-        case .right:
-            cardImageView.layer.contentsGravity = .right
-        }
+        // Image Alignment (optional: you can still support .left/.center/.right)
+        cardImageView.layer.contentsGravity = {
+            switch model.imagePosition {
+            case .left: return .left
+            case .center: return .center
+            case .right: return .right
+            }
+        }()
 
         // Image Loading
-
         if let url = model.imageURL {
-
             cardImageView.kf.indicatorType = .activity
-
             cardImageView.kf.setImage(
                 with: url,
                 placeholder: model.fallbackImage,
-                options: [
-                    .transition(.fade(0.2)),
-                    .cacheOriginalImage
-                ]
+                options: [.transition(.fade(0.2)), .cacheOriginalImage]
             )
-
         } else if let image = model.image {
-
             cardImageView.kf.cancelDownloadTask()
             cardImageView.image = image
-
         } else {
-
             cardImageView.kf.cancelDownloadTask()
-            cardImageView.image =
-                model.fallbackImage
+            cardImageView.image = model.fallbackImage
         }
 
         // Hide image if absent
-
-        let hasImage =
-            model.imageURL != nil ||
-            model.image != nil
-
-        cardImageView.isHidden = !hasImage
+        cardImageView.isHidden = model.imageURL == nil && model.image == nil
     }
 }

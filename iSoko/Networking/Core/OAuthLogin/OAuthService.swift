@@ -27,15 +27,16 @@ public final class OAuthService: NSObject {
     public var freshLoginEachTime: Bool = true
 
     // MARK: - Authorization (Step 1)
+    // MARK: - Authorization (Step 1)
     public func startAuthorization(verifier: String) async throws -> String {
         self.verifier = verifier
         self.state = UUID().uuidString
         
-        // Cancel previous session if fresh login is requested
-               if freshLoginEachTime {
-                   session?.cancel()
-                   session = nil
-               }
+        // Cancel previous session if a fresh login is requested
+        if freshLoginEachTime {
+            session?.cancel()
+            session = nil
+        }
 
         let challenge = PKCE.codeChallenge(for: verifier)
         guard let authURL = OAuthConfig.authorizationURL(codeChallenge: challenge, state: state) else {
@@ -43,32 +44,48 @@ public final class OAuthService: NSObject {
         }
 
         return try await withCheckedThrowingContinuation { continuation in
+            // Create the ASWebAuthenticationSession
             self.session = ASWebAuthenticationSession(
                 url: authURL,
                 callbackURLScheme: OAuthConfig.callbackScheme
             ) { [weak self] callbackURL, error in
                 guard let self else { return }
 
-                if let error {
-                    continuation.resume(throwing: error)
-                    return
-                }
+                // Run everything on MainActor to ensure AppStorage/UI updates are safe
+                Task { @MainActor in
+                    if let error {
+                        continuation.resume(throwing: error)
+                        return
+                    }
 
-                guard let url = callbackURL,
-                      let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                      let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
-                      let returnedState = components.queryItems?.first(where: { $0.name == "state" })?.value,
-                      returnedState == self.state
-                else {
-                    continuation.resume(throwing: OAuthError.invalidRedirect)
-                    return
-                }
+                    guard let url = callbackURL,
+                          let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                          let code = components.queryItems?.first(where: { $0.name == "code" })?.value,
+                          let returnedState = components.queryItems?.first(where: { $0.name == "state" })?.value,
+                          returnedState == self.state
+                    else {
+                        continuation.resume(throwing: OAuthError.invalidRedirect)
+                        return
+                    }
 
-                continuation.resume(returning: code)
+                    // Update session state immediately if desired
+                    AppStorage.hasLoggedIn = true
+                    RuntimeSession.authState = .authenticated
+
+                    // Resume the async continuation
+                    continuation.resume(returning: code)
+                }
             }
-            
+
+            // Assign the presentation context provider
             self.session?.presentationContextProvider = self
-            self.session?.prefersEphemeralWebBrowserSession = freshLoginEachTime
+
+            // Set ephemeral session if fresh login is requested (iOS 13+)
+            if #available(iOS 13.0, *) {
+                self.session?.prefersEphemeralWebBrowserSession = freshLoginEachTime
+            }
+
+            // Start the session
             self.session?.start()
         }
     }

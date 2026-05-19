@@ -1,6 +1,6 @@
 //
 //  AuthBottomSheet.swift
-//  
+//
 //
 //  Created by Edwin Weru on 11/02/2026.
 //
@@ -9,7 +9,7 @@ import UIKit
 
 @MainActor
 enum AuthBottomSheet {
-
+    
     static func present(
         from viewController: UIViewController,
         style: BottomSheetModel.Style = .bottomSheet,
@@ -26,7 +26,7 @@ enum AuthBottomSheet {
                 .init(title: "Login", style: .primary) { onLogin() }
             ]
         )
-
+        
         BottomSheetCoordinator(presenter: viewController).present(model)
     }
 }
@@ -51,30 +51,30 @@ enum BottomSheetFactory {
     }
     
     static func signOut(
-           onConfirm: @escaping () -> Void,
-           onCancel: @escaping () -> Void
-       ) -> BottomSheetModel {
-           
-           BottomSheetModel(
-               style: .bottomSheet,
-               title: "Sign Out",
-               message: "Are you sure you want to sign out?",
-               showCloseButton: true,
-               buttons: [
-                   .init(title: "Cancel", style: .secondary) { onCancel() },
-                   .init(title: "Sign Out", style: .primary) { onConfirm() }
-               ]
-           )
-       }
+        onConfirm: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) -> BottomSheetModel {
+        
+        BottomSheetModel(
+            style: .bottomSheet,
+            title: "Sign Out",
+            message: "Are you sure you want to sign out?",
+            showCloseButton: true,
+            buttons: [
+                .init(title: "Cancel", style: .secondary) { onCancel() },
+                .init(title: "Sign Out", style: .primary) { onConfirm() }
+            ]
+        )
+    }
     
     static func success(
         title: String,
         message: String?,
         icon: UIImage? = UIImage(systemName: "checkmark.circle.fill"),
-        buttonTitle: String = "OK",
+        buttonTitle: String = "Okay",
         onTap: @escaping () -> Void
     ) -> BottomSheetModel {
-
+        
         BottomSheetModel(
             style: .bottomSheet,
             icon: icon,
@@ -88,12 +88,31 @@ enum BottomSheetFactory {
         )
     }
     
+    static func confirmation(
+        title: String,
+        message: String?,
+        onConfirm: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) -> BottomSheetModel {
+        
+        BottomSheetModel(
+            style: .bottomSheet,
+            title: title,
+            message: message ?? "",
+            showCloseButton: true,
+            buttons: [
+                .init(title: "Cancel", style: .secondary) { onCancel() },
+                .init(title: "Okay", style: .primary) { onConfirm() }
+            ]
+        )
+    }
+    
     
 }
 
 //Here’s how you actually use your updated bottom sheet system with the success state.
 //
-//✅ 1. Auth sheet 
+//✅ 1. Auth sheet
 //
 //You don’t need to touch anything here:
 //
