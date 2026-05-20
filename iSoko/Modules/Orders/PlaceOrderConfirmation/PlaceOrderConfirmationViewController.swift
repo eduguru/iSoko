@@ -1,23 +1,22 @@
 //
-//  ProductListingsViewController.swift
+//  PlaceOrderConfirmationViewController.swift
 //  
 //
-//  Created by Edwin Weru on 23/10/2025.
+//  Created by Edwin Weru on 20/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class ProductListingsViewController: FormViewController, CloseableViewController {
+class PlaceOrderConfirmationViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        title = "common.details".localized
         // Do any additional setup after loading the view.
-        title = "My Products"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
-        
         
     }
     
@@ -29,14 +28,5 @@ class ProductListingsViewController: FormViewController, CloseableViewController
         closeAction?()
     }
     
-    deinit {
-    }
-    
-    @objc func didTapButton01() {
-        
-    }
-    
-    @objc func didTapButton02() {
-        
-    }
+    deinit { }
 }

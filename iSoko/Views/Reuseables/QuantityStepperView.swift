@@ -14,20 +14,20 @@ final class QuantityStepperView: UIView {
     private let valueLabel = UILabel()
     private let stack = UIStackView()
 
-    // This is the true backing storage
     private var _value: Int = 1
+    private var minimumValue: Int = 1
 
-    // Exposed value. Always updates UI when set.
     var value: Int {
         get { _value }
         set {
-            let newVal = max(1, newValue)
+            let newVal = max(minimumValue, newValue)
             _value = newVal
             valueLabel.text = "\(_value)"
+
+            minusButton.isEnabled = _value > minimumValue
         }
     }
 
-    // Called when user taps +/- only
     var onValueChanged: ((Int) -> Void)?
 
     override init(frame: CGRect) {
@@ -48,14 +48,15 @@ final class QuantityStepperView: UIView {
 
         minusButton.setTitle("–", for: .normal)
         plusButton.setTitle("+", for: .normal)
-        minusButton.setTitleColor(.app(.primary), for: .normal)
-        plusButton.setTitleColor(.app(.primary), for: .normal)
+
+        minusButton.setTitleColor(.systemBlue, for: .normal)
+        plusButton.setTitleColor(.systemBlue, for: .normal)
+
         minusButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
         plusButton.titleLabel?.font = .systemFont(ofSize: 20, weight: .semibold)
 
         valueLabel.font = .systemFont(ofSize: 16, weight: .medium)
         valueLabel.textAlignment = .center
-        valueLabel.text = "\(_value)"
 
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)
@@ -67,6 +68,7 @@ final class QuantityStepperView: UIView {
         stack.addArrangedSubview(minusButton)
         stack.addArrangedSubview(valueLabel)
         stack.addArrangedSubview(plusButton)
+
         addSubview(stack)
 
         NSLayoutConstraint.activate([
@@ -80,12 +82,22 @@ final class QuantityStepperView: UIView {
     }
 
     @objc private func decrement() {
-        value = value - 1
+        value = _value - 1
         onValueChanged?(value)
     }
 
     @objc private func increment() {
-        value = value + 1
+        value = _value + 1
         onValueChanged?(value)
+    }
+
+//    func configure(initialValue: Int, minimumValue: Int = 1) {
+//        self.minimumValue = minimumValue
+//        self.value = initialValue
+//    }
+    
+    func configure(initialValue: Int, minimumValue: Int = 1) {
+        self.minimumValue = minimumValue
+        self.value = max(minimumValue, initialValue)
     }
 }

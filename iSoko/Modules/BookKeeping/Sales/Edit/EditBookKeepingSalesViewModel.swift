@@ -247,7 +247,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private lazy var customerRow = DropdownFormRow(
         tag: CellTag.customerName.rawValue,
         config: DropdownFormConfig(
-            title: "bookkeeping.add_customer.customer_name".localized,
+            title: "common.name".localized,
             placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleCustomerSelection() },

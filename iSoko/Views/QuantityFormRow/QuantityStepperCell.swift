@@ -56,8 +56,8 @@ final class QuantityStepperCell: UITableViewCell {
         }
     }
 
-    func configure(title: String, initialValue: Int) {
+    func configure(title: String, initialValue: Int, minimumValue: Int) {
         titleLabel.text = title
-        stepperView.value = initialValue
+        stepperView.configure(initialValue: initialValue, minimumValue: minimumValue)
     }
 }

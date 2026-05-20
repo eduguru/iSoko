@@ -355,7 +355,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             tag: 200,
             model: TwoCardsSummaryViewModel(
                 title: "Quick Actions",
-                description: "bookkeeping.dashboard.quick_actions.description".localized,
+                description: "common.label.quick_actions".localized,
                 cards: TwoStatusCardsViewModel(
                     first: sale,
                     second: expense,

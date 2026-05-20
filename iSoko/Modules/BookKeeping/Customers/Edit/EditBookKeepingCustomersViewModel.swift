@@ -68,8 +68,8 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
     
     private lazy var customerNameInputRow = makeInputRow(
         tag: Tags.Cells.customerName.rawValue,
-        title: "bookkeeping.add_customer.customer_name".localized,
-        placeholder: "bookkeeping.add_customer.customer_name".localized,
+        title: "common.name".localized,
+        placeholder: "common.name".localized,
         keyboard: .default
     )
 
@@ -90,8 +90,8 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
     private lazy var countryInputRow = DropdownFormRow(
         tag: Tags.Cells.country.rawValue,
         config: DropdownFormConfig(
-            title: "bookkeeping.add_customer.country".localized,
-            placeholder: "bookkeeping.add_customer.country".localized,
+            title: "common.label.country".localized,
+            placeholder: "common.label.country".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in

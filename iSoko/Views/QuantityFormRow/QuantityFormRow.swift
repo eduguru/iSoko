@@ -16,21 +16,34 @@ final class QuantityFormRow: FormRow {
 
     private let title: String
     private let initialValue: Int
+    private let minimumValue: Int
     private let onValueChanged: ((Int) -> Void)?
 
-    init(tag: Int,
-         title: String,
-         initialValue: Int = 1,
-         onValueChanged: ((Int) -> Void)? = nil) {
+    init(
+        tag: Int,
+        title: String,
+        initialValue: Int = 1,
+        minimumValue: Int = 1,
+        onValueChanged: ((Int) -> Void)? = nil
+    ) {
         self.tag = tag
         self.title = title
         self.initialValue = initialValue
+        self.minimumValue = minimumValue
         self.onValueChanged = onValueChanged
     }
 
-    func configure(_ cell: UITableViewCell, indexPath: IndexPath, sender: FormViewController?) -> UITableViewCell {
+    func configure(_ cell: UITableViewCell,
+                   indexPath: IndexPath,
+                   sender: FormViewController?) -> UITableViewCell {
+
         guard let cell = cell as? QuantityStepperCell else { return cell }
-        cell.configure(title: title, initialValue: initialValue)
+
+        cell.configure(
+            title: title,
+            initialValue: initialValue,
+            minimumValue: minimumValue
+        )
 
         cell.onValueChanged = { [weak self] value in
             self?.onValueChanged?(value)
@@ -41,6 +54,6 @@ final class QuantityFormRow: FormRow {
 
     @MainActor
     func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        64 // fixed height, tweak as needed
+        64
     }
 }

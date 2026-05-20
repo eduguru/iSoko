@@ -143,8 +143,8 @@ final class NewTradeAssociationViewModel: FormViewModel {
     private lazy var countryInputRow = DropdownFormRow(
         tag: CellTag.country.rawValue,
         config: DropdownFormConfig(
-            title: "bookkeeping.add_customer.country".localized,
-            placeholder: "bookkeeping.add_customer.country".localized,
+            title: "common.label.country".localized,
+            placeholder: "common.label.country".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in

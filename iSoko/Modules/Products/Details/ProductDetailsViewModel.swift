@@ -16,6 +16,9 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Callbacks
     var onProductTap: ((ProductResponseV1) -> Void)?
     var onToggleFavorite: ((ProductResponseV1, Bool) -> Void)?
+    
+    var onPlaceOrder: ((PlaceOrderPayload) -> Void)?
+    private var selectedQuantity: Int
 
     // MARK: - State
     private var state: State
@@ -27,6 +30,9 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Init
     init(_ product: ProductResponseV1) {
         self.state = State(product: product)
+        
+        self.selectedQuantity = product.minimumOrderQuantity ?? 1
+        
         super.init()
         self.sections = makeSections()
     }
@@ -133,8 +139,11 @@ final class ProductDetailsViewModel: FormViewModel {
     lazy var quantityRow: FormRow = QuantityFormRow(
         tag: 500,
         title: "Quantity",
-        initialValue: 1
-    ) { value in
+        initialValue: state.product.minimumOrderQuantity ?? 1,
+        minimumValue: state.product.minimumOrderQuantity ?? 1
+    ) { [weak self] value in
+        guard let self else { return }
+        self.selectedQuantity = value
         print("Quantity changed: \(value)")
     }
 
@@ -316,8 +325,20 @@ final class ProductDetailsViewModel: FormViewModel {
                 icon: nil,
                 fontStyle: .headline,
                 hapticsEnabled: true
-            ) {
-                print("Place order tapped")
+            ) { [weak self] in
+                guard let self else { return }
+
+                let product = self.state.product
+
+                let payload = PlaceOrderPayload(
+                    product: product,
+                    quantity: self.selectedQuantity,
+                    minimumQuantity: product.minimumOrderQuantity ?? 1,
+                    unitName: product.measurementUnit?.name,
+                    unitPrice: product.price
+                )
+
+                self.onPlaceOrder?(payload)
             }
         )
     }

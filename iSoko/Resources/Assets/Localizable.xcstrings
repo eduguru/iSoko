@@ -5250,6 +5250,17 @@
         }
       }
     },
+    "common.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        }
+      }
+    },
     "common.reset_password_success.header_description" : {
       "extractionState" : "manual",
       "localizations" : {
