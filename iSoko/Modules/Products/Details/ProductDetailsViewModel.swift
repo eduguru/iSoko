@@ -12,43 +12,45 @@ import StorageKit
 
 @MainActor
 final class ProductDetailsViewModel: FormViewModel {
+
     // MARK: - Callbacks
     var onProductTap: ((ProductResponseV1) -> Void)?
     var onToggleFavorite: ((ProductResponseV1, Bool) -> Void)?
-    
+
+    // MARK: - State
     private var state: State
-    
+
     // MARK: - Services
     private let productsService = NetworkEnvironment.shared.productsService
-    
     @MainActor private let countryHelper = CountryHelper()
-    
+
+    // MARK: - Init
     init(_ product: ProductResponseV1) {
         self.state = State(product: product)
         super.init()
-        
         self.sections = makeSections()
     }
-    
+
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await fetchProductItems()
-            
+            let success = await fetchSimilarProducts()
+
             if !success {
                 print("Failed to fetch product data")
             }
-            
+
             DispatchQueue.main.async { [weak self] in
-                self?.updateSimilarProductsSection()
+                self?.sections = self?.makeSections() ?? []
             }
         }
     }
-    
+
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
+
         let images = prepareProductImages()
-        
+
         return [
             FormSection(
                 id: Tags.Section.productImages.rawValue,
@@ -60,6 +62,7 @@ final class ProductDetailsViewModel: FormViewModel {
                             imageHeight: 140
                         )
                     ),
+
                     categotyTitleRow,
                     priceRow,
                     minimumQuantityRow,
@@ -69,33 +72,24 @@ final class ProductDetailsViewModel: FormViewModel {
                     storeProfileRow
                 ]
             ),
+
             similarProductsSection()
         ]
     }
-    
+
     private func similarProductsSection() -> FormSection {
         FormSection(
             id: Tags.Section.similarProducts.rawValue,
             title: "Similar Products",
-            cells: [similarProductsFormRow]
+            cells: [
+                HorizontalGridFormRow(
+                    tag: Tags.Section.similarProducts.rawValue,
+                    items: makeSimilarProductsGridItems()
+                )
+            ]
         )
     }
-    
-    private func updateSimilarProductsSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.similarProducts.rawValue
-        }) else { return }
-        
-        sections[index].cells = [
-            HorizontalGridFormRow(
-                tag: Tags.Section.similarProducts.rawValue,
-                items: makeSimilarProductsGridItems()
-            )
-        ]
-        
-        reloadSection(index)
-    }
-    
+
     // MARK: - Image Handling
     private func prepareProductImages() -> [ProductImage] {
         guard let images = state.product.images else {
@@ -119,7 +113,7 @@ final class ProductDetailsViewModel: FormViewModel {
 
         return sorted.isEmpty ? placeholderImages() : sorted
     }
-    
+
     private func placeholderImages() -> [ProductImage] {
         [
             ProductImage(
@@ -128,17 +122,14 @@ final class ProductDetailsViewModel: FormViewModel {
             )
         ]
     }
-    
+
     // MARK: - Rows
-    
     lazy var categotyTitleRow: FormRow = makeCategotyTitleRow()
     lazy var priceRow: FormRow = makePriceRow()
     lazy var descriptionRow: FormRow = makeDescriptionRow()
     lazy var minimumQuantityRow: FormRow = makeMinimumQuantityRow()
     lazy var storeProfileRow: FormRow = makeStoreProfileRow()
-    
-    private lazy var similarProductsFormRow = HorizontalGridFormRow(tag: 300, items: [])
-    
+
     lazy var quantityRow: FormRow = QuantityFormRow(
         tag: 500,
         title: "Quantity",
@@ -146,84 +137,95 @@ final class ProductDetailsViewModel: FormViewModel {
     ) { value in
         print("Quantity changed: \(value)")
     }
-    
+
     // MARK: - Row Builders
-    
+
     private func makeCategotyTitleRow() -> FormRow {
-        TitleDescriptionFormRow(
+
+        let name = state.product.name ?? "Unnamed Product"
+
+        return TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
-            title: state.product.categoryName ?? "",
-            description: state.product.name ?? "Unnamed Product",
-            maxTitleLines: 2,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+                title: name,
+                description: "",
+                maxTitleLines: 2,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .headline,
+                descriptionFontStyle: .subheadline
             )
         )
     }
-    
+
     private func makePriceRow() -> FormRow {
-        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-        
+
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+
         let priceText: String = {
-            if let price = state.product.price {
-                return "\(currency) \(String(format: "%.2f", price))"
+            guard let price = state.product.price else {
+                return "Price on request"
             }
-            return "Price on request"
+            return "\(currency) \(String(format: "%.2f", price))"
         }()
-        
+
+        let unit = state.product.measurementUnit?.name ?? "unit"
+
         return TitleDescriptionFormRow(
             tag: Tags.Cells.price.rawValue,
             model: TitleDescriptionModel(
-            title: "\(priceText) / \(state.product.measurementUnit?.name ?? "unit")",
-            description: "",
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .callout,
-            descriptionFontStyle: .headline
+                title: "\(priceText) / \(unit)",
+                description: "",
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .callout,
+                descriptionFontStyle: .headline
             )
         )
     }
-    
+
     private func makeDescriptionRow() -> FormRow {
-        
+
         let description = state.product.description?.isEmpty == false
             ? state.product.description!
             : "No description available"
-        
+
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
             model: TitleDescriptionModel(
-            title: description,
-            description: "",
-            maxTitleLines: 20,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .body,
-            descriptionFontStyle: .headline
+                title: description,
+                description: "",
+                maxTitleLines: 20,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .body,
+                descriptionFontStyle: .headline
             )
         )
     }
-    
+
     private func makeMinimumQuantityRow() -> FormRow {
-        
+
         let product = state.product
-        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-        
+
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+
         let priceText: String = {
-            if let price = product.price {
-                return "\(currency) \(String(format: "%.2f", price))"
+            guard let price = product.price else {
+                return "Price on request"
             }
-            return "Price on request"
+            return "\(currency) \(String(format: "%.2f", price))"
         }()
-        
+
         let unit = product.measurementUnit?.name ?? "unit"
         let minQty = product.minimumOrderQuantity ?? 1
-        
+
         let model = ProductSummaryModel(
-            title: product.name ?? "Unnamed Product",
+            title: product.categoryName ?? "Unnamed Category",
             rating: 0,
             reviewCount: 0,
             location: "",
@@ -231,16 +233,17 @@ final class ProductDetailsViewModel: FormViewModel {
             oldPriceText: nil,
             discountText: minQty > 1 ? "Min Qty: \(minQty)" : nil
         )
-        
+
         return ProductSummaryRow(tag: 101, model: model)
     }
-    
+
     private func makeStoreProfileRow() -> FormRow {
 
         let traderName = state.product.traderFullName ?? "Seller"
-        let phoneNumber = state.product.trader?.phoneNumber ?? "0000000000"
-        let email = state.product.trader?.email ?? ""
-        let whatsappNumber = state.product.trader?.whatsappNumber ?? "0000000000"
+
+        let phoneNumber = state.product.trader?.phoneNumber
+        let email = state.product.trader?.email
+        let whatsappNumber = state.product.trader?.whatsappNumber
 
         return StoreProfileCardRow(
             tag: 400,
@@ -250,45 +253,51 @@ final class ProductDetailsViewModel: FormViewModel {
                 verifiedImage: nil,
                 badges: [],
                 trailingButtonTitle: "View Store",
+
                 onTrailingButtonTap: { [weak self] in
-                    if let url = URL(string: self?.state.product.trader?.storeUrl ?? "") {
-                        UIApplication.shared.open(url)
-                    }
+                    guard
+                        let urlString = self?.state.product.trader?.storeUrl,
+                        let url = URL(string: urlString)
+                    else { return }
+
+                    UIApplication.shared.open(url)
                 },
+
                 actions: [
                     .init(
                         title: "WhatsApp",
                         image: UIImage(systemName: "message.fill"),
                         handler: {
-                            // Open WhatsApp with number
-                            let whatsappURL = URL(string: "https://wa.me/\(whatsappNumber)")!
-                            if UIApplication.shared.canOpenURL(whatsappURL) {
-                                UIApplication.shared.open(whatsappURL)
-                            } else {
-                                print("WhatsApp not installed, opening web...")
-                                UIApplication.shared.open(whatsappURL)
-                            }
+                            guard let number = whatsappNumber,
+                                  let url = URL(string: "https://wa.me/\(number)")
+                            else { return }
+                            UIApplication.shared.open(url)
                         }
                     ),
                     .init(
                         title: "Call",
                         image: UIImage(systemName: "phone.fill"),
                         handler: {
-                            if let phoneURL = URL(string: "tel://\(phoneNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
-                                UIApplication.shared.open(phoneURL)
-                            }
+                            guard let number = phoneNumber,
+                                  let url = URL(string: "tel://\(number)"),
+                                  UIApplication.shared.canOpenURL(url)
+                            else { return }
+                            UIApplication.shared.open(url)
                         }
                     ),
                     .init(
-                        title: "common.label.email_placeholder".localized,
+                        title: "Email",
                         image: UIImage(systemName: "envelope.fill"),
                         handler: {
-                            if let emailURL = URL(string: "mailto:\(email)"), UIApplication.shared.canOpenURL(emailURL) {
-                                UIApplication.shared.open(emailURL)
-                            }
+                            guard let email = email,
+                                  let url = URL(string: "mailto:\(email)"),
+                                  UIApplication.shared.canOpenURL(url)
+                            else { return }
+                            UIApplication.shared.open(url)
                         }
                     )
                 ],
+
                 cornerRadius: 20,
                 backgroundColor: .systemBackground,
                 borderColor: .systemGray5,
@@ -296,7 +305,7 @@ final class ProductDetailsViewModel: FormViewModel {
             )
         )
     }
-    
+
     private func makeConfirmButtonRow() -> FormRow {
         ButtonFormRow(
             tag: 1001,
@@ -312,9 +321,9 @@ final class ProductDetailsViewModel: FormViewModel {
             }
         )
     }
-    
-    // MARK: - Builders
-    
+
+    // MARK: - Similar Products
+
     private func makeSimilarProductsGridItems() -> [GridItemModel] {
         state.similarProduct.map { product in
             GridItemModel(
@@ -323,82 +332,51 @@ final class ProductDetailsViewModel: FormViewModel {
                 imageUrl: product.primaryImageURL ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderFullName ?? "",
-                price: product.price != nil ? "KES \(String(format: "%.2f", product.price!))" : nil,
+                price: product.price != nil
+                    ? "KES \(String(format: "%.2f", product.price!))"
+                    : nil,
                 isFavorite: false,
                 onTap: { [weak self] in
-                    guard let self = self else { return }
-                    self.onProductTap?(product)
+                    self?.onProductTap?(product)
                 },
                 onToggleFavorite: { [weak self] fav in
-                    guard let self = self else { return }
-                    self.onToggleFavorite?(product, fav)
+                    self?.onToggleFavorite?(product, fav)
                 }
             )
         }
     }
-    
+
     // MARK: - Network
-    
-    private func fetchProductItems() async -> Bool {
-        async let similar = fetchData(type: .similarProduct)
-        let results = await [similar]
-        return results.allSatisfy { $0 }
-    }
-    
-    @discardableResult
-    private func fetchData(type: RequestDataType) async -> Bool {
+    private func fetchSimilarProducts() async -> Bool {
         do {
-            switch type {
-                
-            case .similarProduct:
-                let categoryId = state.product.category?.id ?? 0
-                
-                let response = try await productsService.getProductsByCategory(
-                    page: 1,
-                    count: 10,
-                    categoryId: "\(categoryId)",
-                    accessToken: state.guestToken
-                )
-                
-                self.state.similarProduct = response.data
-                
-            case .moreOwnerProducts:
-                break
-            }
-            
+            let categoryId = state.product.category?.id ?? 0
+
+            let response = try await productsService.getProductsByCategory(
+                page: 1,
+                count: 10,
+                categoryId: "\(categoryId)",
+                accessToken: state.guestToken
+            )
+
+            self.state.similarProduct = response.data
             return true
-            
+
         } catch {
-            print("❌ Error in \(type):", error)
+            print("❌ Error fetching similar products:", error)
             return false
         }
     }
-    
+
     // MARK: - State
-    
     private struct State {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
+
         var product: ProductResponseV1
         var similarProduct: [ProductResponseV1] = []
-        var moreOwnerProducts: [ProductResponseV1] = []
     }
-    
-    // MARK: - Enums
-    
-    private enum RequestDataType: CustomStringConvertible {
-        case similarProduct
-        case moreOwnerProducts
-        
-        var description: String {
-            switch self {
-            case .similarProduct: return "Similar Products"
-            case .moreOwnerProducts: return "More from Seller"
-            }
-        }
-    }
-    
+
+    // MARK: - Tags
     enum Tags {
         enum Section: Int {
             case productImages = 0
@@ -407,7 +385,7 @@ final class ProductDetailsViewModel: FormViewModel {
             case categories = 3
             case similarProducts = 5
         }
-        
+
         enum Cells: Int {
             case productImages = 0
             case titleAndDescription = 1

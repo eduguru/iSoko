@@ -25,6 +25,8 @@ public class HomeCoordinator: BaseCoordinator {
         model.onTapProductCategory = onTapProductCategory
         model.onTapServiceCategory = onTapServiceCategory
         
+        model.onTapTradeAssociation = gotoTradeAssociations
+        
         let controller = HomeViewController()
         controller.makeRoot = true
         controller.viewModel = model
@@ -204,6 +206,14 @@ public class HomeCoordinator: BaseCoordinator {
     
     private func dismiss() {
         dismissModal()
+    }
+}
+
+extension HomeCoordinator {
+    private func gotoTradeAssociations(_ item: AssociationResponse) {
+        let coordinator = TradeAssociationFlowCoordinator(router: router)
+        addChild(coordinator)
+        coordinator.goToTradeAssociationProducs(item)
     }
 }
 

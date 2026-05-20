@@ -6,8 +6,10 @@
 //
 
 import UIKit
+import DesignSystemKit
 
 final class ProductSummaryCell: UITableViewCell {
+    private let styleGuide: StyleGuideProtocol = DesignSystemKit.sharedStyleGuide
 
     private let titleLabel = UILabel()
     private let ratingImageView = UIImageView()
@@ -137,6 +139,8 @@ final class ProductSummaryCell: UITableViewCell {
 
     func configure(with model: ProductSummaryModel) {
         titleLabel.text = model.title
+        applyStyling(to: titleLabel, style: FontStyle.body)
+        
         ratingLabel.text = String(format: "%.1f", model.rating)
         reviewsLabel.text = "(\(model.reviewCount) reviews)"
         locationLabel.text = model.location
@@ -163,5 +167,9 @@ final class ProductSummaryCell: UITableViewCell {
         } else {
             discountPill.isHidden = true
         }
+    }
+    
+    public func applyStyling(to label: UILabel, style: FontStyle) {
+        label.font = styleGuide.font(for: style)
     }
 }

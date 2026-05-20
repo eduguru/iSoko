@@ -1,21 +1,22 @@
 //
-//  TradeAssociationDetailsViewController.swift
+//  NotificationsViewController.swift
 //  
 //
-//  Created by Edwin Weru on 12/11/2025.
+//  Created by Edwin Weru on 20/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class TradeAssociationDetailsViewController: FormViewController, CloseableViewController {
+class NotificationsViewController: FormViewController, CloseableViewController {
+    var goToCreateAction: (() -> Void)?
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "common.details".localized
-        // Do any additional setup after loading the view.
+        title = "common.more_view.notifications".localized
+        
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
     }
@@ -29,4 +30,10 @@ class TradeAssociationDetailsViewController: FormViewController, CloseableViewCo
     }
     
     deinit { }
+    
+    @objc func didTapButton01() {
+        goToCreateAction?()
+    }
 }
+
+

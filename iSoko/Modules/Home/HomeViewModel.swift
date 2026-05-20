@@ -27,6 +27,8 @@ final class HomeViewModel: FormViewModel {
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
     var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
     
+    var onTapTradeAssociation: ((AssociationResponse) -> Void)?
+    
     var onTapTopDeal: ((TopDealItem) -> Void)?
     var onFavoriteTopDealToggle: ((Bool, TopDealItem) -> Void)?
     
@@ -58,7 +60,7 @@ final class HomeViewModel: FormViewModel {
             performNetworkCalls()
         }
     }
-
+    
     override func fetchData() {
         Task { @MainActor in
             performNetworkCalls()
@@ -113,26 +115,26 @@ final class HomeViewModel: FormViewModel {
             }
         }
     }
-
+    
     private func fetchBanners() async {
-            do {
-                try await directusService.login(
-                    email: AppStorage.email,
-                    password: AppStorage.password
-                )
-                
-                let banners = try await directusService.fetchHomeBanners()
-                state?.banners = banners
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateBannerSection()
-                }
-                
-            } catch {
-                print("❌ Directus flow failed:", error)
-                
+        do {
+            try await directusService.login(
+                email: AppStorage.email,
+                password: AppStorage.password
+            )
+            
+            let banners = try await directusService.fetchHomeBanners()
+            state?.banners = banners
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.updateBannerSection()
             }
+            
+        } catch {
+            print("❌ Directus flow failed:", error)
+            
         }
+    }
     
     // MARK: - Fetch Helper
     @discardableResult
@@ -147,7 +149,7 @@ final class HomeViewModel: FormViewModel {
                 )
                 
                 self.state?.featuredProducts = result.data
-                                
+                
                 DispatchQueue.main.async { [weak self] in
                     self?.updateTrendingProductsSection()
                 }
@@ -301,7 +303,7 @@ final class HomeViewModel: FormViewModel {
             cells: [exportCardsRow]
         )
     }
-
+    
     // MARK: - Update Sections
     
     private func updateBannerSection() {
@@ -473,7 +475,7 @@ final class HomeViewModel: FormViewModel {
             return banners
         }
         
-       return [
+        return [
             CarouselItem(image: UIImage(named: "carousel01"), imageURL: nil, text: nil, textColor: .white) { print("Tapped A") },
             CarouselItem(image: UIImage(named: "carousel02"),imageURL: nil, text: nil, textColor: .yellow) { print("Tapped B") },
             CarouselItem(image: UIImage(named: "carousel03"),imageURL: nil, text: nil, textColor: .cyan) { print("Tapped C") },
@@ -693,9 +695,12 @@ final class HomeViewModel: FormViewModel {
                 subtitle: managerName,
                 icon: nil,
                 imageUrls: imageUrls,
-                images: images, 
-                onTap: {
+                images: images,
+                onTap: { [weak self] in
+                    guard let self = self else { return }
+                    self.onTapTradeAssociation?(association)
                     print("Tapped association: \(association.name ?? "")")
+                    
                 }
             )
         }

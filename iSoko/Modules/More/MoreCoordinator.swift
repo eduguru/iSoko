@@ -183,11 +183,23 @@ public class MoreCoordinator: BaseCoordinator {
             presentAuthBottomSheet()
             return
         }
-        
-        let router = Router(navigationController: navigationController)
-        let cordinator = TradeAssociationFlowCoordinator(router: router)
-        addChild(cordinator)
-        cordinator.start()
+
+        // Use existing router instead of creating a new one
+        let coordinator = TradeAssociationFlowCoordinator(router: router)
+        addChild(coordinator)
+        coordinator.start()
+    }
+
+    private func gotoHelpFeedback() {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+
+        // Use existing router
+        let coordinator = HelpFeedbackCoordinator(router: router)
+        addChild(coordinator)
+        coordinator.start()
     }
     
     @MainActor
@@ -264,9 +276,9 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     private func gotoSettings() {
-        let viewModel = SettingsViewModel()
+        let viewModel = NotificationsViewModel()
         
-        let vc = SettingsViewController()
+        let vc = NotificationsViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
@@ -297,13 +309,6 @@ public class MoreCoordinator: BaseCoordinator {
 
         // Present using BaseCoordinator helper
         presentModal(nav)
-    }
-    
-    private func gotoHelpFeedback() {
-        let router = Router(navigationController: navigationController)
-        let cordinator = HelpFeedbackCoordinator(router: router)
-        addChild(cordinator)
-        cordinator.start()
     }
     
     private func presentAuthBottomSheet() {

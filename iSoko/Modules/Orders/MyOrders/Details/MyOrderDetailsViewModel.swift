@@ -1,6 +1,6 @@
 //
 //  MyOrderDetailsViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 01/04/2026.
 //
@@ -107,26 +107,26 @@ final class MyOrderDetailsViewModel: FormViewModel {
     }
     
     private func makeOrderSummaryRow() -> [FormRow] {
-
+        
         let items: [KeyValueRowModel] = [
-
+            
             KeyValueRowModel(
                 leftText: "Order Date",
                 rightText: state.item.datetimeCreated
             ),
-
+            
             KeyValueRowModel(
                 leftText: "Order Number",
                 rightText: "#\(state.item.orderNumber)",
                 usesMonospacedDigits: true
             ),
-
+            
             KeyValueRowModel(
                 leftText: "Payment Method",
                 rightText: "Card"
             )
         ]
-
+        
         let group = KeyValueGroupFormRow(
             tag: 1,
             model: KeyValueGroupModel(
@@ -135,45 +135,62 @@ final class MyOrderDetailsViewModel: FormViewModel {
                 rows: items
             )
         )
-
+        
         return [group]
     }
     
     private func makeStoreProfileRow() -> FormRow {
-        
         let traderName = state.item.sellerFullName
         let phoneNumber = state.item.seller.phoneNumber ?? "0000000000"
         let email = state.item.seller.email ?? ""
         let whatsappNumber = state.item.seller.whatsappNumber ?? "0000000000"
         
+        
         return StoreProfileCardRow(
-            tag: Tags.Cells.storeProfile.rawValue,
+            tag: 400,
             config: StoreProfileCardConfig(
                 image: .blankRectangle,
-                headerTitle: "Seller Details",
                 title: traderName,
-                description: state.item.seller.email,
                 verifiedImage: nil,
                 badges: [],
-                trailingButtonTitle: nil,
-                onTrailingButtonTap: {
-                    print("Go to seller: \(traderName)")
+                trailingButtonTitle: "View Store",
+                onTrailingButtonTap: { [weak self] in
+                    if let url = URL(string: self?.state.item.seller.storeUrl ?? "") {
+                        UIApplication.shared.open(url)
+                    }
                 },
                 actions: [
                     .init(
                         title: "WhatsApp",
                         image: UIImage(systemName: "message.fill"),
-                        handler: { print("WhatsApp tapped") }
+                        handler: {
+                            // Open WhatsApp with number
+                            let whatsappURL = URL(string: "https://wa.me/\(whatsappNumber)")!
+                            if UIApplication.shared.canOpenURL(whatsappURL) {
+                                UIApplication.shared.open(whatsappURL)
+                            } else {
+                                print("WhatsApp not installed, opening web...")
+                                UIApplication.shared.open(whatsappURL)
+                            }
+                        }
                     ),
                     .init(
                         title: "Call",
                         image: UIImage(systemName: "phone.fill"),
-                        handler: { print("Call tapped") }
+                        handler: {
+                            if let phoneURL = URL(string: "tel://\(phoneNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
+                                UIApplication.shared.open(phoneURL)
+                            }
+                        }
                     ),
                     .init(
                         title: "common.label.email_placeholder".localized,
                         image: UIImage(systemName: "envelope.fill"),
-                        handler: { print("Email tapped") }
+                        handler: {
+                            if let emailURL = URL(string: "mailto:\(email)"), UIApplication.shared.canOpenURL(emailURL) {
+                                UIApplication.shared.open(emailURL)
+                            }
+                        }
                     )
                 ],
                 cornerRadius: 20,

@@ -1,14 +1,14 @@
 //
-//  TradeAssociationDetailsViewController.swift
+//  AssociationProductsViewController.swift
 //  
 //
-//  Created by Edwin Weru on 12/11/2025.
+//  Created by Edwin Weru on 20/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class TradeAssociationDetailsViewController: FormViewController, CloseableViewController {
+class AssociationProductsViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {

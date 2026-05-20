@@ -32,10 +32,14 @@ final class ExportCardsTableCell: UITableViewCell {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.backgroundColor = .clear
+
         collectionView.dataSource = self
         collectionView.delegate = self
 
-        collectionView.register(ExportCardCell.self, forCellWithReuseIdentifier: "ExportCardCell")
+        collectionView.register(
+            ExportCardCell.self,
+            forCellWithReuseIdentifier: "ExportCardCell"
+        )
 
         contentView.addSubview(collectionView)
 
@@ -53,9 +57,13 @@ final class ExportCardsTableCell: UITableViewCell {
     }
 }
 
-extension ExportCardsTableCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+extension ExportCardsTableCell: UICollectionViewDataSource,
+                                UICollectionViewDelegateFlowLayout,
+                                UICollectionViewDelegate {
+
+    func collectionView(_ collectionView: UICollectionView,
+                        numberOfItemsInSection section: Int) -> Int {
         items.count
     }
 
@@ -74,8 +82,17 @@ extension ExportCardsTableCell: UICollectionViewDataSource, UICollectionViewDele
     }
 
     func collectionView(_ collectionView: UICollectionView,
+                        didSelectItemAt indexPath: IndexPath) {
+
+        let item = items[indexPath.item]
+
+        // ✅ THIS is the missing piece
+        item.onTap?()
+    }
+
+    func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 280, height: 320)
+        CGSize(width: 280, height: 320)
     }
 }

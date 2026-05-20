@@ -12,8 +12,8 @@ public struct ExportCardItem {
     public let title: String
     public let subtitle: String?
     public let icon: UIImage?
-    public let imageUrls: [String]   //NEW (remote images)
-    public let images: [UIImage?]    // fallback/local
+    public let imageUrls: [String]
+    public let images: [UIImage?]  
     public let onTap: (() -> Void)?
 
     public init(

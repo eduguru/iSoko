@@ -23,6 +23,6 @@ public final class DividerFormRow: FormRow {
 
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        20
+        return 1.0 / UIScreen.main.scale
     }
 }
