@@ -48,17 +48,3 @@ public final class TitleDescriptionFormRow: FormRow {
     public func reset() {}
     public func fieldVisibility() -> Bool { true }
 }
-
-public extension TitleDescriptionFormRow {
-    convenience init(
-        tag: Int,
-        title: String,
-        description: String
-    ) {
-        let model = TitleDescriptionModel(
-            title: title,
-            description: description
-        )
-        self.init(tag: tag, model: model)
-    }
-}

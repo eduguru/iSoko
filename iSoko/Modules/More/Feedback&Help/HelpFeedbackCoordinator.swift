@@ -20,6 +20,12 @@ public class HelpFeedbackCoordinator: BaseCoordinator {
     public func goToMainDashboard() {
         let viewModel = HelpFeedbackViewModel()
         
+        viewModel.gotoContactUs = gotoContactUs
+        viewModel.gotoAboutUs = gotoAboutUs
+        viewModel.gotoFAQs = gotoFAQs
+        viewModel.gotoPrivacyacyPolicy = gotoPrivacyacyPolicy
+        viewModel.gotoTermsAndConditions = gotoTermsAndConditions
+        
         let vc = HelpFeedbackViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -39,10 +45,23 @@ public class HelpFeedbackCoordinator: BaseCoordinator {
         }
     }
     
-    private func gotoHelpFeedback() {
-        let viewModel = HelpFeedbackViewModel()
+    private func dismiss() {
+        dismissModal()
+    }
+    
+    private func finish() {
+        dismissModal() // will call router.dismiss()
+        parentCoordinator?.removeChild(self)
+    }
+}
+
+
+public extension HelpFeedbackCoordinator {
+    
+    private func gotoContactUs() {
+        let viewModel = ContactUsViewModel()
         
-        let vc = HelpFeedbackViewController()
+        let vc = ContactUsViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
@@ -52,12 +71,56 @@ public class HelpFeedbackCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    private func dismiss() {
-        dismissModal()
+    private func gotoAboutUs() {
+        let viewModel = AboutUsViewModel()
+        
+        let vc = AboutUsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
-    private func finish() {
-        dismissModal() // will call router.dismiss()
-        parentCoordinator?.removeChild(self)
+    private func gotoFAQs() {
+        let viewModel = FAQsViewModel()
+        
+        let vc = FAQsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
+    
+    private func gotoPrivacyacyPolicy() {
+        let viewModel = PrivacyPolicyViewModel()
+        
+        let vc = PrivacyPolicyViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
+    private func gotoTermsAndConditions() {
+        let viewModel = TermsConditionsViewModel()
+        
+        let vc = TermsConditionsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+
 }

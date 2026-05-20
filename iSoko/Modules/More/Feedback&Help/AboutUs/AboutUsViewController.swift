@@ -1,20 +1,20 @@
 //
-//  HelpFeedbackViewController.swift
+//  AboutUsViewController.swift
 //  
 //
-//  Created by Edwin Weru on 03/10/2025.
+//  Created by Edwin Weru on 20/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class HelpFeedbackViewController: FormViewController, CloseableViewController {
+class AboutUsViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Help & Feedback"
+        title = "About Us"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
       

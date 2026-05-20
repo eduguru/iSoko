@@ -1,7 +1,7 @@
 
 // MARK: - About Us
 struct AboutUsItem: Decodable {
-    let id: Int
+    let id: Int?
     let quote: String?
     let body: String?
     let title: String?

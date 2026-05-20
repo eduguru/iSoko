@@ -31,8 +31,15 @@ public final class DividerFormCell: UITableViewCell {
         NSLayoutConstraint.activate([
             divider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             divider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            divider.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            divider.heightAnchor.constraint(equalToConstant: 1)
+            divider.topAnchor.constraint(equalTo: contentView.topAnchor),
+            divider.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            divider.heightAnchor.constraint(equalToConstant: 1) // keeps line 1pt thick
         ])
+    }
+
+    // Ensure the cell has some intrinsic height
+    @MainActor
+    public override func systemLayoutSizeFitting(_ targetSize: CGSize) -> CGSize {
+        return CGSize(width: targetSize.width, height: 1)
     }
 }

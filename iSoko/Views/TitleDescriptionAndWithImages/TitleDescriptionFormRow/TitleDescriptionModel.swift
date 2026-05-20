@@ -51,3 +51,17 @@ public struct TitleDescriptionModel {
         self.card = card
     }
 }
+
+public extension TitleDescriptionFormRow {
+    convenience init(
+        tag: Int,
+        title: String,
+        description: String
+    ) {
+        let model = TitleDescriptionModel(
+            title: title,
+            description: description
+        )
+        self.init(tag: tag, model: model)
+    }
+}

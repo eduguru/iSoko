@@ -1,20 +1,20 @@
 //
-//  HelpFeedbackViewController.swift
+//  PrivacyPolicyViewController.swift
 //  
 //
-//  Created by Edwin Weru on 03/10/2025.
+//  Created by Edwin Weru on 20/05/2026.
 //
 
 import UIKit
 import DesignSystemKit
 
-class HelpFeedbackViewController: FormViewController, CloseableViewController {
+class PrivacyPolicyViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Help & Feedback"
+        title = "Privacy Policy"
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
       

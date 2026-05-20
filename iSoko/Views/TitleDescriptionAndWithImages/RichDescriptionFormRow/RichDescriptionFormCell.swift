@@ -56,11 +56,14 @@ public final class RichDescriptionFormCell: UITableViewCell {
 
     public func configure(with model: RichDescriptionModel) {
 
-        if let title = model.title {
+        if let titleHTML = model.title, !titleHTML.isEmpty {
             titleLabel.isHidden = false
-            titleLabel.text = title
+            titleLabel.attributedText = titleHTML.htmlToAttributedString(
+                font: styleGuide.font(for: model.titleFontStyle),
+                textColor: .label,
+                alignment: model.textAlignment
+            )
             titleLabel.numberOfLines = model.maxTitleLines
-            applyStyling(to: titleLabel, style: model.titleFontStyle)
         } else {
             titleLabel.isHidden = true
         }

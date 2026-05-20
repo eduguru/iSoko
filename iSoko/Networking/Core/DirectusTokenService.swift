@@ -275,7 +275,7 @@ extension DirectusTokenService {
     }
 
     func fetchPrivacyPolicy() async throws -> [PrivacyPolicyItem] {
-        var request = URLRequest(url: baseURL.appendingPathComponent("/items/Privacy_policy"))
+        var request = URLRequest(url: baseURL.appendingPathComponent("/items/Privacy_Policy"))
         request.httpMethod = "GET"
 
         let (data, _) = try await authorizedRequest(request)

@@ -28,6 +28,9 @@ final class MyOrdersViewModel: FormViewModel {
     
     // MARK: - Fetch
     override func fetchData() {
+        showLoader()
+        defer { hideLoader() }
+        
         Task {
             let didFetchOrders = await fetchOrders()
             
