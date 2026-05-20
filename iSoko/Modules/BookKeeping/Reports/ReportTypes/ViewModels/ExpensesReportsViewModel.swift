@@ -193,7 +193,7 @@ final class ExpensesReportsViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -208,11 +208,11 @@ final class ExpensesReportsViewModel: FormViewModel {
         FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: "Filters",
+                title: "common.label.filters".localized,
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Category",
+                            placeholder: "common.label.category".localized,
                             selectedValue: state.selectedCategory?.name,
                             onTap: { [weak self] in self?.handleCategorySelection() }
                         ),
@@ -229,7 +229,7 @@ final class ExpensesReportsViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
                             onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
@@ -287,7 +287,7 @@ final class ExpensesReportsViewModel: FormViewModel {
             let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             let amountText = expense.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let dateText = expense.date ?? ""
-            let categoryName = expense.category?.name ?? "Expense"
+            let categoryName = expense.category?.name ?? "common.label.expense".localized
             
             let config = TransactionSummaryCellConfig(
                 title: categoryName,
@@ -299,7 +299,7 @@ final class ExpensesReportsViewModel: FormViewModel {
                 saleTypeBackgroundColor: .systemBlue,
                 itemsCountText: "",
                 primaryAction: ActionCardConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
@@ -310,7 +310,7 @@ final class ExpensesReportsViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit tapped")

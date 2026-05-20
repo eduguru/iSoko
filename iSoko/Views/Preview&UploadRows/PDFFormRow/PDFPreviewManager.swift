@@ -13,7 +13,7 @@ import QuickLook
 //manager.present(from: viewController)
 
 //let termsURL = URL(string: "https://example.com/privacy.pdf")!
-//let pdfRow = PDFFormRow(tag: 999, title: "Privacy Policy", pdfURL: termsURL)
+//let pdfRow = PDFFormRow(tag: 999, title: "common.help_feedback.privacy_policy".localized, pdfURL: termsURL)
 //
 //sections = [
 //    FormSection(cells: [pdfRow])

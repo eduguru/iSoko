@@ -16,7 +16,7 @@ final class PickerHeaderView: UIView {
         super.init(frame: frame)
 
         cancelButton.setTitle("Cancel", for: .normal)
-        confirmButton.setTitle("Confirm", for: .normal)
+        confirmButton.setTitle("common.button.confirm".localized, for: .normal)
         confirmButton.isEnabled = false
 
         let spacer = UIView()

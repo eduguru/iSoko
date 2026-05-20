@@ -97,7 +97,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
             tag: CellTag.reportTitle.rawValue,
             model: TitleDescriptionModel(
                 title: "Select Report Type",
-                description: "Choose a report to view performance",
+                description: "common.label.choose_report_description".localized,
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
                 titleFontStyle: .subheadline,
@@ -112,10 +112,10 @@ final class BookKeepingReportsViewModel: FormViewModel {
             config: .init(
                 items: [
                     .init(title: "Sales", subtitle: "Track revenue", icon: UIImage(systemName:"chart.line.uptrend.xyaxis"), onTap: { [weak self] _ in self?.state.selectedReport = .sales }),
-                    .init(title: "Expenses", subtitle: "Monitor spending", icon: UIImage(systemName:"calendar"), onTap: { [weak self] _ in self?.state.selectedReport = .expenses }),
-                    .init(title: "Stock", subtitle: "Inventory", icon: UIImage(systemName:"archivebox"), onTap: { [weak self] _ in self?.state.selectedReport = .stock }),
+                    .init(title: "common.label.expenses".localized, subtitle: "Monitor spending", icon: UIImage(systemName:"calendar"), onTap: { [weak self] _ in self?.state.selectedReport = .expenses }),
+                    .init(title: "Stock", subtitle: "common.label.inventory".localized, icon: UIImage(systemName:"archivebox"), onTap: { [weak self] _ in self?.state.selectedReport = .stock }),
                     .init(title: "P&L", subtitle: "Profit & Loss", icon: UIImage(systemName:"chart.bar"), onTap: { [weak self] _ in self?.state.selectedReport = .profitLoss }),
-                    .init(title: "Customers", subtitle: "Top buyers", icon: UIImage(systemName:"person.2"), onTap: { [weak self] _ in self?.state.selectedReport = .customers }),
+                    .init(title: "common.label.customers".localized, subtitle: "Top buyers", icon: UIImage(systemName:"person.2"), onTap: { [weak self] _ in self?.state.selectedReport = .customers }),
                     .init(title: "Suppliers", subtitle: "Vendors", icon: UIImage(systemName:"truck.box"), onTap: { [weak self] _ in self?.state.selectedReport = .suppliers })
                 ],
                 allowsMultipleSelection: false
@@ -175,7 +175,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
                         onTap: { [weak self] in self?.handleStartDateSelection() }
                     ),
                     FilterFieldConfig(
-                        placeholder: "End Date",
+                        placeholder: "common.label.end_date".localized,
                         selectedValue: state.endDateString,
                         onTap: { [weak self] in self?.handleEndDateSelection() }
                     )
@@ -192,7 +192,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary
         ) { [weak self] in
             Task { await self?.submit() }

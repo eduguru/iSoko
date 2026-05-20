@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension String {
+public extension String {
 
     /// Localized string using the current language from `LocalizationManager`
     var localized: String {

@@ -21,7 +21,7 @@ public class PhoneNumberModel {
     // Customizable properties
     var defaultRegion: String = "KE"
     var withFlag: Bool = true
-    var placeholder: String = "Enter phone number"
+    var placeholder: String = "common.basic_profile_security.phone_placeholder".localized
 
     // Card styling options
     public var useCardStyle: Bool = true
@@ -39,7 +39,7 @@ public class PhoneNumberModel {
         isValid: Bool = false,
         defaultRegion: String = "KE",
         withFlag: Bool = true,
-        placeholder: String = "Enter phone number",
+        placeholder: String = "common.basic_profile_security.phone_placeholder".localized,
         useCardStyle: Bool = true,
         cardStyle: AppCardStyle = .shadow,
         cardCornerRadius: CGFloat = 10,

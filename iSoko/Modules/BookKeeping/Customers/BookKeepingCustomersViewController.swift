@@ -16,7 +16,7 @@ class BookKeepingCustomersViewController: FormViewController, CloseableViewContr
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Customers"
+        title = "common.label.customers".localized
         
         if !makeRoot {
             applyCloseButtonStyling(action: #selector(close), image: "backArrow")

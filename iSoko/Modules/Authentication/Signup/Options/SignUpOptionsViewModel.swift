@@ -78,7 +78,7 @@ final class SignUpOptionsViewModel: FormViewModel {
                 font: .systemFont(ofSize: 18, weight: .semibold),
                 color: .app(.textOnBackground)
             ),
-            actionTitle: "View More",
+            actionTitle: "common.auth_view.view_more".localized,
             onActionTapped: {
                 print("👀 View More tapped for credentials section")
             },
@@ -92,7 +92,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         var model = SimpleInputModel(
             text: state.email ?? "",
             config: TextFieldConfig(
-                placeholder: "Email Address",
+                placeholder: "common.label.email_address".localized,
                 keyboardType: .emailAddress
             ),
             validation: ValidationConfiguration(
@@ -126,7 +126,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             model: PhoneDropDownModel(
                 phoneNumber: state.phoneNumber ?? "",
                 selectedCountry: selectedCountry,
-                placeholder: "Enter phone number",
+                placeholder: "common.basic_profile_security.phone_placeholder".localized,
                 titleText: nil,
                 validation: ValidationConfiguration(
                     isRequired: true,
@@ -163,7 +163,7 @@ final class SignUpOptionsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
             model: TitleDescriptionModel(
-                title: "Create an Account",
+                title: "common.auth_view.create_account".localized,
                 description: "Join a network of Traders and grow your network.",
                 maxTitleLines: 2,
                 maxDescriptionLines: 0,
@@ -181,7 +181,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             icon: UIImage(systemName: "email.fill"),

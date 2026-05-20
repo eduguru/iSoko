@@ -85,7 +85,7 @@ final class ProfitLossReportsViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

@@ -111,7 +111,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         let model = SimpleInputModel(
             text: state?.email ?? "",
             config: TextFieldConfig(
-                placeholder: "Email Address",
+                placeholder: "common.label.email_address".localized,
                 keyboardType: .emailAddress
             ),
             validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
@@ -138,7 +138,7 @@ final class BasicProfileDataViewModel: FormViewModel {
             model: PhoneDropDownModel(
                 phoneNumber: self.state?.phoneNumber ?? "",
                 selectedCountry: selectedCountry,
-                placeholder: "Enter phone number",
+                placeholder: "common.basic_profile_security.phone_placeholder".localized,
                 titleText: nil,
                 validation: ValidationConfiguration(
                     isRequired: true,
@@ -173,9 +173,9 @@ final class BasicProfileDataViewModel: FormViewModel {
             tag: Tags.Cells.firstName.rawValue,
             model: SimpleInputModel(
                 text: state?.firstName ?? "",
-                config: TextFieldConfig(placeholder: "First name *", keyboardType: .default),
+                config: TextFieldConfig(placeholder: "common.basic_profile.first_name".localized, keyboardType: .default),
                 validation: ValidationConfiguration(isRequired: true, minLength: 2, maxLength: 50),
-                titleText: "First name *",
+                titleText: "common.basic_profile.first_name".localized,
                 useCardStyle: true,
                 onTextChanged: { [weak self] text in
                     self?.state?.firstName = text
@@ -190,9 +190,9 @@ final class BasicProfileDataViewModel: FormViewModel {
             tag: Tags.Cells.lastName.rawValue,
             model: SimpleInputModel(
                 text: state?.lastName ?? "",
-                config: TextFieldConfig(placeholder: "Last name *", keyboardType: .default),
+                config: TextFieldConfig(placeholder: "common.basic_profile.last_name".localized, keyboardType: .default),
                 validation: ValidationConfiguration(isRequired: true, minLength: 2, maxLength: 50),
-                titleText: "Last name *",
+                titleText: "common.basic_profile.last_name".localized,
                 useCardStyle: true,
                 onTextChanged: { [weak self] text in
                     self?.state?.lastName = text
@@ -207,8 +207,8 @@ final class BasicProfileDataViewModel: FormViewModel {
             tag: Tags.Cells.referralCode.rawValue,
             model: SimpleInputModel(
                 text: state?.referralCode ?? "",
-                config: TextFieldConfig(placeholder: "Referral Code", keyboardType: .default),
-                titleText: "Referral Code",
+                config: TextFieldConfig(placeholder: "common.basic_profile.referral_code".localized, keyboardType: .default),
+                titleText: "common.basic_profile.referral_code".localized,
                 useCardStyle: true
             )
         )
@@ -218,8 +218,8 @@ final class BasicProfileDataViewModel: FormViewModel {
         DropdownFormRow(
             tag: Tags.Cells.gender.rawValue,
             config: DropdownFormConfig(
-                title: "Select Gender",
-                placeholder: state?.gender?.name ?? "Gender",
+                title: "common.label.select_gender".localized,
+                placeholder: state?.gender?.name ?? "common.label.gender".localized,
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
                 onTap: { [weak self] in self?.handleGenderSelection() }
@@ -231,8 +231,8 @@ final class BasicProfileDataViewModel: FormViewModel {
         DropdownFormRow(
             tag: Tags.Cells.ageRange.rawValue,
             config: DropdownFormConfig(
-                title: "Select Age Range",
-                placeholder: state?.ageRange?.name ?? "Age Range",
+                title: "common.label.select_age_range".localized,
+                placeholder: state?.ageRange?.name ?? "common.label.age_range".localized,
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
                 onTap: { [weak self] in self?.handleAgeRangeSelection() }
@@ -244,7 +244,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         DropdownFormRow(
             tag: Tags.Cells.roles.rawValue,
             config: DropdownFormConfig(
-                title: "Select Role",
+                title: "common.basic_profile.select_role".localized,
                 placeholder: state?.roles?.name ?? "Role",
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
@@ -257,7 +257,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         DropdownFormRow(
             tag: Tags.Cells.location.rawValue,
             config: DropdownFormConfig(
-                title: "Select Location",
+                title: "common.basic_profile.select_location".localized,
                 placeholder: state?.location?.name ?? "Location",
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
@@ -270,8 +270,8 @@ final class BasicProfileDataViewModel: FormViewModel {
         DropdownFormRow(
             tag: Tags.Cells.country.rawValue,
             config: DropdownFormConfig(
-                title: "Select Country",
-                placeholder: state?.registrationBuilder.country?.name ?? "Country",
+                title: "common.country_language.select_country".localized,
+                placeholder: state?.registrationBuilder.country?.name ?? "common.label.country".localized,
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
                 onTap: { [weak self] in self?.handleCountrySelection() }
@@ -283,7 +283,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         ButtonFormRow(
             tag: Tags.Cells.submit.rawValue,
             model: ButtonFormModel(
-                title: "Continue",
+                title: "common.button.continue".localized,
                 style: .primary,
                 size: .medium,
                 icon: nil,

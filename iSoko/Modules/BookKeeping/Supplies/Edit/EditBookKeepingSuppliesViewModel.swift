@@ -90,15 +90,15 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
 
     private lazy var phoneNumberInputRow = makeInputRow(
         tag: CellTag.phoneNumber.rawValue,
-        title: "Phone Number",
-        placeholder: "Phone Number",
+        title: "common.label.phone_number".localized,
+        placeholder: "common.label.phone_number".localized,
         keyboard: .phonePad
     )
 
     private lazy var emailAddressInputRow = makeInputRow(
         tag: CellTag.emailAddress.rawValue,
-        title: "Email Address",
-        placeholder: "Email Address",
+        title: "common.label.email_address".localized,
+        placeholder: "common.label.email_address".localized,
         keyboard: .emailAddress
     )
 
@@ -119,8 +119,8 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
     private lazy var countryInputRow = DropdownFormRow(
         tag: CellTag.country.rawValue,
         config: DropdownFormConfig(
-            title: "Country",
-            placeholder: "Country",
+            title: "bookkeeping.add_customer.country".localized,
+            placeholder: "bookkeeping.add_customer.country".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -132,8 +132,8 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
     private lazy var categoryRow = DropdownFormRow(
         tag: CellTag.categoryRow.rawValue,
         config: DropdownFormConfig(
-            title: "Category",
-            placeholder: "Select an option",
+            title: "common.label.category".localized,
+            placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
                 self?.handleSpplierCategorySelection()

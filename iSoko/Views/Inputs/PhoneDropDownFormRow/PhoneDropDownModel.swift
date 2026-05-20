@@ -27,7 +27,7 @@ public struct PhoneDropDownModel {
     public init(
         phoneNumber: String = "",
         selectedCountry: Country,
-        placeholder: String = "Enter phone number",
+        placeholder: String = "common.basic_profile_security.phone_placeholder".localized,
         titleText: String? = nil,
         validation: ValidationConfiguration? = nil,
         cardCornerRadius: CGFloat = 8,

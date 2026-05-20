@@ -123,7 +123,7 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
         let model = ProfileInfoCellConfig(
             name: state.item.supplier?.name ?? "Supplier: N/A",  // Default name if supplier name is nil
             infoItems: [
-                makeInfoItem(state.item.category?.name ?? "Category: N/A", icon: "tag.fill"),
+                makeInfoItem(state.item.category?.name ?? "common.label.category_na".localized, icon: "tag.fill"),
                 makeInfoItem(state.item.paymentMethod?.name ?? "Payment Method: N/A", icon: "creditcard.fill"),
                 makeInfoItem(state.item.expenseDate ?? "Expense Date: N/A", icon: "calendar.fill")
             ],
@@ -149,7 +149,7 @@ final class BookKeepingPurchasesDetailsViewModel: FormViewModel {
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Current Stock",
+                title: "common.label.current_stock".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "0",
                 status: nil

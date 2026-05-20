@@ -59,7 +59,7 @@ final class AuthViewModel: FormViewModel {
                 font: .systemFont(ofSize: 18, weight: .semibold),
                 color: .app(.textOnBackground)
             ),
-            actionTitle: "View More",
+            actionTitle: "common.auth_view.view_more".localized,
             onActionTapped: {
                 print("👀 View More tapped for credentials section")
             },
@@ -91,7 +91,7 @@ final class AuthViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Sign in",
+            title:  "common.auth_view.sign_in_title".localized,
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -109,14 +109,14 @@ final class AuthViewModel: FormViewModel {
     
     private func makeLoginButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Sign in",
+            title: "common.auth_view.sign_in_title".localized,
             style: .primary,
             size: .medium,
             icon: UIImage(systemName: "email.fill"),
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-            // This block will be called when the user taps the "Sign in" button
+            // This block will be called when the user taps the "common.auth_view.sign_in_title".localized button
             self?.gotoSignIn?(self?.state?.verifier ?? "")
         }
         
@@ -127,7 +127,7 @@ final class AuthViewModel: FormViewModel {
 
     private func makeForgotPasswordButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Forgot your Password",
+            title: "common.auth_view.forgot_password".localized,
             style: .plain,
             size: .medium,
             icon: nil,
@@ -144,7 +144,7 @@ final class AuthViewModel: FormViewModel {
     
     private func makeSignUpButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Create an Account",
+            title: "common.auth_view.create_account".localized,
             style: .custom(
                 backgroundColor: .white,
                 textColor: .app(.primary),
@@ -167,7 +167,7 @@ final class AuthViewModel: FormViewModel {
     
     private func makeGuestButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Guest Mode",
+            title: "common.auth_view.guest_mode".localized,
             style: .secondary,
             size: .medium,
             icon: nil,

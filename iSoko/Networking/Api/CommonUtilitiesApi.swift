@@ -375,7 +375,7 @@ public extension CommonUtilitiesApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "commodities",
+            path: "common.label.commodities".localized,
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,

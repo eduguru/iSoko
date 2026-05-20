@@ -113,7 +113,7 @@ final class StockReportsViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -157,7 +157,7 @@ final class StockReportsViewModel: FormViewModel {
                             }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: self.state.endDate?.getYearMonthDay(),
                             iconSystemName: "calendar",
                             onTap: { [weak self] in
@@ -216,7 +216,7 @@ final class StockReportsViewModel: FormViewModel {
                 }
             ),
             .init(
-                title: "Low Stock",
+                title: "common.label.low_stock".localized,
                 subtitle: "\(summary?.lowStock ?? 0)",
                 icon: UIImage(systemName:"exclamationmark.triangle"),
                 iconTintColor: .systemBlue,
@@ -278,7 +278,7 @@ final class StockReportsViewModel: FormViewModel {
                 status: "",
                 statusColor: .app(.hex("#717171")),
                 primaryAction: ActionCardConfig(
-                    title: "View details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye"),
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),
@@ -287,7 +287,7 @@ final class StockReportsViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit tapped for \(item.id ?? 0)")

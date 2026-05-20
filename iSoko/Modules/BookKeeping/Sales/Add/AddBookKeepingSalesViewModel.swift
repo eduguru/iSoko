@@ -130,7 +130,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private func makeDescriptionSection() -> FormSection {
         FormSection(
             id: SectionTag.description.rawValue,
-            title: "Description/Notes",
+            title: "common.label.description_notes".localized,
             cells: [
                 SpacerFormRow(tag: 6),
                 descriptionRow
@@ -202,8 +202,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var customerRow = DropdownFormRow(
         tag: CellTag.customerName.rawValue,
         config: DropdownFormConfig(
-            title: "Customer Name",
-            placeholder: "Select an option",
+            title: "bookkeeping.add_customer.customer_name".localized,
+            placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleCustomerSelection() },
             onActionTap: { [weak self] in self?.goToAddCustomer?() },
@@ -215,8 +215,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
-            title: "Date",
-            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
+            title: "common.label.date".localized,
+            placeholder: state.dateString.isEmpty ? "common.label.date".localized : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -245,7 +245,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var addItemButtonRow = ButtonFormRow(
         tag: CellTag.addItemButton.rawValue,
         model: ButtonFormModel(
-            title: "Add Another Item",
+            title: "common.action.add_another_item".localized,
             style: .outlined
         ) { [weak self] in self?.handleProductSelection() }
     )
@@ -253,7 +253,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary
         ) { [weak self] in Task { await self?.submit() } }
     )
@@ -383,10 +383,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             "saleTypeId": state.saleTypeId,
             "customerId": state.customer?.id ?? 0,
             "paymentMethodId": state.paymentMethod?.id ?? 0,
-            "description": state.description,
+            "common.label.description".localized: state.description,
             "items": items,
             "amount": state.amount,
-            "date": state.date?.toISO8601String() ?? ""
+            "common.label.date".localized: state.date?.toISO8601String() ?? ""
         ]
     }
     

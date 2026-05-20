@@ -126,7 +126,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.supplierName.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
-            placeholder: state.supplier?.name ?? "Select an option",
+            placeholder: state.supplier?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleSupplierSelection() },
             onActionTap: { [weak self] in self?.goToAddSupplier?() },
@@ -138,8 +138,8 @@ final class EditBookKeepingStockViewModel: FormViewModel {
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
-            title: "Date",
-            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
+            title: "common.label.date".localized,
+            placeholder: state.dateString.isEmpty ? "common.label.date".localized : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -220,7 +220,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             "supplierId": state.supplier?.id ?? 0,
             "measurementUnitId": state.measurementUnit?.id ?? 0,
             "lowStockLevel": state.lowStockLevel,
-            "date": state.date?.toISO8601String() ?? ""
+            "common.label.date".localized: state.date?.toISO8601String() ?? ""
         ]
 
         let success = await updateStock(parameters: params)

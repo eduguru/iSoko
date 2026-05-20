@@ -125,7 +125,7 @@ final class MyProductDetailsViewModel: FormViewModel {
             KeyValueFormRow(
                 tag: 1,
                 model: KeyValueRowModel(
-                    leftText: "Category",
+                    leftText: "common.label.category".localized,
                     rightText: state.item.category?.name ?? "",
                     card: .default.with(borderColor: .clear),
                     showsTopDivider: true,
@@ -178,7 +178,7 @@ final class MyProductDetailsViewModel: FormViewModel {
         var items: [StatsCardItem] = []
         
         let values = [
-            (title: "Current Stock", image: UIImage(systemName: "archivebox"), value: 9),
+            (title: "common.label.current_stock".localized, image: UIImage(systemName: "archivebox"), value: 9),
             (title: "Total Views", image: UIImage(systemName: "archivebox"), value: 9),
             (title: "Total Orders", image: UIImage(systemName: "archivebox"), value: 9),
             (title: "Total Revenue", image: UIImage(systemName: "archivebox"), value: 9)

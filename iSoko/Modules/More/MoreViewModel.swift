@@ -157,7 +157,7 @@ final class MoreViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3001,
                 image: UIImage(systemName: "questionmark.circle.fill"),
-                title: "Help & Support",
+                title: "common.more_view.help_support".localized,
                 description: "Get assistance and support",
                 onTap: { [weak self] in self?.gotoHelpFeedback?() }
             ),

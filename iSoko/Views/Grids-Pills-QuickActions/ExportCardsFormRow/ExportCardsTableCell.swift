@@ -7,7 +7,6 @@
 
 import UIKit
 
-
 final class ExportCardsTableCell: UITableViewCell {
 
     private var items: [ExportCardItem] = []

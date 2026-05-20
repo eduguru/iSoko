@@ -123,7 +123,7 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
                 )
             ),
             right: DualCardItemConfig(
-                title: "Bills",
+                title: "common.label.bills".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "2 due soon",
                 status: CardStatusStyle(

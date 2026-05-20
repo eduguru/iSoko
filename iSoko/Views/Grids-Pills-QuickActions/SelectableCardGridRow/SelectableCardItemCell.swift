@@ -54,10 +54,10 @@ final class SelectableCardItemCell: UICollectionViewCell {
     private func getTintColor(for title: String) -> UIColor? {
         switch title.lowercased() {
         case "sales": return UIColor.systemGreen
-        case "expenses": return UIColor.systemRed
+        case "common.label.expenses".localized: return UIColor.systemRed
         case "stock": return UIColor.systemBlue
         case "profit & loss": return UIColor.systemPurple
-        case "customers": return UIColor.systemOrange
+        case "common.label.customers".localized: return UIColor.systemOrange
         case "suppliers": return UIColor.systemRed.withAlphaComponent(0.7)
         default: return nil
         }

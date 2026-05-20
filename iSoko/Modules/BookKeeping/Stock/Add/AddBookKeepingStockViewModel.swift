@@ -129,7 +129,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.supplierName.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
-            placeholder: "Select an option",
+            placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
                 self?.handleSupplierSelection()
@@ -145,8 +145,8 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
-            title: "Date",
-            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
+            title: "common.label.date".localized,
+            placeholder: state.dateString.isEmpty ? "common.label.date".localized : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -254,7 +254,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             "quantity": quantity,
             "supplierId": supplierId,
             "measurementUnitId": measurementUnitId,
-            "description": state.description.isEmpty ? "n/a" : state.description,
+            "common.label.description".localized: state.description.isEmpty ? "n/a" : state.description,
             "minimumOrderQuantity": quantity,
             "stockAlertThreshold": Int(state.lowStockLevel) ?? 0
         ]

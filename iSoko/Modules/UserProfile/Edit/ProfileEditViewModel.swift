@@ -26,7 +26,7 @@ final class ProfileEditViewModel: FormViewModel {
 
     // MARK: - Init
     init(userProfile: UserDetails? = AppStorage.userDetail) {
-        self.state = State(userProfile: userProfile)
+        self.state = State(userDetail: userProfile)
         super.init()
         self.sections = makeSections()
         configureInputHandlers()
@@ -40,6 +40,7 @@ final class ProfileEditViewModel: FormViewModel {
                 cells: [
                     imageRow,
                     firstNameInputRow,
+                    lastNameInputRow,
                     emailInputRow,
                     phoneInputRow,
                     selectGenderRow,
@@ -56,10 +57,11 @@ final class ProfileEditViewModel: FormViewModel {
     private lazy var imageRow = EditableImageFormRow(
         tag: Tags.Cells.headerImage.rawValue,
         config: .init(
-            image: UIImage(named: "user"),// state.userProfile?.profileImage ?? UIImage(named: "user"),
+            image: UIImage(named: "user"),
+            imageUrl: URL(string: state.userProfile?.profileImage ?? ""),
             height: 120,
             fillWidth: false,
-            alignment: .left,
+            alignment: .center,
             editable: true,
             backgroundColor: .clear,
             cornerRadius: 60
@@ -68,25 +70,32 @@ final class ProfileEditViewModel: FormViewModel {
             // self?.presentImagePicker()
         }
     )
-
+    
     private lazy var firstNameInputRow = makeInputRow(
         tag: Tags.Cells.firstName.rawValue,
-        title: "First Name",
+        title: "common.label.first_name".localized,
         placeholder: "Enter First Name",
         initialText: state.firstName
+    )
+    
+    private lazy var lastNameInputRow = makeInputRow(
+        tag: Tags.Cells.lastName.rawValue,
+        title: "Last Name",
+        placeholder: "Enter Last Name",
+        initialText: state.lastName
     )
 
     private lazy var emailInputRow = makeInputRow(
         tag: Tags.Cells.email.rawValue,
-        title: "Email Address",
+        title: "common.label.email_address".localized,
         placeholder: "Enter Email Address",
         initialText: state.email
     )
 
     private lazy var phoneInputRow = makeInputRow(
         tag: Tags.Cells.phoneNumber.rawValue,
-        title: "Phone Number",
-        placeholder: "Enter Phone Number",
+        title: "common.label.phone_number".localized,
+        placeholder: "common.basic_profile_security.phone_placeholder".localized,
         initialText: state.phoneNumber
     )
 
@@ -115,8 +124,8 @@ final class ProfileEditViewModel: FormViewModel {
     private lazy var selectGenderRow = DropdownFormRow(
         tag: Tags.Cells.gender.rawValue,
         config: DropdownFormConfig(
-            title: "Select Gender",
-            placeholder: state.gender?.name ?? "Gender",
+            title: "common.label.select_gender".localized,
+            placeholder: state.gender?.name ?? "common.label.gender".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in self?.handleGenderSelection() }
@@ -126,8 +135,8 @@ final class ProfileEditViewModel: FormViewModel {
     private lazy var selectAgeRangeRow = DropdownFormRow(
         tag: Tags.Cells.ageGroup.rawValue,
         config: DropdownFormConfig(
-            title: "Select Age Range",
-            placeholder: state.ageRange?.name ?? "Age Range",
+            title: "common.label.select_age_range".localized,
+            placeholder: state.ageRange?.name ?? "common.label.age_range".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in self?.handleAgeRangeSelection() }
@@ -137,7 +146,7 @@ final class ProfileEditViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             icon: nil,
@@ -184,27 +193,31 @@ final class ProfileEditViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = true
-        var userProfile: UserDetails?
 
+        var fullName: String?
         var firstName: String?
+        var lastName: String?
+        
         var email: String?
         var phoneNumber: String?
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
 
-        var genderOptions: [CommonIdNameModel] = [
-            CommonIdNameModel(id: 1, name: "Male"),
-            CommonIdNameModel(id: 2, name: "Female")
-        ]
         var gender: CommonIdNameModel?
         var ageRange: CommonIdNameModel?
 
-        init(userProfile: UserDetails? = nil) {
-            self.userProfile = userProfile
-            self.firstName = userProfile?.name
+        init(userDetail: UserDetails? = nil) {
+            self.userDetail = userDetail
+            
+            self.fullName = userDetail?.name
+            self.firstName = userProfile?.firstName
+            self.lastName = userProfile?.lastName
+            
             self.email = userProfile?.email
             self.phoneNumber = userProfile?.phoneNumber
             
-//            self.gender = userProfile.flatMap { CommonIdNameModel(from: $0.gender) }
-//            self.ageRange = userProfile.flatMap { CommonIdNameModel(from: $0.ageRange) }
+            self.gender = userProfile.flatMap { CommonIdNameModel(from: $0.gender) }
+            self.ageRange = userProfile.flatMap { CommonIdNameModel(from: $0.ageGroup) }
         }
     }
 
@@ -219,6 +232,7 @@ final class ProfileEditViewModel: FormViewModel {
             case gender = 4
             case ageGroup = 5
             case submit = 6
+            case lastName
         }
     }
 }

@@ -37,10 +37,8 @@ public struct ProductsApi {
         let parameters: [String: Any] = [
             "page": page,
             "count": count,
-            "size": count,
-            // "featured": "true",
-            // "isFeatured": "active"
-        ] //  https://api.dev.isoko.africa/v1/products?page=1&size=10&featured=true
+            "size": count
+        ]
 
         let headers = [
             "Content-Type": "application/json",

@@ -107,7 +107,7 @@ public final class ProfileInfoCell: UITableViewCell {
         if let onEdit = config.onEditTap {
             editButton.configure(
                 with: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: onEdit
                 )

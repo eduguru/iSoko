@@ -43,8 +43,8 @@ final class AuthOptionsViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Sign in or create an account",
-            description: "Access the region's biggest market platform",
+                title:  "common.auth_options.header_title".localized,
+            description: "common.auth_options.header_description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,

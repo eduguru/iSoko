@@ -189,7 +189,7 @@ final class SalesReportsViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
                             onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
@@ -205,7 +205,7 @@ final class SalesReportsViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -276,7 +276,7 @@ final class SalesReportsViewModel: FormViewModel {
                 saleTypeBackgroundColor: .systemBlue,
                 itemsCountText: itemsText,
                 primaryAction: ActionCardConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
@@ -287,7 +287,7 @@ final class SalesReportsViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit sale for \(name)")

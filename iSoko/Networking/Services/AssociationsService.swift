@@ -17,6 +17,8 @@ public protocol AssociationsService {
     func enrollIntoAssociation(associationId: Int, accessToken: String) async throws -> AssociationMemberResponse?
     func cancelMembership(memberId: Int, comment: String, accessToken: String) async throws -> AssociationMemberResponse?
     
+    func getAssociationProducts(id: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]>
+    
     func register(
         association: [String: Any],
         logo: PickedFile?,
@@ -146,5 +148,13 @@ extension AssociationsServiceImpl {
         }
         
         return code.padding(toLength: 3, withPad: "X", startingAt: 0)
+    }
+}
+
+extension AssociationsServiceImpl {
+    public func getAssociationProducts(id: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> {
+        let envelope = try await manager.request(AssociationsApi.getAssociationProducts(id: id, page: page, count: count, accessToken: accessToken))
+
+        return envelope.toPagedResult()
     }
 }

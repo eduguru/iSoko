@@ -58,7 +58,7 @@ final class HomeViewModel: FormViewModel {
             performNetworkCalls()
         }
     }
-    // Update fetchData to call fetchBanners separately without holding up other processes
+
     override func fetchData() {
         Task { @MainActor in
             performNetworkCalls()
@@ -71,7 +71,6 @@ final class HomeViewModel: FormViewModel {
         
         // MARK: - Fetch
         Task {
-            // Fetching all data concurrently except for fetchBanners
             async let featuredProducts = fetchDataType(.featuredProducts)
             async let featuredServices = fetchDataType(.featuredServices)
             async let productCategories = fetchDataType(.productCategories)
@@ -81,13 +80,40 @@ final class HomeViewModel: FormViewModel {
             // Wait for all data to be fetched
             _ = await (featuredProducts, featuredServices, productCategories, serviceCategories, associations)
             
-            // Fetch banners separately without waiting for it
             await fetchBanners()
         }
         
     }
     
-    // Simplify fetchBanners function (same as before, but no need for additional Task)
+    /// Fetches up to 4 products for each association concurrently and caches them in state.
+    private func fetchAssociationProducts(for associations: [AssociationResponse]) async {
+        await withTaskGroup(of: (Int, [ProductResponseV1]).self) { group in
+            for association in associations {
+                guard let associationId = association.id else { continue }
+                
+                group.addTask { [weak self] in
+                    guard let self else { return (associationId, []) }
+                    do {
+                        let result = try await self.associationsService.getAssociationProducts(
+                            id: associationId,
+                            page: 1,
+                            count: 4, // only need enough for the card image cluster
+                            accessToken: self.state?.oauthToken ?? ""
+                        )
+                        return (associationId, result.data ?? [])
+                    } catch {
+                        print("❌ Failed to fetch products for association \(associationId):", error)
+                        return (associationId, [])
+                    }
+                }
+            }
+            
+            for await (associationId, products) in group {
+                self.state?.associationProducts[associationId] = products
+            }
+        }
+    }
+
     private func fetchBanners() async {
             do {
                 try await directusService.login(
@@ -95,10 +121,7 @@ final class HomeViewModel: FormViewModel {
                     password: AppStorage.password
                 )
                 
-                // Now fetch the banners after successful login
                 let banners = try await directusService.fetchHomeBanners()
-                
-                // Update state with fetched banners
                 state?.banners = banners
                 
                 DispatchQueue.main.async { [weak self] in
@@ -117,15 +140,6 @@ final class HomeViewModel: FormViewModel {
         do {
             switch type {
             case .featuredProducts:
-                //                let response = try await productsService.getFeaturedProducts(
-                //                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
-                //                self.state?.featuredProducts = response
-                //                print("✅ Fetched Featured Products")
-                //
-                //                DispatchQueue.main.async { [weak self] in
-                //                    self?.updateTrendingProductsSection()
-                //                }
-                
                 let result = try await productsService.getFeaturedProducts(
                     page: 1,
                     count: 20,
@@ -133,9 +147,7 @@ final class HomeViewModel: FormViewModel {
                 )
                 
                 self.state?.featuredProducts = result.data
-                
-                print("✅ Fetched Featured Products")
-                
+                                
                 DispatchQueue.main.async { [weak self] in
                     self?.updateTrendingProductsSection()
                 }
@@ -144,7 +156,6 @@ final class HomeViewModel: FormViewModel {
                 let response = try await servicesService.getFeaturedTradeServices(
                     page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.featuredServices = response
-                print("✅ Fetched Featured Services")
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.updateTrendingServicesSection()
@@ -155,7 +166,6 @@ final class HomeViewModel: FormViewModel {
                     page: 1, count: 20, module: "<regulation | trade-documents | standards>",
                     accessToken: state?.guestToken ?? "")
                 self.state?.productCategories = response
-                print("✅ Fetched Product Categories")
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.updateProductCategoriesSection()
@@ -165,7 +175,6 @@ final class HomeViewModel: FormViewModel {
                 let response = try await servicesService.getAllTradeServiceCategories(
                     page: 1, count: 20, accessToken: state?.guestToken ?? "")
                 self.state?.serviceCategories = response
-                print("✅ Fetched Service Categories")
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.updateServiceCategoriesSection()
@@ -180,7 +189,8 @@ final class HomeViewModel: FormViewModel {
                 
                 self.state?.associations = response
                 
-                print("✅ Fetched Associations")
+                // Fetch products for each association concurrently, then update cards once all done
+                await fetchAssociationProducts(for: response)
                 
                 DispatchQueue.main.async { [weak self] in
                     self?.updateExportCardsSection()
@@ -216,7 +226,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.categories.rawValue,
             title: "Product Categories",
-            actionTitle: "See All",
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreProductCategories?()
             },
@@ -228,7 +238,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
             title: "Service Categories",
-            actionTitle: "See All",
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreServiceCategories?()
             },
@@ -248,7 +258,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
             title: "Trending Products",
-            actionTitle: "See All",
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreProduct?()
             },
@@ -272,7 +282,7 @@ final class HomeViewModel: FormViewModel {
         return FormSection(
             id: Tags.Section.topDeals.rawValue,
             title: "Top Deals",
-            actionTitle: "See All",
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 // Implement later
             },
@@ -512,7 +522,7 @@ final class HomeViewModel: FormViewModel {
     private func makeTrendingServiceItemsForFeaturedGrid() -> [FeaturedDealItem] {
         return state?.featuredServices.map { service in
             
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "") ?? "$"
+            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "")
             let priceText = service.price != nil ? "\(currency) \(String(format: "%.2f", service.price!))" : "Price on request"
             
             return FeaturedDealItem(
@@ -660,11 +670,17 @@ final class HomeViewModel: FormViewModel {
         
         return associations.prefix(10).map { association in
             
-            let images: [UIImage?] = association.documents?
-                .compactMap { doc in
-                    guard let urlString = doc.document else { return nil }
-                    return UIImage(named: "blank_rectangle") // placeholder (replace with async loading if needed)
-                } ?? []
+            let associationId = association.id ?? 0
+            
+            // Use product primaryImageURLs for the card image cluster
+            let products = state?.associationProducts[associationId] ?? []
+            let imageUrls: [String] = products
+                .compactMap { $0.primaryImageURL }
+                .prefix(4)
+                .map { $0 }
+            
+            // Build placeholder UIImages; the UI layer loads the real images async via imageUrl
+            let images: [UIImage?] = imageUrls.map { _ in UIImage(named: "blank_rectangle") }
             
             let managerName: String = {
                 guard let manager = association.manager else { return "Unknown" }
@@ -672,11 +688,12 @@ final class HomeViewModel: FormViewModel {
             }()
             
             return ExportCardItem(
-                id: "\(association.id ?? 0)",
+                id: "\(associationId)",
                 title: association.name ?? "Unnamed Association",
                 subtitle: managerName,
                 icon: nil,
-                images: Array(images.prefix(4)),
+                imageUrls: imageUrls,
+                images: images, 
                 onTap: {
                     print("Tapped association: \(association.name ?? "")")
                 }
@@ -718,13 +735,14 @@ final class HomeViewModel: FormViewModel {
         FormSection(
             id: Tags.Section.opportunities.rawValue,
             title: "Opportunities",
-            actionTitle: "See All",
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { print("See All") },
             cells: [opportunityRow]
         )
     }
-    
-    
+}
+
+extension HomeViewModel {
     // MARK: - State
     private struct State {
         
@@ -740,6 +758,9 @@ final class HomeViewModel: FormViewModel {
         var serviceCategories: [TradeServiceCategoryResponse] = []
         
         var associations: [AssociationResponse] = []
+        
+        /// Keyed by association ID → products for that association
+        var associationProducts: [Int: [ProductResponseV1]] = [:]
         
         var banners: [DirectusHomeBannerItem] = []
     }
@@ -791,8 +812,4 @@ final class HomeViewModel: FormViewModel {
             }
         }
     }
-}
-
-extension HomeViewModel {
-    
 }

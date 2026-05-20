@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Kingfisher
 
 public final class EditableImageFormCell: UITableViewCell {
 
@@ -81,14 +82,26 @@ public final class EditableImageFormCell: UITableViewCell {
 
     // MARK: - Configure
     public func configure(with config: EditableImageFormRowConfig) {
-        imageViewContainer.image = config.image
+        // Set height
         heightConstraint?.constant = config.imageHeight
+
+        // Load image from URL if available, else use local image
+        if let url = config.imageUrl {
+            imageViewContainer.kf.setImage(
+                with: url,
+                placeholder: config.image, // fallback
+                options: [.transition(.fade(0.3))]
+            )
+        } else {
+            imageViewContainer.image = config.image
+        }
 
         // Deactivate all alignment constraints first
         leadingConstraint?.isActive = false
         trailingConstraint?.isActive = false
         centerXConstraint?.isActive = false
 
+        // Alignment & fill
         if config.fillWidth {
             imageViewContainer.contentMode = .scaleAspectFill
             imageViewContainer.clipsToBounds = true
@@ -114,33 +127,23 @@ public final class EditableImageFormCell: UITableViewCell {
             }
         }
 
-        // Background color
+        // Background, corner radius, aspect ratio...
         imageViewContainer.backgroundColor = config.backgroundColor ?? .clear
+        imageViewContainer.layer.cornerRadius = config.cornerRadius ?? 0
+        imageViewContainer.clipsToBounds = config.cornerRadius != nil
 
-        // Corner radius
-        if let radius = config.cornerRadius {
-            imageViewContainer.layer.cornerRadius = radius
-            imageViewContainer.clipsToBounds = true
-        } else {
-            imageViewContainer.layer.cornerRadius = 0
-        }
-
-        // Aspect ratio
         if let ratio = config.aspectRatio {
             if let old = aspectRatioConstraint {
                 imageViewContainer.removeConstraint(old)
             }
-            aspectRatioConstraint = imageViewContainer.widthAnchor.constraint(
-                equalTo: imageViewContainer.heightAnchor,
-                multiplier: ratio
-            )
+            aspectRatioConstraint = imageViewContainer.widthAnchor.constraint(equalTo: imageViewContainer.heightAnchor, multiplier: ratio)
             aspectRatioConstraint?.isActive = true
         } else if let old = aspectRatioConstraint {
             imageViewContainer.removeConstraint(old)
             aspectRatioConstraint = nil
         }
 
-        // Show/hide edit button
+        // Edit button
         editButton.isHidden = !config.editable
         if let buttonImage = config.editButtonImage {
             editButton.setImage(buttonImage, for: .normal)

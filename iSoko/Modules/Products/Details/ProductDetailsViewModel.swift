@@ -280,7 +280,7 @@ final class ProductDetailsViewModel: FormViewModel {
                         }
                     ),
                     .init(
-                        title: "Email",
+                        title: "common.label.email_placeholder".localized,
                         image: UIImage(systemName: "envelope.fill"),
                         handler: {
                             if let emailURL = URL(string: "mailto:\(email)"), UIApplication.shared.canOpenURL(emailURL) {

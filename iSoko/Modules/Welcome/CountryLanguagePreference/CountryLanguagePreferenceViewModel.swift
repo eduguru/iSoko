@@ -71,8 +71,8 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
     private lazy var headerTitleRow = TitleDescriptionFormRow(
         tag: 101,
         model: TitleDescriptionModel(
-        title: "Welcome to the app",
-        description: "This description",
+        title: "common.country_language.header_title".localized,
+        description: "common.country_language.header_description".localized,
         maxTitleLines: 2,
         maxDescriptionLines: 0,
         titleEllipsis: .none,
@@ -85,7 +85,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
     private lazy var buttonRow = ButtonFormRow(
         tag: 1001,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             icon: nil,
@@ -104,8 +104,8 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
         DropdownFormRow(
             tag: 3001,
             config: DropdownFormConfig(
-                title: "Select Country",
-                placeholder: state?.country?.name ?? "Country",
+                title: "common.country_language.select_country".localized,
+                placeholder: state?.country?.name ?? "common.label.country".localized,
                 leftImage: nil,
                 rightImage: UIImage(systemName: "chevron.down"),
                 isCardStyleEnabled: true,
@@ -134,7 +134,7 @@ final class CountryLanguagePreferenceViewModel: FormViewModel {
         DropdownFormRow(
             tag: 3002,
             config: DropdownFormConfig(
-                title: "Select Language",
+                title: "common.country_language.select_language".localized,
                 placeholder: state?.language?.name ?? "Language",
                 leftImage: nil,
                 rightImage: UIImage(systemName: "chevron.down"),

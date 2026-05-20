@@ -43,8 +43,8 @@ final class SettingsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3000,
                 image: UIImage(systemName: "phone.fill"),
-                title: "Contact us",
-                description: "Reach out to our support team for assistance",
+                title: "common.help_feedback.contact_us".localized,
+                description: "common.help_feedback.contact_us_description".localized,
                 onTap: { [weak self] in
                     self?.gotoContactUs?()
                 }
@@ -53,8 +53,8 @@ final class SettingsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3001,
                 image: UIImage(systemName: "info.circle.fill"),
-                title: "About us",
-                description: "Learn more about our company and mission",
+                title: "common.help_feedback.about_us".localized,
+                description: "common.help_feedback.about_us_description".localized,
                 onTap: { [weak self] in
                     self?.gotoAboutUs?()
                 }
@@ -63,8 +63,8 @@ final class SettingsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3002,
                 image: UIImage(systemName: "questionmark.circle.fill"),
-                title: "FAQs",
-                description: "Find answers to commonly asked questions",
+                title: "common.help_feedback.faqs".localized,
+                description: "common.help_feedback.faqs_description".localized,
                 onTap: { [weak self] in
                     self?.gotoFAQs?()
                 }
@@ -73,8 +73,8 @@ final class SettingsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3003,
                 image: UIImage(systemName: "lock.shield.fill"),
-                title: "Privacy Policy",
-                description: "Read how we collect and protect your data",
+                title: "common.help_feedback.privacy_policy".localized,
+                description: "common.help_feedback.privacy_policy_description".localized,
                 onTap: { [weak self] in
                     self?.gotoPrivacyacyPolicy?()
                 }
@@ -83,8 +83,8 @@ final class SettingsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3004,
                 image: UIImage(systemName: "doc.text.fill"),
-                title: "Terms & Conditions",
-                description: "Review the terms and conditions of using the app",
+                title: "common.help_feedback.terms_conditions".localized,
+                description: "common.help_feedback.terms_conditions_description".localized,
                 onTap: { [weak self] in
                     self?.gotoTermsAndConditions?()
                 }

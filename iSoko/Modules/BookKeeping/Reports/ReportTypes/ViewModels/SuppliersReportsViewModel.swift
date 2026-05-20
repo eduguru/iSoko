@@ -167,7 +167,7 @@ final class SuppliersReportsViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
                             onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
@@ -183,7 +183,7 @@ final class SuppliersReportsViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -252,7 +252,7 @@ final class SuppliersReportsViewModel: FormViewModel {
                 status: itemsText,
                 statusColor: .darkGray,
                 primaryAction: ActionCardConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye"),
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.primary),
@@ -261,7 +261,7 @@ final class SuppliersReportsViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit supplier \(supplier?.id ?? 0)")

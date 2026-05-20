@@ -108,7 +108,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
-            title: "Phone Number",
+            title: "common.label.phone_number".localized,
             description: state.item.phoneNumber ?? " N/A",
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
@@ -123,7 +123,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
-            title: "Email",
+            title: "common.label.email_placeholder".localized,
             description: state.item.email ?? " N/A",
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,

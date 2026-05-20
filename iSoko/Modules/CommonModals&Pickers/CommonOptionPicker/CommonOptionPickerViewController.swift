@@ -14,7 +14,7 @@ class CommonOptionPickerViewController: FormViewController, CloseableViewControl
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Select an option"
+        title = "common.label.select_option".localized
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }
     

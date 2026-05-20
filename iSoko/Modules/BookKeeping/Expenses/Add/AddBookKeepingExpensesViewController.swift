@@ -17,7 +17,7 @@ final class AddBookKeepingExpensesViewController: FormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        title = "Add Expense"
+        title = "common.action.add_expense".localized
 
         guard let vm = viewModel as? AddBookKeepingExpensesViewModel else {
             fatalError("Expected AddBookKeepingExpensesViewModel")

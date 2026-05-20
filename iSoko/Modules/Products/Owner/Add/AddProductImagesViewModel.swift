@@ -148,7 +148,7 @@ final class AddProductImagesViewModel: FormViewModel {
         tag: CellTag.additionalImages.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Add Image",
+            title: "common.action.add_image".localized,
             subtitle: "",
             icon: UIImage(systemName: "plus"),
             borderColor: .lightGray,
@@ -175,7 +175,7 @@ final class AddProductImagesViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueAction.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

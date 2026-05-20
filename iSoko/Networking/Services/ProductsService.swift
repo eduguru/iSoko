@@ -41,23 +41,8 @@ public final class ProductsServiceImpl: ProductsService {
         try await manager.request(ProductsApi.getAllProducts(page: page, count: count, accessToken: accessToken)) ?? []
     }
 
-//    public func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> [ProductResponseV1] {
-//        try await manager.request(ProductsApi.getFeaturedProducts(page: page, count: count, accessToken: accessToken)) ?? []
-//    }
-    
-    public func getFeaturedProducts(
-        page: Int,
-        count: Int,
-        accessToken: String
-    ) async throws -> PagedResult<[ProductResponseV1]> {
-
-        let envelope = try await manager.request(
-            ProductsApi.getFeaturedProducts(
-                page: page,
-                count: count,
-                accessToken: accessToken
-            )
-        )
+    public func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> {
+        let envelope = try await manager.request(ProductsApi.getFeaturedProducts(page: page, count: count, accessToken: accessToken))
 
         return envelope.toPagedResult()
     }

@@ -14,7 +14,7 @@ class BookKeepingDashboardViewController: FormViewController, CloseableViewContr
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Book Keeping"
+        title = "business.bookkeeping".localized
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         

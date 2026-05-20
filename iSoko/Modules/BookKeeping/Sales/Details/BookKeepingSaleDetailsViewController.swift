@@ -29,7 +29,7 @@ class BookKeepingSaleDetailsViewController: FormViewController, CloseableViewCon
     
     private func setupNavigationBar() {
         let createItem = UIBarButtonItem(
-            title: "Edit",
+            title: "common.action.edit".localized,
             style: .plain,
             target: self,
             action: #selector(didTapEdit)

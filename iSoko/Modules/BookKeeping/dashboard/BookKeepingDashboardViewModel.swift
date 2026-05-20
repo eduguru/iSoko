@@ -187,11 +187,11 @@ final class BookKeepingDashboardViewModel: FormViewModel {
                     value: "\(products)",
                     color: .systemBlue,
                     icon: "cube.box",
-                    subtitle: "Inventory",
+                    subtitle: "common.label.inventory".localized,
                     action: goToTotalProducts
                 ),
                 right: makeFinancialItem(
-                    title: "Low Stock",
+                    title: "common.label.low_stock".localized,
                     value: "\(lowStock)",
                     color: .systemOrange,
                     icon: "exclamationmark.triangle",
@@ -232,7 +232,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         
         return activities.enumerated().map { index, activity in
             
-            let title = activity.summary ?? "Activity"
+            let title = activity.summary ?? "common.label.activity".localized
             let amount = formatAmount(activity.value ?? "", type: activity.entityType)
             let isPositive = isPositive(activity.entityType)
             
@@ -276,7 +276,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         
         guard let number = Double(value),
-              type == "sale" || type == "expense" else {
+              type == "sale" || type == "common.label.expense".localized else {
             return value
         }
         return "\(currency). \(Int(number))"
@@ -289,7 +289,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func icon(for type: String?) -> UIImage? {
         switch type {
         case "sale": return UIImage(systemName: "arrow.up.circle")
-        case "expense": return UIImage(systemName: "arrow.down.circle")
+        case "common.label.expense".localized: return UIImage(systemName: "arrow.down.circle")
         case "product": return UIImage(systemName: "cube.box")
         case "customer": return UIImage(systemName: "person")
         case "supplier": return UIImage(systemName: "truck")
@@ -305,7 +305,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     
     private func makeFilterRowRow() -> FormRow {
         let model = TitleDropDownFilterModel(
-            title: "Financial Overview",
+            title: "common.label.financial_overview".localized,
             description: nil,
             filterTitle: "This Week",
             filterIcon: .arrowDown,
@@ -326,7 +326,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeQuickActionsRow() -> FormRow {
         
         let sale = StatusCardViewModel(
-            title: "Record Sale",
+            title: "common.action.record_sale".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#22C55E")),
             iconTintColor: .white,
@@ -339,7 +339,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         )
         
         let expense = StatusCardViewModel(
-            title: "Add Expense",
+            title: "common.action.add_expense".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#EF4444")),
             iconTintColor: .white,
@@ -355,7 +355,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             tag: 200,
             model: TwoCardsSummaryViewModel(
                 title: "Quick Actions",
-                description: "Common bookkeeping tasks",
+                description: "bookkeeping.dashboard.quick_actions.description".localized,
                 cards: TwoStatusCardsViewModel(
                     first: sale,
                     second: expense,
@@ -368,7 +368,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeQuickNoTitleActionsRow() -> FormRow {
         
         let stock = StatusCardViewModel(
-            title: "Manage Stock",
+            title: "common.action.manage_stock".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#3B82F6")),
             iconTintColor: .white,
@@ -381,7 +381,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         )
         
         let reports = StatusCardViewModel(
-            title: "View Reports",
+            title: "common.action.view_reports".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#6366F1")),
             iconTintColor: .white,
@@ -406,7 +406,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     private func makeBusinessMetricsRow() -> FormRow {
         
         let customers = StatusCardViewModel(
-            title: "Customers",
+            title: "common.label.customers".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#A855F7")),
             iconTintColor: .white,
@@ -434,8 +434,8 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         return TwoCardsSummaryFormRow(
             tag: 202,
             model: TwoCardsSummaryViewModel(
-                title: "Business Management",
-                description: "Manage customers and suppliers",
+                title: "business.header_title".localized,
+                description: "bookkeeping.dashboard.business_metrics.description".localized,
                 cards: TwoStatusCardsViewModel(
                     first: customers,
                     second: suppliers,

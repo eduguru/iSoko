@@ -187,7 +187,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     private func buildSummarySubtitle() -> String {
 
         guard let start = state.startDate, let end = state.endDate else {
-            return "All time"
+            return "common.label.all_time".localized
         }
 
         return DateFormatters.displayRange(start: start, end: end)
@@ -197,7 +197,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -212,11 +212,11 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: "Filters",
+                title: "common.label.filters".localized,
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Category",
+                            placeholder: "common.label.category".localized,
                             selectedValue: state.selectedCategory?.name,
                             onTap: { [weak self] in self?.handleCategorySelection() }
                         ),
@@ -235,7 +235,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
                             onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
@@ -302,7 +302,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
             let amountText = expense.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let dateText = formatDate(expense)
             let supplierName = expense.supplier?.name ?? "Unknown Supplier"
-            let categoryName = expense.category?.name ?? "Expense"
+            let categoryName = expense.category?.name ?? "common.label.expense".localized
             
             let config = TransactionSummaryCellConfig(
                 title: supplierName,
@@ -314,7 +314,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 saleTypeBackgroundColor: .systemBlue,
                 itemsCountText: "",
                 primaryAction: ActionCardConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
@@ -325,7 +325,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit expense \(expense.id)")

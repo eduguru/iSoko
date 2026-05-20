@@ -73,7 +73,7 @@ final class InsightsViewModel: FormViewModel {
         [
             // makeTitleSection(),
             // makeSelectionSection(),
-            makeAnalyticsSection(),
+            // makeAnalyticsSection(),
             makeBodySection()
         ]
     }
@@ -211,7 +211,7 @@ final class InsightsViewModel: FormViewModel {
             config: .init(
                 items: [
                     .init(
-                        title: "Market Prices",
+                        title: "common.label.market_prices".localized,
                         subtitle: "Track revenue",
                         icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
                         iconTintColor: .app(.primary),
@@ -235,7 +235,7 @@ final class InsightsViewModel: FormViewModel {
                             self?.handleTradeProcedures
                         }),
                     .init(
-                        title: "Events",
+                        title: "common.label.events".localized,
                         subtitle: "Track revenue",
                         icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
                         iconTintColor: .app(.error),

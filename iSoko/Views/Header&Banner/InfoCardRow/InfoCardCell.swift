@@ -46,7 +46,7 @@ public final class InfoCardCell: UITableViewCell {
 
         editButton.configure(
             with: InlineActionConfig(
-                title: "Edit",
+                title: "common.action.edit".localized,
                 icon: UIImage(systemName: "pencil")
             )
         )
@@ -91,7 +91,7 @@ public final class InfoCardCell: UITableViewCell {
         editButton.isHidden = config.onEditTap == nil
         editButton.configure(
             with: InlineActionConfig(
-                title: "Edit",
+                title: "common.action.edit".localized,
                 icon: UIImage(systemName: "pencil"),
                 onTap: config.onEditTap
             )

@@ -70,8 +70,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     // MARK: - Rows
     private lazy var amountInputRow = makeInputRow(
         tag: CellTag.amount.rawValue,
-        title: "Amount *",
-        placeholder: "Enter Amount",
+        title: "common.label.amount".localized,
+        placeholder: "common.label.amount_placeholder".localized,
         initialText: state.amount
     )
 
@@ -104,7 +104,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
         tag: CellTag.supplier.rawValue,
         config: DropdownFormConfig(
             title: "Supplier",
-            placeholder: state.supplier?.name ?? "Select an option",
+            placeholder: state.supplier?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleSupplierSelection() },
             onActionTap: { [weak self] in self?.goToAddSupplier?() },
@@ -116,8 +116,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     private lazy var categoryRow = DropdownFormRow(
         tag: CellTag.categoryRow.rawValue,
         config: DropdownFormConfig(
-            title: "Category",
-            placeholder: state.categories?.name ?? "Select an option",
+            title: "common.label.category".localized,
+            placeholder: state.categories?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleExpenseSelection() },
             onActionTap: { [weak self] in self?.goToAddExpenseCategory?() },
@@ -148,7 +148,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
                 fixedHeight: 120
             ),
             validation: ValidationConfiguration(isRequired: true),
-            titleText: "Description",
+            titleText: "common.label.description".localized,
             useCardStyle: false,
             cardStyle: .borderAndShadow,
             cardCornerRadius: 12,
@@ -166,8 +166,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     private lazy var dateRow = DropdownFormRow(
         tag: CellTag.date.rawValue,
         config: DropdownFormConfig(
-            title: "Date",
-            placeholder: state.dateString.isEmpty ? "Date" : state.dateString,
+            title: "common.label.date".localized,
+            placeholder: state.dateString.isEmpty ? "common.label.date".localized : state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -205,7 +205,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
         tag: CellTag.attachment.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Add Image",
+            title: "common.action.add_image".localized,
             subtitle: "",
             icon: UIImage(systemName: "plus"),
             borderColor: .lightGray,
@@ -233,7 +233,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -331,8 +331,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             "id": state.expense.id,
             "categoryId": state.categories?.id ?? "",
             "amount": state.amount,
-            "description": state.description,
-            "date": state.date.map { $0.toISO8601String() } ?? "",
+            "common.label.description".localized: state.description,
+            "common.label.date".localized: state.date.map { $0.toISO8601String() } ?? "",
             "supplierId": state.supplier?.id ?? "",
             "paymentMethodId": state.paymentMethod?.id ?? ""
         ]

@@ -13,7 +13,7 @@ class SignupViewController: FormViewController, CloseableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Create an Account"
+        title = "common.auth_view.create_account".localized
         // Do any additional setup after loading the view.
         applyCloseButtonStyling(action: #selector(close), image: "backArrow")
     }

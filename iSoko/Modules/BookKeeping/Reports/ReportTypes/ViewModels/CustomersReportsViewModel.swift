@@ -170,7 +170,7 @@ final class CustomersReportsViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "End Date",
+                            placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
                             onTap: { [weak self] in self?.handleEndDateSelection() }
                         )
@@ -186,7 +186,7 @@ final class CustomersReportsViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -262,7 +262,7 @@ final class CustomersReportsViewModel: FormViewModel {
                 ),
                 
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit tapped for \(name)")

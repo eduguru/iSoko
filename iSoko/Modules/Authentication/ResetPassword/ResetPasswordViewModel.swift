@@ -71,7 +71,7 @@ final class ResetPasswordViewModel: FormViewModel {
                 errorMessageRequired: "Email is required",
                 errorMessageLength: "Must be 5–50 characters"
             ),
-            titleText: "Email address",
+            titleText: "common.label.email_address".localized,
             useCardStyle: true,
             onTextChanged: { [weak self] in
                 self?.state?.email = $0

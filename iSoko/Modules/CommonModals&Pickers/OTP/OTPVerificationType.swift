@@ -43,7 +43,7 @@ public enum OTPVerificationType {
         case .authenticator:
             return "Enter your code"
         case .custom:
-            return "Verify"
+            return "common.basic_profile_security.header_title".localized
         }
     }
 }

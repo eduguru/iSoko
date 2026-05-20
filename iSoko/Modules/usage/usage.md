@@ -15,7 +15,7 @@ final class AuthViewModel: FormViewModel {
     var hasSecondaryActionButton: Bool = false
     var buttonLayoutStyle: ButtonLayoutStyle = .horizontal
     
-    var primaryButtonTitle: String = "Continue"
+    var primaryButtonTitle: String = "common.button.continue".localized
     var secondaryButtonTitle: String = "Cancel"
     var termsText: String = "I agree to the Terms and Conditions and Privacy Policy"
     
@@ -87,7 +87,7 @@ final class AuthViewModel: FormViewModel {
                 font: .systemFont(ofSize: 18, weight: .semibold),
                 color: .app(.textOnBackground)
             ),
-            actionTitle: "View More",
+            actionTitle: "common.auth_view.view_more".localized,
             onActionTapped: {
                 print("👀 View More tapped for credentials section")
             },
@@ -169,7 +169,7 @@ final class AuthViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Welcome to the app",
+            title:  "common.country_language.header_title".localized,
             description: "This description can be quite long and should wrap nicely without truncation dots.",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -306,7 +306,7 @@ final class AuthViewModel: FormViewModel {
         let inputModel = SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Enter phone number",
+                placeholder: "common.basic_profile_security.phone_placeholder".localized,
                 keyboardType: .phonePad,
                 accessoryImage: UIImage(systemName: "phone"),
                 prefixText: "+254",
@@ -423,7 +423,7 @@ extension AuthViewModel: ActionHandlingFormViewModelProtocol {
     var linkRanges: [NSRange: (() -> Void)] {
         let text = termsText
         let tnc = (text as NSString).range(of: "Terms and Conditions")
-        let pp = (text as NSString).range(of: "Privacy Policy")
+        let pp = (text as NSString).range(of: "common.help_feedback.privacy_policy".localized)
         return [
             tnc: { print("Tapped Terms") },
             pp: { print("Tapped Privacy") }

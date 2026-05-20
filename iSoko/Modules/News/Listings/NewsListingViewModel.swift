@@ -81,7 +81,7 @@ final class NewsListingViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.searchBar.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -98,7 +98,7 @@ final class NewsListingViewModel: FormViewModel {
         SegmentedFormRow(
             model: SegmentedFormModel(
                 title: nil,
-                segments: ["About", "News"],
+                segments: ["common.label.about".localized, "News"],
                 selectedIndex: state.selectedSegmentIndex,
                 tag: 2001,
                 tintColor: .gray,

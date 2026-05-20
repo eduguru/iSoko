@@ -64,8 +64,8 @@ final class BusinessViewModel: FormViewModel {
         return makeImageTitleDescriptionRow(
             tag: Tags.Cells.bookkeeping.rawValue,
             image: UIImage(systemName: "book.fill")!,
-            title: "Book Keeping",
-            description: "Manage your finances and bookkeeping",
+            title: "business.bookkeeping".localized,
+            description: "business.bookkeeping_description".localized,
             onTap: { [weak self] in
                 self?.goToBookKeeping?()
             }
@@ -79,8 +79,8 @@ final class BusinessViewModel: FormViewModel {
             config: HubCardConfig(
                 icon: UIImage(systemName: "bag"),
                 iconBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                title: "Marketplace Hub",
-                subtitle: "Manage your online store and orders",
+                title: "business.marketplace_hub".localized,
+                subtitle: "business.marketplace_hub_description".localized,
                 actions: [
                     .init(
                         id: "products",
@@ -112,7 +112,7 @@ final class BusinessViewModel: FormViewModel {
         return TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
             model: TitleDescriptionModel(
-            title: "Business Management",
+                title: "business.header_title".localized,
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,

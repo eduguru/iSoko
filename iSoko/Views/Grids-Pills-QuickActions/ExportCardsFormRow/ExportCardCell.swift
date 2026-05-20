@@ -109,59 +109,39 @@ final class ExportCardCell: UICollectionViewCell {
         ])
     }
     
-//    func configure(with item: ExportCardItem) {
-//        currentItem = item
-//
-//        iconView.image = item.icon ?? UIImage(systemName: "globe")
-//        titleLabel.text = item.title
-//        subtitleLabel.text = item.subtitle
-//
-//        let placeholder = UIImage.blankRectangle
-//
-//        for i in 0..<4 {
-//
-//            // Priority: URL → UIImage → placeholder
-//            if i < item.imageUrls.count {
-//                imageViews[i].loadImage(
-//                    from: item.imageUrls[i],
-//                    placeholder: placeholder
-//                )
-//
-//            } else if i < item.images.count {
-//                imageViews[i].image = item.images[i] ?? placeholder
-//
-//            } else {
-//                imageViews[i].image = placeholder
-//            }
-//        }
-//    }
-    
     func configure(with item: ExportCardItem) {
         currentItem = item
         let placeholder = UIImage.blankRectangle
 
-        iconView.image = item.icon ?? placeholder// UIImage(systemName: "globe")
+        // Icon: use remote URL if available, fallback to local icon
+        if let iconUrlString = item.imageUrls.first, let iconUrl = URL(string: iconUrlString) {
+            iconView.kf.setImage(
+                with: iconUrl,
+                placeholder: item.icon ?? placeholder,
+                options: [.transition(.fade(0.2)), .cacheOriginalImage]
+            )
+        } else {
+            iconView.image = item.icon ?? placeholder
+        }
+
         titleLabel.text = item.title
         subtitleLabel.text = item.subtitle
 
+        // Load up to 4 images
         for i in 0..<4 {
+            let imageView = imageViews[i]
+            imageView.image = placeholder  // reset first
 
-            if i < item.imageUrls.count,
-               let url = URL(string: item.imageUrls[i]) {
-
-                imageViews[i].kf.setImage(
+            if i < item.imageUrls.count, let url = URL(string: item.imageUrls[i]) {
+                // Remote image using Kingfisher
+                imageView.kf.setImage(
                     with: url,
                     placeholder: placeholder,
-                    options: [
-                        .transition(.fade(0.2)),
-                        .cacheOriginalImage
-                    ]
+                    options: [.transition(.fade(0.2)), .cacheOriginalImage]
                 )
-
             } else if i < item.images.count {
-                imageViews[i].image = item.images[i] ?? placeholder
-            } else {
-                imageViews[i].image = placeholder
+                // Fallback to local image
+                imageView.image = item.images[i] ?? placeholder
             }
         }
     }

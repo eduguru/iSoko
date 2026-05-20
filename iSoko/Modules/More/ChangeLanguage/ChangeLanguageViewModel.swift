@@ -37,7 +37,7 @@ final class ChangeLanguageViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Choose your Language",
+            title:  "common.language_picker.title".localized,
             description: "Chagua lugha / Hitamo nururimi / Sélectionnez la langue",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -105,7 +105,7 @@ final class ChangeLanguageViewModel: FormViewModel {
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
         model: ButtonFormModel(
-            title: "Confirm",
+            title: "common.button.confirm".localized,
             style: .primary,
             size: .medium,
             icon: nil,

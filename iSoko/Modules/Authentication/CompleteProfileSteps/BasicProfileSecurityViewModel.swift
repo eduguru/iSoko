@@ -27,9 +27,9 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     private var state: State
 
     // MARK: - UI Text
-    private let fullText = "You acknowledge you have read and agreed to our terms of use and privacy policy"
+    private let fullText = "common.basic_profile_security.terms_text".localized
     lazy var termsRange = (fullText as NSString).range(of: "terms of use")
-    lazy var privacyRange = (fullText as NSString).range(of: "privacy policy")
+    lazy var privacyRange = (fullText as NSString).range(of: "common.help_feedback.privacy_policy".localized)
 
     // MARK: - Init
     init(builder: RegistrationBuilder, registrationType: RegistrationType) {
@@ -51,7 +51,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]),
             FormSection(
                 id: Tags.Section.security.rawValue,
-                title: "Set Your Password",
+                title: "common.basic_profile_security.set_password_title".localized,
                 cells: [
                     passwordRow,
                     confirmPasswordRow,
@@ -68,7 +68,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: -101,
             model: TitleDescriptionModel(
-                title: "Verify",
+                title: "common.basic_profile_security.header_title".localized,
                 description: "",
                 maxTitleLines: 2
             )
@@ -130,11 +130,11 @@ final class BasicProfileSecurityViewModel: FormViewModel {
 
     // Password requirements UI
     private let config = RequirementsListRowConfig(
-        title: "Password Requirements",
+        title: "common.basic_profile_security.password_requirement_special".localized,
         items: [
-            RequirementItem(title: "Must be at least 8 characters", isSatisfied: true),
-            RequirementItem(title: "Include a number", isSatisfied: true),
-            RequirementItem(title: "Include a special character", isSatisfied: true)
+            RequirementItem(title: "common.basic_profile_security.password_requirement_length".localized, isSatisfied: true),
+            RequirementItem(title: "common.basic_profile_security.password_requirement_number".localized, isSatisfied: true),
+            RequirementItem(title: "common.basic_profile_security.password_requirement_special".localized, isSatisfied: true)
         ],
         isCardStyleEnabled: true
     )
@@ -159,7 +159,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium
         ) { [weak self] in

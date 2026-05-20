@@ -179,7 +179,7 @@ final class ServiceDetailsViewModel: FormViewModel {
                 actions: [
                     .init(title: "WhatsApp", image: UIImage(systemName: "message.fill"), handler: { print("WhatsApp tapped") }),
                     .init(title: "Call", image: UIImage(systemName: "phone.fill"), handler: { print("Call tapped") }),
-                    .init(title: "Email", image: UIImage(systemName: "envelope.fill"), handler: { print("Email tapped") })
+                    .init(title: "common.label.email_placeholder".localized, image: UIImage(systemName: "envelope.fill"), handler: { print("Email tapped") })
                 ],
                 cornerRadius: 20,
                 backgroundColor: .systemBackground,

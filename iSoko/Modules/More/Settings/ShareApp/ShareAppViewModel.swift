@@ -8,6 +8,7 @@
 import DesignSystemKit
 import UIKit
 import UtilsKit
+import StorageKit
 
 final class ShareAppViewModel: FormViewModel {
 
@@ -65,7 +66,7 @@ final class ShareAppViewModel: FormViewModel {
         tag: 101,
         config: PromoCodeModel(
             title: "Share your invite code",
-            code: "ISOKO2025",
+            code: state.userProfile?.referralCode ?? "ISOKO2025",
             subtitle: "Invite friends and earn rewards",
             buttonTitle: "Copy Code",
             cardSettings: .default,
@@ -97,7 +98,8 @@ final class ShareAppViewModel: FormViewModel {
     // MARK: - Share Action
 
     private func shareApp() {
-        let code = "ISOKO2025"
+        let code =  state.userProfile?.referralCode ?? "ISOKO2025"
+        
         let message = "Check out the iSOKO app! Use my invite code: \(code)"
 
         // Only emit the items to share; the coordinator or VC handles presentation
@@ -108,6 +110,8 @@ final class ShareAppViewModel: FormViewModel {
 
     private struct State {
         var isLoggedIn: Bool = true
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
     }
 
     // MARK: - Tags

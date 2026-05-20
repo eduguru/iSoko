@@ -53,7 +53,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
 
         // Association Description
-        if let description = data["description"] as? String {
+        if let description = data["common.label.description".localized] as? String {
             state.associationDescription = description
         }
 
@@ -133,7 +133,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             model: PhoneDropDownModel(
                 phoneNumber: state.phoneNumber,
                 selectedCountry: selectedCountry,
-                placeholder: "Enter phone number",
+                placeholder: "common.basic_profile_security.phone_placeholder".localized,
                 titleText: nil,
                 validation: ValidationConfiguration(
                     isRequired: true,
@@ -157,7 +157,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         )
     }()
     
-    private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "Email Address")
+    private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "common.label.email_address".localized)
     private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "Website URL")
     private lazy var instagramInputRow = makeURLInputRow(tag: CellTag.instagram.rawValue, title: "Instagram URL")
     private lazy var linkedinInputRow = makeURLInputRow(tag: CellTag.linkedin.rawValue, title: "LinkedIn URL")
@@ -283,7 +283,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             "code": state.code,
             "countryId": state.countryId,
             
-            "description": state.associationDescription,
+            "common.label.description".localized: state.associationDescription,
             "members": state.members,
             "foundedIn": state.foundedIn,
             "phoneNumber": state.phoneNumber,
@@ -292,7 +292,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             "instagram": state.instagram,
             "linkedin": state.linkedin,
             "x": state.xURL,
-            "physicalAddress": state.physicalAddress
+            "common.label.address_placeholder".localized: state.physicalAddress
         ]
     }
 

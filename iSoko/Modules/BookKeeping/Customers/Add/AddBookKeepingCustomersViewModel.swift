@@ -51,30 +51,30 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
 
     private lazy var customerNameInputRow = makeInputRow(
         tag: Tags.Cells.customerName.rawValue,
-        title: "Customer Name",
-        placeholder: "Customer Name",
+        title: "bookkeeping.add_customer.customer_name".localized,
+        placeholder: "bookkeeping.add_customer.customer_name".localized,
         keyboard: .default
     )
 
     private lazy var phoneNumberInputRow = makeInputRow(
         tag: Tags.Cells.phoneNumber.rawValue,
-        title: "Phone Number",
-        placeholder: "Phone Number",
+        title: "common.label.phone_number".localized,
+        placeholder: "common.label.phone_number".localized,
         keyboard: .phonePad
     )
 
     private lazy var emailAddressInputRow = makeInputRow(
         tag: Tags.Cells.emailAddress.rawValue,
-        title: "Email Address",
-        placeholder: "Email Address",
+        title: "common.label.email_address".localized,
+        placeholder: "common.label.email_address".localized,
         keyboard: .emailAddress
     )
 
     private lazy var countryInputRow = DropdownFormRow(
         tag: Tags.Cells.country.rawValue,
         config: DropdownFormConfig(
-            title: "Country",
-            placeholder: "Country",
+            title: "bookkeeping.add_customer.country".localized,
+            placeholder: "bookkeeping.add_customer.country".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -100,7 +100,7 @@ final class AddBookKeepingCustomersViewModel: FormViewModel {
     private lazy var addCustomerButtonRow = ButtonFormRow(
         tag: Tags.Cells.addCustomerButton.rawValue,
         model: ButtonFormModel(
-            title: "Add Customer",
+            title: "bookkeeping.add_customer.add_button".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

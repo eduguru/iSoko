@@ -38,12 +38,12 @@ extension CommodityPickerViewModel {
         sections = [
             FormSection(
                 id: Tags.Section.categories.rawValue,
-                title: "Categories",
+                title: "common.label.categories".localized,
                 cells: []
             ),
             FormSection(
                 id: Tags.Section.commodities.rawValue,
-                title: "Commodities",
+                title: "common.label.commodities".localized,
                 cells: []
             )
         ]

@@ -23,7 +23,7 @@ class ShareAppViewController: FormViewController, CloseableViewController {
         
         let actionButton01 = UIBarButtonItem(customView: btn01)
         
-        navigationItem.rightBarButtonItems = [actionButton01]
+        // navigationItem.rightBarButtonItems = [actionButton01]
     }
     
     override func viewWillAppear(_ animated: Bool) {

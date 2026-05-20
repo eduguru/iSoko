@@ -98,7 +98,7 @@ final class SignupOTPViewModel: FormViewModel {
         ButtonFormRow(
             tag: Tags.Cells.continueButton.rawValue,
             model: ButtonFormModel(
-                title: "Continue",
+                title: "common.button.continue".localized,
                 style: .primary,
                 size: .medium,
                 icon: nil,

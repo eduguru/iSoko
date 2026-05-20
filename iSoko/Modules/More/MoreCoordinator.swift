@@ -231,17 +231,23 @@ public class MoreCoordinator: BaseCoordinator {
         viewModel.onShareRequested = { [weak self] items in
             guard let self = self else { return }
             let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
-            router.present(activityVC, animated: true)
+            self.router.present(activityVC, animated: true)
         }
         
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
+            // Dismiss the modal nav instead of popping
+            self?.router.dismiss(animated: true)
         }
         
-        router.navigationControllerInstance?.navigationBar.isHidden = false
-        router.push(vc, animated: true)
+        // Wrap in its own navigation controller
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+        nav.navigationBar.isHidden = false
+        
+        // Present modally
+        router.present(nav, animated: true)
     }
     
     private func gotoLegal() {

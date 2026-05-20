@@ -184,7 +184,7 @@ final class AddProductViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -269,7 +269,7 @@ final class AddProductViewModel: FormViewModel {
             "price": price,
             "minimumOrderQuantity": qty,
             "quantity": 100,
-            "description": desc,
+            "common.label.description".localized: desc,
             "published": true,
             "inStock": true,
             

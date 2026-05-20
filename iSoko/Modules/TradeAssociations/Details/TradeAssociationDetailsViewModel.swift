@@ -117,7 +117,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
         SegmentedFormRow(
             model: SegmentedFormModel(
                 title: nil,
-                segments: ["About", "News"],
+                segments: ["common.label.about".localized, "News"],
                 selectedIndex: state.selectedSegmentIndex,
                 tag: 2001,
                 tintColor: .gray,
@@ -182,7 +182,7 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 2003,
                 image: .location,
-                title: state.data.physicalAddress ?? "physicalAddress",
+                title: state.data.physicalAddress ?? "common.label.address_placeholder".localized,
                 description: ""
             ),
             SpacerFormRow(tag: -0001, height: 16),

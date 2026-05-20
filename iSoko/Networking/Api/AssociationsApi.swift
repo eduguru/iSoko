@@ -318,3 +318,30 @@ public extension AssociationsApi {
         return ValueResponseTarget(target: target)
     }
 }
+
+extension AssociationsApi {
+    public static func getAssociationProducts(id: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[ProductResponseV1]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "count": count,
+            "size": count
+        ]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations/\(id)/products",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+}

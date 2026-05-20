@@ -183,7 +183,7 @@ final class MyOrdersViewModel: FormViewModel {
                 case "pending":
                     return [
                         ActionButtonConfig(
-                            title: "Confirm",
+                            title: "common.button.confirm".localized,
                             style: .subtle,
                             backgroundColor: UIColor.systemGreen.withAlphaComponent(0.12),
                             textColor: .systemGreen,
@@ -200,7 +200,7 @@ final class MyOrdersViewModel: FormViewModel {
                 default:
                     return [
                         ActionButtonConfig(
-                            title: "View Details",
+                            title: "common.action.view_details".localized,
                             style: .subtle,
                             backgroundColor: UIColor.systemGray5,
                             textColor: .systemGreen,

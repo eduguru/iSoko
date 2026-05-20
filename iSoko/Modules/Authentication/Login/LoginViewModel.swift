@@ -59,7 +59,7 @@ final class LoginViewModel: FormViewModel {
                 font: .systemFont(ofSize: 18, weight: .semibold),
                 color: .app(.textOnBackground)
             ),
-            actionTitle: "View More",
+            actionTitle: "common.auth_view.view_more".localized,
             onActionTapped: {
                 print("👀 View More tapped for credentials section")
             },
@@ -92,8 +92,8 @@ final class LoginViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Welcome to the app",
-            description: "This description",
+            title:  "common.country_language.header_title".localized,
+            description: "common.country_language.header_description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -110,7 +110,7 @@ final class LoginViewModel: FormViewModel {
         let styledSegmentRow = SegmentedFormRow(
             model: SegmentedFormModel(
                 title: "Login With",
-                segments: ["Email", "Phone Number"],
+                segments: ["Email", "common.label.phone_number".localized],
                 selectedIndex: 0,
                 tag: 2001,
                 tintColor: .gray,
@@ -129,7 +129,7 @@ final class LoginViewModel: FormViewModel {
     
     private func makeForgotPasswordButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Forgot your Password",
+            title: "common.auth_view.forgot_password".localized,
             style: .plain,
             size: .large,
             icon: nil,

@@ -7,25 +7,21 @@
 
 import UIKit
 
-public enum Alignment {
-    case left, right, center
-}
-
 public struct EditableImageFormRowConfig {
-
     public var image: UIImage?
+    public var imageUrl: URL?       // <-- new
     public var editButtonImage: UIImage?
     public var imageHeight: CGFloat
     public var fillWidth: Bool
     public var alignment: Alignment
     public var editable: Bool
-
     public var backgroundColor: UIColor?
     public var cornerRadius: CGFloat?
     public var aspectRatio: CGFloat?
 
     public init(
         image: UIImage? = nil,
+        imageUrl: URL? = nil,
         editButtonImage: UIImage? = nil,
         height: CGFloat = 100,
         fillWidth: Bool = false,
@@ -36,6 +32,7 @@ public struct EditableImageFormRowConfig {
         aspectRatio: CGFloat? = nil
     ) {
         self.image = image
+        self.imageUrl = imageUrl       
         self.editButtonImage = editButtonImage
         self.imageHeight = height
         self.fillWidth = fillWidth

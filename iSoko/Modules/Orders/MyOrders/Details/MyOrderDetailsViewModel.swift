@@ -171,7 +171,7 @@ final class MyOrderDetailsViewModel: FormViewModel {
                         handler: { print("Call tapped") }
                     ),
                     .init(
-                        title: "Email",
+                        title: "common.label.email_placeholder".localized,
                         image: UIImage(systemName: "envelope.fill"),
                         handler: { print("Email tapped") }
                     )

@@ -149,7 +149,7 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
         model: ButtonFormModel(
-            title: "Confirm",
+            title: "common.button.confirm".localized,
             style: .primary,
             size: .medium,
             icon: nil,

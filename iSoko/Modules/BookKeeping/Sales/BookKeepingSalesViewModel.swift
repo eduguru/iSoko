@@ -136,7 +136,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search",
+                placeholder: "common.label.search".localized,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
@@ -212,7 +212,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 saleTypeBackgroundColor: .systemBlue,
                 itemsCountText: itemsText,
                 primaryAction: ActionCardConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
                     backgroundColor: .white,
                     textColor: .label,
@@ -223,7 +223,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
                     }
                 ),
                 secondaryAction: InlineActionConfig(
-                    title: "Edit",
+                    title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
                         print("Edit sale \(sale.id)")

@@ -96,7 +96,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         model: LongInputDescriptionModel(
             text: "",
             config: TextViewConfig(
-                prefixText: "Description",
+                prefixText: "common.label.description".localized,
                 isScrollable: true,
                 fixedHeight: 120
             ),
@@ -143,8 +143,8 @@ final class NewTradeAssociationViewModel: FormViewModel {
     private lazy var countryInputRow = DropdownFormRow(
         tag: CellTag.country.rawValue,
         config: DropdownFormConfig(
-            title: "Country",
-            placeholder: "Country",
+            title: "bookkeeping.add_customer.country".localized,
+            placeholder: "bookkeeping.add_customer.country".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -156,7 +156,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -210,7 +210,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         var step1Data: [String: Any] = [:]
         step1Data["name"] = state.name
         step1Data["code"] = state.code
-        step1Data["description"] = state.description
+        step1Data["common.label.description".localized] = state.description
         step1Data["members"] = Int(memberCountRow.model.text) ?? 0
         step1Data["countryId"] = state.selectedCountry?.id ?? 0
 
