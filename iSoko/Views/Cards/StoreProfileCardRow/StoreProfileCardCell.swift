@@ -10,8 +10,6 @@ import UIKit
 public final class StoreProfileCardCell: UITableViewCell {
 
     private let containerView = UIView()
-
-    // MARK: - NEW: Optional header (above everything)
     private let headerLabel = UILabel()
 
     // Top section

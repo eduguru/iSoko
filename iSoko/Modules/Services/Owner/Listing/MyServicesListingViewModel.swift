@@ -60,7 +60,7 @@ final class MyServicesListingViewModel: FormViewModel {
     private func fetchStockItems() async -> Bool {
         do {
             let response = try await bookKeepingService.getAllStock(
-                userId: state.userProfile?.sub ?? 0,
+                userId: state.userProfile?.id ?? 0,
                 page: 1,
                 count: 10,
                 accessToken: state.oauthToken
@@ -77,7 +77,7 @@ final class MyServicesListingViewModel: FormViewModel {
     private func fetchStatistics() async -> Bool {
         do {
             let stats = try await ordersService.getOrderSummary(
-                userId: state.userProfile?.sub ?? 0,
+                userId: state.userProfile?.id ?? 0,
                 accessToken: state.oauthToken
             )
             state.statistics = stats
@@ -266,7 +266,9 @@ final class MyServicesListingViewModel: FormViewModel {
     
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userDetail
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
+        
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         

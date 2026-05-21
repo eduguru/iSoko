@@ -14,7 +14,7 @@ public protocol ProductsService {
     func getFeaturedProducts(page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]>
     
     func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> //[ProductResponse]
-    func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse]
+    func getProductsByCurrentUser(userId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]>
     func getProductDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductResponse?
     func getProductOwnerDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductOwnerResponse?
 
@@ -46,7 +46,7 @@ public final class ProductsServiceImpl: ProductsService {
 
         return envelope.toPagedResult()
     }
-
+    
     public func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> {
         let envelope = try await manager.request(
             ProductsApi.getProductsByCategory(
@@ -59,11 +59,13 @@ public final class ProductsServiceImpl: ProductsService {
 
         return envelope.toPagedResult()
     }
+    
+    public func getProductsByCurrentUser(userId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[ProductResponseV1]> {
+        let envelope = try await manager.request(ProductsApi.getProductsByCurrentUser(userId: userId, page: page, count: count, accessToken: accessToken))
 
-    public func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [ProductResponse] {
-        try await manager.request(ProductsApi.getProductsByCurrentUser(page: page, count: count, accessToken: accessToken)) ?? []
+        return envelope.toPagedResult()
     }
-
+    
     public func getProductDetails(page: Int, count: Int, productId: String, accessToken: String) async throws -> ProductResponse? {
         try await manager.request(ProductsApi.getProductDetails(page: page, count: count, productId: productId, accessToken: accessToken))
     }

@@ -67,7 +67,6 @@ public struct ProductsApi {
             "categoryId": categoryId
         ]
 
-        // https://api.dev.isoko.africa/v1/products?page=1&size=10&commodityId=2
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
@@ -86,25 +85,33 @@ public struct ProductsApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    public static func getProductsByCurrentUser(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[ProductResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+    public static func getProductsByCurrentUser(userId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[ProductResponseV1]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "count": count,
+            "size": count,
+            "userId": userId,
+            "bookkeepingStock": false,
+            "published": false
+        ]
 
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
+        
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/product/current-user",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "products",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
         )
         
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getProductDetails(page: Int, count: Int, productId: String, accessToken: String) -> OptionalObjectResponseTarget<ProductResponse> {

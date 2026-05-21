@@ -22,11 +22,10 @@ public struct AssociationsApi {
             // "Authorization": "Bearer \(accessToken)"
         ]
         
-        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
         
         let target = AnyTarget(
-            baseURL: locationUrl,
-            path: "v1/associations",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers
@@ -45,11 +44,9 @@ public struct AssociationsApi {
             "Authorization": "Bearer \(accessToken)"
         ]
         
-        let locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
         let target = AnyTarget(
-            baseURL: locationUrl,
-            path: "v1/users/7/associations",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/7/associations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers
@@ -66,12 +63,10 @@ public struct AssociationsApi {
             "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
-        
-        let locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
+                
         let target = AnyTarget(
-            baseURL: locationUrl,
-            path: "v1/users/7/associations",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/7/associations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers
@@ -176,12 +171,10 @@ public struct AssociationsApi {
             "Content-Type": "application/json",
             "Accept": "application/json"
         ]
-        
-        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
+                
         let target = AnyTarget(
-            baseURL: locationUrl,
-            path: "v1/associations/\(associationId)",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations/\(associationId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -202,11 +195,9 @@ public extension AssociationsApi {
             "Content-Type": "application/json",
             "Accept": "application/json"
         ]
-        
-        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
+                
         let target = AnyTarget(
-            baseURL: locationUrl,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "v1/associations/\(associationId)/members",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -256,11 +247,9 @@ public extension AssociationsApi {
             "Content-Type": "application/json",
             "Accept": "application/json"
         ]
-        
-        var locationUrl: URL = { URL(string: "https://api.dev.isoko.africa/" )! }()
-        
+                
         let target = AnyTarget(
-            baseURL: locationUrl,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "v1/members/\(memberId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
@@ -342,6 +331,45 @@ extension AssociationsApi {
             authorizationType: .bearer
         )
         
+        return UnifiedPagedResponseTarget(target: target)
+    }
+}
+
+extension AssociationsApi {
+
+    public static func getUserAssociations(
+        userId: Int,
+        status: String = "Approved",
+        isMember: Bool = true,
+        page: Int = 1,
+        size: Int = 10,
+        accessToken: String
+    ) -> UnifiedPagedResponseTarget<[AssociationMemberResponse]> {
+
+        let parameters: [String: Any] = [
+            "status": status,
+            "isMember": isMember,
+            "page": page,
+            "size": size
+        ]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        ]
+
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(userId)/associations",
+            method: .get,
+            task: .requestParameters(
+                parameters: parameters,
+                encoding: URLEncoding.default
+            ),
+            headers: headers,
+            authorizationType: .bearer
+        )
+
         return UnifiedPagedResponseTarget(target: target)
     }
 }

@@ -157,4 +157,28 @@ extension AssociationsServiceImpl {
 
         return envelope.toPagedResult()
     }
+    
+    func getUserAssociations(
+        userId: Int,
+        status: String = "Approved",
+        isMember: Bool = true,
+        page: Int = 1,
+        size: Int = 10,
+        accessToken: String
+    ) async throws -> PagedResult<[AssociationMemberResponse]> {
+
+        let envelope = try await manager.request(
+            AssociationsApi.getUserAssociations(
+                userId: userId,
+                status: status,
+                isMember: isMember,
+                page: page,
+                size: size,
+                accessToken: accessToken
+            )
+        )
+
+        return envelope.toPagedResult()
+        
+    }
 }

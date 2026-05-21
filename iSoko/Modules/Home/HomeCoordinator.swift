@@ -42,6 +42,7 @@ public class HomeCoordinator: BaseCoordinator {
     private func goToProduct(_ product: ProductResponseV1) {
         let viewModel = ProductDetailsViewModel(product)
         viewModel.onPlaceOrder = goToPlaceOrder
+        viewModel.onViewStoreTap = goToViewStoreTap
         
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
@@ -76,6 +77,19 @@ public class HomeCoordinator: BaseCoordinator {
 
         router.push(vc, animated: true)
         
+    }
+    
+    func goToViewStoreTap(_ data: TraderV1) {
+        let viewModel = StoreProfileViewModel(data)
+
+        let vc = StoreProfileViewController()
+        vc.viewModel = viewModel
+
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
     }
     
     private  func goToServiceDetails(_ product: TradeServiceResponse) {

@@ -15,6 +15,8 @@ final class ProductDetailsViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var onProductTap: ((ProductResponseV1) -> Void)?
+    var onViewStoreTap: ((TraderV1) -> Void)?
+    
     var onToggleFavorite: ((ProductResponseV1, Bool) -> Void)?
     
     var onPlaceOrder: ((PlaceOrderPayload) -> Void)?
@@ -262,14 +264,10 @@ final class ProductDetailsViewModel: FormViewModel {
                 verifiedImage: nil,
                 badges: [],
                 trailingButtonTitle: "View Store",
-
                 onTrailingButtonTap: { [weak self] in
-                    guard
-                        let urlString = self?.state.product.trader?.storeUrl,
-                        let url = URL(string: urlString)
-                    else { return }
+                    guard let trader = self?.state.product.trader else { return }
 
-                    UIApplication.shared.open(url)
+                    self?.onViewStoreTap?(trader)
                 },
 
                 actions: [
