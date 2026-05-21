@@ -9,11 +9,6 @@ import NetworkingKit
 import UtilsKit
 
 public protocol BookKeepingService {
-    
-    func getOrderSummary(userId: Int, accessToken: String) async throws -> StatisticsResponse
-    func getAllOrders(page: Int, count: Int, traderType: String, accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]>
-    func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]>
-    
     func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse
     func updateSales(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SalesResponse
     func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]>
@@ -100,35 +95,6 @@ public extension BookKeepingServiceImpl {
         
         return envelope.toPagedResult()
     }
-}
-
-// MARK: - Orders
-public extension BookKeepingServiceImpl {
-    
-    func getOrderSummary(userId: Int, accessToken: String) async throws -> StatisticsResponse {
-        let envelope = try await manager.request(
-            BookKeepingApi.getOrderSummary(userId: userId, accessToken: accessToken)
-        )
-        
-        return envelope
-    }
-    
-    func getAllOrders(page: Int, count: Int, traderType: String = "buyer", accessToken: String) async throws -> PagedResult<[CustomerOrderResponse]> {
-        let envelope = try await manager.request(
-            BookKeepingApi.getAllOrders(page: page, count: count, accessToken: accessToken)
-        )
-        
-        return envelope.toPagedResult()
-    }
-    
-    func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) async throws -> PagedResult<[SalesResponse]> {
-        let envelope = try await manager.request(
-            BookKeepingApi.getOrderProducts(orderId: orderId, page: page, count: count, accessToken: accessToken)
-        )
-        
-        return envelope.toPagedResult()
-    }
-    
 }
 
 // MARK: - Expenses

@@ -1,6 +1,6 @@
 //
 //  PlaceOrderConfirmationViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 20/05/2026.
 //
@@ -12,45 +12,47 @@ import StorageKit
 
 @MainActor
 final class PlaceOrderConfirmationViewModel: FormViewModel {
-
     // MARK: - Callbacks
+    var onSuccess: ((OrderResponse) -> Void)?
+    var onFailure: ((String) -> Void)?
     var gotoConfirm: (() -> Void)? = { }
-
+    
     private let countryHelper = CountryHelper()
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-
+    private let ordersService = NetworkEnvironment.shared.ordersService
+    
     // MARK: - State
     private var state: State
-
+    
     // MARK: - Init
     init(_ order: PlaceOrderPayload) {
-
+        
         self.state = State(
             order: order,
             quantity: max(order.quantity, order.minimumQuantity)
         )
-
+        
         super.init()
-
+        
         sections = makeSections()
     }
-
+    
     // MARK: - Pricing (single source of truth)
-
+    
     private func unitPrice() -> Double {
         state.order.unitPrice ?? state.order.product.price ?? 0
     }
-
+    
     private var subtotal: Double {
         unitPrice() * Double(state.quantity)
     }
-
+    
     private var total: Double {
         subtotal
     }
-
+    
     // MARK: - Sections
-
+    
     private func makeSections() -> [FormSection] {
         [
             makeHeaderSection(),
@@ -60,7 +62,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             makeActionSection()
         ]
     }
-
+    
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: SectionTag.header.rawValue,
@@ -71,7 +73,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             ]
         )
     }
-
+    
     private func makeItemSection() -> FormSection {
         FormSection(
             id: SectionTag.item.rawValue,
@@ -80,7 +82,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             ]
         )
     }
-
+    
     private func makeDescriptionSection() -> FormSection {
         FormSection(
             id: SectionTag.description.rawValue,
@@ -90,7 +92,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             ]
         )
     }
-
+    
     private func makeSummarySection() -> FormSection {
         FormSection(
             id: SectionTag.summary.rawValue,
@@ -100,7 +102,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             ]
         )
     }
-
+    
     private func makeActionSection() -> FormSection {
         FormSection(
             id: SectionTag.actions.rawValue,
@@ -110,15 +112,15 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             ]
         )
     }
-
+    
     // MARK: - Order Item Row
-
+    
     private func makeOrderItemRow() -> FormRow {
-
+        
         let order = state.order
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let unitPrice = unitPrice()
-
+        
         let vm = OrderConfirmItemViewModel(
             id: order.product.id ?? 0,
             title: order.product.name ?? "Unnamed Product",
@@ -129,27 +131,27 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             minimumQuantity: order.minimumQuantity,
             onUpdate: { [weak self] updated in
                 guard let self else { return }
-
+                
                 self.state.quantity = updated.quantity
-
+                
                 Task { @MainActor in
                     self.rebuildSummarySection()
                 }
             }
         )
-
+        
         return OrderConfirmItemFormRow(
             tag: CellTag.orderItem.rawValue,
             viewModel: vm
         )
     }
-
+    
     // MARK: - Summary Row
-
+    
     private func makeOrderSummaryRow() -> FormRow {
-
+        
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-
+        
         let rows: [OrderBreakdownRowModel] = [
             OrderBreakdownRowModel(
                 title: "Unit Price",
@@ -167,7 +169,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
                 isHighlighted: true
             )
         ]
-
+        
         return OrderBreakdownFormRow(
             tag: CellTag.summary.rawValue,
             model: OrderBreakdownModel(
@@ -178,9 +180,9 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             )
         )
     }
-
+    
     // MARK: - Description Row
-
+    
     private lazy var descriptionRow = LongInputDescriptionFormRow(
         tag: CellTag.description.rawValue,
         model: LongInputDescriptionModel(
@@ -203,14 +205,14 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             }
         )
     )
-
+    
     // MARK: - Header Row
-
+    
     private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(
         title: "Products",
         description: ""
     )
-
+    
     private func makeTitleRow(title: String, description: String) -> FormRow {
         TitleDescriptionFormRow(
             tag: UUID().hashValue,
@@ -224,9 +226,9 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             )
         )
     }
-
+    
     // MARK: - Button
-
+    
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
@@ -239,35 +241,96 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
             Task { await self?.submit() }
         }
     )
-
+    
     // MARK: - FIXED RELOAD (NO makeSections CALL)
-
+    
     private func rebuildSummarySection() {
-
+        
         guard let index = sections.firstIndex(where: { $0.id == SectionTag.summary.rawValue }) else {
             return
         }
-
+        
         sections[index] = makeSummarySection()
         reloadSection(SectionTag.summary.rawValue)
     }
-
+    
     // MARK: - Submit
-
     private func submit() async {
-        // later
+        let success = await performOrderRequest()
+        
+        guard success, let response = state.lastResponse else {
+            return
+        }
+        
+        onSuccess?(response)
+        gotoConfirm?()
     }
-
+    
+    @discardableResult
+    private func performOrderRequest() async -> Bool {
+        showLoader()
+        defer { hideLoader() }
+        
+        let product = state.order.product
+        
+        guard
+            let productId = product.id,
+            let sellerId = product.trader?.id
+        else {
+            onFailure?("Invalid product data")
+            return false
+        }
+        
+        // ✅ FIX: prevent self-order (backend rule)
+        let buyerId = state.userProfile?.id ?? 0
+        if sellerId == buyerId {
+            onFailure?("You cannot order your own product")
+            return false
+        }
+        
+        let products = [
+            OrderProductRequest(
+                productId: productId,
+                quantity: state.quantity
+            )
+        ]
+        
+        do {
+            let response = try await ordersService.placeOrder(
+                sellerId: sellerId,
+                comment: state.description,
+                products: products,
+                accessToken: AppStorage.oauthToken?.accessToken ?? ""
+            )
+            
+            state.lastResponse = response
+            return true
+            
+        } catch let NetworkError.server(response) {
+            onFailure?(response.alertMessage)
+            return false
+            
+        } catch {
+            onFailure?(error.localizedDescription)
+            return false
+        }
+    }
+    
     // MARK: - State
-
+    
     private struct State {
+        var lastResponse: OrderResponse?
         let order: PlaceOrderPayload
         var quantity: Int
         var description: String = ""
+        
+        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
     }
-
+    
     // MARK: - Tags
-
+    
     private enum SectionTag: Int {
         case header = 0
         case item = 1
@@ -275,7 +338,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
         case summary = 3
         case actions = 4
     }
-
+    
     private enum CellTag: Int {
         case orderItem = 10
         case description = 12

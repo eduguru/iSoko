@@ -293,16 +293,66 @@ extension TradeAssociationFlowCoordinator {
     }
     
     private func goToPlaceOrder(with order: PlaceOrderPayload) {
+        guard AppStorage.hasLoggedIn ?? false else {
+            presentAuthBottomSheet()
+            return
+        }
+        
         guard let router = modalRouter else { return }
 
         let viewModel = PlaceOrderConfirmationViewModel(order)
+
+        viewModel.onSuccess = { [weak self] response in
+            guard let self else { return }
+
+            self.goToShowSuccessScreen(
+                title: "Order Placed",
+                message: "Order \(response.orderNumber) created successfully",
+                onDismiss: {
+                    self.modalRouter?.pop(animated: true)
+                }
+            )
+        }
+
+        viewModel.onFailure = { [weak self] message in
+            self?.goToShowError(message: message)
+        }
+
+        viewModel.gotoConfirm = { [weak self] in
+            guard let self else { return }
+
+            // optional: analytics / navigation hook
+            print("Order confirmed flow completed")
+        }
+
         let vc = PlaceOrderConfirmationViewController()
         vc.viewModel = viewModel
+
         vc.closeAction = { [weak self] in
             self?.modalRouter?.pop(animated: true)
         }
 
         router.push(vc, animated: true)
+    }
+    
+    func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
         
+        coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
+            onDismiss?()
+        }
+    }
+    
+    func goToShowError(message: String) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentErrorAlert(
+            title: "Error",
+            message: message,
+            onPrimaryAction: { },
+            onSecondaryAction: { }
+        )
     }
 }

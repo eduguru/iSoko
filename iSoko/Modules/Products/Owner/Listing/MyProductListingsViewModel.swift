@@ -17,7 +17,9 @@ final class MyProductListingsViewModel: FormViewModel {
     private var state = State()
     
     // MARK: - Services
+    private let ordersService = NetworkEnvironment.shared.ordersService
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
     @MainActor private let countryHelper = CountryHelper()
     
     // MARK: - Search Debounce Task
@@ -74,7 +76,7 @@ final class MyProductListingsViewModel: FormViewModel {
     @discardableResult
     private func fetchStatistics() async -> Bool {
         do {
-            let stats = try await bookKeepingService.getOrderSummary(
+            let stats = try await ordersService.getOrderSummary(
                 userId: state.userProfile?.sub ?? 0,
                 accessToken: state.oauthToken
             )

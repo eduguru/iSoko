@@ -16,7 +16,7 @@ final class MyOrdersViewModel: FormViewModel {
     private var state = State()
     
     // MARK: - Services
-    private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    private let ordersService = NetworkEnvironment.shared.ordersService
     
     // MARK: - Search Debounce Task
     private var searchTask: Task<Void, Never>?
@@ -48,7 +48,7 @@ final class MyOrdersViewModel: FormViewModel {
     @discardableResult
     private func fetchOrders() async -> Bool {
         do {
-            let response = try await bookKeepingService.getAllOrders(
+            let response = try await ordersService.getAllOrders(
                 page: 1,
                 count: 10,
                 traderType: "buyer",
