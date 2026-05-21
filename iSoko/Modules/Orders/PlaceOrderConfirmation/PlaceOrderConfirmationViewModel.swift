@@ -12,55 +12,175 @@ import StorageKit
 
 @MainActor
 final class PlaceOrderConfirmationViewModel: FormViewModel {
+
+    // MARK: - Callbacks
     var gotoConfirm: (() -> Void)? = { }
-    
-    @MainActor private let countryHelper = CountryHelper()
 
-    // MARK: - Services
+    private let countryHelper = CountryHelper()
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-    
-    // MARK: -
-    private var state = State()
 
-    // MARK: -
-    override init() {
+    // MARK: - State
+    private var state: State
+
+    // MARK: - Init
+    init(_ order: PlaceOrderPayload) {
+
+        self.state = State(
+            order: order,
+            quantity: max(order.quantity, order.minimumQuantity)
+        )
+
         super.init()
-        
-        Task { @MainActor in
-            
-            sections = makeSections()
-        }
+
+        sections = makeSections()
     }
 
-    // MARK: - Section Builder
+    // MARK: - Pricing (single source of truth)
+
+    private func unitPrice() -> Double {
+        state.order.unitPrice ?? state.order.product.price ?? 0
+    }
+
+    private var subtotal: Double {
+        unitPrice() * Double(state.quantity)
+    }
+
+    private var total: Double {
+        subtotal
+    }
+
+    // MARK: - Sections
+
     private func makeSections() -> [FormSection] {
         [
-            FormSection(
-                id: SectionTag.main.rawValue,
-                cells: [
-                    SpacerFormRow(tag: 20),
-                    descriptionRow,
-                ]
-            )
+            makeHeaderSection(),
+            makeItemSection(),
+            makeDescriptionSection(),
+            makeSummarySection(),
+            makeActionSection()
         ]
     }
 
-    // MARK: - Rows
-    private func makeTitleRow(title: String, description: String) -> FormRow {
-        TitleDescriptionFormRow(
-            tag: UUID().hashValue,
-            model: TitleDescriptionModel(
-                title: title,
-                description: description,
-                layoutStyle: .stackedVertical,
-                textAlignment: .left,
-                titleFontStyle: .body,
-                descriptionFontStyle: .subheadline
+    private func makeHeaderSection() -> FormSection {
+        FormSection(
+            id: SectionTag.header.rawValue,
+            cells: [
+                SpacerFormRow(tag: 1),
+                titleDescriptionFormRow,
+                SpacerFormRow(tag: 1)
+            ]
+        )
+    }
+
+    private func makeItemSection() -> FormSection {
+        FormSection(
+            id: SectionTag.item.rawValue,
+            cells: [
+                makeOrderItemRow()
+            ]
+        )
+    }
+
+    private func makeDescriptionSection() -> FormSection {
+        FormSection(
+            id: SectionTag.description.rawValue,
+            cells: [
+                SpacerFormRow(tag: 2),
+                descriptionRow
+            ]
+        )
+    }
+
+    private func makeSummarySection() -> FormSection {
+        FormSection(
+            id: SectionTag.summary.rawValue,
+            cells: [
+                SpacerFormRow(tag: 3),
+                makeOrderSummaryRow()
+            ]
+        )
+    }
+
+    private func makeActionSection() -> FormSection {
+        FormSection(
+            id: SectionTag.actions.rawValue,
+            cells: [
+                SpacerFormRow(tag: 4),
+                continueButtonRow
+            ]
+        )
+    }
+
+    // MARK: - Order Item Row
+
+    private func makeOrderItemRow() -> FormRow {
+
+        let order = state.order
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+        let unitPrice = unitPrice()
+
+        let vm = OrderConfirmItemViewModel(
+            id: order.product.id ?? 0,
+            title: order.product.name ?? "Unnamed Product",
+            subtitle: order.product.traderFullName ?? "Unknown Seller",
+            currency: currency,
+            pricePerUnit: Decimal(unitPrice),
+            quantity: state.quantity,
+            minimumQuantity: order.minimumQuantity,
+            onUpdate: { [weak self] updated in
+                guard let self else { return }
+
+                self.state.quantity = updated.quantity
+
+                Task { @MainActor in
+                    self.rebuildSummarySection()
+                }
+            }
+        )
+
+        return OrderConfirmItemFormRow(
+            tag: CellTag.orderItem.rawValue,
+            viewModel: vm
+        )
+    }
+
+    // MARK: - Summary Row
+
+    private func makeOrderSummaryRow() -> FormRow {
+
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+
+        let rows: [OrderBreakdownRowModel] = [
+            OrderBreakdownRowModel(
+                title: "Unit Price",
+                value: Helpers.formatCurrency(unitPrice(), currency: currency),
+                isHighlighted: false
+            ),
+            OrderBreakdownRowModel(
+                title: "Quantity",
+                value: "\(state.quantity)",
+                isHighlighted: false
+            ),
+            OrderBreakdownRowModel(
+                title: "Subtotal",
+                value: Helpers.formatCurrency(subtotal, currency: currency),
+                isHighlighted: true
+            )
+        ]
+
+        return OrderBreakdownFormRow(
+            tag: CellTag.summary.rawValue,
+            model: OrderBreakdownModel(
+                title: "Order Summary",
+                rows: rows,
+                totalTitle: "Total",
+                totalValue: Helpers.formatCurrency(total, currency: currency)
             )
         )
     }
-    
-    // Description input (multiline)  RichDescriptionFormRow LongInputDescriptionFormRow
+
+    // MARK: - Description Row
+
     private lazy var descriptionRow = LongInputDescriptionFormRow(
         tag: CellTag.description.rawValue,
         model: LongInputDescriptionModel(
@@ -72,56 +192,94 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
                 fixedHeight: 120
             ),
             validation: ValidationConfiguration(isRequired: true),
-            titleText: "common.label.description".localized,
+            titleText: "Message to the seller",
             useCardStyle: false,
             cardStyle: .borderAndShadow,
             cardCornerRadius: 12,
             cardBorderColor: .app(.primary),
             cardShadowColor: .gray,
-            onTextChanged: {[weak self] newText in
-                self?.state.description = newText
-            },
-            onValidationError: { error in
-                if let error = error {
-                    print("Validation error: \(error)")
-                }
+            onTextChanged: { [weak self] text in
+                self?.state.description = text
             }
         )
     )
-    
-    // MARK: - Reload // MARK: - Helpers
-    private func reloadRow(withTag tag: Int) {
-        for (sectionIndex, section) in sections.enumerated() {
-            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
-                break
-            }
-        }
+
+    // MARK: - Header Row
+
+    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(
+        title: "Products",
+        description: ""
+    )
+
+    private func makeTitleRow(title: String, description: String) -> FormRow {
+        TitleDescriptionFormRow(
+            tag: UUID().hashValue,
+            model: TitleDescriptionModel(
+                title: title,
+                description: description,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .headline,
+                descriptionFontStyle: .subheadline
+            )
+        )
     }
 
-  
+    // MARK: - Button
+
+    private lazy var continueButtonRow = ButtonFormRow(
+        tag: CellTag.continueButton.rawValue,
+        model: ButtonFormModel(
+            title: "common.button.continue".localized,
+            style: .primary,
+            size: .medium,
+            fontStyle: .headline,
+            hapticsEnabled: true
+        ) { [weak self] in
+            Task { await self?.submit() }
+        }
+    )
+
+    // MARK: - FIXED RELOAD (NO makeSections CALL)
+
+    private func rebuildSummarySection() {
+
+        guard let index = sections.firstIndex(where: { $0.id == SectionTag.summary.rawValue }) else {
+            return
+        }
+
+        sections[index] = makeSummarySection()
+        reloadSection(SectionTag.summary.rawValue)
+    }
+
     // MARK: - Submit
+
     private func submit() async {
-      
+        // later
     }
 
     // MARK: - State
-    private struct State {
-        var description: String = ""
-        
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
-        var errorMessage: String?
-        var fieldErrors: [BasicResponse.ErrorsObject]?
+    private struct State {
+        let order: PlaceOrderPayload
+        var quantity: Int
+        var description: String = ""
     }
 
+    // MARK: - Tags
+
     private enum SectionTag: Int {
-        case main = 0
+        case header = 0
+        case item = 1
+        case description = 2
+        case summary = 3
+        case actions = 4
     }
 
     private enum CellTag: Int {
+        case orderItem = 10
         case description = 12
+        case continueButton = 9
+        case summary = 13
     }
 }

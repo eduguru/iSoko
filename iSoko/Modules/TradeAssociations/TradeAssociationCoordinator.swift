@@ -270,7 +270,8 @@ extension TradeAssociationFlowCoordinator {
         guard let router = modalRouter else { return }
 
         let viewModel = ProductDetailsViewModel(product)
-
+        viewModel.onPlaceOrder = goToPlaceOrder
+        
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
 
@@ -289,5 +290,19 @@ extension TradeAssociationFlowCoordinator {
 
         router.push(vc, animated: true)
         router.navigationControllerInstance?.navigationBar.isHidden = false
+    }
+    
+    private func goToPlaceOrder(with order: PlaceOrderPayload) {
+        guard let router = modalRouter else { return }
+
+        let viewModel = PlaceOrderConfirmationViewModel(order)
+        let vc = PlaceOrderConfirmationViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.modalRouter?.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
+        
     }
 }

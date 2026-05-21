@@ -59,6 +59,7 @@ public class ProductsCoordinator: BaseCoordinator {
         }
         
         let viewModel = MyProductDetailsViewModel(item)
+        
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
         

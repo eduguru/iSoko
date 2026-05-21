@@ -41,9 +41,11 @@ public class HomeCoordinator: BaseCoordinator {
     
     private func goToProduct(_ product: ProductResponseV1) {
         let viewModel = ProductDetailsViewModel(product)
+        viewModel.onPlaceOrder = goToPlaceOrder
         
         let vc = ProductDetailsViewController()
         vc.viewModel = viewModel
+        
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
@@ -61,6 +63,19 @@ public class HomeCoordinator: BaseCoordinator {
         
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    private func goToPlaceOrder(with order: PlaceOrderPayload) {
+
+        let viewModel = PlaceOrderConfirmationViewModel(order)
+        let vc = PlaceOrderConfirmationViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
+        
     }
     
     private  func goToServiceDetails(_ product: TradeServiceResponse) {
