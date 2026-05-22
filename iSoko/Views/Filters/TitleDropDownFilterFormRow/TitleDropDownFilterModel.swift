@@ -12,7 +12,7 @@ public struct TitleDropDownFilterModel {
     // Content
     let title: String?
     let description: String?
-    let filterTitle: String?
+    var filterTitle: String?
     let filterIcon: UIImage?
 
     // Styling

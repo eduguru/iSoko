@@ -21,7 +21,10 @@ public class BookKeepingCoordinator: BaseCoordinator {
         
         let model = BookKeepingDashboardViewModel()
         
-        model.goToFilter = goToFilter
+        // model.goToFilter = goToFilter
+        model.goToFilter = { [weak self] options, completion in
+                self?.goToFilter(options: options, completion: completion)
+            }
         // model.goToDetails = goToDetails
         
         model.goToTotalSales =  goToBookKeepingSalesPayments
@@ -73,8 +76,20 @@ public class BookKeepingCoordinator: BaseCoordinator {
         router.push(vc)
     }
     
-    public func goToFilter() {
-
+    public func goToFilter(
+        options: [BottomSheetModel.BottomSheetItem],
+        completion: @escaping (BottomSheetModel.BottomSheetItem?) -> Void
+    ) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentOptionSelection(
+            title: "Choose an Option",
+            message: "Select one of the options below:",
+            options: options
+        ) { selectedItem in
+            completion(selectedItem) // Return selection back to caller
+        }
     }
     
     public func goToBookKeepingLowStock() {

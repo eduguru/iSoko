@@ -8,7 +8,7 @@
 
 import UIKit
 
-public final class BottomSheetPresentationController: UIPresentationController {
+public final class BottomSheetPresentationController: UIPresentationController, UIGestureRecognizerDelegate {
 
     private let dimmingView = UIView()
     private let style: BottomSheetModel.Style
@@ -22,8 +22,6 @@ public final class BottomSheetPresentationController: UIPresentationController {
         super.init(presentedViewController: presentedViewController, presenting: presentingViewController)
     }
 
-    // MARK: - Presentation
-
     override public func presentationTransitionWillBegin() {
         guard let containerView = containerView else { return }
 
@@ -32,9 +30,9 @@ public final class BottomSheetPresentationController: UIPresentationController {
         dimmingView.frame = containerView.bounds
         dimmingView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
 
-        dimmingView.addGestureRecognizer(
-            UITapGestureRecognizer(target: self, action: #selector(dismissSheet))
-        )
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissSheet))
+        tap.delegate = self
+        dimmingView.addGestureRecognizer(tap)
 
         containerView.insertSubview(dimmingView, at: 0)
 
@@ -53,22 +51,34 @@ public final class BottomSheetPresentationController: UIPresentationController {
         presentedViewController.dismiss(animated: true)
     }
 
+    // MARK: - UIGestureRecognizerDelegate
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        guard let presentedView = presentedView else { return true }
+        let location = touch.location(in: containerView)
+        return !presentedView.frame.contains(location)
+    }
+
     // MARK: - Layout
 
     override public var frameOfPresentedViewInContainerView: CGRect {
         guard let containerView = containerView else { return .zero }
 
         let bounds = containerView.bounds
-        let height: CGFloat = style == .floating ? 260 : 220
-
         let horizontalInset: CGFloat = style == .floating ? 16 : 0
         let width = bounds.width - (horizontalInset * 2)
 
+        // Use the full available height as a ceiling; Auto Layout inside the
+        // presented view will determine the actual rendered height via its
+        // bottomAnchor ≤ safeArea constraint. We just need the frame to be
+        // at least as tall as the content — so give it everything from the
+        // top safe area down. Touches then land correctly on every row.
+        let availableHeight = bounds.height - containerView.safeAreaInsets.top
+
         return CGRect(
             x: horizontalInset,
-            y: bounds.height - height,
+            y: bounds.height - availableHeight,
             width: width,
-            height: height
+            height: availableHeight
         )
     }
 

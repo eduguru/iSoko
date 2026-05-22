@@ -289,3 +289,32 @@ extension ModalCoordinator {
         }
     }
 }
+
+// MARK: - BottomSheet Radio / Option Selection
+extension ModalCoordinator {
+
+    /// Presents a BottomSheet with a list of selectable options (radio-style)
+    public func presentOptionSelection(
+        title: String,
+        message: String? = nil,
+        options: [BottomSheetModel.BottomSheetItem],
+        onSelect: @escaping (BottomSheetModel.BottomSheetItem) -> Void
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let topVC = self?.router.topViewController() else { return }
+
+            // Build BottomSheet model
+            let sheetModel = BottomSheetFactory.selectOption(
+                title: title,
+                message: message,
+                options: options,
+                onSelect: { selected in
+                    onSelect(selected)
+                }
+            )
+
+            // Present the sheet
+            BottomSheetCoordinator(presenter: topVC).present(sheetModel)
+        }
+    }
+}
