@@ -12,7 +12,7 @@ import UIKit
 public class InsightsCoordinator: BaseCoordinator {
     
     func primaryViewController() -> InsightsViewController {
-        var model = InsightsViewModel()
+        let model = InsightsViewModel()
         model.goToNewsDetails = goToNewsDetails
         model.goToAssociationNewsDetails = goToNewsDetails
         

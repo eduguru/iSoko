@@ -29,13 +29,19 @@ final class MyOrdersViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
-        defer { hideLoader() }
         
         Task {
             let didFetchOrders = await fetchOrders()
             
+            if didFetchOrders {
+                await fetchProductsForOrders()
+            }
+            
             await MainActor.run { [weak self] in
                 guard let self else { return }
+                
+                self.hideLoader()
+                
                 if didFetchOrders {
                     self.updateRecentActivitiesSection()
                 } else {
@@ -61,6 +67,37 @@ final class MyOrdersViewModel: FormViewModel {
         } catch {
             print("❌ Orders fetch error:", error)
             return false
+        }
+    }
+
+    private func fetchProductsForOrders() async {
+        await withTaskGroup(of: Void.self) { group in
+            
+            for index in state.items.indices {
+                let orderId = state.items[index].id
+                
+                group.addTask { [weak self] in
+                    guard let self else { return }
+                    
+                    do {
+                        let response = try await self.ordersService.getOrderProducts(
+                            orderId: orderId,
+                            page: 1,
+                            count: 3, // limit to few products
+                            accessToken: self.state.oauthToken
+                        )
+                        
+                        await MainActor.run {
+                            if let itemIndex = self.state.items.firstIndex(where: { $0.id == orderId }) {
+                                self.state.items[itemIndex].products = response
+                            }
+                        }
+                        
+                    } catch {
+                        print("❌ Failed to fetch products for order \(orderId):", error)
+                    }
+                }
+            }
         }
     }
     
@@ -226,8 +263,8 @@ final class MyOrdersViewModel: FormViewModel {
                     amount: "KES \(order.amount)",
                     amountColor: .systemGreen,
                     productImage: UIImage(named: "placeholder-product"),
-                    productName: firstProduct?.name ?? "Unknown Product",
-                    productQuantityText: "\(firstProduct?.quantity ?? 0) x KES \(firstProduct?.price ?? 0)",
+                    productName: firstProduct?.product.name ?? "Unknown Product",
+                    productQuantityText: "\(firstProduct?.quantity ?? 0) x KES \(firstProduct?.unitPrice ?? 0)",
                     productAmount: "KES \(order.amount)",
                     actions: actions
                 )
@@ -313,6 +350,10 @@ private extension MyOrdersViewModel {
                 )
                 
                 let didRefreshOrders = await fetchOrders()
+                
+                if didRefreshOrders {
+                    await fetchProductsForOrders()
+                }
                 
                 await MainActor.run { [weak self] in
                     guard let self else { return }

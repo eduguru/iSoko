@@ -23,7 +23,7 @@ public protocol OrdersService {
         page: Int,
         count: Int,
         accessToken: String
-    ) async throws -> PagedResult<[SalesResponse]>
+    ) async throws -> [OrderProductResponse]
     
     func placeOrder(
         sellerId: Int,
@@ -116,7 +116,7 @@ public extension OrdersServiceImpl {
         page: Int,
         count: Int,
         accessToken: String
-    ) async throws -> PagedResult<[SalesResponse]> {
+    ) async throws -> [OrderProductResponse] {
         
         let envelope = try await manager.request(
             OrdersApi.getOrderProducts(
@@ -127,7 +127,7 @@ public extension OrdersServiceImpl {
             )
         )
         
-        return envelope.toPagedResult()
+        return envelope
     }
     
     func placeOrder(

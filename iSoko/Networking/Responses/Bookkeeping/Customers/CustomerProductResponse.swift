@@ -19,3 +19,10 @@ public struct CustomerProductResponse: Codable {
     public let qty: Int?
     public let description: String?
 }
+
+public struct OrderProductResponse: Codable {
+    public let product: IDNamePairInt
+    public let quantity: Int?
+    public let unitPrice: Double?
+    public let totalPrice: Double?
+}

@@ -15,17 +15,18 @@ final class MyOrderDetailsViewModel: FormViewModel {
     var goToDetails: (() -> Void)? = { }
     
     var goToEdit: ((CustomerOrderResponse) -> Void)? = { _ in }
-    func goToEditAction() {  goToEdit?(state.item) }
+    func goToEditAction() { goToEdit?(state.item) }
     
     private var state: State
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    private let ordersService = NetworkEnvironment.shared.ordersService
+    
     @MainActor private let countryHelper = CountryHelper()
     
     init(_ item: CustomerOrderResponse) {
         state = State(item: item)
-        
         super.init()
         
         Task { @MainActor in
@@ -34,13 +35,43 @@ final class MyOrderDetailsViewModel: FormViewModel {
     }
     
     // MARK: - Fetch
-    override func fetchData() { }
+    override func fetchData() {
+        Task {
+            await fetchOrderProducts()
+            
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.sections = self.makeSections()
+            }
+        }
+    }
     
-    // MARK: - Sections -
+    // MARK: - Fetch Products
+    private func fetchOrderProducts() async {
+        do {
+            let response = try await ordersService.getOrderProducts(
+                orderId: state.item.id,
+                page: 1,
+                count: 5,
+                accessToken: state.oauthToken
+            )
+            
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.state.products = response
+            }
+            
+        } catch {
+            print("❌ Failed to fetch order products:", error)
+        }
+    }
+    
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             makeProfileSection(),
             makeOrderSummarySection(),
+            makeProductsSection(),
             makeStoreProfileSection()
         ]
     }
@@ -59,6 +90,13 @@ final class MyOrderDetailsViewModel: FormViewModel {
         )
     }
     
+    private func makeProductsSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.products.rawValue,
+            cells: makeProductRows()
+        )
+    }
+    
     private func makeStoreProfileSection() -> FormSection {
         FormSection(
             id: Tags.Section.storeProfile.rawValue,
@@ -66,13 +104,8 @@ final class MyOrderDetailsViewModel: FormViewModel {
         )
     }
     
-    
-    
-    // MARK: - Update Sections -
-    
-    // MARK: - Lazy Rows
-    private lazy var  statusRow: FormRow = makeStatusInfoRow()
-    // private lazy var  profileRow: FormRow = makeProfileInfoRow()
+    // MARK: - Rows
+    private lazy var statusRow: FormRow = makeStatusInfoRow()
     private lazy var storeProfileRow: FormRow = makeStoreProfileRow()
     
     private func makeStatusInfoRow() -> FormRow {
@@ -80,47 +113,30 @@ final class MyOrderDetailsViewModel: FormViewModel {
             title: "Order Status",
             subtitle: "Awaiting Fulfillment",
             statusText: state.item.displayStatus,
-            statusStyle: StatusStyle(textColor: .offWhite, backgroundColor: state.item.statusColor),
+            statusStyle: StatusStyle(
+                textColor: .offWhite,
+                backgroundColor: state.item.statusColor
+            ),
             card: .default.with(borderColor: .clear)
         )
         
-        let row = StatusCardFormRow(tag: Tags.Cells.filter.rawValue, model: model)
-        return row
-    }
-    
-    private func makeProfileInfoRow() -> FormRow {
-        let model = ProfileInfoCellConfig(
-            name: state.item.orderNumber ?? "Order Number: N/A",  // Default name if customer name is nil
-            infoItems: [
-                // Using the correct SF Symbols for each piece of info
-                makeInfoItem(state.item.buyerFullName ?? "Customer: N/A", icon: "person.fill"), // Customer name with person icon
-                makeInfoItem(state.item.datetimeCreated ?? "Description: N/A", icon: "doc.text.fill"), // Description or email with a document icon
-                makeInfoItem(state.item.displayStatus ?? "Status: N/A", icon: "creditcard.fill") // Payment method with credit card icon
-            ],
-            onEditTap: {
-                // Handle the edit action here
-            }
+        return StatusCardFormRow(
+            tag: Tags.Cells.filter.rawValue,
+            model: model
         )
-        
-        let row = ProfileInfoRow(tag: Tags.Cells.filter.rawValue, config: model)
-        return row
     }
     
     private func makeOrderSummaryRow() -> [FormRow] {
-        
         let items: [KeyValueRowModel] = [
-            
             KeyValueRowModel(
                 leftText: "Order Date",
                 rightText: state.item.datetimeCreated
             ),
-            
             KeyValueRowModel(
                 leftText: "Order Number",
                 rightText: "#\(state.item.orderNumber)",
                 usesMonospacedDigits: true
             ),
-            
             KeyValueRowModel(
                 leftText: "Payment Method",
                 rightText: "Card"
@@ -139,12 +155,32 @@ final class MyOrderDetailsViewModel: FormViewModel {
         return [group]
     }
     
+    private func makeProductRows() -> [FormRow] {
+        state.products.map { product in
+            
+            let vm = OrderConfirmItemViewModel(
+                id: product.product.id ?? 0,
+                title: product.product.name ?? "Unnamed Product",
+                subtitle: state.item.sellerFullName,
+                currency: "KES",
+                pricePerUnit: Decimal(product.unitPrice ?? 0),
+                quantity: product.quantity ?? 0,
+                minimumQuantity: product.quantity ?? 0,
+                onUpdate: { _ in }
+            )
+            
+            return OrderConfirmItemFormRow(
+                tag: product.product.id ?? UUID().hashValue,
+                viewModel: vm
+            )
+        }
+    }
+    
     private func makeStoreProfileRow() -> FormRow {
         let traderName = state.item.sellerFullName
         let phoneNumber = state.item.seller.phoneNumber ?? "0000000000"
         let email = state.item.seller.email ?? ""
         let whatsappNumber = state.item.seller.whatsappNumber ?? "0000000000"
-        
         
         return StoreProfileCardRow(
             tag: 400,
@@ -164,31 +200,25 @@ final class MyOrderDetailsViewModel: FormViewModel {
                         title: "WhatsApp",
                         image: UIImage(systemName: "message.fill"),
                         handler: {
-                            // Open WhatsApp with number
-                            let whatsappURL = URL(string: "https://wa.me/\(whatsappNumber)")!
-                            if UIApplication.shared.canOpenURL(whatsappURL) {
-                                UIApplication.shared.open(whatsappURL)
-                            } else {
-                                print("WhatsApp not installed, opening web...")
-                                UIApplication.shared.open(whatsappURL)
-                            }
+                            let url = URL(string: "https://wa.me/\(whatsappNumber)")!
+                            UIApplication.shared.open(url)
                         }
                     ),
                     .init(
                         title: "Call",
                         image: UIImage(systemName: "phone.fill"),
                         handler: {
-                            if let phoneURL = URL(string: "tel://\(phoneNumber)"), UIApplication.shared.canOpenURL(phoneURL) {
-                                UIApplication.shared.open(phoneURL)
+                            if let url = URL(string: "tel://\(phoneNumber)") {
+                                UIApplication.shared.open(url)
                             }
                         }
                     ),
                     .init(
-                        title: "common.label.email_placeholder".localized,
+                        title: "Email",
                         image: UIImage(systemName: "envelope.fill"),
                         handler: {
-                            if let emailURL = URL(string: "mailto:\(email)"), UIApplication.shared.canOpenURL(emailURL) {
-                                UIApplication.shared.open(emailURL)
+                            if let url = URL(string: "mailto:\(email)") {
+                                UIApplication.shared.open(url)
                             }
                         }
                     )
@@ -214,7 +244,7 @@ final class MyOrderDetailsViewModel: FormViewModel {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
-        var items: [StockResponse] = []
+        var products: [OrderProductResponse] = []
     }
     
     // MARK: - Tags
@@ -226,8 +256,10 @@ final class MyOrderDetailsViewModel: FormViewModel {
             case businessMetrics = 3
             case recentActivities = 4
             case orderSummary
+            case products
             case storeProfile
         }
+        
         enum Cells: Int {
             case filter = 0
             case financialSummary = 1
@@ -236,8 +268,6 @@ final class MyOrderDetailsViewModel: FormViewModel {
             case recentActivities = 4
             case orderSummary
             case storeProfile
-            
         }
     }
 }
-

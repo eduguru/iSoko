@@ -18,7 +18,7 @@ public struct CustomerOrderResponse: Codable {
     public let datetimeCreated: String
     public let buyer: CustomerUser
     public let seller: CustomerUser
-    public let products: [CustomerProductResponse]?
+    public var products: [OrderProductResponse]?
 
     enum CodingKeys: String, CodingKey {
         case id

@@ -58,7 +58,7 @@ public struct OrdersApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
-    static func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
+    static func getOrderProducts(orderId: Int, page: Int, count: Int, accessToken: String) -> ValueResponseTarget<[OrderProductResponse]> {
         let parameters: [String: Any] = [
             "page": page,
             "count": count
@@ -79,7 +79,7 @@ public struct OrdersApi {
             authorizationType: .bearer
         )
         
-        return UnifiedPagedResponseTarget(target: target)
+        return ValueResponseTarget(target: target)
     }
     
 }
