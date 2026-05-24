@@ -254,9 +254,6 @@ final class MyOrdersViewModel: FormViewModel {
         }
     }
     
-    private func confirmOrder(_ order: CustomerOrderResponse) { print("Confirm order \(order.orderNumber)") }
-    private func rejectOrder(_ order: CustomerOrderResponse) { print("Reject order \(order.orderNumber)") }
-    
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
@@ -279,6 +276,60 @@ final class MyOrdersViewModel: FormViewModel {
         
         enum Cells: Int {
             case search = 0
+        }
+    }
+}
+
+
+// MARK: - Order Actions
+private extension MyOrdersViewModel {
+    
+    func confirmOrder(_ order: CustomerOrderResponse) {
+        updateOrderStatus(
+            orderId: order.id,
+            status: "confirmed"
+        )
+    }
+    
+    func rejectOrder(_ order: CustomerOrderResponse) {
+        updateOrderStatus(
+            orderId: order.id,
+            status: "rejected"
+        )
+    }
+    
+    func updateOrderStatus(
+        orderId: Int,
+        status: String
+    ) {
+        showLoader()
+        
+        Task {
+            do {
+                _ = try await ordersService.updateOrderStatus(
+                    orderId: orderId,
+                    status: status,
+                    accessToken: state.oauthToken
+                )
+                
+                let didRefreshOrders = await fetchOrders()
+                
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    
+                    self.hideLoader()
+                    
+                    if didRefreshOrders {
+                        self.updateRecentActivitiesSection()
+                    }
+                }
+                
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.hideLoader()
+                    print("❌ Failed to update order status:", error)
+                }
+            }
         }
     }
 }

@@ -18,13 +18,15 @@ struct ServiceItem {
 
 // MARK: - Stock Report VM
 final class InsightsViewModel: FormViewModel {
+
     var gotoConfirm: ((ReportSelectionPayload) -> Void)?
     var goToDetails: (() -> Void)? = { }
     var goToAnalytics: (() -> Void)? = { }
-    
+
     var goToNewsDetails: ((DirectusNewsItem) -> Void)? = { _ in }
-    
-    // MARK: - Callbacks (Now Optional)
+    var goToAssociationNewsDetails: ((AssociationNewsItem) -> Void)? = { _ in }
+
+    // MARK: - Callbacks
     var handleMarketPrices: (() -> Void)?
     var handleTradeDocuments: (() -> Void)?
     var handleTradeProcedures: (() -> Void)?
@@ -33,93 +35,166 @@ final class InsightsViewModel: FormViewModel {
     var handleTaxInformation: (() -> Void)?
     var handleEvents: (() -> Void)?
     var handleForum: (() -> Void)?
-    
+
     private var state = State()
     private let directusService = DirectusTokenService()
-    
+
     override init() {
         super.init()
         sections = makeSections()
+        reloadBodySection(animated: false)
     }
-    
+
+    // MARK: - Lifecycle
+
     override func refresh() {
         fetchData()
     }
-    
+
     override func fetchData() {
+
         showLoader()
-        defer{ hideLoader() }
-        
+
         Task {
             do {
+
                 try await directusService.login(
                     email: AppStorage.email,
                     password: AppStorage.password
                 )
 
-                let news = try await directusService.fetchNews()
+                async let publicNewsTask = directusService.fetchNews()
 
-                state.newsItems = news
-                updateSection(at: SectionTag.body.rawValue)
+                // HARD CODED ASSOCIATION ID FOR NOW
+                async let associationNewsTask = directusService.fetchAssociationNews(
+                    associationId: "1"
+                )
+
+                let publicNews = try await publicNewsTask
+                let associationNews = try await associationNewsTask
+
+                state.newsItems = publicNews
+                state.associationNewsItems = associationNews
+
+                await MainActor.run { [weak self] in
+                    self?.hideLoader()
+                    self?.reloadBodySection(animated: true)
+                }
 
             } catch {
+
+                await MainActor.run { [weak self] in
+                    self?.hideLoader()
+                }
+
                 print("❌ Directus flow failed:", error)
             }
         }
     }
-    
+
     // MARK: - Section Builder
+
     private func makeSections() -> [FormSection] {
         [
-            // makeTitleSection(),
-            // makeSelectionSection(),
-            // makeAnalyticsSection(),
+            makeAnalyticsSection(),
+            makeHeaderSection(),
             makeBodySection()
         ]
     }
-    
-    private func makeTitleSection() -> FormSection {
+
+    private func makeHeaderSection() -> FormSection {
         FormSection(
-            id: SectionTag.action.rawValue,
+            id: SectionTag.header.rawValue,
+            title: "Latest Business News",
             cells: [
-                titleDescriptionFormRow
+                segmentedOptions
             ]
         )
     }
-    
+
     private func makeAnalyticsSection() -> FormSection {
         FormSection(
             id: SectionTag.analytics.rawValue,
             cells: makeImageRows()
         )
     }
-    
-    private func makeSelectionSection() -> FormSection {
-        FormSection(
-            id: SectionTag.selection.rawValue,
-            cells: [
-                selectionInputRow,
-                SpacerFormRow(tag: 000)
-            ]
-        )
-    }
-    
+
     private func makeBodySection() -> FormSection {
         FormSection(
             id: SectionTag.body.rawValue,
-            title: "Latest Business News",
-            actionTitle:nil,
-            onActionTapped: {
-                
-            },
+            actionTitle: nil,
+            onActionTapped: {},
             cells: []
         )
     }
-    
+
+    // MARK: - Reload Body Section
+
+    private func reloadBodySection(animated: Bool = true) {
+
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.body.rawValue
+        }) else { return }
+
+        switch state.selectedSegmentIndex {
+
+        case 0:
+            sections[index].cells = makeNewsCells()
+
+        case 1:
+            sections[index].cells = makeAssociationNewsCells()
+
+        default:
+            sections[index].cells = []
+        }
+
+        sections[index].cells.append(
+            SpacerFormRow(tag: 999999, height: 40)
+        )
+
+        reloadSection(index)
+    }
+
+    // MARK: - Segments
+
+    private lazy var segmentedOptions = makeOptionsSegmentFormRow()
+
+    private func makeOptionsSegmentFormRow() -> FormRow {
+
+        SegmentedFormRow(
+            model: SegmentedFormModel(
+                title: nil,
+                segments: [
+                    "Public News",
+                    "Association News"
+                ],
+                selectedIndex: state.selectedSegmentIndex,
+                tag: 2001,
+                tintColor: .gray,
+                selectedSegmentTintColor: .app(.primary),
+                backgroundColor: .white,
+                titleTextColor: .darkGray,
+                segmentTextColor: .lightGray,
+                selectedSegmentTextColor: .white,
+                onSelectionChanged: { [weak self] index in
+
+                    guard let self else { return }
+
+                    self.state.selectedSegmentIndex = index
+                    self.reloadBodySection(animated: true)
+                }
+            )
+        )
+    }
+
+    // MARK: - Analytics Section
+
     private func makeImageRows() -> [FormRow] {
+
         let items = makeRowItemsArray()
-        
+
         return items.enumerated().map { index, item in
+
             makeImageTitleDescriptionRow(
                 tag: 2000 + index,
                 image: item.image,
@@ -129,24 +204,27 @@ final class InsightsViewModel: FormViewModel {
             )
         }
     }
-    
+
     private func makeRowItemsArray() -> [RowItemModel] {
+
         var items: [RowItemModel] = []
-        
+
         items.append(contentsOf: [
             RowItemModel(
-                title: "Analytics",
-                description: "View analytics for your business",
-                image: .profile,
+                title: "Events",
+                description: "Trade Exhibitions and Events",
+                image: UIImage(systemName: "calendar.badge"),
                 onTap: { [weak self] in
                     self?.goToAnalytics?()
-            })
+                }
+            )
         ])
-        
+
         return items
     }
-    
-    // Generates a reusable ImageTitleDescriptionRow
+
+    // MARK: - Shared Rows
+
     private func makeImageTitleDescriptionRow(
         tag: Int,
         image: UIImage?,
@@ -154,155 +232,41 @@ final class InsightsViewModel: FormViewModel {
         description: String,
         onTap: (() -> Void)? = nil
     ) -> FormRow {
-        return ImageTitleDescriptionRow(
+
+        ImageTitleDescriptionRow(
             tag: tag,
             config: ImageTitleDescriptionConfig(
                 image: image,
                 imageStyle: .rounded,
                 title: title,
                 description: description,
-                accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
+                accessoryType: .image(
+                    image: UIImage(named: "forwardArrowRightAligned")
+                    ?? .forwardArrow
+                ),
                 onTap: onTap,
                 isCardStyleEnabled: true
             )
         )
     }
-    
-    // MARK: - Update Section
 
-    private func updateSection(at index: Int) {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == SectionTag.body.rawValue }) else {
-            return
-        }
-
-        var cells = makeNewsCells()
-        cells.append(SpacerFormRow(tag: 000, height: 40))
-        sections[sectionIndex].cells = cells
-
-        reloadSection(sectionIndex)
-    }
-    
-    private func makeTitleRow(title: String, description: String) -> FormRow {
-        TitleDescriptionFormRow(
-            tag: CellTag.reportTitle.rawValue,
-            model: TitleDescriptionModel(
-            title: title,
-            description:description,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .subheadline,
-            descriptionFontStyle: .body
-            )
-        )
-    }
-
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Business Hub", description: "Resources and guides for your business")
-    
-    private lazy var selectionInputRow: FormRow = makeSelectionGrid()
-    
-    private func makeSelectionGrid() -> FormRow {
-        
-        SelectableCardGridRow(
-            tag: CellTag.category.rawValue,
-            config: .init(
-                items: [
-                    .init(
-                        title: "common.label.market_prices".localized,
-                        subtitle: "Track revenue",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .app(.primary),
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleMarketPrices
-                        }),
-                    .init(
-                        title: "Trade Procedures",
-                        subtitle: "Track revenue",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .app(.accent),
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleTradeProcedures
-                        }),
-                    .init(
-                        title: "common.label.events".localized,
-                        subtitle: "Track revenue",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .app(.error),
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleEvents
-                        }),
-                    .init(
-                        title: "Regulatory Agencies",
-                        subtitle: "Track revenue",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .app(.warning),
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleRegulatoryAgencies
-                        }),
-                    .init(
-                        title: "Standards",
-                        subtitle: "Track revenue",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .accent,
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleStandards
-                        }),
-                    .init(
-                        title: "Tax Information",
-                        subtitle: "Tax Information",
-                        icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
-                        iconTintColor: .accent,
-                        selectionColor: .clear,
-                        selectionImage: nil,
-                        showsSelection: false,
-                        onTap: { [weak self] _ in
-                            self?.state.selectedReport = .sales
-                            self?.handleTaxInformation
-                        })
-                    
-                ],
-                allowsMultipleSelection: false
-            )
-        )
-    }
-    
-    // MARK: - News
+    // MARK: - Public News
 
     private func makeNewsCells() -> [FormRow] {
+
         state.newsItems.enumerated().map { index, item in
-            
-            // Parse createdOn ISO string into Date
+
             let createdDate: Date? = {
                 guard let createdOn = item.createdOn else { return nil }
                 return parseDirectusDate(createdOn)
             }()
-            
-            // Format the date for display
-            let createdOnText = createdDate.map { formatNewsDate($0) } ?? "No Date"
-            let imageURL = item.featuredImage?.urlString(baseURL: "https://directus.dev.isoko.africa/")
+
+            let createdOnText = createdDate.map {
+                formatNewsDate($0)
+            } ?? "No Date"
+
+            let imageURL = item.featuredImage?
+                .urlString(baseURL: "https://directus.dev.isoko.africa/")
 
             return InfoListingFormRow(
                 tag: 9000 + index,
@@ -321,44 +285,103 @@ final class InsightsViewModel: FormViewModel {
             )
         }
     }
-    
+
+    // MARK: - Association News
+
+    private func makeAssociationNewsCells() -> [FormRow] {
+
+        state.associationNewsItems.enumerated().map { index, item in
+
+            let createdDate: Date? = {
+                guard let createdOn = item.createdOn else { return nil }
+                return parseDirectusDate(createdOn)
+            }()
+
+            let createdOnText = createdDate.map {
+                formatNewsDate($0)
+            } ?? "No Date"
+
+            return InfoListingFormRow(
+                tag: 10000 + index,
+                model: InfoListingModel(
+                    title: item.newsTitle ?? "No Title",
+                    subtitle: item.newsCategory ?? "",
+                    desc: createdOnText,
+                    icon: .blankRectangle,
+                    cardBackgroundColor: .white,
+                    cardRadius: 0,
+                    onTap: { [weak self] in
+                        self?.handleAssociationNewsTap(index: index)
+                    }
+                )
+            )
+        }
+    }
+
+    // MARK: - News Actions
+
     private func handleNewsTap(index: Int) {
+
         guard state.newsItems.indices.contains(index) else { return }
+
         let item = state.newsItems[index]
         goToNewsDetails?(item)
     }
-    
+
+    private func handleAssociationNewsTap(index: Int) {
+
+        guard state.associationNewsItems.indices.contains(index) else { return }
+
+        let item = state.associationNewsItems[index]
+        goToAssociationNewsDetails?(item)
+    }
+
+    // MARK: - Date Helpers
+
     private func parseDirectusDate(_ isoString: String) -> Date? {
+
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
+
         return formatter.date(from: isoString)
     }
 
     private func formatNewsDate(_ date: Date) -> String {
+
         let formatter = DateFormatter()
         formatter.dateFormat = "dd MMM yyyy, hh:mm a"
         formatter.locale = Locale.current
         formatter.timeZone = TimeZone.current
+
         return formatter.string(from: date)
     }
-    
-    
+
     // MARK: - State
+
     private struct State {
 
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
+        var selectedSegmentIndex: Int = 0
+
         var selectedReport: ReportType?
+
         var newsItems: [DirectusNewsItem] = []
+        var associationNewsItems: [AssociationNewsItem] = []
 
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
     }
-    
+
     // MARK: - Enums
+
     private enum SectionTag: Int {
         case title = 0
         case action
@@ -368,6 +391,7 @@ final class InsightsViewModel: FormViewModel {
         case financialSummary
         case body
         case analytics
+        case header
     }
 
     private enum CellTag: Int {

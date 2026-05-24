@@ -55,7 +55,7 @@ final class ShareAppViewModel: FormViewModel {
         config: ContentCardModel(
             title: "Share the iSOKO app invite code",
             text: "Share the iSOKO app by inviting your friends to check it out.",
-            image: .promoPage,
+            image: .logo,
             imagePosition: .center,
             imageHeight: 340,
             cardSettings: .default
@@ -80,7 +80,7 @@ final class ShareAppViewModel: FormViewModel {
 
     private lazy var submitButtonRow: FormRow = {
         let title = "Share App"
-        let style: ButtonStyleType = state.isLoggedIn ? .primary : .outlined
+        let style: ButtonStyleType = .outlined// state.isLoggedIn ? .primary : .outlined
 
         let buttonModel = ButtonFormModel(
             title: title,

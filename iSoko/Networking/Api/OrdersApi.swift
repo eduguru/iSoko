@@ -117,3 +117,168 @@ extension OrdersApi {
         return ValueResponseTarget(target: target)
     }
 }
+
+extension OrdersApi {
+    
+    static func getOrderById(
+        orderId: Int,
+        accessToken: String
+    ) -> ValueResponseTarget<OrderResponse> {
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)",
+            method: .get,
+            task: .requestPlain,
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func updateOrderStatus(
+        orderId: Int,
+        status: String,
+        accessToken: String
+    ) -> ValueResponseTarget<OrderResponse> {
+        
+        let parameters: [String: Any] = [
+            "status": status
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func addProductToOrder(
+        orderId: Int,
+        productId: Int,
+        quantity: Int,
+        accessToken: String
+    ) -> ValueResponseTarget<OrderResponse> {
+        
+        let parameters: [String: Any] = [
+            "productId": productId,
+            "quantity": quantity
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)/products",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func updateOrderProduct(
+        orderId: Int,
+        productId: Int,
+        quantity: Int,
+        accessToken: String
+    ) -> ValueResponseTarget<OrderResponse> {
+        
+        let parameters: [String: Any] = [
+            "quantity": quantity
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)/products/\(productId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func deleteOrderProduct(
+        orderId: Int,
+        productId: Int,
+        accessToken: String
+    ) -> ValueResponseTarget<AnyCodable> {
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)/products/\(productId)",
+            method: .delete,
+            task: .requestPlain,
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func addOrderRating(
+        orderId: Int,
+        rating: Double,
+        accessToken: String
+    ) -> ValueResponseTarget<OrderResponse> {
+        
+        let parameters: [String: Any] = [
+            "rating": rating
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "orders/\(orderId)/ratings",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+}
