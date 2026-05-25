@@ -1509,17 +1509,25 @@
                 }
             }
         },
-        "common.get_statrted" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Get Started"
-                    }
-                }
+        
+        "common.get_started" : {
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : { "state" : "translated", "value" : "Get Started" }
+            },
+            "fr" : {
+              "stringUnit" : { "state" : "translated", "value" : "Commencer" }
+            },
+            "rw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Tangira" }
+            },
+            "sw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Anza" }
             }
+          }
         },
+        
         "common.help_feedback.about_us" : {
             "extractionState" : "manual",
             "localizations" : {
@@ -5261,28 +5269,43 @@
                 }
             }
         },
+        
         "common.name" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Name"
-                    }
-                }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : { "state" : "translated", "value" : "Name" }
+            },
+            "fr" : {
+              "stringUnit" : { "state" : "translated", "value" : "Nom" }
+            },
+            "rw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Izina" }
+            },
+            "sw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Jina" }
             }
+          }
         },
+
         "common.next" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Next"
-                    }
-                }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : { "state" : "translated", "value" : "Next" }
+            },
+            "fr" : {
+              "stringUnit" : { "state" : "translated", "value" : "Suivant" }
+            },
+            "rw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Ibikurikira" }
+            },
+            "sw" : {
+              "stringUnit" : { "state" : "translated", "value" : "Ifuatayo" }
             }
+          }
         },
+        
         "common.reset_password_success.header_description" : {
             "extractionState" : "manual",
             "localizations" : {
@@ -5458,230 +5481,135 @@
             }
         },
         "common.reset_password.email_placeholder" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Enter email"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Saisir l'e-mail"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Injiza imeli"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Weka barua pepe"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Enter email" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Saisir l'e-mail" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Injiza imeli" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Weka barua pepe" } }
+          }
         },
+
         "common.reset_password.email_required_error" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Email is required"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "L'e-mail est obligatoire"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Imeli irasabwa"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Barua pepe inahitajika"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Email is required" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "L'e-mail est obligatoire" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Imeli irasabwa" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Barua pepe inahitajika" } }
+          }
         },
+
         "common.reset_password.header_description" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Don’t worry! It happens. Please enter the email associated with your account."
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Ne vous inquiétez pas ! Cela arrive. Veuillez saisir l'e-mail associé à votre compte."
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Ntugire impungenge! Biba. Injiza imeli ishamikiye kuri konti yawe."
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Usijali! Hutokea. Tafadhali weka barua pepe inayohusiana na akaunti yako."
-                    }
-                }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Don’t worry! It happens. Please enter the email associated with your account."
+              }
+            },
+            "fr" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Ne vous inquiétez pas ! Cela arrive. Veuillez saisir l'e-mail associé à votre compte."
+              }
+            },
+            "rw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Ntugire impungenge! Biba. Injiza imeli ishamikiye kuri konti yawe."
+              }
+            },
+            "sw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Usijali! Hutokea. Tafadhali weka barua pepe inayohusiana na akaunti yako."
+              }
             }
+          }
         },
+
         "common.reset_password.header_title" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Forgot password?"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Mot de passe oublié ?"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Wibagiwe ijambo banga?"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Umesahau nywila?"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Forgot password?" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Mot de passe oublié ?" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Wibagiwe ijambo banga?" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Umesahau nywila?" } }
+          }
         },
+
         "common.select_region" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Select Region"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Select Region" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Sélectionner une région" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Hitamo akarere" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Chagua eneo" } }
+          }
         },
+
         "common.select_region_desc" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Please Select your country or region"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Please Select your country or region" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Veuillez sélectionner votre pays ou région" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Hitamo igihugu cyangwa akarere kawe" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Tafadhali chagua nchi au eneo lako" } }
+          }
         },
+
         "common.signup.header_description" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Select your type of account that best describe your needs"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Sélectionnez le type de compte qui correspond le mieux à vos besoins"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Hitamo ubwoko bwa konti buhuye n'ibyo ukeneye"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Chagua aina ya akaunti inayofaa mahitaji yako"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Select your type of account that best describe your needs" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Sélectionnez le type de compte qui correspond le mieux à vos besoins" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Hitamo ubwoko bwa konti buhuye n'ibyo ukeneye" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Chagua aina ya akaunti inayofaa mahitaji yako" } }
+          }
         },
+
         "common.signup.header_title" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Choose your account type"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Choisissez votre type de compte"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Hitamo ubwoko bwa konti"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Chagua aina ya akaunti"
-                    }
-                }
-            }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose your account type" } },
+            "fr" : { "stringUnit" : { "state" : "translated", "value" : "Choisissez votre type de compte" } },
+            "rw" : { "stringUnit" : { "state" : "translated", "value" : "Hitamo ubwoko bwa konti" } },
+            "sw" : { "stringUnit" : { "state" : "translated", "value" : "Chagua aina ya akaunti" } }
+          }
         },
+
         "common.signup.option_individual_description" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Perfect for sole proprietor, freelancers, and individual business owners managing their own operations"
-                    }
-                },
-                "fr" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Idéal pour les auto-entrepreneurs, les freelances et les propriétaires d'entreprises individuelles gérant leurs propres opérations"
-                    }
-                },
-                "rw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Ikwiye inzobere, abakora ubwabo, n'abanyabikorwa bafata ibyemezo bagenzi"
-                    }
-                },
-                "sw" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Kamili kwa wafanyabiashara wa peke yao, wakandarasi huru, na wamiliki wa biashara binafsi"
-                    }
-                }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Perfect for sole proprietor, freelancers, and individual business owners managing their own operations"
+              }
+            },
+            "fr" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Idéal pour les auto-entrepreneurs, les freelances et les propriétaires d'entreprises individuelles gérant leurs propres opérations"
+              }
+            },
+            "rw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Bikwiriye abikorera ku giti cyabo, abakora ubwabo, n'abafite ubucuruzi bwabo bwite"
+              }
+            },
+            "sw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Inafaa kwa wafanyabiashara binafsi, wafanyakazi huru, na wamiliki wa biashara za mtu mmoja wanaosimamia shughuli zao"
+              }
             }
+          }
         },
+        
         "common.signup.option_individual_name" : {
             "extractionState" : "manual",
             "localizations" : {
@@ -5769,17 +5697,37 @@
                 }
             }
         },
+        
         "common.skip" : {
-            "extractionState" : "manual",
-            "localizations" : {
-                "en" : {
-                    "stringUnit" : {
-                        "state" : "translated",
-                        "value" : "Skip"
-                    }
-                }
+          "extractionState" : "manual",
+          "localizations" : {
+            "en" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Skip"
+              }
+            },
+            "fr" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Passer"
+              }
+            },
+            "rw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Simbuka"
+              }
+            },
+            "sw" : {
+              "stringUnit" : {
+                "state" : "translated",
+                "value" : "Ruka"
+              }
             }
+          }
         },
+        
         "common.status.action_needed" : {
             "extractionState" : "manual",
             "localizations" : {
@@ -5896,6 +5844,7 @@
                 }
             }
         },
+        
         "common.status.on_track" : {
             "extractionState" : "manual",
             "localizations" : {
@@ -7098,7 +7047,57 @@
               "rw" : { "stringUnit" : { "state" : "translated", "value" : "Amategeko n’amabwiriza" } },
               "sw" : { "stringUnit" : { "state" : "translated", "value" : "Sheria na Masharti" } }
             }
+          },
+          "tab.market.title" : {
+            "extractionState" : "manual",
+            "localizations" : {
+              "en" : { "stringUnit" : { "state" : "translated", "value" : "Market" } },
+              "fr" : { "stringUnit" : { "state" : "translated", "value" : "Marché" } },
+              "rw" : { "stringUnit" : { "state" : "translated", "value" : "Isoko" } },
+              "sw" : { "stringUnit" : { "state" : "translated", "value" : "Soko" } }
+            }
+          },
+
+          "tab.business.title" : {
+            "extractionState" : "manual",
+            "localizations" : {
+              "en" : { "stringUnit" : { "state" : "translated", "value" : "Business" } },
+              "fr" : { "stringUnit" : { "state" : "translated", "value" : "Affaires" } },
+              "rw" : { "stringUnit" : { "state" : "translated", "value" : "Ubucuruzi" } },
+              "sw" : { "stringUnit" : { "state" : "translated", "value" : "Biashara" } }
+            }
+          },
+
+          "tab.insight.title" : {
+            "extractionState" : "manual",
+            "localizations" : {
+              "en" : { "stringUnit" : { "state" : "translated", "value" : "Insight" } },
+              "fr" : { "stringUnit" : { "state" : "translated", "value" : "Analyse" } },
+              "rw" : { "stringUnit" : { "state" : "translated", "value" : "Inyunguruzo" } },
+              "sw" : { "stringUnit" : { "state" : "translated", "value" : "Uchambuzi" } }
+            }
+          },
+
+          "tab.services.title" : {
+            "extractionState" : "manual",
+            "localizations" : {
+              "en" : { "stringUnit" : { "state" : "translated", "value" : "Services" } },
+              "fr" : { "stringUnit" : { "state" : "translated", "value" : "Services" } },
+              "rw" : { "stringUnit" : { "state" : "translated", "value" : "Serivisi" } },
+              "sw" : { "stringUnit" : { "state" : "translated", "value" : "Huduma" } }
+            }
+          },
+
+          "tab.account.title" : {
+            "extractionState" : "manual",
+            "localizations" : {
+              "en" : { "stringUnit" : { "state" : "translated", "value" : "Account" } },
+              "fr" : { "stringUnit" : { "state" : "translated", "value" : "Compte" } },
+              "rw" : { "stringUnit" : { "state" : "translated", "value" : "Konti" } },
+              "sw" : { "stringUnit" : { "state" : "translated", "value" : "Akaunti" } }
+            }
           }
+          
         
     },
     "version" : "1.0"

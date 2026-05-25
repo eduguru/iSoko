@@ -15,49 +15,49 @@ final class MainTabsViewModel {
     
     private func appTabs() -> [TabBarItemModel] {
         return [
-            // Market Tab - New icon with house and filled when selected
+            // Market Tab
             TabBarItemModel(
-                icon: UIImage(systemName: "house")!, // House icon for normal state
-                selectedIcon: UIImage(systemName: "house.fill"), // House icon filled for selected state
-                title: "Market",
+                icon: UIImage(systemName: "house")!,
+                selectedIcon: UIImage(systemName: "house.fill"),
+                title: "tab.market.title".localized,
                 color: .app(.primary),
                 badgeCount: 0,
                 showBadge: false,
-                showTitleOnlyWhenSelected: true // Title only shows when selected
+                showTitleOnlyWhenSelected: true
             ),
-            
+
             // Business Tab
             TabBarItemModel(
                 icon: .businessTabIcon,
-                title: "Business",
+                title: "tab.business.title".localized,
                 color: .app(.primary),
-                showTitleOnlyWhenSelected: true // Title only shows when selected
+                showTitleOnlyWhenSelected: true
             ),
-            
+
             // Insight Tab
             TabBarItemModel(
                 icon: .insightsTabIcon,
-                title: "Insight",
+                title: "tab.insight.title".localized,
                 color: .app(.primary),
                 badgeCount: 0,
                 showBadge: false,
-                showTitleOnlyWhenSelected: true // Title only shows when selected
+                showTitleOnlyWhenSelected: true
             ),
-            
+
             // Services Tab
 //            TabBarItemModel(
 //                icon: .servicesTabIcon,
-//                title: "Services",
+//                title: "tab.services.title".localized,
 //                color: .app(.primary),
-//                showTitleOnlyWhenSelected: true // Title only shows when selected
+//                showTitleOnlyWhenSelected: true
 //            ),
-            
+
             // Account Tab
             TabBarItemModel(
                 icon: .accountTabIcon,
-                title: "Account",
+                title: "tab.account.title".localized,
                 color: .app(.primary),
-                showTitleOnlyWhenSelected: true // Title only shows when selected
+                showTitleOnlyWhenSelected: true
             )
         ]
     }

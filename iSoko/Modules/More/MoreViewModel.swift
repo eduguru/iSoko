@@ -160,7 +160,7 @@ final class MoreViewModel: FormViewModel {
                 tag: 3001,
                 image: UIImage(systemName: "questionmark.circle.fill"),
                 title: "common.more_view.help_support".localized,
-                description: "common.help_support.description".localized,
+                description: "common.more_view.help_support_description".localized,
                 onTap: { [weak self] in self?.gotoHelpFeedback?() }
             ),
             makeImageTitleDescriptionRow(

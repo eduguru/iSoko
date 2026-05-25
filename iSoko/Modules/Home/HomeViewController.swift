@@ -28,7 +28,7 @@ class HomeViewController: FormViewController, CloseableViewController {
         let actionButton01 = UIBarButtonItem(customView: btn01)
         let actionButton02 = UIBarButtonItem(customView: btn02)
         
-        navigationItem.rightBarButtonItems = [actionButton02, actionButton01]
+        // navigationItem.rightBarButtonItems = [actionButton02, actionButton01]
     }
     
     override func viewWillAppear(_ animated: Bool) {

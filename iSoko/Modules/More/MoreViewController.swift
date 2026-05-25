@@ -15,7 +15,7 @@ class MoreViewController: FormViewController, CloseableViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "Account"
+        title = "tab.account.title".localized
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
     }
     

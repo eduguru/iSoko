@@ -20,22 +20,62 @@ final class LocalizationManager {
     }
 
     func setLanguage(_ language: String) {
+        LanguageProvider.shared.setLanguage(language)
+    }
+}
 
-        // 1. Save as source of truth
+
+final class LanguageProvider {
+
+    static let shared = LanguageProvider()
+
+    private init() {}
+
+    private var bundle: Bundle = .main
+    private let lock = NSLock()
+
+    // MARK: - Public
+
+    func setLanguage(_ language: String) {
+
         AppStorage.selectedLanguage = language
 
-        // 2. IMPORTANT: Tell iOS to use it
+        // Persistence (next launch only)
         UserDefaults.standard.set([language], forKey: "AppleLanguages")
-        UserDefaults.standard.synchronize()
 
-        // 3. Notify UI
+        // Update runtime bundle
+        lock.lock()
+        bundle = Self.loadBundle(for: language)
+        lock.unlock()
+
         NotificationCenter.default.post(
             name: .languageChanged,
             object: nil
         )
+    }
 
+    func localizedString(for key: String) -> String {
+        lock.lock()
+        let currentBundle = bundle
+        lock.unlock()
+
+        return currentBundle.localizedString(forKey: key, value: nil, table: nil)
+    }
+
+    // MARK: - Bundle loader
+
+    private static func loadBundle(for language: String) -> Bundle {
+        guard
+            let path = Bundle.main.path(forResource: language, ofType: "lproj"),
+            let bundle = Bundle(path: path)
+        else {
+            return .main
+        }
+
+        return bundle
     }
 }
+
 
 extension Notification.Name {
     static let languageChanged = Notification.Name("languageChanged")

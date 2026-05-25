@@ -11,67 +11,111 @@ import UIKit
 import StorageKit
 
 final class LanguagePickerViewModel: FormViewModel {
+
     var confirmSelection: ((Language) -> Void)? = { _ in }
 
     private var state: State?
+
+    // MARK: - Init
 
     override init() {
         self.state = State()
         super.init()
 
         self.sections = makeSections()
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleLanguageChange),
+            name: .languageChanged,
+            object: nil
+        )
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    // MARK: - Language Change Handler
+
+    @objc private func handleLanguageChange() {
+        refreshAllSectionsForLanguageChange()
+    }
+
+    private func refreshAllSectionsForLanguageChange() {
+
+        // rebuild full UI with new localized strings
+        sections = makeSections()
+
+        reloadSection(Tags.Section.header.rawValue)
+        reloadSection(Tags.Section.languages.rawValue)
+        reloadSection(Tags.Section.confirmation.rawValue)
     }
 
     // MARK: - Section Builders
-    
-    private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-        
-        sections.append(FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]))
-        sections.append(makeSelectionSection())
-        sections.append(FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow]))
 
-        return sections
+    private func makeSections() -> [FormSection] {
+
+        return [
+            makeHeaderSection(),
+            makeSelectionSection(),
+            makeConfirmationSection()
+        ]
     }
 
-    private func makeHeaderTitleRow() -> FormRow {
-        let row = TitleDescriptionFormRow(
-            tag: 101,
-            model: TitleDescriptionModel(
-            title:  "common.language_picker.title".localized,
-            description: "common.language_picker.description".localized,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .headline
+    private func makeHeaderSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.header.rawValue,
+            title: nil,
+            cells: [makeHeaderTitleRow()]
         )
-        )
-        
-        return row
     }
 
     private func makeSelectionSection() -> FormSection {
-        FormSection(id: Tags.Section.languages.rawValue, cells: makeSelectionCells())
+        FormSection(
+            id: Tags.Section.languages.rawValue,
+            cells: makeSelectionCells()
+        )
     }
 
-    private func updateSelectionSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.languages.rawValue }) else { return }
-        sections[sectionIndex].cells = makeSelectionCells()
-        reloadSection(sectionIndex)
+    private func makeConfirmationSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.confirmation.rawValue,
+            title: nil,
+            cells: [makeConfirmButtonRow()]
+        )
     }
+
+    // MARK: - Header
+
+    private func makeHeaderTitleRow() -> FormRow {
+
+        TitleDescriptionFormRow(
+            tag: 101,
+            model: TitleDescriptionModel(
+                title: "common.language_picker.title".localized,
+                description: "common.language_picker.description".localized,
+                maxTitleLines: 2,
+                maxDescriptionLines: 0,
+                titleEllipsis: .none,
+                descriptionEllipsis: .none,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .title,
+                descriptionFontStyle: .headline
+            )
+        )
+    }
+
+    // MARK: - Selection
 
     private func makeSelectionCells() -> [FormRow] {
         let languages = self.languages()
         return languages.map { makeLanguageRow(for: $0) }
     }
 
-    // MARK: - Row Builders
-
     private func makeLanguageRow(for language: Language) -> SelectableRow {
+
         let tag = tag(for: language)
         let isSelected = state?.selectedLanguage?.code == language.code
 
@@ -91,6 +135,7 @@ final class LanguagePickerViewModel: FormViewModel {
                 cardBorderWidth: 1,
                 onToggle: { [weak self] selected in
                     guard let self = self else { return }
+
                     if selected {
                         self.state?.selectedLanguage = language
                         self.state?.selectedTag = tag
@@ -101,40 +146,55 @@ final class LanguagePickerViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Button Row
+    private func updateSelectionSection() {
 
-    lazy var confirmButtonRow = ButtonFormRow(
-        tag: 9999,
-        model: ButtonFormModel(
-            title: "common.button.confirm".localized,
-            style: .primary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            guard let self = self else { return }
-            guard let selectedLanguage = self.state?.selectedLanguage else { return }
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.languages.rawValue
+        }) else { return }
 
-            // Update current language
-            AppStorage.selectedLanguage = selectedLanguage.code
-            LocalizationManager.shared.setLanguage(selectedLanguage.code)
+        sections[index].cells = makeSelectionCells()
+        reloadSection(index)
+    }
 
-            // Post a notification so observers can react
-            NotificationCenter.default.post(
-                name: .languageDidChangeNotification,
-                object: nil
-            )
+    // MARK: - Confirm Button
 
-            // Call the callback if needed
-            self.confirmSelection?(selectedLanguage)
-        }
-    )
+    private func makeConfirmButtonRow() -> ButtonFormRow {
+
+        ButtonFormRow(
+            tag: 9999,
+            model: ButtonFormModel(
+                title: "common.button.confirm".localized,
+                style: .primary,
+                size: .medium,
+                icon: nil,
+                fontStyle: .headline,
+                hapticsEnabled: true
+            ) { [weak self] in
+
+                guard let self = self,
+                      let selectedLanguage = self.state?.selectedLanguage else { return }
+
+                // persist
+                AppStorage.selectedLanguage = selectedLanguage.code
+
+                // apply globally
+                LocalizationManager.shared.setLanguage(selectedLanguage.code)
+
+                // unified event (IMPORTANT FIX)
+                NotificationCenter.default.post(
+                    name: .languageChanged,
+                    object: selectedLanguage.code
+                )
+
+                self.confirmSelection?(selectedLanguage)
+            }
+        )
+    }
 
     // MARK: - Helpers
 
     private func tag(for language: Language) -> Int {
-        return language.code.hashValue
+        language.code.hashValue
     }
 
     public func languages() -> [Language] {
@@ -143,14 +203,17 @@ final class LanguagePickerViewModel: FormViewModel {
         return state?.languages ?? []
     }
 
-    // MARK: - Selection Handling (optional override)
+    // MARK: - Selection Handling
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
         switch indexPath.section {
+
         case Tags.Section.header.rawValue:
             print("Header section row selected: \(row.tag)")
+
         case Tags.Section.languages.rawValue:
             print("Language section row selected: \(row.tag)")
+
         default:
             break
         }
@@ -167,6 +230,7 @@ final class LanguagePickerViewModel: FormViewModel {
     // MARK: - Tags
 
     enum Tags {
+
         enum Section: Int {
             case header = 0
             case languages = 1

@@ -75,7 +75,7 @@ class WelcomeCoordinator: BaseCoordinator {
         
         let viewModel = OnboardingViewModel(pages, layoutStyle: buttonStyle)
         viewModel.nextButtonTitle = "common.next".localized
-        viewModel.getStartedButtonTitle = "common.get_statrted".localized
+        viewModel.getStartedButtonTitle = "common.get_started".localized
         viewModel.skipButtonTitle = "common.skip".localized
         
         let viewController = OnboardingController(viewModel: viewModel)
