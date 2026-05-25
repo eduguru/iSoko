@@ -6,44 +6,37 @@
 //
 
 import Foundation
+import UIKit
 import StorageKit
 
-public final class LocalizationManager {
+final class LocalizationManager {
+
+    static let shared = LocalizationManager()
+
     private init() {}
-    
-    // MARK: - Supported Languages
-    public static let supportedLanguages: [String] = ["en", "sw", "fr"]
-    
-    // MARK: - Default Language
-    private static let defaultLanguage = "en"
-    
-    // MARK: - Notification
-    
-    // MARK: - Persisted or fallback language
-    private static var _language: String = defaultLanguage
-    
-    public static var currentLanguage: String {
-        get {
-            if let stored = AppStorage.selectedLanguage,
-               supportedLanguages.contains(stored) {
-                return stored
-            }
-            return resolvedSystemLanguage()
-        }
-        set {
-            guard newValue != currentLanguage else { return } // Only trigger if changed
-            AppStorage.selectedLanguage = newValue
-            NotificationCenter.default.post(name: .languageDidChangeNotification, object: nil)
-        }
+
+    var currentLanguage: String {
+        AppStorage.selectedLanguage ?? "en"
     }
-    
-    /// Resolves the system-preferred language if supported
-    public static func resolvedSystemLanguage() -> String {
-        guard let preferred = Locale.preferredLanguages.first else {
-            return defaultLanguage
-        }
-        
-        let code = String(preferred.prefix(2))
-        return supportedLanguages.contains(code) ? code : defaultLanguage
+
+    func setLanguage(_ language: String) {
+
+        // 1. Save as source of truth
+        AppStorage.selectedLanguage = language
+
+        // 2. IMPORTANT: Tell iOS to use it
+        UserDefaults.standard.set([language], forKey: "AppleLanguages")
+        UserDefaults.standard.synchronize()
+
+        // 3. Notify UI
+        NotificationCenter.default.post(
+            name: .languageChanged,
+            object: nil
+        )
+
     }
+}
+
+extension Notification.Name {
+    static let languageChanged = Notification.Name("languageChanged")
 }

@@ -63,7 +63,7 @@ final class AboutUsViewModel: FormViewModel {
     private func makeAboutUsSection() -> FormSection {
         FormSection(
             id: Tags.Section.more.rawValue,
-            title: "About Us",
+            title: "common.help_feedback.about_us".localized,
             cells: [] // start empty, populate after fetching
         )
     }

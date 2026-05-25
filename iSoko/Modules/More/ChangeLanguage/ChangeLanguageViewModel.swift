@@ -8,6 +8,7 @@
 import DesignSystemKit
 import UtilsKit
 import UIKit
+import StorageKit
 
 final class ChangeLanguageViewModel: FormViewModel {
     var confirmSelection: ((Language) -> Void)? = { _ in }
@@ -38,7 +39,7 @@ final class ChangeLanguageViewModel: FormViewModel {
             tag: 101,
             model: TitleDescriptionModel(
             title:  "common.language_picker.title".localized,
-            description: "Chagua lugha / Hitamo nururimi / Sélectionnez la langue",
+            description: "common.language_picker.description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -116,7 +117,8 @@ final class ChangeLanguageViewModel: FormViewModel {
             guard let selectedLanguage = self.state?.selectedLanguage else { return }
 
             // Update current language
-            LocalizationManager.currentLanguage = selectedLanguage.code
+            AppStorage.selectedLanguage = selectedLanguage.code
+            LocalizationManager.shared.setLanguage(selectedLanguage.code)
 
             // Post a notification so observers can react
             NotificationCenter.default.post(

@@ -63,7 +63,7 @@ final class FAQsViewModel: FormViewModel {
     private func makeFAQSection() -> FormSection {
         FormSection(
             id: Tags.Section.more.rawValue,
-            title: "Frequently Asked Questions",
+            title: "faq.title".localized,
             cells: [] // start empty, populate after fetching
         )
     }

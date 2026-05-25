@@ -63,7 +63,7 @@ final class TermsConditionsViewModel: FormViewModel {
     private func makeBodySection() -> FormSection {
         FormSection(
             id: Tags.Section.body.rawValue,
-            title: "Terms and Conditions",
+            title: "terms_and_conditions.title".localized,
             cells: [] // Start empty, populate after fetch
         )
     }

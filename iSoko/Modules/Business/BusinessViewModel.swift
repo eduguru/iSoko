@@ -85,24 +85,27 @@ final class BusinessViewModel: FormViewModel {
                     .init(
                         id: "products",
                         icon: UIImage(systemName: "archivebox"),
-                        title: "Products",
+                        title: "business.hub.products".localized,
                         onTap: { [weak self] in
                             self?.goToMyProducts?()
-                    }),
+                        }
+                    ),
                     .init(
                         id: "services",
                         icon: UIImage(systemName: "wrench"),
-                        title: "Services",
+                        title: "business.hub.services".localized,
                         onTap: { [weak self] in
                             self?.goToMyServices?()
-                        }),
+                        }
+                    ),
                     .init(
                         id: "orders",
                         icon: UIImage(systemName: "doc.text"),
-                        title: "Orders",
+                        title: "business.hub.orders".localized,
                         onTap: { [weak self] in
                             self?.goToMyOrders?()
-                        })
+                        }
+                    )
                 ]
             )
         )
@@ -160,8 +163,8 @@ final class BusinessViewModel: FormViewModel {
 //                    self?.goToCurrencyExchange?()
 //            }),
             RowItemModel(
-                title: "Analytics",
-                description: "View analytics for your business",
+                title: "common.analytics.title".localized,
+                description: "common.analytics.description".localized,
                 image: .profile,
                 onTap: { [weak self] in
                     self?.goToReports?()

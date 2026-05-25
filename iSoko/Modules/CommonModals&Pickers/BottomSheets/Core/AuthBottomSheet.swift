@@ -18,12 +18,22 @@ enum AuthBottomSheet {
     ) {
         let model = BottomSheetModel(
             style: style,
-            title: "Login required",
-            message: "Please login to continue, or continue as guest.",
+            title: "auth.login_required.title".localized,
+            message: "auth.login_required.message".localized,
             showCloseButton: true,
             buttons: [
-                .init(title: "Continue as Guest", style: .secondary) { onGuest() },
-                .init(title: "Login", style: .primary) { onLogin() }
+                .init(
+                    title: "auth.continue_as_guest".localized,
+                    style: .secondary
+                ) {
+                    onGuest()
+                },
+                .init(
+                    title: "auth.login".localized,
+                    style: .primary
+                ) {
+                    onLogin()
+                }
             ]
         )
         

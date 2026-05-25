@@ -105,7 +105,7 @@ final class InsightsViewModel: FormViewModel {
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: SectionTag.header.rawValue,
-            title: "Latest Business News",
+            title: "news.latest_business_news.title".localized,
             cells: [
                 segmentedOptions
             ]
@@ -165,8 +165,8 @@ final class InsightsViewModel: FormViewModel {
             model: SegmentedFormModel(
                 title: nil,
                 segments: [
-                    "Public News",
-                    "Association News"
+                    "news.segment.public_news".localized,
+                    "news.segment.association_news".localized
                 ],
                 selectedIndex: state.selectedSegmentIndex,
                 tag: 2001,
@@ -206,13 +206,12 @@ final class InsightsViewModel: FormViewModel {
     }
 
     private func makeRowItemsArray() -> [RowItemModel] {
-
         var items: [RowItemModel] = []
 
         items.append(contentsOf: [
             RowItemModel(
-                title: "Events",
-                description: "Trade Exhibitions and Events",
+                title: "events.title".localized,
+                description: "events.description".localized,
                 image: UIImage(systemName: "calendar.badge"),
                 onTap: { [weak self] in
                     self?.goToAnalytics?()

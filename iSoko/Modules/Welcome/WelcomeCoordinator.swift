@@ -46,23 +46,23 @@ class WelcomeCoordinator: BaseCoordinator {
         
         let pages = [
             OnboardingModel(
-                title: "Africa trading Platform",
-                description: "Connecting and empowering entrepreneurs across the region by providing access to a vibrant marketplace and essential business tools.",
+                title: "onboarding.page1.title".localized,
+                description: "onboarding.page1.description".localized,
                 media: "onboarding01"
             ),
             OnboardingModel(
-                title: "Buy & Sell",
-                description: "Access a vibrant marketplace where you can buy quality products from trusted sellers or showcase your own goods and services to thousands of potential customers.",
+                title: "onboarding.page2.title".localized,
+                description: "onboarding.page2.description".localized,
                 media: "onboarding02"
             ),
             OnboardingModel(
-                title: "Expand Your Business",
-                description: "Get real-time market prices, use a currency converter, and a simple bookkeeping tool to keep your business organized and profitable.",
+                title: "onboarding.page3.title".localized,
+                description: "onboarding.page3.description".localized,
                 media: "onboarding03"
             ),
             OnboardingModel(
-                title: "Connect, Share & Grow",
-                description: "Join a trade association, participate in trade events and forums to expand your network and grow your business.",
+                title: "onboarding.page4.title".localized,
+                description: "onboarding.page4.description".localized,
                 media: "onboarding04"
             )
         ]
@@ -74,6 +74,10 @@ class WelcomeCoordinator: BaseCoordinator {
         )
         
         let viewModel = OnboardingViewModel(pages, layoutStyle: buttonStyle)
+        viewModel.nextButtonTitle = "common.next".localized
+        viewModel.getStartedButtonTitle = "common.get_statrted".localized
+        viewModel.skipButtonTitle = "common.skip".localized
+        
         let viewController = OnboardingController(viewModel: viewModel)
         viewController.modalPresentationStyle = .fullScreen
         
@@ -131,7 +135,10 @@ class WelcomeCoordinator: BaseCoordinator {
         // coordinator.delegate = self
         addChild(coordinator)
         coordinator.goToLanguageSelection { [weak self] result in
+            
             AppStorage.selectedLanguage = result.name
+            LocalizationManager.shared.setLanguage(result.code)
+            
             AppStorage.hasSelectedLanguage = true
             self?.gotoSelectRegion()
         }

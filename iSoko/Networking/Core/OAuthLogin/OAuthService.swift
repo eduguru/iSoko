@@ -225,37 +225,39 @@ extension OAuthTokenService {
 }
 
 // MARK: - ASWebAuthenticationPresentationContextProviding
-
 extension OAuthService: ASWebAuthenticationPresentationContextProviding {
+
     public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
-        if #available(iOS 15.0, *) {
-            // iOS 15+ version uses newer Scene API
-            return UIApplication.shared
-                .connectedScenes
+
+        // Always resolve on MAIN THREAD (required for UIKit safety)
+        if Thread.isMainThread {
+            return resolveWindow()
+        }
+
+        var window: UIWindow?
+
+        DispatchQueue.main.sync {
+            window = resolveWindow()
+        }
+
+        return window ?? UIWindow()
+    }
+
+    // MARK: - UIKit-safe resolution (MUST be main thread)
+    private func resolveWindow() -> UIWindow {
+
+        if #available(iOS 13.0, *) {
+            return UIApplication.shared.connectedScenes
                 .compactMap { $0 as? UIWindowScene }
-                .first?
-                .windows
-                .first(where: { $0.isKeyWindow }) ?? ASPresentationAnchor()
+                .flatMap { $0.windows }
+                .first { $0.isKeyWindow }
+            ?? UIApplication.shared.connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap { $0.windows }
+                .first
+            ?? UIWindow()
         } else {
-            // iOS 14 fallback
-            var anchor: UIWindow?
-            let getKeyWindow = {
-                anchor = UIApplication.shared
-                    .connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .first?
-                    .windows
-                    .first(where: { $0.isKeyWindow })
-            }
-            
-            if Thread.isMainThread {
-                getKeyWindow()
-            } else {
-                DispatchQueue.main.sync {
-                    getKeyWindow()
-                }
-            }
-            return anchor ?? ASPresentationAnchor()
+            return UIApplication.shared.keyWindow ?? UIWindow()
         }
     }
 }

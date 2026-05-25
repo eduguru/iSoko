@@ -241,7 +241,7 @@ final class ProductListingsViewModel: FormViewModel {
         return FormSection(
             id: SectionTag.productList.rawValue,
             title: title,
-            cells: [productGridRow]
+            cells: [productGridRow],
         )
     }
 

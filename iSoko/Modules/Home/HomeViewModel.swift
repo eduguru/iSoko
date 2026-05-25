@@ -227,7 +227,7 @@ final class HomeViewModel: FormViewModel {
     private func makeCategoriesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.categories.rawValue,
-            title: "Product Categories",
+            title: "home.categories.title".localized,
             actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreProductCategories?()
@@ -235,11 +235,11 @@ final class HomeViewModel: FormViewModel {
             cells: [productCategoriesFormRow]
         )
     }
-    
+
     private func makeServicesQuickActionsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.serviceCategories.rawValue,
-            title: "Service Categories",
+            title: "home.services.title".localized,
             actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreServiceCategories?()
@@ -247,7 +247,7 @@ final class HomeViewModel: FormViewModel {
             cells: [tradeServiceCategoriesFormRow]
         )
     }
-    
+
     private func makeBannerSection() -> FormSection {
         return FormSection(
             id: Tags.Section.banner.rawValue,
@@ -255,11 +255,11 @@ final class HomeViewModel: FormViewModel {
             cells: [bannerRow]
         )
     }
-    
+
     private func makeTrendingProductsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingProducts.rawValue,
-            title: "Trending Products",
+            title: "home.trending_products.title".localized,
             actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreProduct?()
@@ -267,23 +267,23 @@ final class HomeViewModel: FormViewModel {
             cells: [trendingProducts]
         )
     }
-    
+
     private func makeTrendingServicesSection() -> FormSection {
         return FormSection(
             id: Tags.Section.trendingServices.rawValue,
-            title: "Trending Services",
-            actionTitle: "See All",
+            title: "home.trending_services.title".localized,
+            actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 self?.onTapMoreServices?()
             },
             cells: [trendingServices]
         )
     }
-    
+
     private func makeTopDealsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.topDeals.rawValue,
-            title: "Top Deals",
+            title: "home.top_deals.title".localized,
             actionTitle: "common.action.see_all".localized,
             onActionTapped: { [weak self] in
                 // Implement later
@@ -291,19 +291,28 @@ final class HomeViewModel: FormViewModel {
             cells: [topDealsRow]
         )
     }
-    
+
     private func makeExportCardsSection() -> FormSection {
         return FormSection(
             id: Tags.Section.exportCards.rawValue,
-            title: "Featured Associations",
-            actionTitle: nil, // "See All",
+            title: "home.featured_associations.title".localized,
+            actionTitle: nil,
             onActionTapped: {
                 print("See All Export Councils")
             },
             cells: [exportCardsRow]
         )
     }
-    
+
+    private func makeOpportunitySection() -> FormSection {
+        FormSection(
+            id: Tags.Section.opportunities.rawValue,
+            title: "home.opportunities.title".localized,
+            actionTitle: "common.action.see_all".localized,
+            onActionTapped: { print("See All") },
+            cells: [opportunityRow]
+        )
+    }
     // MARK: - Update Sections
     
     private func updateBannerSection() {
@@ -433,15 +442,18 @@ final class HomeViewModel: FormViewModel {
     }
     
     // MARK: - Form Rows
-    lazy var topDealsRow = TopDealsFormRow(
-        tag: Tags.Cells.topDeals.rawValue,
-        items: makeTopDealItems()
-    )
+    lazy var opportunityRow = OpportunityFormRow(tag: 99, items: makeOpportunityItems())
+    lazy var topDealsRow = TopDealsFormRow(tag: Tags.Cells.topDeals.rawValue,items: makeTopDealItems())
+    
+    lazy var productCategoriesFormRow = QuickActionsFormRow(tag: 1, items: makeProductCategoryItems())
+    lazy var tradeServiceCategoriesFormRow = QuickActionsFormRow(tag: 2, items: makeServiceCategoryItems())
+    lazy var trendingProducts = FeaturedDealsGridFormRow( tag: Tags.Cells.trendingProducts.rawValue, items: makeTrendingProductItems(), columns: 2)
+    lazy var trendingServices = FeaturedDealsGridFormRow(tag: Tags.Cells.trendingServices.rawValue, items: makeTrendingServiceItemsForFeaturedGrid(), columns: 2)
     
     lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
-            placeholder: "Search for anything",
+            placeholder: "common.label.search".localized,
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,
@@ -497,30 +509,7 @@ final class HomeViewModel: FormViewModel {
         }
     }
     
-    lazy var productCategoriesFormRow = QuickActionsFormRow(
-        tag: 1,
-        items: makeProductCategoryItems()
-    )
-    
-    lazy var tradeServiceCategoriesFormRow = QuickActionsFormRow(
-        tag: 2,
-        items: makeServiceCategoryItems()
-    )
-    
-    lazy var trendingProducts = FeaturedDealsGridFormRow(
-        tag: Tags.Cells.trendingProducts.rawValue,
-        items: makeTrendingProductItems(),
-        columns: 2
-    )
-    
-    lazy var trendingServices = FeaturedDealsGridFormRow(
-        tag: Tags.Cells.trendingServices.rawValue,
-        items: makeTrendingServiceItemsForFeaturedGrid(),
-        columns: 2
-    )
-    
     // MARK: - Item Builders
-    
     private func makeTrendingServiceItemsForFeaturedGrid() -> [FeaturedDealItem] {
         return state?.featuredServices.map { service in
             
@@ -732,18 +721,6 @@ final class HomeViewModel: FormViewModel {
                 onTap: { print("Op 2 tapped") }
             )
         ]
-    }
-    
-    lazy var opportunityRow = OpportunityFormRow(tag: 99, items: makeOpportunityItems())
-    
-    private func makeOpportunitySection() -> FormSection {
-        FormSection(
-            id: Tags.Section.opportunities.rawValue,
-            title: "Opportunities",
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { print("See All") },
-            cells: [opportunityRow]
-        )
     }
 }
 

@@ -40,8 +40,8 @@ final class CountryPickerViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Select Region",
-            description: "Please Select your country or region",
+                title:  "common.select_region".localized,
+                description: "common.select_region_desc".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,

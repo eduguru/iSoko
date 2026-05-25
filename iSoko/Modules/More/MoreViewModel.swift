@@ -98,15 +98,17 @@ final class MoreViewModel: FormViewModel {
             tag: -00010,
             config: ImageIdentityHeaderConfig(
                 image: .user,
-                title: profile?.name ?? "John Doe",
-                subtitle: profile?.email ?? "email@example.com",
+                title: profile?.name ?? "user.profile.default_name".localized,
+                subtitle: profile?.email ?? "user.profile.default_email".localized,
                 leadingChip: PaddedChipView(
-                    text: profile?.verified ?? false ? "Verified" : "Not Verified",
+                    text: profile?.verified ?? false
+                        ? "user.profile.verified".localized
+                        : "user.profile.not_verified".localized,
                     icon: UIImage(systemName: "checkmark.seal.fill"),
                     tint: .systemGreen
                 ),
                 trailingChip: PaddedChipView(
-                    text: "Since May 2026",
+                    text: "user.profile.since".localized,
                     tint: .secondaryLabel
                 ),
                 onTap: {
@@ -120,25 +122,26 @@ final class MoreViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 2000,
                 image: UIImage(systemName: "bell.fill"),
-                title: "Notifications",
-                description: "Manage your notifications",
+                title: "account.notifications.title".localized,
+                description: "account.notifications.description".localized,
                 onTap: { [weak self] in self?.gotoSettings?() }
             ),
             makeImageTitleDescriptionRow(
                 tag: 2001,
                 image: UIImage(systemName: "person.2.fill"),
-                title: "Trade Associations",
-                description: "Manage your associations",
+                title: "account.trade_associations.title".localized,
+                description: "account.trade_associations.description".localized,
                 onTap: { [weak self] in self?.gotoTradeAssociations?() }
             ),
             makeImageTitleDescriptionRow(
                 tag: 2002,
                 image: UIImage(systemName: "bag.fill"),
-                title: "My Orders",
-                description: "View your orders and wishlist",
+                title: "account.orders.title".localized,
+                description: "account.orders.description".localized,
                 onTap: { [weak self] in self?.gotoMyOrders?() }
             )
         ]
+        
         return FormSection(id: Tags.Section.account.rawValue, cells: rows)
     }
     
@@ -147,40 +150,43 @@ final class MoreViewModel: FormViewModel {
             makeImageTitleDescriptionRow(
                 tag: 3000,
                 image: UIImage(systemName: "globe"),
-                title: "Language Settings",
-                description: "Change your preferred language",
-                onTap: { [weak self] in self?.goToLanguageSelection?() { _ in
-                    
-                }
+                title: "settings.language.title".localized,
+                description: "settings.language.description".localized,
+                onTap: { [weak self] in
+                    self?.goToLanguageSelection?() { _ in }
                 }
             ),
             makeImageTitleDescriptionRow(
                 tag: 3001,
                 image: UIImage(systemName: "questionmark.circle.fill"),
                 title: "common.more_view.help_support".localized,
-                description: "Get assistance and support",
+                description: "common.help_support.description".localized,
                 onTap: { [weak self] in self?.gotoHelpFeedback?() }
             ),
             makeImageTitleDescriptionRow(
                 tag: 3002,
                 image: UIImage(systemName: "square.and.arrow.up"),
-                title: "Share App",
-                description: "Invite friends and earn rewards",
+                title: "share.app.title".localized,
+                description: "share.app.description".localized,
                 onTap: { [weak self] in self?.gotoShareApp?() }
             )
         ]
+        
         return FormSection(id: Tags.Section.more.rawValue, cells: rows)
     }
     
     private func makeLogoutSection() -> FormSection {
-        return FormSection(id: Tags.Section.logout.rawValue, cells: [ makeLoginButtonRow()])
+        return FormSection(
+            id: Tags.Section.logout.rawValue,
+            cells: [makeLoginButtonRow()]
+        )
     }
     
-    
-    // MARK: - Lazy / Computed Rows
-    
     private func makeLoginButtonRow() -> FormRow {
-        let title = state.isLoggedIn ? "Log out" : "Log in or sign up"
+        let title = state.isLoggedIn
+            ? "account.logout".localized
+            : "account.login_signup".localized
+
         let style: ButtonStyleType = state.isLoggedIn ? .primary : .outlined
 
         let buttonModel = ButtonFormModel(
@@ -191,6 +197,7 @@ final class MoreViewModel: FormViewModel {
             hapticsEnabled: true
         ) { [weak self] in
             guard let self = self else { return }
+
             if self.state.isLoggedIn {
                 self.signOut()
             } else {
