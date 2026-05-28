@@ -2,139 +2,104 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
-    
-    <key>UIAppFonts</key>
-    <array>
-        <string>Poppins-Regular.ttf</string>
-        <string>Poppins-Medium.ttf</string>
-        <string>Poppins-SemiBold.ttf</string>
-        <string>Poppins-Bold.ttf</string>
-    </array>
-    
-    <key>API_DOMAIN</key>
-    <string>$(API_DOMAIN)</string>
-    <key>API_PATH</key>
-    <string>$(API_PATH)</string>
-    <key>CFBundleURLTypes</key>
-    <array>
-        <!-- No custom schemes needed anymore -->
-    </array>
-
-    <key>CFBundleURLTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleURLSchemes</key>
-            <array>
-                <!-- Fallback OAuth redirect -->
-                <string>app</string>
-            </array>
-        </dict>
-    </array>
-
-    <key>com.apple.developer.associated-domains</key>
-    <array>
-        <!-- Universal Links -->
-        <string>applinks:api.dev.isoko.africa</string>
-    </array>
-
-    <key>CLIENT_ID</key>
-    <string>$(CLIENT_ID)</string>
-    <key>CLIENT_SECRET</key>
-    <string>$(CLIENT_SECRET)</string>
-    <key>DEFAULT_COUNTRY_CODE</key>
-    <string>$(COUNTRY_CODE)</string>
-    <key>ENVIRONMENT</key>
-    <string>$(ENVIRONMENT)</string>
-    <key>GIDClientID</key>
-    <string>994100242590-8fbiek5bhnlkedbgs7s8jdf18tmcv7mf.apps.googleusercontent.com</string>
-    <key>IMAGE_DOMAIN</key>
-    <string>$(IMAGE_DOMAIN)</string>
-    <key>LEGACY_CORE_DOMAIN</key>
-    <string>$(LEGACY_CORE_DOMAIN)</string>
-    <key>LEGACY_CORE_PATH</key>
-    <string>$(LEGACY_CORE_PATH)</string>
-
-    <!-- 🔒 Privacy Permissions -->
-    <key>NSCameraUsageDescription</key>
-    <string>We need camera access to allow you to upload photos.</string>
-
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>We need photo library access to allow you to upload images.</string>
-
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>We need access to save photos to your library.</string>
-
-    <key>NSMicrophoneUsageDescription</key>
-    <string>We need microphone access to record audio (if needed).</string>
-
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need your location to provide better recommendations.</string>
-
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>We need your location to provide better recommendations even when the app is in background.</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We need your location to provide better recommendations.</string>
-
-    <key>NSContactsUsageDescription</key>
-    <string>We need access to contacts to help you connect with people.</string>
-
-    <key>NSCalendarsUsageDescription</key>
-    <string>We need access to calendars to add events.</string>
-
-    <key>NSRemindersUsageDescription</key>
-    <string>We need access to reminders to add reminders.</string>
-
-    <key>NSMotionUsageDescription</key>
-    <string>We need motion access to track activity.</string>
-
-    <key>NSHealthShareUsageDescription</key>
-    <string>We need health access to share data.</string>
-
-    <key>NSHealthUpdateUsageDescription</key>
-    <string>We need health access to update data.</string>
-
-    <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>We need Bluetooth access to connect to nearby devices.</string>
-
-    <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>We need Bluetooth access to connect to nearby devices.</string>
-
-    <key>NSAppleMusicUsageDescription</key>
-    <string>We need Apple Music access to play music.</string>
-
-    <key>NSFaceIDUsageDescription</key>
-    <string>We need Face ID to authenticate your account securely.</string>
-
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-    <key>UIApplicationSceneManifest</key>
-    <dict>
-        <key>UIApplicationSupportsMultipleScenes</key>
-        <false/>
-        <key>UISceneConfigurations</key>
-        <dict>
-            <key>UIWindowSceneSessionRoleApplication</key>
-            <array>
-                <dict>
-                    <key>UISceneConfigurationName</key>
-                    <string>Default Configuration</string>
-                    <key>UISceneDelegateClassName</key>
-                    <string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-                </dict>
-            </array>
-        </dict>
-    </dict>
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>fetch</string>
-        <string>remote-notification</string>
-    </array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+		<string>Poppins-Bold.ttf</string>
+	</array>
+	<key>API_DOMAIN</key>
+	<string>$(API_DOMAIN)</string>
+	<key>API_PATH</key>
+	<string>$(API_PATH)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>app</string>
+			</array>
+		</dict>
+	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:api.dev.isoko.africa</string>
+	</array>
+	<key>CLIENT_ID</key>
+	<string>$(CLIENT_ID)</string>
+	<key>CLIENT_SECRET</key>
+	<string>$(CLIENT_SECRET)</string>
+	<key>DEFAULT_COUNTRY_CODE</key>
+	<string>$(COUNTRY_CODE)</string>
+	<key>ENVIRONMENT</key>
+	<string>$(ENVIRONMENT)</string>
+	<key>GIDClientID</key>
+	<string>994100242590-8fbiek5bhnlkedbgs7s8jdf18tmcv7mf.apps.googleusercontent.com</string>
+	<key>IMAGE_DOMAIN</key>
+	<string>$(IMAGE_DOMAIN)</string>
+	<key>LEGACY_CORE_DOMAIN</key>
+	<string>$(LEGACY_CORE_DOMAIN)</string>
+	<key>LEGACY_CORE_PATH</key>
+	<string>$(LEGACY_CORE_PATH)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to allow you to upload photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to allow you to upload images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need access to save photos to your library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need microphone access to record audio (if needed).</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to provide better recommendations.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need your location to provide better recommendations even when the app is in background.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to provide better recommendations.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>We need access to contacts to help you connect with people.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>We need access to calendars to add events.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>We need access to reminders to add reminders.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>We need motion access to track activity.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We need Bluetooth access to connect to nearby devices.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>We need Bluetooth access to connect to nearby devices.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>We need Apple Music access to play music.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>We need Face ID to authenticate your account securely.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
-

@@ -7,10 +7,13 @@
 
 import UIKit
 import DesignSystemKit
+import UtilsKit
 
 class ProfileInfoViewController: FormViewController, CloseableViewController {
     var goToEditAction: (() -> Void)?
     var makeRoot: Bool = false
+    
+    private let pickerCoordinator = FilePickerBottomSheetCoordinator()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,6 +34,32 @@ class ProfileInfoViewController: FormViewController, CloseableViewController {
         
         let actionButton01 = UIBarButtonItem(customView: btn01)
         navigationItem.rightBarButtonItem = actionButton01
+        
+        guard let vm = viewModel as? ProfileInfoViewModel else {
+            fatalError("Expected ProfileInfoViewModel")
+        }
+
+        vm.pickFile = { [weak self] completion in
+            guard let self else { return }
+
+            self.pickerCoordinator.present(
+                from: self,
+                selectionLimit: 1,
+                allowedTypes: [.png, .jpeg]
+            ) { pickedFile in
+                
+                completion(pickedFile)
+            }
+        }
+        
+        
+        vm.onPreviewImage = { [weak self] file in
+//            guard let data = file.fileData,
+//                  let image = UIImage(data: data) else { return }
+//
+//            let vc = ImagePreviewViewController(image: image)
+//            self?.present(vc, animated: true)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,5 +80,3 @@ class ProfileInfoViewController: FormViewController, CloseableViewController {
         
     }
 }
-
-

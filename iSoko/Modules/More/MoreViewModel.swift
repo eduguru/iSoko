@@ -93,12 +93,15 @@ final class MoreViewModel: FormViewModel {
     
     private func makeUserCardRow() -> FormRow {
         let profile = state.userProfile
+        let imageUrl: URL? = URL(string: profile?.profileImage ?? "")
+        let fullName = (profile?.firstName ?? "") + " " + (profile?.lastName ?? "")
         
         return ImageIdentityHeaderRow(
             tag: -00010,
             config: ImageIdentityHeaderConfig(
+                imageURL: imageUrl,
                 image: .user,
-                title: profile?.name ?? "user.profile.default_name".localized,
+                title: fullName ?? "user.profile.default_name".localized,
                 subtitle: profile?.email ?? "user.profile.default_email".localized,
                 leadingChip: PaddedChipView(
                     text: profile?.verified ?? false
@@ -263,7 +266,9 @@ final class MoreViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var userProfile: UserDetails? = AppStorage.userDetail
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
+        
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }

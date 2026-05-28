@@ -1,0 +1,92 @@
+{
+  "globalConfig": {
+    "grantType": "WTJ4cFpXNTBYMk55WldSbGJuUnBZV3h6",
+    "clientId": "ZDJsMFgyRnVaSEp2YVdSZllYQnc=",
+    "clientSecret": "VVVKb1pDUlVlRzAwTW00emNVQT0=",
+    "grantTypePassword": "Y0dGemMzZHZjbVE9",
+    "stagingUrl": "YUhSMGNITTZMeTloY0drdVpHVjJMbWx6YjJ0dkxtRm1jbWxqWVM4PQ==",
+    "stagingForumUrl": "WVhCcExtUmxkaTVwYzI5cmJ5NWhabkpwWTJFPQ==",
+    "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTVrWlhZdWFYTnZhMjh1WVdaeWFXTmhMdz09",
+    "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
+    "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
+  },
+  "countries": [
+    {
+      "id": "CD",
+      "name": "Democratic Republic of Congo",
+      "baseUrl": "YUhSMGNITTZMeTloY0drdVpISmpMbWx6YjJ0dkxtRm1jbWxqWVM4PQ==",
+      "baseForumUrl": "WVhCcExtUnlZeTVwYzI5cmJ5NWhabkpwWTJFPQ==",
+      "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTVrY21NdWFYTnZhMjh1WVdaeWFXTmhMdz09",
+      "currency": "CIF",
+      "language": "fr",
+      "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
+      "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
+    },
+    {
+      "id": "ZM",
+      "name": "Zambia",
+      "baseUrl": "YUhSMGNITTZMeTloY0drdWVtMHVhWE52YTI4dVlXWnlhV05oTHc9PQ==",
+      "baseForumUrl": "WVhCcExucHRMbWx6YjJ0dkxtRm1jbWxqWVE9PQ==",
+      "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTU2YlM1cGMyOXJieTVoWm5KcFkyRXY=",
+      "currency": "ZMW",
+      "language": "en",
+      "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
+      "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
+    },
+    {
+      "id": "KE",
+      "name": "Kenya",
+      "baseUrl": "YUhSMGNITTZMeTlyWlM1cGMyOXJieTVoWm5KcFkyRXY=",
+      "baseForumUrl": "YTJVdWFYTnZhMjh1WVdaeWFXTmg=",
+      "directusUrl": "YUhSMGNITTZMeTlyWlM1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+      "currency": "KES",
+      "language": "en",
+      "directusUsername": "WVdSdGFXNUFhMlZ1ZVdGamFHRnRZbVZ5TG05eUxtdGw=",
+      "directusPassword": "U21WdVoyRkFNVGsyTXlNdQ=="
+    },
+    {
+      "id": "TZ",
+      "name": "Tanzania",
+      "baseUrl": "YUhSMGNITTZMeTkwZWk1cGMyOXJieTVoWm5KcFkyRXY=",
+      "baseForumUrl": "ZEhvdWFYTnZhMjh1WVdaeWFXTmg=",
+      "directusUrl": "YUhSMGNITTZMeTkwZWk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+      "currency": "TZS",
+      "language": "en",
+      "directusUsername": "ZDJsMExtRmtiV2x1UUhSM1kyTXViM0pu",
+      "directusPassword": "VjJsMEl5UlRhR2xyWVcxdktqazJNeTQ9"
+    },
+    {
+      "id": "RW",
+      "name": "Rwanda",
+      "baseUrl": "YUhSMGNITTZMeTl5ZHk1cGMyOXJieTVoWm5KcFkyRXY=",
+      "baseForumUrl": "Y25jdWFYTnZhMjh1WVdaeWFXTmg=",
+      "directusUrl": "YUhSMGNITTZMeTl5ZHk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+      "currency": "RWF",
+      "language": "en",
+      "directusUsername": "ZDJsMExtRmtiV2x1UUdOM1pTNXZjbWN1Y25jPQ==",
+      "directusPassword": "VjJsMEl5UlNkMkZ1WkdFcU9UWXpMZz09"
+    },
+    {
+      "id": "UG",
+      "name": "Uganda",
+      "baseUrl": "YUhSMGNITTZMeTkxWnk1cGMyOXJieTVoWm5KcFkyRXY=",
+      "baseForumUrl": "ZFdjdWFYTnZhMjh1WVdaeWFXTmg=",
+      "directusUrl": "YUhSMGNITTZMeTkxWnk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+      "currency": "UGX",
+      "language": "en",
+      "directusUsername": "ZFhkbFlXeGhaRzFwYmtCMWQyVmhiQzVqYnk1MVp3PT0=",
+      "directusPassword": "UVdSdGFXNHhNak1qUUNFPQ=="
+    },
+    {
+      "id": "BI",
+      "name": "Burundi",
+      "baseUrl": "YUhSMGNITTZMeTlpY2k1cGMyOXJieTVoWm5KcFkyRXY=",
+      "baseForumUrl": "WW5JdWFYTnZhMjh1WVdaeWFXTmg=",
+      "directusUrl": "YUhSMGNITTZMeTlpY2k1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+      "currency": "BIF",
+      "language": "en",
+      "directusUsername": "ZDJsMExtRmtiV2x1UUdOM1pTNXZjbWN1Y25jPQ==",
+      "directusPassword": "VjJsMEl5UlNkMkZ1WkdFcU9UWXpMZz09"
+    }
+  ]
+}

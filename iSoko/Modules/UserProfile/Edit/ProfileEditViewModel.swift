@@ -12,18 +12,20 @@ import StorageKit
 
 final class ProfileEditViewModel: FormViewModel {
     
-    // MARK: - Navigation / Callbacks
+    // MARK: - Callbacks
+    var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
+    var onPreviewImage: ((PickedFile) -> Void)?
+    var gotoConfirm: (() -> Void)?
+    
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
-        _ completion: @escaping (CommonIdNameModel?) -> Void)
-    -> Void = { _, _, _ in }
-    
-    var gotoConfirm: (() -> Void)? = { }
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
     
     // MARK: - State
     private var state: State
-
+    
     // MARK: - Init
     init(userProfile: UserDetails? = AppStorage.userDetail) {
         self.state = State(userDetail: userProfile)
@@ -31,14 +33,14 @@ final class ProfileEditViewModel: FormViewModel {
         self.sections = makeSections()
         configureInputHandlers()
     }
-
+    
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             FormSection(
                 id: Tags.Section.body.rawValue,
                 cells: [
-                    imageRow,
+                    makeUserCardRow(),
                     firstNameInputRow,
                     lastNameInputRow,
                     emailInputRow,
@@ -51,26 +53,75 @@ final class ProfileEditViewModel: FormViewModel {
             )
         ]
     }
-
-    // MARK: - Rows
     
-    private lazy var imageRow = EditableImageFormRow(
-        tag: Tags.Cells.headerImage.rawValue,
-        config: .init(
-            image: UIImage(named: "user"),
-            imageUrl: URL(string: state.userProfile?.profileImage ?? ""),
-            height: 120,
-            fillWidth: false,
-            alignment: .center,
-            editable: true,
-            backgroundColor: .clear,
-            cornerRadius: 60
-        ),
-        onEditTapped: { [weak self] in
-            // self?.presentImagePicker()
+    // MARK: - HEADER ROW (SOURCE OF TRUTH)
+    private func makeUserCardRow() -> FormRow {
+        let profile = state.userProfile
+        let imageUrl: URL? = URL(string: profile?.profileImage ?? "")
+        
+        let fullName = ((profile?.firstName ?? "") + " " + (profile?.lastName ?? ""))
+            .trimmingCharacters(in: .whitespaces)
+        
+        let image: UIImage? = {
+            if let data = state.profileImageData {
+                return UIImage(data: data)
+            }
+            return .user
+        }()
+        
+        return EditableImageIdentityHeaderRow(
+            tag: Tags.Cells.headerImage.rawValue,
+            config: EditableImageIdentityHeaderConfig(
+                imageURL: imageUrl,
+                image: image ?? .user,
+                title: fullName.isEmpty
+                ? "user.profile.default_name".localized
+                : fullName,
+                subtitle: profile?.email ?? "user.profile.default_email".localized,
+                
+                leadingChip: PaddedChipView(
+                    text: profile?.verified ?? false
+                    ? "user.profile.verified".localized
+                    : "user.profile.not_verified".localized,
+                    icon: UIImage(systemName: "checkmark.seal.fill"),
+                    tint: .systemGreen
+                ),
+                
+                trailingChip: PaddedChipView(
+                    text: "user.profile.since".localized,
+                    tint: .secondaryLabel
+                ),
+                
+                onProfileImageTap: { print("Profile image tapped") },
+                
+                onEditImageTap: { [weak self] in
+                    self?.triggerImagePicker()
+                }
+            )
+        )
+    }
+    
+    // MARK: - IMAGE PICK FLOW
+    private func triggerImagePicker() {
+        pickFile? { [weak self] file in
+            guard let self, let file else { return }
+            
+            // 1. Update state
+            self.state.profileImageData = file.fileData
+            
+            // 2. Replace header row in section
+            guard let sectionIndex = self.sections.firstIndex(where: {
+                $0.id == Tags.Section.body.rawValue
+            }) else { return }
+            
+            self.sections[sectionIndex].cells[0] = self.makeUserCardRow()
+            
+            // 3. Reload UI
+            self.reloadRowWithTag(Tags.Cells.headerImage.rawValue)
         }
-    )
+    }
     
+    // MARK: - INPUT ROWS
     private lazy var firstNameInputRow = makeInputRow(
         tag: Tags.Cells.firstName.rawValue,
         title: "common.label.first_name".localized,
@@ -84,22 +135,28 @@ final class ProfileEditViewModel: FormViewModel {
         placeholder: "Enter Last Name",
         initialText: state.lastName
     )
-
+    
     private lazy var emailInputRow = makeInputRow(
         tag: Tags.Cells.email.rawValue,
         title: "common.label.email_address".localized,
         placeholder: "Enter Email Address",
         initialText: state.email
     )
-
+    
     private lazy var phoneInputRow = makeInputRow(
         tag: Tags.Cells.phoneNumber.rawValue,
         title: "common.label.phone_number".localized,
         placeholder: "common.basic_profile_security.phone_placeholder".localized,
         initialText: state.phoneNumber
     )
-
-    private func makeInputRow(tag: Int, title: String, placeholder: String, initialText: String?) -> SimpleInputFormRow {
+    
+    private func makeInputRow(
+        tag: Int,
+        title: String,
+        placeholder: String,
+        initialText: String?
+    ) -> SimpleInputFormRow {
+        
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
@@ -111,16 +168,23 @@ final class ProfileEditViewModel: FormViewModel {
                 onTextChanged: { [weak self] newText in
                     guard let self else { return }
                     switch tag {
-                    case Tags.Cells.firstName.rawValue: self.state.firstName = newText
-                    case Tags.Cells.email.rawValue: self.state.email = newText
-                    case Tags.Cells.phoneNumber.rawValue: self.state.phoneNumber = newText
-                    default: break
+                    case Tags.Cells.firstName.rawValue:
+                        self.state.firstName = newText
+                    case Tags.Cells.lastName.rawValue:
+                        self.state.lastName = newText
+                    case Tags.Cells.email.rawValue:
+                        self.state.email = newText
+                    case Tags.Cells.phoneNumber.rawValue:
+                        self.state.phoneNumber = newText
+                    default:
+                        break
                     }
                 }
             )
         )
     }
-
+    
+    // MARK: - DROPDOWNS
     private lazy var selectGenderRow = DropdownFormRow(
         tag: Tags.Cells.gender.rawValue,
         config: DropdownFormConfig(
@@ -131,7 +195,7 @@ final class ProfileEditViewModel: FormViewModel {
             onTap: { [weak self] in self?.handleGenderSelection() }
         )
     )
-
+    
     private lazy var selectAgeRangeRow = DropdownFormRow(
         tag: Tags.Cells.ageGroup.rawValue,
         config: DropdownFormConfig(
@@ -142,7 +206,7 @@ final class ProfileEditViewModel: FormViewModel {
             onTap: { [weak self] in self?.handleAgeRangeSelection() }
         )
     )
-
+    
     private lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
@@ -154,33 +218,33 @@ final class ProfileEditViewModel: FormViewModel {
             hapticsEnabled: true
         ) { [weak self] in self?.gotoConfirm?() }
     )
-
-    // MARK: - Input Handlers
+    
+    // MARK: - INPUT HANDLERS
     private func configureInputHandlers() {
-        // Prefill already handled via initialText
-        // Any dynamic behaviors can be added here if needed
+        // Prefill handled via initialText
+        // No dynamic handlers needed here for now
     }
-
-    // MARK: - Selection Handlers
+    
+    // MARK: - SELECTION HANDLERS
     private func handleGenderSelection() {
         goToCommonSelectionOptions(.userGender(page: 0, count: 10), nil) { [weak self] value in
-            guard let self = self, let value = value else { return }
+            guard let self, let value else { return }
             self.state.gender = value
             self.selectGenderRow.config.placeholder = value.name
             self.reloadRowWithTag(self.selectGenderRow.tag)
         }
     }
-
+    
     private func handleAgeRangeSelection() {
         goToCommonSelectionOptions(.ageGroups(page: 0, count: 100), nil) { [weak self] value in
-            guard let self = self, let value = value else { return }
+            guard let self, let value else { return }
             self.state.ageRange = value
             self.selectAgeRangeRow.config.placeholder = value.name
             self.reloadRowWithTag(self.selectAgeRangeRow.tag)
         }
     }
-
-    // MARK: - Helpers
+    
+    // MARK: - RELOAD ROW
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -189,50 +253,65 @@ final class ProfileEditViewModel: FormViewModel {
             }
         }
     }
-
-    // MARK: - State
+    
+    // MARK: - STATE
     private struct State {
+
         var isLoggedIn: Bool = true
 
         var fullName: String?
+
         var firstName: String?
         var lastName: String?
-        
+
         var email: String?
         var phoneNumber: String?
-        var userDetail: UserDetails? = AppStorage.userDetail
-        var userProfile: UserProfileResponse? = AppStorage.userProfile
+
+        var userDetail: UserDetails?
+        var userProfile: UserProfileResponse?
 
         var gender: CommonIdNameModel?
         var ageRange: CommonIdNameModel?
 
+        // profile image override (picked file)
+        var profileImageData: Data?
+
         init(userDetail: UserDetails? = nil) {
+
             self.userDetail = userDetail
-            
+            self.userProfile = AppStorage.userProfile
+
+            // PREFILL CORE FIELDS
             self.fullName = userDetail?.name
+
             self.firstName = userProfile?.firstName
             self.lastName = userProfile?.lastName
-            
+
             self.email = userProfile?.email
             self.phoneNumber = userProfile?.phoneNumber
-            
+
+            // PREFILL DROPDOWNS
             self.gender = userProfile.flatMap { CommonIdNameModel(from: $0.gender) }
             self.ageRange = userProfile.flatMap { CommonIdNameModel(from: $0.ageGroup) }
         }
     }
-
-    // MARK: - Tags
+    
+    // MARK: - TAGS
     enum Tags {
-        enum Section: Int { case header = 0, body = 1 }
+        enum Section: Int {
+            case header = 0
+            case body = 1
+        }
+        
         enum Cells: Int {
             case headerImage = 0
             case firstName = 1
-            case email = 2
-            case phoneNumber = 3
-            case gender = 4
-            case ageGroup = 5
-            case submit = 6
-            case lastName
+            case lastName = 2
+            case email = 3
+            case phoneNumber = 4
+            case gender = 5
+            case ageGroup = 6
+            case submit = 7
         }
     }
 }

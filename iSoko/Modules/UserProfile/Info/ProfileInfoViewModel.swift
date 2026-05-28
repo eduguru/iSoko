@@ -11,138 +11,251 @@ import UtilsKit
 import StorageKit
 
 final class ProfileInfoViewModel: FormViewModel {
-    
+    // MARK: - Upload
+    var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
+    var onPreviewImage: ((PickedFile) -> Void)?
+    var gotoConfirm: (() -> Void)?
+    var goToDeleteAccount: (() -> Void)?
+    var goToChangePassword: (() -> Void)?
+
+    // MARK: - State
     private var state: State
 
+    // MARK: - Init
     override init() {
         self.state = State()
         super.init()
         self.sections = makeSections()
+        configureUploadHandlers()
     }
 
-    // MARK: - make sections
+    // MARK: - Upload Handler
+    private func configureUploadHandlers() {
+        // nothing extra needed, handled via triggerImagePicker in header row
+    }
 
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
+        [
+            // HEADER
+            FormSection(
+                id: Tags.Section.header.rawValue,
+                cells: [
+                    makeUserCardRow(),
+                    SpacerFormRow(tag: 10, height: 24)
+                ]
+            ),
 
-        sections.append(FormSection(
-            id: Tags.Section.body.rawValue,
-            cells: Helpers.insertDividers(into: [
-                imageRow,
-                firstNameRow,
-                genderRow,
-                ageGroupRow,
-                emailRow,
-                phoneNumberRow
-            ])
-        ))
+            // BODY
+            FormSection(
+                id: Tags.Section.body.rawValue,
+                cells: makeBodyRows()
+            ),
 
-        return sections
+            // ACTIONS
+            FormSection(
+                id: Tags.Section.actions.rawValue,
+                title: "Account Settings",
+                cells: makeActionRows()
+            )
+        ]
     }
 
-    // MARK: - Lazy or Computed Rows
+    // MARK: - Header Row Builder
+    private func makeUserCardRow() -> FormRow {
+        let profile = state.userProfile
+        let imageUrl: URL? = URL(string: profile?.profileImage ?? "")
 
-    private lazy var imageRow = EditableImageFormRow(
-        tag: Tags.Cells.headerImage.rawValue,
-        config: .init(
-            image: UIImage(named: "user"),
-            imageUrl: URL(string: state.userProfile?.profileImage ?? ""),
-            height: 120,
-            fillWidth: false,
-            alignment: .center,
-            editable: true,
-            backgroundColor: .clear,
-            cornerRadius: 60
-        ),
-        onEditTapped: { [weak self] in
-            // self?.presentImagePicker()
+        let fullName = ((profile?.firstName ?? "") + " " + (profile?.lastName ?? ""))
+            .trimmingCharacters(in: .whitespaces)
+
+        let image: UIImage? = {
+            if let data = state.profileImageData {
+                return UIImage(data: data)
+            }
+            return .user
+        }()
+
+        return EditableImageIdentityHeaderRow(
+            tag: Tags.Cells.headerImage.rawValue,
+            config: EditableImageIdentityHeaderConfig(
+                imageURL: imageUrl,
+                image: image ?? .user,
+                title: fullName.isEmpty
+                    ? "user.profile.default_name".localized
+                    : fullName,
+                subtitle: profile?.email ?? "user.profile.default_email".localized,
+                leadingChip: PaddedChipView(
+                    text: profile?.verified ?? false
+                        ? "user.profile.verified".localized
+                        : "user.profile.not_verified".localized,
+                    icon: UIImage(systemName: "checkmark.seal.fill"),
+                    tint: .systemGreen
+                ),
+                trailingChip: PaddedChipView(
+                    text: "user.profile.since".localized,
+                    tint: .secondaryLabel
+                ),
+                onProfileImageTap: {
+                    print("Profile image tapped")
+                },
+                onEditImageTap: { [weak self] in
+                    self?.triggerImagePicker()
+                }
+            )
+        )
+    }
+
+    // MARK: - Trigger image picker
+    private func triggerImagePicker() {
+        pickFile? { [weak self] file in
+            guard let self, let file else { return }
+
+            // 1. Update state
+            self.state.profileImageData = file.fileData
+
+            // 2. Rebuild header row in section
+            guard let sectionIndex = self.sections.firstIndex(where: { $0.id == Tags.Section.header.rawValue }) else { return }
+            self.sections[sectionIndex].cells[0] = self.makeUserCardRow()
+
+            // 3. Reload UI
+            self.reloadRow(withTag: Tags.Cells.headerImage.rawValue)
         }
-    )
+    }
 
-    private lazy var firstNameRow = TitleDescriptionFormRow(
-        tag: Tags.Cells.firstName.rawValue,
-        model: TitleDescriptionModel(
-            title: "common.label.first_name".localized,
-            description: state.userProfile?.firstName ?? "Enter your first name",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
-        )
-    )
+    // MARK: - Reload helper
+    private func reloadRow(withTag tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
+                break
+            }
+        }
+    }
 
-    private lazy var genderRow = TitleDescriptionFormRow(
-        tag: Tags.Cells.gender.rawValue,
-        model: TitleDescriptionModel(
-            title: "common.label.gender".localized,
-            description: state.userProfile?.gender?.name ?? "Select your gender",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
-        )
-    )
+    // MARK: - Body Rows
+    private func makeBodyRows() -> [FormRow] {
+        rowItems.map { item in
+            let value = item.value()
+            let description = value.isEmpty ? item.placeholder : value
 
-    private lazy var ageGroupRow = TitleDescriptionFormRow(
-        tag: Tags.Cells.ageGroup.rawValue,
-        model: TitleDescriptionModel(
-            title: "Age Group",
-            description: state.userProfile?.ageGroup?.name ?? "Select your age group",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
-        )
-    )
+            return ImageTitleDescriptionRow(
+                tag: item.tag,
+                config: ImageTitleDescriptionConfig(
+                    image: item.icon,
+                    imageStyle: .rounded,
+                    title: item.title,
+                    description: description,
+                    accessoryType: .none,
+                    onTap: nil,
+                    isCardStyleEnabled: true
+                )
+            )
+        }
+    }
 
-    private lazy var emailRow = TitleDescriptionFormRow(
-        tag: Tags.Cells.email.rawValue,
-        model: TitleDescriptionModel(
-            title: "common.label.email_address".localized,
-            description: state.userProfile?.email ?? "common.basic_profile_security.email_placeholder".localized,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
-        )
-    )
+    // MARK: - Row Items
+    private struct RowItem {
+        let tag: Int
+        let icon: UIImage?
+        let title: String
+        let value: () -> String
+        let placeholder: String
+    }
 
-    private lazy var phoneNumberRow = TitleDescriptionFormRow(
-        tag: Tags.Cells.phoneNumber.rawValue,
-        model: TitleDescriptionModel(
-            title: "common.label.phone_number".localized,
-            description: state.userProfile?.phoneNumber ?? "Enter your phone number",
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left
-        )
-    )
+    private var rowItems: [RowItem] {
+        [
+            RowItem(
+                tag: Tags.Cells.firstName.rawValue,
+                icon: UIImage(systemName: "person.fill"),
+                title: "common.label.first_name".localized,
+                value: { [weak self] in self?.state.userProfile?.firstName ?? "" },
+                placeholder: "Enter your first name"
+            ),
+            RowItem(
+                tag: Tags.Cells.gender.rawValue,
+                icon: UIImage(systemName: "person.2.fill"),
+                title: "common.label.gender".localized,
+                value: { [weak self] in self?.state.userProfile?.gender?.name ?? "" },
+                placeholder: "Select your gender"
+            ),
+            RowItem(
+                tag: Tags.Cells.ageGroup.rawValue,
+                icon: UIImage(systemName: "calendar"),
+                title: "Age Group",
+                value: { [weak self] in self?.state.userProfile?.ageGroup?.name ?? "" },
+                placeholder: "Select your age group"
+            ),
+            RowItem(
+                tag: Tags.Cells.email.rawValue,
+                icon: UIImage(systemName: "envelope.fill"),
+                title: "common.label.email_address".localized,
+                value: { [weak self] in self?.state.userProfile?.email ?? "" },
+                placeholder: "Email"
+            ),
+            RowItem(
+                tag: Tags.Cells.phoneNumber.rawValue,
+                icon: UIImage(systemName: "phone.fill"),
+                title: "common.label.phone_number".localized,
+                value: { [weak self] in self?.state.userProfile?.phoneNumber ?? "" },
+                placeholder: "Phone number"
+            )
+        ]
+    }
+
+    // MARK: - Actions
+    private func makeActionRows() -> [FormRow] {
+        [
+            ImageTitleDescriptionRow(
+                tag: 9001,
+                config: ImageTitleDescriptionConfig(
+                    image: UIImage(systemName: "key.fill"),
+                    imageStyle: .rounded,
+                    title: "Change Password",
+                    description: "Update your account password",
+                    accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
+                    onTap: {[weak self] in
+                        print("Change password")
+                        self?.goToChangePassword?()
+                    },
+                    isCardStyleEnabled: true
+                )
+            ),
+            ImageTitleDescriptionRow(
+                tag: 9002,
+                config: ImageTitleDescriptionConfig(
+                    image: UIImage(systemName: "trash.fill"),
+                    imageStyle: .rounded,
+                    title: "Delete Account",
+                    description: "Permanently remove your account",
+                    accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
+                    onTap: { [weak self] in
+                        print("Delete account")
+                        self?.goToDeleteAccount?()
+                    },
+                    isCardStyleEnabled: true
+                )
+            ),
+            SpacerFormRow(tag: 909, height: 40)
+        ]
+    }
 
     // MARK: - State
-
     private struct State {
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userDetail: UserDetails? = AppStorage.userDetail
         var userProfile: UserProfileResponse? = AppStorage.userProfile
+
+        // UI source of truth for profile image
+        var profileImageData: Data?
     }
 
     // MARK: - Tags
-
     enum Tags {
         enum Section: Int {
             case header = 0
             case body = 1
+            case actions = 2
         }
 
         enum Cells: Int {

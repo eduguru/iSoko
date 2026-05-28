@@ -403,7 +403,6 @@ class AuthCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
     
-    
     private func gotoForgotPassword() {
         let viewModel = ResetPasswordViewModel()
         // viewModel.confirmSelection = goToResetPasswordOtpVerification

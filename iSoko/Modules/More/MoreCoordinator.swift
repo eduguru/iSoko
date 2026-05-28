@@ -93,6 +93,31 @@ public class MoreCoordinator: BaseCoordinator {
         self.router.present(nav, animated: true)
     }
     
+    private func goToDeleteAccount() {
+        
+    }
+    
+    private func goToChangePassword() {
+        let viewModel = ResetPasswordViewModel()
+        // viewModel.confirmSelection = goToResetPasswordOtpVerification
+        viewModel.confirmSelection = { [weak self] value in
+            // self?.goToResetPasswordSuccess()
+            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
+                self?.showLoginFlow()
+            }
+        }
+        
+        let vc = ResetPasswordViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+        
+    }
+    
     private func gotoProfile() {
         guard AppStorage.hasLoggedIn == true else {
             presentAuthBottomSheet()
@@ -100,6 +125,9 @@ public class MoreCoordinator: BaseCoordinator {
         }
         
         let viewModel = ProfileInfoViewModel()
+        viewModel.goToDeleteAccount = goToDeleteAccount
+        viewModel.goToChangePassword = goToChangePassword
+        
         let vc = ProfileInfoViewController()
         vc.viewModel = viewModel
         
@@ -324,5 +352,14 @@ public class MoreCoordinator: BaseCoordinator {
                 AppStorage.hasLoggedIn = false
             }
         )
+    }
+    
+    func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
+            onDismiss?()
+        }
     }
 }
