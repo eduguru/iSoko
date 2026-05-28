@@ -63,42 +63,55 @@ final class ProfileInfoViewModel: FormViewModel {
 
     // MARK: - Header Row Builder
     private func makeUserCardRow() -> FormRow {
+
         let profile = state.userProfile
+
         let imageUrl: URL? = URL(string: profile?.profileImage ?? "")
 
         let fullName = ((profile?.firstName ?? "") + " " + (profile?.lastName ?? ""))
             .trimmingCharacters(in: .whitespaces)
 
-        let image: UIImage? = {
+        let localImage: UIImage? = {
             if let data = state.profileImageData {
                 return UIImage(data: data)
             }
-            return .user
+            return nil
         }()
 
         return EditableImageIdentityHeaderRow(
             tag: Tags.Cells.headerImage.rawValue,
             config: EditableImageIdentityHeaderConfig(
                 imageURL: imageUrl,
-                image: image ?? .user,
+
+                // picked image overrides remote
+                localImage: localImage,
+
+                // fallback/default
+                placeholderImage: .user,
+
                 title: fullName.isEmpty
-                    ? "user.profile.default_name".localized
-                    : fullName,
+                ? "user.profile.default_name".localized
+                : fullName,
+
                 subtitle: profile?.email ?? "user.profile.default_email".localized,
+
                 leadingChip: PaddedChipView(
                     text: profile?.verified ?? false
-                        ? "user.profile.verified".localized
-                        : "user.profile.not_verified".localized,
+                    ? "user.profile.verified".localized
+                    : "user.profile.not_verified".localized,
                     icon: UIImage(systemName: "checkmark.seal.fill"),
                     tint: .systemGreen
                 ),
+
                 trailingChip: PaddedChipView(
                     text: "user.profile.since".localized,
                     tint: .secondaryLabel
                 ),
+
                 onProfileImageTap: {
                     print("Profile image tapped")
                 },
+
                 onEditImageTap: { [weak self] in
                     self?.triggerImagePicker()
                 }

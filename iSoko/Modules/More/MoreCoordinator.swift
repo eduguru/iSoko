@@ -94,20 +94,36 @@ public class MoreCoordinator: BaseCoordinator {
     }
     
     private func goToDeleteAccount() {
+        let viewModel = ConfirmAccountDeletionViewModel()
+
+//        viewModel.confirmSelection = { [weak self] value in
+//            // self?.goToResetPasswordSuccess()
+//            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
+//                self?.showLoginFlow()
+//            }
+//        }
         
+        let vc = ConfirmAccountDeletionViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
     private func goToChangePassword() {
-        let viewModel = ResetPasswordViewModel()
-        // viewModel.confirmSelection = goToResetPasswordOtpVerification
-        viewModel.confirmSelection = { [weak self] value in
-            // self?.goToResetPasswordSuccess()
-            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
-                self?.showLoginFlow()
-            }
-        }
+        let viewModel = ChangePasswordViewModel()
+
+//        viewModel.confirmSelection = { [weak self] value in
+//            // self?.goToResetPasswordSuccess()
+//            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
+//                self?.showLoginFlow()
+//            }
+//        }
         
-        let vc = ResetPasswordViewController()
+        let vc = ChangePasswordViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)

@@ -1,5 +1,5 @@
 //
-//  ResetPasswordViewModel.swift
+//  ForgotPasswordViewModel.swift
 //  iSoko
 //
 //  Created by Edwin Weru on 12/08/2025.
@@ -10,7 +10,7 @@ import UtilsKit
 import UIKit
 import StorageKit
 
-final class ResetPasswordViewModel: FormViewModel {
+final class ForgotPasswordViewModel: FormViewModel {
     var confirmSelection: ((OTPVerificationType) -> Void)? = { _ in }
 
     private var state: State?

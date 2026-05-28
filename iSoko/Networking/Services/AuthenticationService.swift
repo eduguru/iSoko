@@ -8,6 +8,7 @@
 import NetworkingKit
 import Combine
 import Foundation
+import UtilsKit
 
 public protocol AuthenticationService {
     func login(
@@ -26,6 +27,19 @@ public protocol AuthenticationService {
     
     // MARK: - Registration
     func registerUser(_ params: [String: Any], accessToken: String) async throws -> UserProfileResponse?
+    
+    // MARK: - Profile Update
+
+    func updateUserProfile(
+        user: [String: Any]?,
+        image: PickedFile?,
+        accessToken: String
+    ) async throws -> UserProfileResponse
+
+    func updateProfileImageOnly(
+        image: PickedFile,
+        accessToken: String
+    ) async throws -> UserProfileResponse
     
     func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable
     func passwordResetComplete(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
@@ -107,6 +121,37 @@ public final class AuthenticationServiceImp: AuthenticationService {
             AuthenticationApi.registerUser(params, accessToken: accessToken)
         )
         
+        return response
+    }
+    
+    // MARK: - Profile Update
+    public func updateUserProfile(
+        user: [String: Any]?,
+        image: PickedFile?,
+        accessToken: String
+    ) async throws -> UserProfileResponse {
+        let response: UserProfileResponse = try await manager.request(
+            AuthenticationApi.updateUserProfile(
+                user: user,
+                profileImage: image,
+                accessToken: accessToken
+            )
+        )
+
+        return response
+    }
+    
+    public func updateProfileImageOnly(
+        image: PickedFile,
+        accessToken: String
+    ) async throws -> UserProfileResponse {
+        let response: UserProfileResponse = try await manager.request(
+            AuthenticationApi.updateProfileImageOnly(
+                profileImage: image,
+                accessToken: accessToken
+            )
+        )
+
         return response
     }
     

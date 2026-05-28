@@ -162,7 +162,7 @@ public extension AuthenticationApi {
 
 //MARK: - Registration
 public extension AuthenticationApi {
-    //MARK: - pre validation
+    // MARK: - REGISTER USER
     static func registerUser(_ params: [String: Any], accessToken: String) -> ValueResponseTarget<UserProfileResponse> {
         let userJSON = try? JSONSerialization.data(withJSONObject: params, options: .prettyPrinted)
         
@@ -173,6 +173,92 @@ public extension AuthenticationApi {
             jsonData: userJSON,
             files: [],
             requiresAuth: false
+        )
+
+        return ValueResponseTarget(target: t.asAnyTarget())
+    }
+}
+
+public extension AuthenticationApi {
+    // MARK: - PATCH USER PROFILE (FULL)
+    static func updateUserProfile(
+        user: [String: Any]? = nil,
+        profileImage: PickedFile? = nil,
+        accessToken: String
+    ) -> ValueResponseTarget<UserProfileResponse> {
+
+        let userJSON = user.flatMap {
+            try? JSONSerialization.data(withJSONObject: $0, options: .prettyPrinted)
+        }
+
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        var files: [UploadFile] = []
+
+        if let profileImage,
+           let data = profileImage.fileData,
+           !data.isEmpty {
+
+            files.append(
+                UploadFile(
+                    data: data,
+                    name: "profileImage",
+                    fileName: profileImage.fileName,
+                    mimeType: Helpers.mimeType(for: profileImage.fileExtension)
+                )
+            )
+        }
+
+        let t = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users",
+            method: .patch,
+            jsonPartName: user != nil ? "user" : nil,
+            jsonData: userJSON,
+            files: files,
+            headers: headers,
+            requiresAuth: true
+        )
+
+        return ValueResponseTarget(target: t.asAnyTarget())
+    }
+
+    // MARK: - PROFILE IMAGE ONLY UPDATE
+    static func updateProfileImageOnly(
+        profileImage: PickedFile,
+        accessToken: String
+    ) -> ValueResponseTarget<UserProfileResponse> {
+
+        let headers: [String: String] = [
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+
+        let file: [UploadFile] = {
+            guard let data = profileImage.fileData, !data.isEmpty else { return [] }
+
+            return [
+                UploadFile(
+                    data: data,
+                    name: "profileImage",
+                    fileName: profileImage.fileName,
+                    mimeType: Helpers.mimeType(for: profileImage.fileExtension)
+                )
+            ]
+        }()
+
+        let t = MultipartUploadTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users",
+            method: .patch,
+            jsonPartName: nil,
+            jsonData: nil,
+            files: file,
+            headers: headers,
+            requiresAuth: true
         )
 
         return ValueResponseTarget(target: t.asAnyTarget())

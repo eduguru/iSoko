@@ -1,5 +1,5 @@
 //
-//  ResetPasswordViewController.swift
+//  ForgotPasswordViewController.swift
 //  iSoko
 //
 //  Created by Edwin Weru on 12/08/2025.
@@ -8,7 +8,7 @@
 import UIKit
 import DesignSystemKit
 
-class ResetPasswordViewController: FormViewController, CloseableViewController {
+class ForgotPasswordViewController: FormViewController, CloseableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()

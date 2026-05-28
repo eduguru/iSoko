@@ -12,7 +12,7 @@ import StorageKit
 
 class AuthCoordinator: BaseCoordinator {
     private var authSession: ASWebAuthenticationSession?
-    public var oauthService: OAuthService?
+    public var oauthService: OAuthService? = OAuthService.shared
     
     override func start() {
         if AppStorage.hasShownInitialLoginOptions ?? false {
@@ -56,26 +56,25 @@ class AuthCoordinator: BaseCoordinator {
     // MARK: - Async OAuth Flow
     private func authenticate(verifier: String) async {
         do {
-            oauthService = OAuthService.shared
-            // Step 1: Get authorization code
             let code = try await oauthService!.startAuthorization(verifier: verifier)
-            
-            // Step 2: Exchange code for token
+
             let token = try await oauthService!.exchangeCodeForToken(authorizationCode: code)
-            print("✅ Token received: \(token.accessToken)")
-            
-            // Step 3: Fetch user details
+
             let user = try await oauthService!.fetchUserAndUpdateStorage()
-            print("✅ User logged in: \(user)")
-            
-            // Navigate to main tabs
+
+            await MainActor.run {
+                AppStorage.hasLoggedIn = true
+                RuntimeSession.authState = .authenticated
+            }
+
             goToMainTabs()
-            
+
         } catch {
             print("❌ OAuth flow failed:", error)
-            // Optionally show an error alert to the user
+
             await MainActor.run {
-                // show error UI
+                AppStorage.hasLoggedIn = false
+                RuntimeSession.authState = .guest
             }
         }
     }
@@ -404,7 +403,7 @@ class AuthCoordinator: BaseCoordinator {
     }
     
     private func gotoForgotPassword() {
-        let viewModel = ResetPasswordViewModel()
+        let viewModel = ForgotPasswordViewModel()
         // viewModel.confirmSelection = goToResetPasswordOtpVerification
         viewModel.confirmSelection = { [weak self] value in
             // self?.goToResetPasswordSuccess()
@@ -413,7 +412,7 @@ class AuthCoordinator: BaseCoordinator {
             }
         }
         
-        let vc = ResetPasswordViewController()
+        let vc = ForgotPasswordViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)

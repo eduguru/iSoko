@@ -69,8 +69,8 @@ public final class OAuthService: NSObject {
                     }
 
                     // Update session state immediately if desired
-                    AppStorage.hasLoggedIn = true
-                    RuntimeSession.authState = .authenticated
+//                    AppStorage.hasLoggedIn = true
+//                    RuntimeSession.authState = .authenticated
 
                     // Resume the async continuation
                     continuation.resume(returning: code)
@@ -127,8 +127,10 @@ public final class OAuthService: NSObject {
         // Update AppStorage on main actor
         await MainActor.run {
             AppStorage.userDetail = user
-            AppStorage.hasLoggedIn = true
-            RuntimeSession.authState = .authenticated
+            
+//            AppStorage.hasLoggedIn = true
+//            RuntimeSession.authState = .authenticated
+            
             if AppStorage.oauthToken != nil {
                 self.scheduleTokenRefresh()
             }

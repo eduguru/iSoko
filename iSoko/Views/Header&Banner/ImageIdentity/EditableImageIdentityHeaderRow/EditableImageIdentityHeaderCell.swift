@@ -53,7 +53,6 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
         contentView.addSubview(containerView)
         containerView.translatesAutoresizingMaskIntoConstraints = false
 
-        // Avatar container (important for overlay button)
         avatarContainer.translatesAutoresizingMaskIntoConstraints = false
         containerView.addSubview(avatarContainer)
 
@@ -63,9 +62,8 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
 
         avatarContainer.addSubview(avatarImageView)
 
-        // Edit button (overlay)
         editButton.translatesAutoresizingMaskIntoConstraints = false
-        editButton.setImage(UIImage(systemName: "pencil"), for: .normal) // "pencil.circle.fill"
+        editButton.setImage(UIImage(systemName: "pencil"), for: .normal)
         editButton.tintColor = .white
         editButton.backgroundColor = .app(.primary)
         editButton.layer.cornerRadius = 13
@@ -74,7 +72,6 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
         editButton.addTarget(self, action: #selector(handleEditTap), for: .touchUpInside)
         avatarContainer.addSubview(editButton)
 
-        // Labels
         titleLabel.font = .systemFont(ofSize: 20, weight: .semibold)
         titleLabel.textAlignment = .center
         titleLabel.numberOfLines = 0
@@ -100,7 +97,6 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
         textStack.addArrangedSubview(titleLabel)
         textStack.addArrangedSubview(subtitleLabel)
 
-        // Tap avatar
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleProfileTap))
         avatarContainer.addGestureRecognizer(tap)
     }
@@ -116,25 +112,21 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
             containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
 
-            // Avatar container
             avatarContainer.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 20),
             avatarContainer.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
             avatarContainer.widthAnchor.constraint(equalToConstant: 80),
             avatarContainer.heightAnchor.constraint(equalToConstant: 80),
 
-            // Avatar image
             avatarImageView.topAnchor.constraint(equalTo: avatarContainer.topAnchor),
             avatarImageView.bottomAnchor.constraint(equalTo: avatarContainer.bottomAnchor),
             avatarImageView.leadingAnchor.constraint(equalTo: avatarContainer.leadingAnchor),
             avatarImageView.trailingAnchor.constraint(equalTo: avatarContainer.trailingAnchor),
 
-            // Edit button overlay
             editButton.widthAnchor.constraint(equalToConstant: 30),
             editButton.heightAnchor.constraint(equalToConstant: 30),
             editButton.bottomAnchor.constraint(equalTo: avatarContainer.bottomAnchor),
             editButton.trailingAnchor.constraint(equalTo: avatarContainer.trailingAnchor),
 
-            // Text
             textStack.topAnchor.constraint(equalTo: avatarContainer.bottomAnchor, constant: 12),
             textStack.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
 
@@ -155,18 +147,21 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
         subtitleLabel.text = config.subtitle
 
         subtitleLabel.isHidden = config.subtitle?.isEmpty ?? true
-        
-        // IMPORTANT:
-        // If URL exists:
-        // - local image acts as placeholder + fallback
-        // If URL is nil:
-        // - local image is used directly
 
-        if let imageURL = config.imageURL {
+        // IMPORTANT:
+        // Local image ALWAYS wins over remote image
+
+        avatarImageView.kf.cancelDownloadTask()
+
+        if let localImage = config.localImage {
+
+            avatarImageView.image = localImage
+
+        } else if let imageURL = config.imageURL {
 
             avatarImageView.kf.setImage(
                 with: imageURL,
-                placeholder: config.image,
+                placeholder: config.placeholderImage,
                 options: [
                     .transition(.fade(0.2)),
                     .cacheOriginalImage
@@ -181,16 +176,15 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
                     break
 
                 case .failure:
-                    // fallback image
-                    self.avatarImageView.image = config.image
+                    self.avatarImageView.image = config.placeholderImage
                 }
             }
 
         } else {
-            avatarImageView.image = config.image
+
+            avatarImageView.image = config.placeholderImage
         }
-        
-        
+
         avatarImageView.layer.cornerRadius = config.imageSize.width / 2
         avatarImageView.layer.masksToBounds = true
 
@@ -224,10 +218,17 @@ public final class EditableImageIdentityHeaderCell: UITableViewCell {
         }
     }
 
+    // MARK: Reuse
+
     public override func prepareForReuse() {
         super.prepareForReuse()
+
+        avatarImageView.kf.cancelDownloadTask()
+        avatarImageView.image = nil
+
         onProfileImageTap = nil
         onEditImageTap = nil
+
         resetChips()
     }
 }
