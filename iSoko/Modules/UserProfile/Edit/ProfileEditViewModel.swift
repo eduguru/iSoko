@@ -1,6 +1,6 @@
 //
 //  ProfileEditViewModel.swift
-//  
+//
 //
 //  Created by Edwin Weru on 11/11/2025.
 //
@@ -12,39 +12,39 @@ import StorageKit
 
 @MainActor
 final class ProfileEditViewModel: FormViewModel {
-
+    
     // MARK: - Callbacks
-
+    
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
     var gotoConfirm: (() -> Void)?
-
+    
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
         _ staticOptions: [CommonIdNameModel]?,
         _ completion: @escaping (CommonIdNameModel?) -> Void
     ) -> Void = { _, _, _ in }
-
+    
     // MARK: - State
     private var state: State
     
     private let countryHelper = CountryHelper()
     private let authenticationService = NetworkEnvironment.shared.authenticationService
-
+    
     // MARK: - Init
-
+    
     init(userProfile: UserDetails? = AppStorage.userDetail) {
         self.state = State(userDetail: userProfile)
-
+        
         super.init()
-
+        
         self.sections = makeSections()
-
+        
         configureInputHandlers()
     }
-
+    
     // MARK: - Sections
-
+    
     private func makeSections() -> [FormSection] {
         [
             FormSection(
@@ -65,54 +65,54 @@ final class ProfileEditViewModel: FormViewModel {
     }
     
     // MARK: - Mutable Header Row
-
+    
     private lazy var headerRow: EditableImageIdentityHeaderRow = {
         EditableImageIdentityHeaderRow(
             tag: Tags.Cells.headerImage.rawValue,
             config: makeHeaderConfig()
         )
     }()
-
+    
     // MARK: - Header Config Builder
-
+    
     private func makeHeaderConfig() -> EditableImageIdentityHeaderConfig {
-
+        
         let profile = state.userProfile
-
+        
         let imageUrl: URL? = URL(string: profile?.profileImage ?? "")
-
+        
         let fullName = (
             (state.firstName ?? "")
             + " "
             + (state.lastName ?? "")
         )
-        .trimmingCharacters(in: .whitespaces)
-
+            .trimmingCharacters(in: .whitespaces)
+        
         let localImage: UIImage? = {
-
+            
             if let data = state.profileImageData {
                 return UIImage(data: data)
             }
-
+            
             return nil
         }()
-
+        
         return EditableImageIdentityHeaderConfig(
-
+            
             imageURL: imageUrl,
-
+            
             // local override
             localImage: localImage,
-
+            
             // fallback
             placeholderImage: .user,
-
+            
             title: fullName.isEmpty
             ? "user.profile.default_name".localized
             : fullName,
-
+            
             subtitle: state.email ?? "user.profile.default_email".localized,
-
+            
             leadingChip: PaddedChipView(
                 text: profile?.verified ?? false
                 ? "user.profile.verified".localized
@@ -120,86 +120,115 @@ final class ProfileEditViewModel: FormViewModel {
                 icon: UIImage(systemName: "checkmark.seal.fill"),
                 tint: .systemGreen
             ),
-
+            
             trailingChip: PaddedChipView(
                 text: "user.profile.since".localized,
                 tint: .secondaryLabel
             ),
-
+            
             onProfileImageTap: {
                 print("Profile image tapped")
             },
-
+            
             onEditImageTap: { [weak self] in
                 self?.triggerImagePicker()
             }
         )
     }
-
+    
     // MARK: - Mutable Header Refresh
-
+    
     private func refreshHeaderRow() {
-
+        
         headerRow.config = makeHeaderConfig()
-
+        
         reloadRowWithTag(Tags.Cells.headerImage.rawValue)
     }
-
+    
     // MARK: - IMAGE PICK FLOW
-
     private func triggerImagePicker() {
-
         pickFile? { [weak self] file in
-
             guard let self, let file else { return }
-
-            // update draft state
+            
+            // 1. Instantly update draft state for responsive local UI
+            self.state.pickedFile = file
             self.state.profileImageData = file.fileData
-
-            // mutate existing row
             self.refreshHeaderRow()
+            
+            // 2. Fire the network call immediately for the image-only update
+            Task {
+                await self.uploadProfileImage(file)
+            }
         }
     }
-
+    
+    private func uploadProfileImage(_ file: PickedFile) async {
+        showLoader()
+        defer { hideLoader() }
+        
+        do {
+            // Call your new isolated endpoint
+            let response = try await authenticationService.updateProfileImageOnly(
+                id: state.userProfile?.id ?? 0,
+                image: file,
+                accessToken: state.oauthToken
+            )
+            
+            // Sync the updated profile response back to your local cache
+            AppStorage.userProfile = response
+            print("✅ Profile image updated successfully!")
+            
+        } catch let NetworkError.server(response) {
+            print("🚫 Image upload server error:", response.message ?? "Unknown")
+            state.errorMessage = response.message
+            showError(state.errorMessage ?? "Failed to upload image")
+            
+        } catch {
+            print("❌ Image upload error:", error)
+            state.errorMessage = "Failed to save profile picture"
+            showError(state.errorMessage ?? "Something went wrong")
+        }
+    }
+    
     // MARK: - INPUT ROWS
-
+    
     private lazy var firstNameInputRow = makeInputRow(
         tag: Tags.Cells.firstName.rawValue,
         title: "common.label.first_name".localized,
         placeholder: "Enter First Name",
         initialText: state.firstName
     )
-
+    
     private lazy var lastNameInputRow = makeInputRow(
         tag: Tags.Cells.lastName.rawValue,
         title: "Last Name",
         placeholder: "Enter Last Name",
         initialText: state.lastName
     )
-
+    
     private lazy var emailInputRow = makeInputRow(
         tag: Tags.Cells.email.rawValue,
         title: "common.label.email_address".localized,
         placeholder: "Enter Email Address",
         initialText: state.email
     )
-
+    
     private lazy var phoneInputRow = makeInputRow(
         tag: Tags.Cells.phoneNumber.rawValue,
         title: "common.label.phone_number".localized,
         placeholder: "common.basic_profile_security.phone_placeholder".localized,
         initialText: state.phoneNumber
     )
-
+    
     // MARK: - Input Factory
-
+    
     private func makeInputRow(
         tag: Int,
         title: String,
         placeholder: String,
         initialText: String?
     ) -> SimpleInputFormRow {
-
+        
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
@@ -215,36 +244,36 @@ final class ProfileEditViewModel: FormViewModel {
                 ),
                 titleText: title,
                 useCardStyle: true,
-
+                
                 onTextChanged: { [weak self] newText in
-
+                    
                     guard let self else { return }
-
+                    
                     switch tag {
-
+                        
                     case Tags.Cells.firstName.rawValue:
                         self.state.firstName = newText
-
+                        
                     case Tags.Cells.lastName.rawValue:
                         self.state.lastName = newText
-
+                        
                     case Tags.Cells.email.rawValue:
                         self.state.email = newText
-
+                        
                     case Tags.Cells.phoneNumber.rawValue:
                         self.state.phoneNumber = newText
-
+                        
                     default:
                         break
                     }
-
+                    
                     // keep header reactive
                     self.refreshHeaderRow()
                 }
             )
         )
     }
-
+    
     // MARK: - DROPDOWNS
     private lazy var selectGenderRow = DropdownFormRow(
         tag: Tags.Cells.gender.rawValue,
@@ -258,7 +287,7 @@ final class ProfileEditViewModel: FormViewModel {
             }
         )
     )
-
+    
     private lazy var selectAgeRangeRow = DropdownFormRow(
         tag: Tags.Cells.ageGroup.rawValue,
         config: DropdownFormConfig(
@@ -271,7 +300,7 @@ final class ProfileEditViewModel: FormViewModel {
             }
         )
     )
-
+    
     // MARK: - Continue
     private lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
@@ -283,59 +312,61 @@ final class ProfileEditViewModel: FormViewModel {
             fontStyle: .headline,
             hapticsEnabled: true
         ) { [weak self] in
-
-            self?.gotoConfirm?()
+            // Spawn an unstructured Task to execute your async method
+            Task {
+                await self?.submit()
+            }
         }
     )
-
+    
     // MARK: - Input Handlers
     private func configureInputHandlers() {
         // reactive updates handled inline
     }
-
+    
     // MARK: - Selection Handlers
     private func handleGenderSelection() {
-
+        
         goToCommonSelectionOptions(
             .userGender(page: 0, count: 10),
             nil
         ) { [weak self] value in
-
+            
             guard let self, let value else { return }
-
+            
             self.state.gender = value
-
+            
             self.selectGenderRow.config.placeholder = value.name
-
+            
             self.reloadRowWithTag(self.selectGenderRow.tag)
         }
     }
-
+    
     private func handleAgeRangeSelection() {
         goToCommonSelectionOptions(
             .ageGroups(page: 0, count: 100),
             nil
         ) { [weak self] value in
-
+            
             guard let self, let value else { return }
-
+            
             self.state.ageRange = value
-
+            
             self.selectAgeRangeRow.config.placeholder = value.name
-
+            
             self.reloadRowWithTag(self.selectAgeRangeRow.tag)
         }
     }
-
+    
     // MARK: - Reload Row
-
+    
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
-
+            
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-
+                
                 onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
-
+                
                 break
             }
         }
@@ -344,49 +375,54 @@ final class ProfileEditViewModel: FormViewModel {
     private func performProfileUpdate() async -> Bool {
         showLoader()
         defer { hideLoader() }
-
+        
         do {
             let userPayload = buildUserPayload()
             let jsonData = try JSONSerialization.data(withJSONObject: userPayload)
             let jsonString = String(data: jsonData, encoding: .utf8)
-
+            
             guard let jsonString else {
                 throw NSError(domain: "Invalid JSON", code: -1)
             }
-
+            
             var multipart: [String: Any] = [
                 "user": jsonString
             ]
-
+            
             // attach image if exists
             if let imageData = state.profileImageData {
                 multipart["profileImage"] = imageData
             }
-
-            // let response = try await authenticationService.updateUserProfile(user: <#T##[String : Any]?#>, image: <#T##PickedFile?#>, accessToken: <#T##String#>)
-
+            
+            let response = try await authenticationService.updateUserProfile(
+                id: state.userProfile?.id ?? 0,
+                user: userPayload,
+                image: state.pickedFile,
+                accessToken: state.oauthToken
+            )
+            
             // sync local cache
-            // AppStorage.userProfile = response
-
+            AppStorage.userProfile = response
+            
             return true
-
+            
         } catch let NetworkError.server(response) {
-
+            
             print("🚫 Server error:", response.message ?? "Unknown")
-
+            
             state.errorMessage = response.message
             state.fieldErrors = response.errors
-
+            
             showError(state.errorMessage ?? "Update failed")
             return false
-
+            
         } catch {
-
+            
             print("❌ Profile update error:", error)
-
+            
             state.errorMessage = "Something went wrong"
             showError(state.errorMessage ?? "Update failed")
-
+            
             return false
         }
     }
@@ -405,66 +441,79 @@ final class ProfileEditViewModel: FormViewModel {
             "status": "Active"
         ]
     }
-
+    
+    func submit() async {
+        let success = await performProfileUpdate()
+        
+        if success {
+            gotoConfirm?()
+        }
+    }
+    
+    
     // MARK: - State
-
+    
     private struct State {
-
-        var isLoggedIn: Bool = true
-
+        
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var fullName: String?
-
+        
         var firstName: String?
         var lastName: String?
-
+        
         var email: String?
         var phoneNumber: String?
-
+        
         var userDetail: UserDetails?
         var userProfile: UserProfileResponse?
-
+        
         var gender: CommonIdNameModel?
         var ageRange: CommonIdNameModel?
         
         var errorMessage: String?
         var fieldErrors: [BasicResponse.ErrorsObject]?
-
+        
         // local unsaved override
+        var pickedFile: PickedFile?
         var profileImageData: Data?
-
+        
+        
         init(userDetail: UserDetails? = nil) {
-
+            
             self.userDetail = userDetail
-
+            
             self.userProfile = AppStorage.userProfile
-
+            
             self.fullName = userDetail?.name
-
+            
             self.firstName = userProfile?.firstName
             self.lastName = userProfile?.lastName
-
+            
             self.email = userProfile?.email
             self.phoneNumber = userProfile?.phoneNumber
-
+            
             self.gender = userProfile.flatMap {
                 CommonIdNameModel(from: $0.gender)
             }
-
+            
             self.ageRange = userProfile.flatMap {
                 CommonIdNameModel(from: $0.ageGroup)
             }
         }
     }
-
+    
     // MARK: - TAGS
-
+    
     enum Tags {
-
+        
         enum Section: Int {
             case header = 0
             case body = 1
         }
-
+        
         enum Cells: Int {
             case headerImage = 0
             case firstName = 1

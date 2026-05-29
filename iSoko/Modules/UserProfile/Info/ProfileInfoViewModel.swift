@@ -20,6 +20,8 @@ final class ProfileInfoViewModel: FormViewModel {
 
     // MARK: - State
     private var state: State
+    
+    private let authenticationService = NetworkEnvironment.shared.authenticationService
 
     // MARK: - Init
     override init() {
@@ -125,6 +127,7 @@ final class ProfileInfoViewModel: FormViewModel {
             guard let self, let file else { return }
 
             // 1. Update state
+            state.pickedFile = file
             self.state.profileImageData = file.fileData
 
             // 2. Rebuild header row in section
@@ -133,6 +136,39 @@ final class ProfileInfoViewModel: FormViewModel {
 
             // 3. Reload UI
             self.reloadRow(withTag: Tags.Cells.headerImage.rawValue)
+            
+            // 2. Fire the network call immediately for the image-only update
+            Task {
+                await self.uploadProfileImage(file)
+            }
+        }
+    }
+    
+    private func uploadProfileImage(_ file: PickedFile) async {
+        showLoader()
+        defer { hideLoader() }
+        
+        do {
+            // Call your new isolated endpoint
+            let response = try await authenticationService.updateProfileImageOnly(
+                id: state.userProfile?.id ?? 0,
+                image: file,
+                accessToken: state.oauthToken
+            )
+            
+            // Sync the updated profile response back to your local cache
+            AppStorage.userProfile = response
+            print("✅ Profile image updated successfully!")
+            
+        } catch let NetworkError.server(response) {
+            print("🚫 Image upload server error:", response.message ?? "Unknown")
+            state.errorMessage = response.message
+            showError(state.errorMessage ?? "Failed to upload image")
+            
+        } catch {
+            print("❌ Image upload error:", error)
+            state.errorMessage = "Failed to save profile picture"
+            showError(state.errorMessage ?? "Something went wrong")
         }
     }
 
@@ -255,11 +291,18 @@ final class ProfileInfoViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
         var userDetail: UserDetails? = AppStorage.userDetail
         var userProfile: UserProfileResponse? = AppStorage.userProfile
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
 
         // UI source of truth for profile image
+        var pickedFile: PickedFile?
         var profileImageData: Data?
     }
 

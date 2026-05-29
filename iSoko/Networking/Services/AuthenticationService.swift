@@ -31,12 +31,14 @@ public protocol AuthenticationService {
     // MARK: - Profile Update
 
     func updateUserProfile(
+        id: Int,
         user: [String: Any]?,
         image: PickedFile?,
         accessToken: String
     ) async throws -> UserProfileResponse
 
     func updateProfileImageOnly(
+        id: Int,
         image: PickedFile,
         accessToken: String
     ) async throws -> UserProfileResponse
@@ -126,12 +128,14 @@ public final class AuthenticationServiceImp: AuthenticationService {
     
     // MARK: - Profile Update
     public func updateUserProfile(
+        id: Int,
         user: [String: Any]?,
         image: PickedFile?,
         accessToken: String
     ) async throws -> UserProfileResponse {
         let response: UserProfileResponse = try await manager.request(
             AuthenticationApi.updateUserProfile(
+                id: id,
                 user: user,
                 profileImage: image,
                 accessToken: accessToken
@@ -142,11 +146,13 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     public func updateProfileImageOnly(
+        id: Int,
         image: PickedFile,
         accessToken: String
     ) async throws -> UserProfileResponse {
         let response: UserProfileResponse = try await manager.request(
             AuthenticationApi.updateProfileImageOnly(
+                id: id,
                 profileImage: image,
                 accessToken: accessToken
             )

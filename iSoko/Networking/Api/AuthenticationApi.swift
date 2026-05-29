@@ -182,6 +182,7 @@ public extension AuthenticationApi {
 public extension AuthenticationApi {
     // MARK: - PATCH USER PROFILE (FULL)
     static func updateUserProfile(
+        id: Int,
         user: [String: Any]? = nil,
         profileImage: PickedFile? = nil,
         accessToken: String
@@ -214,7 +215,7 @@ public extension AuthenticationApi {
 
         let t = MultipartUploadTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "users",
+            path: "users/\(id)",
             method: .patch,
             jsonPartName: user != nil ? "user" : nil,
             jsonData: userJSON,
@@ -228,6 +229,7 @@ public extension AuthenticationApi {
 
     // MARK: - PROFILE IMAGE ONLY UPDATE
     static func updateProfileImageOnly(
+        id: Int,
         profileImage: PickedFile,
         accessToken: String
     ) -> ValueResponseTarget<UserProfileResponse> {
@@ -252,7 +254,7 @@ public extension AuthenticationApi {
 
         let t = MultipartUploadTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "users",
+            path: "users/\(id)",
             method: .patch,
             jsonPartName: nil,
             jsonData: nil,
