@@ -6,13 +6,14 @@
 //
 
 import DesignSystemKit
+import StorageKit
 
 @MainActor
 final class ChangePasswordViewModel: FormViewModel {
 
     // MARK: - Navigation
-    var gotoConfirm: (() -> Void)?
-    var gotoLogin: (() -> Void)?
+    var gotoConfirm: ((_ title: String, _ message: String?, _ onConfirm: @escaping (Bool) -> Void) -> Void)?
+    var goToSuccess: (() -> Void)?
 
     // MARK: - Service
     private let authenticationService = NetworkEnvironment.shared.authenticationService
@@ -122,7 +123,7 @@ final class ChangePasswordViewModel: FormViewModel {
     )
 
     // MARK: - Submit
-    private func submit() async {
+    private func submit() {
 
         guard let current = state.currentPassword,
               let new = state.newPassword else {
@@ -135,29 +136,59 @@ final class ChangePasswordViewModel: FormViewModel {
             return
         }
 
-        do {
-            showLoader()
-            defer { hideLoader() }
+        gotoConfirm?(
+            "Update password",
+            "Are you sure you want to change your password?"
+        ) { [weak self] confirmed in
 
-            let params: [String: Any] = [
-                "current_password": current,
-                "new_password": new
-            ]
+            guard let self else { return }
+            guard confirmed else { return }
 
-            // _ = try await authenticationService.changePassword(params)
+            self.performChangePassword(current: current, new: new)
+        }
+    }
+    
+    private func performChangePassword(current: String, new: String) {
 
-            gotoConfirm?()
+        Task { @MainActor in
+            do {
+                showLoader()
+                defer { hideLoader() }
 
-        } catch let NetworkError.server(response) {
-            showError(response.message ?? "Failed to change password")
+                let params: [String: Any] = [
+                    "currentPassword": current,
+                    "newPassword": new
+                ]
 
-        } catch {
-            showError("Something went wrong. Please try again.")
+                _ = try await authenticationService.passwordChange(
+                    id: state.userProfile?.id ?? 0,
+                    parameters: params,
+                    accessToken: state.oauthToken
+                )
+
+                goToSuccess?() // or success navigation if intended
+
+            } catch let NetworkError.server(response) {
+                showError(response.message ?? "Failed to change password")
+
+            } catch {
+                showError("Something went wrong. Please try again.")
+            }
         }
     }
 
     // MARK: - State
     private struct State {
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
+        
         var currentPassword: String?
         var newPassword: String?
     }

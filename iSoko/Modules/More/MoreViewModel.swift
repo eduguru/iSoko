@@ -72,8 +72,8 @@ final class MoreViewModel: FormViewModel {
         let row = makeImageTitleDescriptionRow(
             tag: 1000,
             image: UIImage(systemName: "person.circle.fill"),
-            title: "Profile",
-            description: "Manage your account details",
+            title: "common.more_view.profile".localized,
+            description: "common.more_view.profile_description".localized,
             onTap: { [weak self] in self?.gotoProfile?() }
         )
         return FormSection(id: Tags.Section.header.rawValue, cells: [

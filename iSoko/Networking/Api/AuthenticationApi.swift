@@ -270,6 +270,25 @@ public extension AuthenticationApi {
 // MARK: - Authentication API
 extension AuthenticationApi {
     
+    static func passwordChange(id: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(id)/passwords",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
     static func passwordResetInitiate(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
         let headers = [
             "Content-Type": "application/json",
@@ -322,6 +341,25 @@ extension AuthenticationApi {
             task: .requestParameters(parameters: [:], encoding: JSONEncoding.default),
             headers: headers,
             authorizationType: .none
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    static func deleteUserProfile(id: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<AnyCodable> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(id)",
+            method: .delete,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
         )
         
         return ValueResponseTarget(target: target)

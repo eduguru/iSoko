@@ -95,14 +95,8 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func goToDeleteAccount() {
         let viewModel = ConfirmAccountDeletionViewModel()
+        viewModel.gotoConfirm = presentConfirmaionAlert
 
-//        viewModel.confirmSelection = { [weak self] value in
-//            // self?.goToResetPasswordSuccess()
-//            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
-//                self?.showLoginFlow()
-//            }
-//        }
-        
         let vc = ConfirmAccountDeletionViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -115,13 +109,12 @@ public class MoreCoordinator: BaseCoordinator {
     
     private func goToChangePassword() {
         let viewModel = ChangePasswordViewModel()
-
-//        viewModel.confirmSelection = { [weak self] value in
-//            // self?.goToResetPasswordSuccess()
-//            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
-//                self?.showLoginFlow()
-//            }
-//        }
+        viewModel.gotoConfirm = presentConfirmaionAlert
+        viewModel.goToSuccess = { [weak self] in
+            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "Password has been reset successfully") {
+                self?.router.pop(animated: true)
+            }
+        }
         
         let vc = ChangePasswordViewController()
         vc.viewModel = viewModel
@@ -338,13 +331,13 @@ public class MoreCoordinator: BaseCoordinator {
         let model = LanguagePickerViewModel()
         model.confirmSelection = { [weak self] language in
             completion(language)
-            self?.dismissModal() // dismiss instead of finish
+            self?.goToMainTabs() // dismiss instead of finish
         }
 
         let vc = LanguagePickerViewController()
         vc.viewModel = model
         vc.closeAction = { [weak self] in
-            self?.dismissModal()
+            self?.dismissModal() // self?.dismissModal()
         }
 
         // Wrap in its own navigation controller for modal flow
@@ -370,12 +363,42 @@ public class MoreCoordinator: BaseCoordinator {
         )
     }
     
+    func presentConfirmaionAlert(title: String, message: String?, onConfirm: @escaping (Bool) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentConfirmationBottomSheet(
+            title: title,
+            message: message,
+            onConfirm: { onConfirm(true) },
+            onCancel: { onConfirm(false)}
+        )
+    }
+    
     func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
         let coordinator = ModalCoordinator(router: router)
         addChild(coordinator)
         
         coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
             onDismiss?()
+        }
+    }
+    
+    private func goToMainTabs() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 1. Reuse the current root navigation controller
+            let router = Router(navigationController: self.router.navigationControllerInstance)
+            
+            // 2. Create MainCoordinator using the same nav
+            let mainCoordinator = MainCoordinator(router: router)
+            
+            // 3. Retain coordinator to prevent deinit
+            self.addChild(mainCoordinator)
+            
+            // 4. Start flow
+            mainCoordinator.start()
         }
     }
 }

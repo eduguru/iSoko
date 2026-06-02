@@ -7,12 +7,13 @@
 
 import DesignSystemKit
 import Foundation
+import StorageKit
 
 @MainActor
 final class ConfirmAccountDeletionViewModel: FormViewModel {
 
     // MARK: - Navigation
-    var gotoConfirm: (() -> Void)?
+    var gotoConfirm: ((_ title: String, _ message: String?, _ onConfirm: @escaping (Bool) -> Void) -> Void)?
     var goToLogin: (() -> Void)?
 
     // MARK: - Service
@@ -122,39 +123,65 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
     )
 
     // MARK: - Submit
-    private func submit() async {
-
+    private func submit() {
         guard let password = state.password, !password.isEmpty else {
             showError("Password is required")
             return
         }
 
-        do {
-            showLoader()
-            defer { hideLoader() }
+        gotoConfirm?("Delete account", "Are you sure you want to delete your account?") { [weak self] confirmed in
+            guard let self else { return }
+            guard confirmed else { return }
 
-            let params: [String: Any] = [
-                "password": password,
-                "reason": state.description ?? ""
-            ]
+            self.performDeletion()
+        }
+    }
+    
+    private func performDeletion() {
+        let password = state.password ?? ""
 
-            // _ = try await authenticationService.deleteAccount(params)
+        Task { @MainActor in
+            do {
+                showLoader()
+                defer { hideLoader() }
 
-            gotoConfirm?()
-            goToLogin?()
+                let params: [String: Any] = [
+                    "password": password,
+                    "reason": state.description ?? ""
+                ]
 
-        } catch let NetworkError.server(response) {
-            showError(response.message ?? "Failed to delete account")
+                _ = try await authenticationService.deleteUserProfile(
+                    id: state.userProfile?.id ?? 0,
+                    parameters: params,
+                    accessToken: state.oauthToken
+                )
 
-        } catch {
-            showError("Something went wrong. Please try again.")
+                goToLogin?()
+
+            } catch let NetworkError.server(response) {
+                showError(response.message ?? "Failed to delete account")
+
+            } catch {
+                showError("Something went wrong. Please try again.")
+            }
         }
     }
 
     // MARK: - State
     private struct State {
+        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
+        
+        var errorMessage: String?
+        var fieldErrors: [BasicResponse.ErrorsObject]?
+        
         var password: String?
         var description: String?
+        
     }
 
     // MARK: - Tags

@@ -1,92 +1,86 @@
 {
-  "globalConfig": {
-    "grantType": "WTJ4cFpXNTBYMk55WldSbGJuUnBZV3h6",
-    "clientId": "ZDJsMFgyRnVaSEp2YVdSZllYQnc=",
-    "clientSecret": "VVVKb1pDUlVlRzAwTW00emNVQT0=",
-    "grantTypePassword": "Y0dGemMzZHZjbVE9",
-    "stagingUrl": "YUhSMGNITTZMeTloY0drdVpHVjJMbWx6YjJ0dkxtRm1jbWxqWVM4PQ==",
-    "stagingForumUrl": "WVhCcExtUmxkaTVwYzI5cmJ5NWhabkpwWTJFPQ==",
-    "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTVrWlhZdWFYTnZhMjh1WVdaeWFXTmhMdz09",
-    "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
-    "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
+  "staging": {
+    "apiEndpoint": "https://api.dev.isoko.africa",
+    "websiteUrl": "https://dev.isoko.africa",
+    "directusUrl": "https://directus.dev.isoko.africa",
+    "directusUsername": "admin@isoko.twcc-tz.org",
+    "directusPassword": "s^k2HIza)KpdER5b",
+    "grantType": "client_credentials",
+    "clientId": "wit_android_app",
+    "clientSecret": "QBhd$Txm42n3q@"
   },
-  "countries": [
-    {
-      "id": "CD",
-      "name": "Democratic Republic of Congo",
-      "baseUrl": "YUhSMGNITTZMeTloY0drdVpISmpMbWx6YjJ0dkxtRm1jbWxqWVM4PQ==",
-      "baseForumUrl": "WVhCcExtUnlZeTVwYzI5cmJ5NWhabkpwWTJFPQ==",
-      "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTVrY21NdWFYTnZhMjh1WVdaeWFXTmhMdz09",
-      "currency": "CIF",
-      "language": "fr",
-      "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
-      "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
+  "countries": {
+    "CD": {
+      "countryName": "Democratic Republic of Congo",
+      "currency": "CDF",
+      "apiEndpoint": "https://api.cd.isoko.africa",
+      "websiteUrl": "https://cd.isoko.africa",
+      "directusUrl": "https://directus.cd.isoko.africa",
+      "directusUsername": "admin@isoko.twcc-tz.org",
+      "directusPassword": "s^k2HIza)KpdER5b"
     },
-    {
-      "id": "ZM",
-      "name": "Zambia",
-      "baseUrl": "YUhSMGNITTZMeTloY0drdWVtMHVhWE52YTI4dVlXWnlhV05oTHc9PQ==",
-      "baseForumUrl": "WVhCcExucHRMbWx6YjJ0dkxtRm1jbWxqWVE9PQ==",
-      "directusUrl": "YUhSMGNITTZMeTlrYVhKbFkzUjFjeTU2YlM1cGMyOXJieTVoWm5KcFkyRXY=",
-      "currency": "ZMW",
-      "language": "en",
-      "directusUsername": "WVdSdGFXNUFhWE52YTI4dWRIZGpZeTEwZWk1dmNtYz0=",
-      "directusPassword": "YzE1ck1raEplbUVwUzNCa1JWSTFZZz09"
-    },
-    {
-      "id": "KE",
-      "name": "Kenya",
-      "baseUrl": "YUhSMGNITTZMeTlyWlM1cGMyOXJieTVoWm5KcFkyRXY=",
-      "baseForumUrl": "YTJVdWFYTnZhMjh1WVdaeWFXTmg=",
-      "directusUrl": "YUhSMGNITTZMeTlyWlM1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+    "KE": {
+      "countryName": "Kenya",
       "currency": "KES",
-      "language": "en",
-      "directusUsername": "WVdSdGFXNUFhMlZ1ZVdGamFHRnRZbVZ5TG05eUxtdGw=",
-      "directusPassword": "U21WdVoyRkFNVGsyTXlNdQ=="
+      "apiEndpoint": "https://api.ke.isoko.africa",
+      "websiteUrl": "https://ke.isoko.africa",
+      "directusUrl": "https://directus.ke.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "admin@isoko.ke",
+      "directusPassword": "JmVuZkAMTk2MyMu"
     },
-    {
-      "id": "TZ",
-      "name": "Tanzania",
-      "baseUrl": "YUhSMGNITTZMeTkwZWk1cGMyOXJieTVoWm5KcFkyRXY=",
-      "baseForumUrl": "ZEhvdWFYTnZhMjh1WVdaeWFXTmg=",
-      "directusUrl": "YUhSMGNITTZMeTkwZWk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+    "TZ": {
+      "countryName": "Tanzania",
       "currency": "TZS",
-      "language": "en",
-      "directusUsername": "ZDJsMExtRmtiV2x1UUhSM1kyTXViM0pu",
-      "directusPassword": "VjJsMEl5UlRhR2xyWVcxdktqazJNeTQ9"
+      "apiEndpoint": "https://api.tz.isoko.africa",
+      "websiteUrl": "https://tz.isoko.africa",
+      "directusUrl": "https://directus.tz.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "w2w.admin@isoko.tz",
+      "directusPassword": "v2l0IyRtGlrYW1vKj92My4="
     },
-    {
-      "id": "RW",
-      "name": "Rwanda",
-      "baseUrl": "YUhSMGNITTZMeTl5ZHk1cGMyOXJieTVoWm5KcFkyRXY=",
-      "baseForumUrl": "Y25jdWFYTnZhMjh1WVdaeWFXTmg=",
-      "directusUrl": "YUhSMGNITTZMeTl5ZHk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+    "RW": {
+      "countryName": "Rwanda",
       "currency": "RWF",
-      "language": "en",
-      "directusUsername": "ZDJsMExtRmtiV2x1UUdOM1pTNXZjbWN1Y25jPQ==",
-      "directusPassword": "VjJsMEl5UlNkMkZ1WkdFcU9UWXpMZz09"
+      "apiEndpoint": "https://api.rw.isoko.africa",
+      "websiteUrl": "https://rw.isoko.africa",
+      "directusUrl": "https://directus.rw.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "w2w.admin@isoko.rw",
+      "directusPassword": "v2l0IyRs2FuZkEqOTYzLg="
     },
-    {
-      "id": "UG",
-      "name": "Uganda",
-      "baseUrl": "YUhSMGNITTZMeTkxWnk1cGMyOXJieTVoWm5KcFkyRXY=",
-      "baseForumUrl": "ZFdjdWFYTnZhMjh1WVdaeWFXTmg=",
-      "directusUrl": "YUhSMGNITTZMeTkxWnk1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+    "UG": {
+      "countryName": "Uganda",
       "currency": "UGX",
-      "language": "en",
-      "directusUsername": "ZFhkbFlXeGhaRzFwYmtCMWQyVmhiQzVqYnk1MVp3PT0=",
-      "directusPassword": "UVdSdGFXNHhNak1qUUNFPQ=="
+      "apiEndpoint": "https://api.ug.isoko.africa",
+      "websiteUrl": "https://ug.isoko.africa",
+      "directusUrl": "https://directus.ug.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "admin@isoko.ug",
+      "directusPassword": "Admin123#@!"
     },
-    {
-      "id": "BI",
-      "name": "Burundi",
-      "baseUrl": "YUhSMGNITTZMeTlpY2k1cGMyOXJieTVoWm5KcFkyRXY=",
-      "baseForumUrl": "WW5JdWFYTnZhMjh1WVdaeWFXTmg=",
-      "directusUrl": "YUhSMGNITTZMeTlpY2k1cGMyOXJieTVoWm5KcFkyRXZaR2x5WldOMGRYTXZkMmwwTFdaeWIyNTBaVzVrTHc9PQ==",
+    "ZM": {
+      "countryName": "Zambia",
+      "currency": "ZMW",
+      "apiEndpoint": "https://api.zm.isoko.africa",
+      "websiteUrl": "https://zm.isoko.africa",
+      "directusUrl": "https://directus.zm.isoko.africa/",
+      "directusUsername": "admin@isoko.twcc-tz.org",
+      "directusPassword": "s^k2HIza)KpdER5b"
+    },
+    "SS": {
+      "countryName": "South Sudan",
+      "currency": "SSP",
+      "apiEndpoint": "https://api.ss.isoko.africa",
+      "websiteUrl": "https://ss.isoko.africa",
+      "directusUrl": "https://directus.ss.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "admin@isoko.twcc-tz.org",
+      "directusPassword": "s^k2HIza)KpdER5b"
+    },
+    "BI": {
+      "countryName": "Burundi",
       "currency": "BIF",
-      "language": "en",
-      "directusUsername": "ZDJsMExtRmtiV2x1UUdOM1pTNXZjbWN1Y25jPQ==",
-      "directusPassword": "VjJsMEl5UlNkMkZ1WkdFcU9UWXpMZz09"
+      "apiEndpoint": "https://api.bi.isoko.africa",
+      "websiteUrl": "https://bi.isoko.africa",
+      "directusUrl": "https://directus.bi.isoko.africa/directus/w2w-web_admin/",
+      "directusUsername": "admin@isoko.twcc-tz.org",
+      "directusPassword": "s^k2HIza)KpdER5b"
     }
-  ]
+  }
 }

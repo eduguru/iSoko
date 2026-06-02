@@ -43,8 +43,11 @@ public protocol AuthenticationService {
         accessToken: String
     ) async throws -> UserProfileResponse
     
+    func passwordChange(id: Int, parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
     func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable
-    func passwordResetComplete(parameters: [String: Any], accessToken: String)  async throws -> AnyCodable
+    func passwordResetComplete(parameters: [String: Any], accessToken: String) async throws -> AnyCodable
+    
+    func deleteUserProfile(id: Int, parameters: [String: Any], accessToken: String) async throws -> AnyCodable
 
 }
 
@@ -162,6 +165,14 @@ public final class AuthenticationServiceImp: AuthenticationService {
     }
     
     //MARK: - Password Reset
+    public func passwordChange(id: Int, parameters: [String: Any], accessToken: String)  async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.passwordChange(id: id, parameters: parameters, accessToken: accessToken)
+        )
+        
+        return response
+    }
+    
     public func passwordResetInitiate(parameters: [String: Any], accessToken: String) async throws -> AnyCodable {
         let response: AnyCodable = try await manager.request(
             AuthenticationApi.passwordResetInitiate(parameters: parameters, accessToken: accessToken)
@@ -181,6 +192,14 @@ public final class AuthenticationServiceImp: AuthenticationService {
     public func userLogout(accessToken: String) async throws -> AnyCodable {
         let response: AnyCodable = try await manager.request(
             AuthenticationApi.userLogout(accessToken: accessToken)
+        )
+        
+        return response
+    }
+    
+    public func deleteUserProfile(id: Int, parameters: [String: Any], accessToken: String) async throws -> AnyCodable {
+        let response: AnyCodable = try await manager.request(
+            AuthenticationApi.deleteUserProfile(id: id, parameters: parameters, accessToken: accessToken)
         )
         
         return response
