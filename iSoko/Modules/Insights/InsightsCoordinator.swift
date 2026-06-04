@@ -15,6 +15,7 @@ public class InsightsCoordinator: BaseCoordinator {
         let model = InsightsViewModel()
         model.goToNewsDetails = goToNewsDetails
         model.goToAssociationNewsDetails = goToNewsDetails
+        model.goToEvents = goToEvents
         
         let controller = InsightsViewController()
         controller.makeRoot = true
@@ -49,6 +50,20 @@ public class InsightsCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
         router.navigationControllerInstance?.navigationBar.isHidden = false
     }
+    
+    private func goToEvents() {
+        let viewModel = EventsListingViewModel()
+        let vc = EventsListingViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+    }
+    
+    
     
     public override func start() {
         router.setRoot(primaryViewController())

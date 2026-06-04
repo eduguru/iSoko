@@ -14,7 +14,7 @@ struct DirectusResponse<T: Decodable>: Decodable {
 
 final class DirectusTokenService {
 
-    private let baseURL = URL(string: "https://directus.dev.isoko.africa")!
+    private let baseURL = ApiEnvironment.directUsBaseURL
     private var token: DirectusAuthToken?
 
     init() {
@@ -281,6 +281,20 @@ extension DirectusTokenService {
         let (data, _) = try await authorizedRequest(request)
         return try JSONDecoder()
             .decode(DirectusResponse<PrivacyPolicyItem>.self, from: data)
+            .data
+    }
+    
+    func fetchEvents() async throws -> [EventItem] {
+
+        let url = baseURL.appendingPathComponent("/items/events")
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+
+        return try JSONDecoder()
+            .decode(DirectusResponse<EventItem>.self, from: data)
             .data
     }
 }

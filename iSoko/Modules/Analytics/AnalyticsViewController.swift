@@ -1,21 +1,23 @@
 //
-//  EventsListingViewController.swift
+//  AnalyticsViewController.swift
 //  
 //
-//  Created by Edwin Weru on 24/05/2026.
+//  Created by Edwin Weru on 02/06/2026.
 //
+
 
 import UIKit
 import DesignSystemKit
 
-class EventsListingViewController: FormViewController, CloseableViewController {
+class AnalyticsViewController: FormViewController, CloseableViewController {
+    var goToCreateAction: (() -> Void)?
     var makeRoot: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "Events"
-        // Do any additional setup after loading the view.
+        title = "common.analytics.title".localized
+        
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
     }
@@ -29,4 +31,10 @@ class EventsListingViewController: FormViewController, CloseableViewController {
     }
     
     deinit { }
+    
+    @objc func didTapButton01() {
+        goToCreateAction?()
+    }
 }
+
+

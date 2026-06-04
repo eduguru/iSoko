@@ -14,7 +14,7 @@ final class BusinessViewModel: FormViewModel {
     var gotoSignOut: ((Bool) -> Void)? = { _ in }
     var goToBookKeeping: (() -> Void)? = { }
     
-    var goToReports: (() -> Void)? = { }
+    var goToAnalytics: (() -> Void)? = { }
     var goToTaxCalculator: (() -> Void)? = { }
     var goToCurrencyExchange: (() -> Void)? = { }
     
@@ -167,7 +167,7 @@ final class BusinessViewModel: FormViewModel {
                 description: "common.analytics.description".localized,
                 image: .profile,
                 onTap: { [weak self] in
-                    self?.goToReports?()
+                    self?.goToAnalytics?()
             }),
 //            RowItemModel(
 //                title: "Tax Calculator",

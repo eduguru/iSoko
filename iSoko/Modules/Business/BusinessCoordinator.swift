@@ -15,6 +15,7 @@ public class BusinessCoordinator: BaseCoordinator {
     func primaryViewController() -> BusinessViewController {
         var model = BusinessViewModel()
         model.goToBookKeeping = goToBookKeeping
+        model.goToAnalytics = goToAnalytics
         
         model.goToMyProducts = goToMyProducts
         model.goToMyServices = goToMyServices
@@ -92,6 +93,26 @@ public class BusinessCoordinator: BaseCoordinator {
         let model = MyOrderDetailsViewModel(item)
         
         let vc = MyOrderDetailsViewController()
+        
+        // model.goToEdit = { }
+        
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
+    private func goToAnalytics() {
+        guard AppStorage.hasLoggedIn == true else {
+            presentAuthBottomSheet()
+            return
+        }
+        
+        let model = AnalyticsViewModel()
+        
+        let vc = AnalyticsViewController()
         
         // model.goToEdit = { }
         

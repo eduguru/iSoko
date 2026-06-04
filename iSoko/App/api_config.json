@@ -1,5 +1,5 @@
 {
-  "staging": {
+  "development": {
     "apiEndpoint": "https://api.dev.isoko.africa",
     "websiteUrl": "https://dev.isoko.africa",
     "directusUrl": "https://directus.dev.isoko.africa",

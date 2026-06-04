@@ -30,31 +30,27 @@ public enum ApiEnvironment {
     // MARK: - V1 (BASE_URL)
 
     public static var baseURL: URL = {
-        URL(string:
-            "https://\(country).\(value("LEGACY_CORE_DOMAIN"))/\(value("LEGACY_CORE_PATH"))"
-        )!
+        URL(string: "https://ke.isoko.africa/wit-backend/")!
     }()
 
     // MARK: - V2 / API_BASE_URL
 
     public static var apiBaseURL: URL = {
-        URL(string:
-            "https://\(value("API_DOMAIN"))/\(value("API_PATH"))"
-        )!
+        URL(string: "https://api.dev.isoko.africa/v1/")!
     }()
 
     // MARK: - Other URLs
 
     public static var imageURL: URL = {
-        URL(string:
-            "https://\(value("IMAGE_DOMAIN"))/\(value("LEGACY_CORE_PATH"))"
-        )!
+        URL(string: "https://isoko.twcc-tz.org/wit-backend/")!
     }()
 
     public static var certificateBaseURL: URL = baseURL
+    
+    public static var directUsBaseURL = URL(string: "https://directus.dev.isoko.africa")!
 
     // MARK: - OAuth
 
-    public static var clientId: String = value("CLIENT_ID")
-    public static var clientSecret: String = value("CLIENT_SECRET")
+    public static var clientId: String = "wit_android_app"
+    public static var clientSecret: String = "QBhd$Txm42n3q@"
 }

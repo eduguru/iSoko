@@ -10,18 +10,12 @@ import DesignSystemKit
 import UtilsKit
 import StorageKit
 
-struct ServiceItem {
-    let id: String
-    let title: String
-    let onTap: (() -> Void)?
-}
-
 // MARK: - Stock Report VM
 final class InsightsViewModel: FormViewModel {
 
     var gotoConfirm: ((ReportSelectionPayload) -> Void)?
     var goToDetails: (() -> Void)? = { }
-    var goToAnalytics: (() -> Void)? = { }
+    var goToEvents: (() -> Void)? = { }
 
     var goToNewsDetails: ((DirectusNewsItem) -> Void)? = { _ in }
     var goToAssociationNewsDetails: ((AssociationNewsItem) -> Void)? = { _ in }
@@ -214,7 +208,7 @@ final class InsightsViewModel: FormViewModel {
                 description: "events.description".localized,
                 image: UIImage(systemName: "calendar.badge"),
                 onTap: { [weak self] in
-                    self?.goToAnalytics?()
+                    self?.goToEvents?()
                 }
             )
         ])

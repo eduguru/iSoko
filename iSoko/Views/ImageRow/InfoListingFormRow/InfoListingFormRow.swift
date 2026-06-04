@@ -10,14 +10,10 @@ import UIKit
 
 public final class InfoListingFormRow: FormRow {
     public let tag: Int
-
-    public var reuseIdentifier: String = String(describing: InfoListingViewCell.self)
-    
-    public var cellTag: String { "\(reuseIdentifier)\(tag)" }
-    public var rowTy3pe: FormRowType { .tableView }
-    
-    public var nibName: String? { reuseIdentifier }
+    public let reuseIdentifier: String = String(describing: InfoListingViewCell.self)
     public var cellClass: AnyClass? { InfoListingViewCell.self }
+    
+    public let rowType: FormRowType = .tableView
     
     // The configuration model
     public var model: InfoListingModel
@@ -38,6 +34,6 @@ public final class InfoListingFormRow: FormRow {
     
     @MainActor
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return 150 // Adjust height for your navigation bar cell
+        return 150 //UITableView.automaticDimension
     }
 }
