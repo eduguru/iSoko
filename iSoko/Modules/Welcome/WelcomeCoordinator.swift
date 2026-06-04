@@ -156,22 +156,6 @@ class WelcomeCoordinator: BaseCoordinator {
         }
     }
     //MARK: - we use the above if we want transitional screens -
-    
-    func startModal() {
-        let homeVC = HomeViewController()
-        homeVC.title = "Home"
-        router.setRoot(homeVC, animated: true)
-        
-        // Example: Present modal flow after some trigger (simulate with delay here)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            guard let self = self else { return }
-            
-            let modalCoordinator = ModalCoordinator(parentCoordinator: self)
-            modalCoordinator.delegate = self
-            self.addChild(modalCoordinator)
-            modalCoordinator.start()
-        }
-    }
 }
 
 extension WelcomeCoordinator: CoordinatorDelegate {

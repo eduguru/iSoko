@@ -24,7 +24,7 @@
       "currency": "KES",
       "apiEndpoint": "https://api.ke.isoko.africa",
       "websiteUrl": "https://ke.isoko.africa",
-      "directusUrl": "https://directus.ke.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.ke.isoko.africa",
       "directusUsername": "admin@isoko.ke",
       "directusPassword": "JmVuZkAMTk2MyMu"
     },
@@ -33,7 +33,7 @@
       "currency": "TZS",
       "apiEndpoint": "https://api.tz.isoko.africa",
       "websiteUrl": "https://tz.isoko.africa",
-      "directusUrl": "https://directus.tz.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.tz.isoko.africa",
       "directusUsername": "w2w.admin@isoko.tz",
       "directusPassword": "v2l0IyRtGlrYW1vKj92My4="
     },
@@ -42,7 +42,7 @@
       "currency": "RWF",
       "apiEndpoint": "https://api.rw.isoko.africa",
       "websiteUrl": "https://rw.isoko.africa",
-      "directusUrl": "https://directus.rw.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.rw.isoko.africa",
       "directusUsername": "w2w.admin@isoko.rw",
       "directusPassword": "v2l0IyRs2FuZkEqOTYzLg="
     },
@@ -51,7 +51,7 @@
       "currency": "UGX",
       "apiEndpoint": "https://api.ug.isoko.africa",
       "websiteUrl": "https://ug.isoko.africa",
-      "directusUrl": "https://directus.ug.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.ug.isoko.africa",
       "directusUsername": "admin@isoko.ug",
       "directusPassword": "Admin123#@!"
     },
@@ -69,7 +69,7 @@
       "currency": "SSP",
       "apiEndpoint": "https://api.ss.isoko.africa",
       "websiteUrl": "https://ss.isoko.africa",
-      "directusUrl": "https://directus.ss.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.ss.isoko.africa",
       "directusUsername": "admin@isoko.twcc-tz.org",
       "directusPassword": "s^k2HIza)KpdER5b"
     },
@@ -78,7 +78,7 @@
       "currency": "BIF",
       "apiEndpoint": "https://api.bi.isoko.africa",
       "websiteUrl": "https://bi.isoko.africa",
-      "directusUrl": "https://directus.bi.isoko.africa/directus/w2w-web_admin/",
+      "directusUrl": "https://directus.bi.isoko.africa",
       "directusUsername": "admin@isoko.twcc-tz.org",
       "directusPassword": "s^k2HIza)KpdER5b"
     }

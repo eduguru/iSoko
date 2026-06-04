@@ -8,6 +8,7 @@
 import RouterKit
 import UtilsKit
 import UIKit
+import StorageKit
 
 public class HomeCoordinator: BaseCoordinator {
     
@@ -31,6 +32,13 @@ public class HomeCoordinator: BaseCoordinator {
         controller.makeRoot = true
         controller.viewModel = model
         controller.closeAction = finishWorkflow
+        
+        controller.onCountryTapped = { [weak self] in
+            self?.gotoSelectCountry(completion: { val in
+                self?.goToReloadApp()
+            })
+        }
+        
         controller.modalPresentationStyle = .fullScreen
         return controller
     }
@@ -243,6 +251,38 @@ extension HomeCoordinator {
         let coordinator = TradeAssociationFlowCoordinator(router: router)
         addChild(coordinator)
         coordinator.goToTradeAssociationProducs(item)
+    }
+    
+    func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToCountrySelection { [weak self] result in
+            AppStorage.selectedRegion = result.name
+            AppStorage.selectedRegionCode = result.id.lowercased()
+            AppStorage.hasSelectedRegion = true
+            
+            completion(result)
+            self?.router.pop()
+        }
+    }
+    
+    private func goToReloadApp() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 1. Reuse the current root navigation controller
+            let router = Router(navigationController: self.router.navigationControllerInstance)
+            
+            // 2. Create MainCoordinator using the same nav
+            let mainCoordinator = MainCoordinator(router: router)
+            
+            // 3. Retain coordinator to prevent deinit
+            self.addChild(mainCoordinator)
+            
+            // 4. Start flow
+            mainCoordinator.start()
+        }
     }
 }
 

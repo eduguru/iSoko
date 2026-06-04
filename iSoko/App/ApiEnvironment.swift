@@ -8,49 +8,141 @@
 import Foundation
 import StorageKit
 
+public enum EnvironmentMode {
+    case development
+    case production
+}
+
 public enum ApiEnvironment {
 
-    private static let info = Bundle.main.infoDictionary!
+    // MARK: - Environment
+
+    #if DEBUG
+    public static let mode: EnvironmentMode = .development
+    #else
+    public static let mode: EnvironmentMode = .production
+    #endif
+
+    // MARK: - Config Loading
+
+    private static let config: ApiConfig = {
+
+        guard let url = Bundle.main.url(
+            forResource: "api_config",
+            withExtension: "json"
+        ) else {
+            fatalError("api_config.json not found")
+        }
+
+        do {
+            let data = try Data(contentsOf: url)
+            return try JSONDecoder().decode(ApiConfig.self, from: data)
+        } catch {
+            fatalError("Failed to decode api_config.json: \(error)")
+        }
+    }()
 
     // MARK: - Country
 
-    private static var country: String {
-        AppStorage.selectedRegionCode ?? (info["DEFAULT_COUNTRY_CODE"] as? String ?? "tz")
+    private static var countryCode: String {
+        (AppStorage.selectedRegionCode ?? "TZ")
+            .uppercased()
     }
 
-    // MARK: - Helpers
-
-    private static func value(_ key: String) -> String {
-        guard let v = info[key] as? String else {
-            fatalError("\(key) missing in Info.plist")
+    private static var countryConfig: CountryConfig {
+        guard let config = config.countries[countryCode] else {
+            fatalError("No configuration found for country: \(countryCode)")
         }
-        return v
+
+        return config
     }
 
-    // MARK: - V1 (BASE_URL)
+    // MARK: - Base URLs
 
-    public static var baseURL: URL = {
-        URL(string: "https://ke.isoko.africa/wit-backend/")!
-    }()
+    public static var apiBaseURL: URL {
+        switch mode {
+        case .development:
+            return URL(string: "\(config.development.apiEndpoint)/v1/")!
 
-    // MARK: - V2 / API_BASE_URL
+        case .production:
+            return URL(string: "\(countryConfig.apiEndpoint)/v1/")!
+        }
+    }
 
-    public static var apiBaseURL: URL = {
-        URL(string: "https://api.dev.isoko.africa/v1/")!
-    }()
+    /// Legacy BASE_URL
+    public static var baseURL: URL {
+        switch mode {
+        case .development:
+            return URL(string: "\(config.development.websiteUrl)/wit-backend/")!
 
-    // MARK: - Other URLs
+        case .production:
+            return URL(string: "\(countryConfig.websiteUrl)/wit-backend/")!
+        }
+    }
 
-    public static var imageURL: URL = {
-        URL(string: "https://isoko.twcc-tz.org/wit-backend/")!
-    }()
+    public static var imageURL: URL {
+        baseURL
+    }
 
-    public static var certificateBaseURL: URL = baseURL
-    
-    public static var directUsBaseURL = URL(string: "https://directus.dev.isoko.africa")!
+    public static var certificateBaseURL: URL {
+        baseURL
+    }
+
+    public static var directUsBaseURL: URL {
+        switch mode {
+        case .development:
+            return URL(string: config.development.directusUrl)!
+
+        case .production:
+            return URL(string: countryConfig.directusUrl)!
+        }
+    }
+
+    // MARK: - Directus
+
+    public static var directusUsername: String {
+        switch mode {
+        case .development:
+            return config.development.directusUsername
+
+        case .production:
+            return countryConfig.directusUsername
+        }
+    }
+
+    public static var directusPassword: String {
+        switch mode {
+        case .development:
+            return config.development.directusPassword
+
+        case .production:
+            return countryConfig.directusPassword
+        }
+    }
 
     // MARK: - OAuth
 
-    public static var clientId: String = "wit_android_app"
-    public static var clientSecret: String = "QBhd$Txm42n3q@"
+    public static var grantType: String {
+        config.development.grantType
+    }
+
+    public static var clientId: String {
+        config.development.clientId
+    }
+
+    public static var clientSecret: String {
+        config.development.clientSecret
+    }
+
+    // MARK: - Country Metadata
+
+    public static var countryName: String? {
+        guard mode == .production else { return nil }
+        return countryConfig.countryName
+    }
+
+    public static var currency: String? {
+        guard mode == .production else { return nil }
+        return countryConfig.currency
+    }
 }
