@@ -33,8 +33,16 @@ public final class ProductImageGalleryRow: FormRow {
     }
 
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        // Image height + page control + vertical paddings
-        return config.imageHeight + 8 + 20 + 8 + 8
+
+        let hasMultipleImages = config.images.count > 1
+
+        let pageControlHeight: CGFloat = hasMultipleImages ? 20 : 0
+        let thumbnailHeight: CGFloat = hasMultipleImages ? 80 : 0
+
+        return config.imageHeight
+            + pageControlHeight
+            + thumbnailHeight
+            + 24
     }
 
     public func validate() -> Bool { true }

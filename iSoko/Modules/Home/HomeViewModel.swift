@@ -12,316 +12,298 @@ import StorageKit
 
 @MainActor
 final class HomeViewModel: FormViewModel {
-    
+
     // MARK: - Callbacks
     var onTapMoreProduct: (() -> Void)?
     var onTapProduct: ((ProductResponseV1) -> Void)?
     var onFavoriteProductToggle: ((Bool, ProductResponseV1) -> Void)?
-    
+
     var onTapMoreServices: (() -> Void)?
     var onTapService: ((TradeServiceResponse) -> Void)?
     var onFavoriteServiceToggle: ((Bool, TradeServiceResponse) -> Void)?
-    
+
     var onTapMoreProductCategories: (() -> Void)?
     var onTapMoreServiceCategories: (() -> Void)?
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
     var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
-    
+
     var onTapTradeAssociation: ((AssociationResponse) -> Void)?
-    
+
     var onTapTopDeal: ((TopDealItem) -> Void)?
     var onFavoriteTopDealToggle: ((Bool, TopDealItem) -> Void)?
-    
+
     // MARK: - Services
-    private let directusService = DirectusTokenService()
-    private let productsService = NetworkEnvironment.shared.productsService
-    private let servicesService = NetworkEnvironment.shared.servicesService
+    private let directusService        = DirectusTokenService()
+    private let productsService        = NetworkEnvironment.shared.productsService
+    private let servicesService        = NetworkEnvironment.shared.servicesService
     private let commonUtilitiesService = NetworkEnvironment.shared.commonUtilitiesService
-    private let associationsService = NetworkEnvironment.shared.associationsService
-    
-    private let countryHelper = CountryHelper()
-    
+    private let associationsService    = NetworkEnvironment.shared.associationsService
+    private let countryHelper          = CountryHelper()
+
     // MARK: - State
-    private var state: State?
-    
+    private var state = State()
+
     override init() {
-        self.state = State()
         super.init()
-        
         Task { @MainActor in
-            self.sections = self.makeSections()
+            sections = makeSections()
         }
     }
-    
+
     // MARK: - Fetch
-    
+
     override func refresh() {
-        Task { @MainActor in
-            performNetworkCalls()
-        }
+        Task { await performNetworkCalls() }
     }
-    
+
     override func fetchData() {
-        Task { @MainActor in
-            performNetworkCalls()
-        }
+        Task { await performNetworkCalls() }
     }
-    
-    private func performNetworkCalls() {
+
+    private func performNetworkCalls() async {
         showLoader()
         defer { hideLoader() }
-        
-        // MARK: - Fetch
-        Task {
-            async let featuredProducts = fetchDataType(.featuredProducts)
-            async let featuredServices = fetchDataType(.featuredServices)
-            async let productCategories = fetchDataType(.productCategories)
-            async let serviceCategories = fetchDataType(.serviceCategories)
-            async let associations = fetchDataType(.associations)
-            
-            // Wait for all data to be fetched
-            _ = await (featuredProducts, featuredServices, productCategories, serviceCategories, associations)
-            
-            await fetchBanners()
+
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.fetchDataType(.featuredProducts) }
+            group.addTask { await self.fetchDataType(.featuredServices) }
+            group.addTask { await self.fetchDataType(.productCategories) }
+            group.addTask { await self.fetchDataType(.serviceCategories) }
+            group.addTask { await self.fetchDataType(.associations) }
         }
-        
+
+        await fetchBanners()
     }
-    
-    /// Fetches up to 4 products for each association concurrently and caches them in state.
-    private func fetchAssociationProducts(for associations: [AssociationResponse]) async {
-        await withTaskGroup(of: (Int, [ProductResponseV1]).self) { group in
-            for association in associations {
-                guard let associationId = association.id else { continue }
-                
-                group.addTask { [weak self] in
-                    guard let self else { return (associationId, []) }
-                    do {
-                        let result = try await self.associationsService.getAssociationProducts(
-                            id: associationId,
-                            page: 1,
-                            count: 4, // only need enough for the card image cluster
-                            accessToken: self.state?.oauthToken ?? ""
-                        )
-                        return (associationId, result.data ?? [])
-                    } catch {
-                        print("❌ Failed to fetch products for association \(associationId):", error)
-                        return (associationId, [])
-                    }
-                }
-            }
-            
-            for await (associationId, products) in group {
-                self.state?.associationProducts[associationId] = products
-            }
-        }
-    }
-    
-    private func fetchBanners() async {
-        do {
-            try await directusService.login(
-                email: AppStorage.email,
-                password: AppStorage.password
-            )
-            
-            let banners = try await directusService.fetchHomeBanners()
-            state?.banners = banners
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.updateBannerSection()
-            }
-            
-        } catch {
-            print("❌ Directus flow failed:", error)
-            
-        }
-    }
-    
-    // MARK: - Fetch Helper
-    @discardableResult
-    private func fetchDataType(_ type: HomeDataType) async -> Bool {
+
+    // MARK: - Fetch helpers
+
+    private func fetchDataType(_ type: HomeDataType) async {
         do {
             switch type {
             case .featuredProducts:
                 let result = try await productsService.getFeaturedProducts(
-                    page: 1,
-                    count: 20,
-                    accessToken: state?.guestToken ?? ""
-                )
-                
-                self.state?.featuredProducts = result.data
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateTrendingProductsSection()
-                }
-                
+                    page: 1, count: 20, accessToken: state.guestToken)
+                state.featuredProducts = result.data ?? []
+                DispatchQueue.main.async { [weak self] in self?.updateSection(.trendingProducts) }
+
             case .featuredServices:
-                let response = try await servicesService.getFeaturedTradeServices(
-                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
-                self.state?.featuredServices = response
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateTrendingServicesSection()
-                }
-                
+                let result = try await servicesService.getFeaturedTradeServices(
+                    page: 1, count: 20, accessToken: state.guestToken)
+                state.featuredServices = result
+                DispatchQueue.main.async { [weak self] in self?.updateSection(.trendingServices) }
+
             case .productCategories:
-                let response = try await commonUtilitiesService.getCommodityCategory(
-                    page: 1, count: 20, module: "<regulation | trade-documents | standards>",
-                    accessToken: state?.guestToken ?? "")
-                self.state?.productCategories = response
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateProductCategoriesSection()
-                }
-                
+                let result = try await commonUtilitiesService.getCommodityCategory(
+                    page: 1, count: 20,
+                    module: "<regulation | trade-documents | standards>",
+                    accessToken: state.guestToken)
+                state.productCategories = result
+                DispatchQueue.main.async { [weak self] in self?.updateSection(.categories) }
+
             case .serviceCategories:
-                let response = try await servicesService.getAllTradeServiceCategories(
-                    page: 1, count: 20, accessToken: state?.guestToken ?? "")
-                self.state?.serviceCategories = response
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateServiceCategoriesSection()
-                }
-                
+                let result = try await servicesService.getAllTradeServiceCategories(
+                    page: 1, count: 20, accessToken: state.guestToken)
+                state.serviceCategories = result
+                DispatchQueue.main.async { [weak self] in self?.updateSection(.serviceCategories) }
+
             case .associations:
-                let response = try await associationsService.getAllAssociations(
-                    page: 1,
-                    count: 10,
-                    accessToken: state?.oauthToken ?? ""
-                )
-                
-                self.state?.associations = response
-                
-                // Fetch products for each association concurrently, then update cards once all done
-                await fetchAssociationProducts(for: response)
-                
-                DispatchQueue.main.async { [weak self] in
-                    self?.updateExportCardsSection()
-                }
+                let result = try await associationsService.getAllAssociations(
+                    page: 1, count: 10, accessToken: state.oauthToken)
+                state.associations = result
+                await fetchAssociationProducts(for: result)
+                DispatchQueue.main.async { [weak self] in self?.updateSection(.exportCards) }
             }
-            
-            return true
-            
         } catch let NetworkError.server(apiError) {
             print("❌ API Error in \(type):", apiError.message ?? "")
         } catch {
             print("❌ Unexpected Error in \(type):", error)
         }
-        return false
     }
-    
+
+    private func fetchAssociationProducts(for associations: [AssociationResponse]) async {
+        await withTaskGroup(of: (Int, [ProductResponseV1]).self) { group in
+            for association in associations {
+                guard let id = association.id else { continue }
+                group.addTask { [weak self] in
+                    guard let self else { return (id, []) }
+                    do {
+                        let result = try await self.associationsService.getAssociationProducts(
+                            id: id, page: 1, count: 4, accessToken: self.state.oauthToken)
+                        return (id, result.data ?? [])
+                    } catch {
+                        print("❌ Failed to fetch products for association \(id):", error)
+                        return (id, [])
+                    }
+                }
+            }
+            for await (id, products) in group {
+                state.associationProducts[id] = products
+            }
+        }
+    }
+
+    private func fetchBanners() async {
+        do {
+            try await directusService.login(email: AppStorage.email, password: AppStorage.password)
+            let banners = try await directusService.fetchHomeBanners()
+            state.banners = banners
+            DispatchQueue.main.async { [weak self] in self?.updateSection(.banner) }
+        } catch {
+            print("❌ Directus flow failed:", error)
+        }
+    }
+
     // MARK: - Sections
+    // All sections are created upfront with empty cells and no title.
+    // updateSection fills them in once data arrives — if data is empty the
+    // section stays empty (no cells, no title, zero height).
+
     private func makeSections() -> [FormSection] {
-        return [
-            FormSection(id: Tags.Section.search.rawValue, title: nil, cells: [searchRow]),
-            makeBannerSection(),
-            makeCategoriesQuickActionsSection(),
-            // makeServicesQuickActionsSection(),
-            // makeTopDealsSection(),
-            makeExportCardsSection(),
-            // makeOpportunitySection(),
-            makeTrendingProductsSection(),
-            // makeTrendingServicesSection()
-        ]
+        Tags.Section.canonicalOrder.map { tag in
+            FormSection(id: tag.rawValue, title: nil, cells: [])
+        }
     }
-    
-    private func makeCategoriesQuickActionsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.categories.rawValue,
-            title: "home.categories.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { [weak self] in
-                self?.onTapMoreProductCategories?()
-            },
-            cells: [productCategoriesFormRow]
+
+    private func updateSection(_ tag: Tags.Section) {
+        guard let index = sections.firstIndex(where: { $0.id == tag.rawValue }) else { return }
+
+        var updated = sections[index]
+
+        switch tag {
+        case .search:
+            updated.title = nil
+            updated.cells = [makeSearchRow()]
+
+        case .banner:
+            updated.title = nil
+            updated.cells = [makeBannerRow()]
+
+        case .categories:
+            let items = makeProductCategoryItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.categories.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { [weak self] in self?.onTapMoreProductCategories?() }
+            updated.cells = [QuickActionsFormRow(tag: Tags.Cells.categories.rawValue, items: items)]
+
+        case .serviceCategories:
+            let items = makeServiceCategoryItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.services.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { [weak self] in self?.onTapMoreServiceCategories?() }
+            updated.cells = [QuickActionsFormRow(tag: Tags.Cells.serviceCategories.rawValue, items: items)]
+
+        case .exportCards:
+            let items = makeExportCardsItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.featured_associations.title".localized
+            updated.actionTitle = nil
+            updated.cells = [ExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
+
+        case .trendingProducts:
+            let items = makeTrendingProductItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.trending_products.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { [weak self] in self?.onTapMoreProduct?() }
+            updated.cells = [
+                FeaturedDealsGridFormRow(tag: Tags.Cells.trendingProducts.rawValue, items: items, columns: 2),
+                SpacerFormRow(tag: 000, height: 40)
+            ]
+
+        case .trendingServices:
+            let items = makeTrendingServiceItemsForFeaturedGrid()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.trending_services.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { [weak self] in self?.onTapMoreServices?() }
+            updated.cells = [FeaturedDealsGridFormRow(tag: Tags.Cells.trendingServices.rawValue, items: items, columns: 2)]
+
+        case .topDeals:
+            let items = makeTopDealItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.top_deals.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.cells = [TopDealsFormRow(tag: Tags.Cells.topDeals.rawValue, items: items)]
+
+        case .opportunities:
+            let items = makeOpportunityItems()
+            guard !items.isEmpty else {
+                updated.title = nil
+                updated.cells = []
+                sections[index] = updated
+                reloadSection(index)
+                return
+            }
+            updated.title = "home.opportunities.title".localized
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { print("See All") }
+            updated.cells = [OpportunityFormRow(tag: Tags.Cells.opportunities.rawValue, items: items)]
+        }
+
+        sections[index] = updated
+        reloadSection(index)
+    }
+
+    // MARK: - Item builders
+
+    private func makeSearchRow() -> FormRow {
+        SearchFormRow(
+            tag: Tags.Cells.search.rawValue,
+            model: SearchFormModel(
+                placeholder: "common.label.search".localized,
+                keyboardType: .default,
+                searchIcon: UIImage(systemName: "magnifyingglass"),
+                searchIconPlacement: .right,
+                filterIcon: nil,
+                didTapSearchIcon: { print("Search icon tapped") },
+                didTapFilterIcon: { print("Filter icon tapped") },
+                didStartEditing: { text in print("Started editing with: \(text)") },
+                didEndEditing: { text in print("Ended editing with: \(text)") },
+                onTextChanged: { text in print("Search text changed: \(text)") }
+            )
         )
     }
 
-    private func makeServicesQuickActionsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.serviceCategories.rawValue,
-            title: "home.services.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { [weak self] in
-                self?.onTapMoreServiceCategories?()
-            },
-            cells: [tradeServiceCategoriesFormRow]
-        )
-    }
-
-    private func makeBannerSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.banner.rawValue,
-            title: nil,
-            cells: [bannerRow]
-        )
-    }
-
-    private func makeTrendingProductsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.trendingProducts.rawValue,
-            title: "home.trending_products.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { [weak self] in
-                self?.onTapMoreProduct?()
-            },
-            cells: [trendingProducts]
-        )
-    }
-
-    private func makeTrendingServicesSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.trendingServices.rawValue,
-            title: "home.trending_services.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { [weak self] in
-                self?.onTapMoreServices?()
-            },
-            cells: [trendingServices]
-        )
-    }
-
-    private func makeTopDealsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.topDeals.rawValue,
-            title: "home.top_deals.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { [weak self] in
-                // Implement later
-            },
-            cells: [topDealsRow]
-        )
-    }
-
-    private func makeExportCardsSection() -> FormSection {
-        return FormSection(
-            id: Tags.Section.exportCards.rawValue,
-            title: "home.featured_associations.title".localized,
-            actionTitle: nil,
-            onActionTapped: {
-                print("See All Export Councils")
-            },
-            cells: [exportCardsRow]
-        )
-    }
-
-    private func makeOpportunitySection() -> FormSection {
-        FormSection(
-            id: Tags.Section.opportunities.rawValue,
-            title: "home.opportunities.title".localized,
-            actionTitle: "common.action.see_all".localized,
-            onActionTapped: { print("See All") },
-            cells: [opportunityRow]
-        )
-    }
-    // MARK: - Update Sections
-    
-    private func updateBannerSection() {
-        
-        guard let sectionIndex = sections.firstIndex(
-            where: { $0.id == Tags.Section.banner.rawValue }
-        ) else { return }
-        
-        let updatedRow = CarouselRow(
+    private func makeBannerRow() -> FormRow {
+        CarouselRow(
             tag: Tags.Section.banner.rawValue,
             model: CarouselModel(
                 items: makeCarouselItems(),
@@ -334,304 +316,123 @@ final class HomeViewModel: FormViewModel {
                 pageDotColor: .lightGray
             )
         )
-        
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        
-        reloadSection(sectionIndex)
     }
-    
-    private func updateProductCategoriesSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.categories.rawValue }) else {
-            return
-        }
-        let updatedRow = QuickActionsFormRow(
-            tag: Tags.Cells.categories.rawValue,
-            items: makeProductCategoryItems()
-        )
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-    
-    private func updateServiceCategoriesSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.serviceCategories.rawValue }) else {
-            return
-        }
-        let updatedRow = QuickActionsFormRow(
-            tag: Tags.Cells.serviceCategories.rawValue,
-            items: makeServiceCategoryItems()
-        )
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-    
-    private func updateTrendingProductsSection() {
-        guard let sectionIndex = sections.firstIndex(
-            where: { $0.id == Tags.Section.trendingProducts.rawValue }
-        ) else { return }
-        
-        let updatedRow = FeaturedDealsGridFormRow(
-            tag: Tags.Cells.trendingProducts.rawValue,
-            items: makeTrendingProductItems(),
-            columns: 2
-        )
-        
-        var cells: [FormRow] = [updatedRow]
-        cells.append(SpacerFormRow(tag: 000, height: 40))
-        
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = cells
-        sections[sectionIndex] = updatedSection
-        
-        reloadSection(sectionIndex)
-    }
-    
-    private func updateTrendingServicesSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.trendingServices.rawValue }) else {
-            return
-        }
-        
-        let updatedRow = FeaturedDealsGridFormRow(
-            tag: Tags.Cells.trendingServices.rawValue,
-            items: makeTrendingServiceItemsForFeaturedGrid(),
-            columns: 2
-        )
-        
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-    
-    private func updateExportCardsSection() {
-        guard let sectionIndex = sections.firstIndex(where: {
-            $0.id == Tags.Section.exportCards.rawValue
-        }) else { return }
-        
-        let updatedRow = ExportCardsFormRow(
-            tag: Tags.Cells.exportCards.rawValue,
-            items: makeExportCardsItems()
-        )
-        
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        
-        reloadSection(sectionIndex)
-    }
-    
-    private func updateTopDealsSection() {
-        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.topDeals.rawValue }) else {
-            return
-        }
-        
-        let updatedRow = TopDealsFormRow(
-            tag: Tags.Cells.topDeals.rawValue,
-            items: makeTopDealItems()
-        )
-        
-        var updatedSection = sections[sectionIndex]
-        updatedSection.cells = [updatedRow]
-        sections[sectionIndex] = updatedSection
-        reloadSection(sectionIndex)
-    }
-    
-    // MARK: - Form Rows
-    lazy var opportunityRow = OpportunityFormRow(tag: 99, items: makeOpportunityItems())
-    lazy var topDealsRow = TopDealsFormRow(tag: Tags.Cells.topDeals.rawValue,items: makeTopDealItems())
-    
-    lazy var productCategoriesFormRow = QuickActionsFormRow(tag: 1, items: makeProductCategoryItems())
-    lazy var tradeServiceCategoriesFormRow = QuickActionsFormRow(tag: 2, items: makeServiceCategoryItems())
-    lazy var trendingProducts = FeaturedDealsGridFormRow( tag: Tags.Cells.trendingProducts.rawValue, items: makeTrendingProductItems(), columns: 2)
-    lazy var trendingServices = FeaturedDealsGridFormRow(tag: Tags.Cells.trendingServices.rawValue, items: makeTrendingServiceItemsForFeaturedGrid(), columns: 2)
-    
-    lazy var searchRow = SearchFormRow(
-        tag: Tags.Cells.search.rawValue,
-        model: SearchFormModel(
-            placeholder: "common.label.search".localized,
-            keyboardType: .default,
-            searchIcon: UIImage(systemName: "magnifyingglass"),
-            searchIconPlacement: .right,
-            filterIcon: nil,
-            didTapSearchIcon: { print("Search icon tapped") },
-            didTapFilterIcon: { print("Filter icon tapped") },
-            didStartEditing: { text in print("Started editing with: \(text)") },
-            didEndEditing: { text in print("Ended editing with: \(text)") },
-            onTextChanged: { text in print("Search text changed: \(text)") }
-        )
-    )
-    
-    lazy var bannerRow = CarouselRow(
-        tag: Tags.Section.banner.rawValue,
-        model: CarouselModel(
-            items: makeCarouselItems(),
-            autoPlayInterval: 4,
-            paginationPlacement: .inside,
-            imageContentMode: .scaleAspectFill,
-            transitionStyle: .fade,
-            hideText: false,
-            currentPageDotColor: .red,
-            pageDotColor: .lightGray
-        )
-    )
-    
+
     private func makeCarouselItems() -> [CarouselItem] {
-        let banners = transformBannersToCarouselItems(banners: state?.banners ?? [])
-        
-        if !banners.isEmpty {
-            return banners
+        let banners = transformBannersToCarouselItems(banners: state.banners)
+        guard !banners.isEmpty else {
+            return [
+                CarouselItem(image: UIImage(named: "carousel01"), imageURL: nil, text: nil, textColor: .white) { print("Tapped A") },
+                CarouselItem(image: UIImage(named: "carousel02"), imageURL: nil, text: nil, textColor: .yellow) { print("Tapped B") },
+                CarouselItem(image: UIImage(named: "carousel03"), imageURL: nil, text: nil, textColor: .cyan) { print("Tapped C") },
+                CarouselItem(image: UIImage(named: "carousel04"), imageURL: nil, text: nil, textColor: .white) { print("Tapped D") }
+            ]
         }
-        
-        return [
-            CarouselItem(image: UIImage(named: "carousel01"), imageURL: nil, text: nil, textColor: .white) { print("Tapped A") },
-            CarouselItem(image: UIImage(named: "carousel02"),imageURL: nil, text: nil, textColor: .yellow) { print("Tapped B") },
-            CarouselItem(image: UIImage(named: "carousel03"),imageURL: nil, text: nil, textColor: .cyan) { print("Tapped C") },
-            CarouselItem(image: UIImage(named: "carousel04"),imageURL: nil, text: nil, textColor: .white) { print("Tapped D") }
-        ]
+        return banners
     }
-    
+
     private func transformBannersToCarouselItems(banners: [DirectusHomeBannerItem]) -> [CarouselItem] {
-        return banners.compactMap { banner in
-            // Transform each banner into a CarouselItem
+        banners.compactMap { banner in
             let imageURL = banner.imageLink?.urlString(baseURL: "https://directus.dev.isoko.africa/")
-            
-            return CarouselItem(
-                imageURL: imageURL,
-                text: nil,
-                textColor: .white) {
-                    print("Tapped \(banner.title ?? "Unknown")")
-                }
+            return CarouselItem(imageURL: imageURL, text: nil, textColor: .white) {
+                print("Tapped \(banner.title ?? "Unknown")")
+            }
         }
     }
-    
-    // MARK: - Item Builders
-    private func makeTrendingServiceItemsForFeaturedGrid() -> [FeaturedDealItem] {
-        return state?.featuredServices.map { service in
-            
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "")
-            let priceText = service.price != nil ? "\(currency) \(String(format: "%.2f", service.price!))" : "Price on request"
-            
-            return FeaturedDealItem(
-                id: "\(service.id ?? 0)",
-                imageUrl: service.primaryImage ?? "",
-                image: UIImage(named: "blank_rectangle"),
-                badgeText: nil,
-                title: service.name ?? "Unnamed Service",
-                subtitle: service.traderName ?? "",
-                priceText: priceText,
-                isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapService?(service)
-                },
-                onFavoriteToggle: { [weak self] isFav in
-                    self?.onFavoriteServiceToggle?(isFav, service)
-                }
-            )
-        } ?? []
-    }
-    
+
     private func makeProductCategoryItems() -> [QuickActionItem] {
-        let count = min(state?.productCategories.count ?? 0, 5)
-        
-        return (0..<count).compactMap { index in
-            guard let category = state?.productCategories[index] else { return nil }
-            
-            print("Category:", category.name ?? "")
-            print("🖼 Image URL:", category.imageUrl ?? "nil")
-            
-            return QuickActionItem(
+        state.productCategories.prefix(5).compactMap { category in
+            QuickActionItem(
                 id: "\(category.id ?? 0)",
                 image: UIImage(named: "blank_rectangle"),
                 imageUrl: category.imageUrl?.isEmpty == false ? category.imageUrl : category.url,
                 imageShape: .circle,
                 title: category.name ?? "",
-                onTap: { [weak self] in
-                    self?.onTapProductCategory?(category)
-                }
+                onTap: { [weak self] in self?.onTapProductCategory?(category) }
             )
         }
     }
-    
+
     private func makeServiceCategoryItems() -> [QuickActionItem] {
-        let count = min(state?.serviceCategories.count ?? 0, 5)
-        return (0..<count).compactMap { index in
-            guard let category = state?.serviceCategories[index] else { return nil }
-            return QuickActionItem(
+        state.serviceCategories.prefix(5).compactMap { category in
+            QuickActionItem(
                 id: "\(category.id ?? 0)",
                 image: UIImage(named: "blank_rectangle"),
                 imageUrl: category.imageUrl ?? "",
                 imageShape: .circle,
                 title: category.name ?? "",
-                onTap: { [weak self] in
-                    self?.onTapServiceCategory?(category)
-                }
+                onTap: { [weak self] in self?.onTapServiceCategory?(category) }
             )
         }
     }
-    
+
     private func makeTrendingProductItems() -> [FeaturedDealItem] {
-        
-        return state?.featuredProducts.map { product in
-            
-            let imageUrl = product.primaryImageURL ?? ""
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-            
-            return FeaturedDealItem(
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+        return state.featuredProducts.map { product in
+            FeaturedDealItem(
                 id: "\(product.id ?? 0)",
-                imageUrl: imageUrl,
+                imageUrl: product.primaryImageURL ?? "",
                 image: UIImage(named: "blank_rectangle"),
                 badgeText: nil,
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.description ?? "",
                 priceText: product.price != nil
-                ? "\(currency) \(String(format: "%.2f", product.price!))"
-                : "Price on request",
+                    ? "\(currency) \(String(format: "%.2f", product.price!))"
+                    : "Price on request",
                 isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapProduct?(product)
-                },
-                onFavoriteToggle: { [weak self] isFav in
-                    self?.onFavoriteProductToggle?(isFav, product)
-                }
+                onTap: { [weak self] in self?.onTapProduct?(product) },
+                onFavoriteToggle: { [weak self] isFav in self?.onFavoriteProductToggle?(isFav, product) }
             )
-        } ?? []
+        }
     }
-    
-    private func makeTrendingServiceItems() -> [GridItemModel] {
-        return state?.featuredServices.map { service in
-            GridItemModel(
+
+    private func makeTrendingServiceItemsForFeaturedGrid() -> [FeaturedDealItem] {
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegion ?? "")
+        return state.featuredServices.map { service in
+            FeaturedDealItem(
                 id: "\(service.id ?? 0)",
-                image: UIImage(named: "blank_rectangle"),
                 imageUrl: service.primaryImage ?? "",
+                image: UIImage(named: "blank_rectangle"),
+                badgeText: nil,
                 title: service.name ?? "Unnamed Service",
                 subtitle: service.traderName ?? "",
-                price: service.price != nil ? "$\(String(format: "%.2f", service.price!))" : nil,
+                priceText: service.price != nil
+                    ? "\(currency) \(String(format: "%.2f", service.price!))"
+                    : "Price on request",
                 isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onTapService?(service)
-                },
-                onToggleFavorite: { [weak self] isFav in
-                    self?.onFavoriteServiceToggle?(isFav, service)
-                }
+                onTap: { [weak self] in self?.onTapService?(service) },
+                onFavoriteToggle: { [weak self] isFav in self?.onFavoriteServiceToggle?(isFav, service) }
             )
-        } ?? []
+        }
     }
-    
+
+    private func makeExportCardsItems() -> [ExportCardItem] {
+        state.associations.prefix(10).map { association in
+            let id = association.id ?? 0
+            let products = state.associationProducts[id] ?? []
+            let imageUrls = products.compactMap { $0.primaryImageURL }.prefix(4).map { $0 }
+            let images: [UIImage?] = imageUrls.map { _ in UIImage(named: "blank_rectangle") }
+            let managerName: String = {
+                guard let m = association.manager else { return "Unknown" }
+                return "\(m.firstName ?? "") \(m.lastName ?? "")"
+            }()
+            return ExportCardItem(
+                id: "\(id)",
+                title: association.name ?? "Unnamed Association",
+                subtitle: managerName,
+                icon: nil,
+                imageUrls: imageUrls,
+                images: images,
+                onTap: { [weak self] in self?.onTapTradeAssociation?(association) }
+            )
+        }
+    }
+
     private func makeTopDealItems() -> [TopDealItem] {
-        
         let dummyTitles = [
-            "Kitenge Fashion",
-            "Hand-Carved Stool",
-            "Luxury Coffee Beans",
-            "Organic Honey",
-            "Handwoven Basket"
+            "Kitenge Fashion", "Hand-Carved Stool",
+            "Luxury Coffee Beans", "Organic Honey", "Handwoven Basket"
         ]
-        
         return (0..<5).map { index in
             TopDealItem(
                 id: "\(index)",
@@ -643,154 +444,96 @@ final class HomeViewModel: FormViewModel {
                 priceText: "KES \(2_500 + (index * 300)) / Piece",
                 isFavorite: false,
                 onTap: { [weak self] in
-                    guard let self = self else { return }
+                    guard let self else { return }
                     self.onTapTopDeal?(self.makeTopDealItems()[index])
                 },
                 onFavoriteToggle: { [weak self] isFav in
-                    guard let self = self else { return }
-                    let item = self.makeTopDealItems()[index]
-                    self.onFavoriteTopDealToggle?(isFav, item)
+                    guard let self else { return }
+                    self.onFavoriteTopDealToggle?(isFav, self.makeTopDealItems()[index])
                 }
             )
         }
     }
-    
-    private func makeExportCardsItems() -> [ExportCardItem] {
-        
-        guard let associations = state?.associations else { return [] }
-        
-        return associations.prefix(10).map { association in
-            
-            let associationId = association.id ?? 0
-            
-            // Use product primaryImageURLs for the card image cluster
-            let products = state?.associationProducts[associationId] ?? []
-            let imageUrls: [String] = products
-                .compactMap { $0.primaryImageURL }
-                .prefix(4)
-                .map { $0 }
-            
-            // Build placeholder UIImages; the UI layer loads the real images async via imageUrl
-            let images: [UIImage?] = imageUrls.map { _ in UIImage(named: "blank_rectangle") }
-            
-            let managerName: String = {
-                guard let manager = association.manager else { return "Unknown" }
-                return "\(manager.firstName ?? "") \(manager.lastName ?? "")"
-            }()
-            
-            return ExportCardItem(
-                id: "\(associationId)",
-                title: association.name ?? "Unnamed Association",
-                subtitle: managerName,
-                icon: nil,
-                imageUrls: imageUrls,
-                images: images,
-                onTap: { [weak self] in
-                    guard let self = self else { return }
-                    self.onTapTradeAssociation?(association)
-                    print("Tapped association: \(association.name ?? "")")
-                    
-                }
-            )
-        }
-    }
-    
-    lazy var exportCardsRow = ExportCardsFormRow(
-        tag: 99,
-        items: makeExportCardsItems()
-    )
-    
+
     private func makeOpportunityItems() -> [OpportunityItem] {
-        return [
+        [
             OpportunityItem(
-                id: "op1",
-                image: UIImage(named: "op1"),
+                id: "op1", image: UIImage(named: "op1"),
                 title: "Fursa ya mafunzo na mitaji kutoka Stanbic Bank",
-                subtitle: "Partner Association",
-                location: "Region, Kenya",
-                category: "Finance",
-                onTap: { print("Op 1 tapped") }
+                subtitle: "Partner Association", location: "Region, Kenya",
+                category: "Finance", onTap: { print("Op 1 tapped") }
             ),
             OpportunityItem(
-                id: "op2",
-                image: UIImage(named: "op2"),
+                id: "op2", image: UIImage(named: "op2"),
                 title: "Fursa ya mafunzo na mitaji kutoka Stanbic Bank",
-                subtitle: "Partner Association",
-                location: "Region, Kenya",
-                category: "Finance",
-                onTap: { print("Op 2 tapped") }
+                subtitle: "Partner Association", location: "Region, Kenya",
+                category: "Finance", onTap: { print("Op 2 tapped") }
             )
         ]
     }
 }
 
+// MARK: - State + Tags
+
 extension HomeViewModel {
-    // MARK: - State
+
     private struct State {
-        
-        var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
-        var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
-        //var featuredProducts: [ProductResponse] = []
-        var featuredProducts: [ProductResponseV1] = []
-        
-        var featuredServices: [TradeServiceResponse] = []
-        var productCategories: [CommodityCategoryResponse] = []
-        var serviceCategories: [TradeServiceCategoryResponse] = []
-        
-        var associations: [AssociationResponse] = []
-        
-        /// Keyed by association ID → products for that association
-        var associationProducts: [Int: [ProductResponseV1]] = [:]
-        
-        var banners: [DirectusHomeBannerItem] = []
+        var oauthToken:          String                        = AppStorage.oauthToken?.accessToken ?? ""
+        var guestToken:          String                        = AppStorage.guestToken?.accessToken ?? ""
+        var hasLoggedIn:         Bool                          = AppStorage.hasLoggedIn ?? false
+        var featuredProducts:    [ProductResponseV1]           = []
+        var featuredServices:    [TradeServiceResponse]        = []
+        var productCategories:   [CommodityCategoryResponse]   = []
+        var serviceCategories:   [TradeServiceCategoryResponse] = []
+        var associations:        [AssociationResponse]         = []
+        var associationProducts: [Int: [ProductResponseV1]]    = [:]
+        var banners:             [DirectusHomeBannerItem]      = []
     }
-    
-    // MARK: - Tags
+
     enum Tags {
         enum Section: Int {
-            case categories = 0
+            case search            = 3001
+            case banner            = 3
+            case categories        = 0
             case serviceCategories = 1
-            case banner = 3
-            case topDeals = 4
-            case exportCards = 8
-            case trendingProducts = 6
-            case trendingServices = 7
-            case opportunities = 9
-            case search = 3001
+            case exportCards       = 8
+            case trendingProducts  = 6
+            case trendingServices  = 7
+            case topDeals          = 4
+            case opportunities     = 9
+
+            static let canonicalOrder: [Section] = [
+                .search, .banner, .categories, .serviceCategories,
+                .exportCards, .trendingProducts, .trendingServices,
+                .topDeals, .opportunities
+            ]
         }
-        
+
         enum Cells: Int {
-            case categories = 0
+            case search            = 3001
+            case banner            = 3
+            case categories        = 0
             case serviceCategories = 1
-            case banner = 3
-            case topDeals = 4
-            case exportCards = 8
-            case trendingProducts = 6
-            case trendingServices = 7
-            case opportunities = 9
-            case search = 3001
+            case exportCards       = 8
+            case trendingProducts  = 6
+            case trendingServices  = 7
+            case topDeals          = 4
+            case opportunities     = 9
         }
     }
-    
-    // MARK: - Data Types
+
     private enum HomeDataType: CustomStringConvertible {
-        case featuredProducts
-        case featuredServices
-        case productCategories
-        case serviceCategories
+        case featuredProducts, featuredServices
+        case productCategories, serviceCategories
         case associations
-        
-        
+
         var description: String {
             switch self {
-            case .featuredProducts: return "Featured Products"
-            case .featuredServices: return "Featured Services"
+            case .featuredProducts:  return "Featured Products"
+            case .featuredServices:  return "Featured Services"
             case .productCategories: return "Product Categories"
             case .serviceCategories: return "Service Categories"
-            case .associations:
-                return "Associations"
+            case .associations:      return "Associations"
             }
         }
     }

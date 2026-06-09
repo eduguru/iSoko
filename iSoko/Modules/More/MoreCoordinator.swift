@@ -228,11 +228,6 @@ public class MoreCoordinator: BaseCoordinator {
     }
 
     private func gotoHelpFeedback() {
-        guard AppStorage.hasLoggedIn == true else {
-            presentAuthBottomSheet()
-            return
-        }
-
         // Use existing router
         let coordinator = HelpFeedbackCoordinator(router: router)
         addChild(coordinator)

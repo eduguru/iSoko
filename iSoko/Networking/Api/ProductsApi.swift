@@ -63,10 +63,10 @@ public struct ProductsApi {
             "page": page,
             "count": count,
             "size": count,
-            "commodityId": categoryId,
+            // "commodityId": categoryId,
             "categoryId": categoryId
         ]
-
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",

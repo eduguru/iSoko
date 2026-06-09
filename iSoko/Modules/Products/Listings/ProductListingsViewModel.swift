@@ -190,6 +190,9 @@ final class ProductListingsViewModel: FormViewModel {
 
     // MARK: - API
     private func loadProducts(reset: Bool) async -> Bool {
+        showLoader()
+        defer { hideLoader() }
+        
         do {
             var response: [ProductResponseV1] = []
 

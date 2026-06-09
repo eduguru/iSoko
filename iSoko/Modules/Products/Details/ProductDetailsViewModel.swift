@@ -67,7 +67,9 @@ final class ProductDetailsViewModel: FormViewModel {
                         tag: Tags.Cells.productImages.rawValue,
                         config: ProductImageGalleryConfig(
                             images: images,
-                            imageHeight: 140
+                            imageHeight: 250,
+                            placeholderImage: UIImage(named: "blank_rectangle"),
+                            fallbackImage: UIImage(named: "blank_rectangle")
                         )
                     ),
 
@@ -123,12 +125,7 @@ final class ProductDetailsViewModel: FormViewModel {
     }
 
     private func placeholderImages() -> [ProductImage] {
-        [
-            ProductImage(
-                url: URL(string: "https://via.placeholder.com/600x400?text=No+Image")!,
-                isFeatured: true
-            )
-        ]
+        []
     }
 
     // MARK: - Rows
