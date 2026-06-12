@@ -20,8 +20,6 @@ final class PhoneDropDownFormCell: UITableViewCell {
     private let textField = UITextField()
     private let errorLabel = UILabel()
 
-    // MARK: - Public API
-
     var onPhoneChanged: ((String) -> Void)?
     var onCountryTapped: (() -> Void)?
 
@@ -42,7 +40,10 @@ final class PhoneDropDownFormCell: UITableViewCell {
     private func setupUI() {
         selectionStyle = .none
 
-        // MARK: Container Stack
+        // 🔥 FIX: remove full-width white background
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
         containerStackView.axis = .vertical
         containerStackView.spacing = 4
         containerStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -55,13 +56,11 @@ final class PhoneDropDownFormCell: UITableViewCell {
             containerStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
 
-        // MARK: Title
         titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
         titleLabel.textColor = .label
         titleLabel.isHidden = true
         containerStackView.addArrangedSubview(titleLabel)
 
-        // MARK: Card Container View
         cardContainerView.translatesAutoresizingMaskIntoConstraints = false
         cardContainerView.layer.cornerRadius = 8
         cardContainerView.layer.borderWidth = 1
@@ -69,7 +68,6 @@ final class PhoneDropDownFormCell: UITableViewCell {
         cardContainerView.backgroundColor = .systemBackground
         containerStackView.addArrangedSubview(cardContainerView)
 
-        // MARK: Stack View inside Card
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.alignment = .center
@@ -90,7 +88,6 @@ final class PhoneDropDownFormCell: UITableViewCell {
         stackView.addArrangedSubview(dropdownButton)
         stackView.addArrangedSubview(textField)
 
-        // MARK: Error Label
         errorLabel.font = .systemFont(ofSize: 12)
         errorLabel.textColor = .systemRed
         errorLabel.numberOfLines = 0
@@ -98,7 +95,6 @@ final class PhoneDropDownFormCell: UITableViewCell {
         errorLabel.translatesAutoresizingMaskIntoConstraints = false
         cardContainerView.addSubview(errorLabel)
 
-        // MARK: Constraints inside Card
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: cardContainerView.topAnchor, constant: 12),
             stackView.leadingAnchor.constraint(equalTo: cardContainerView.leadingAnchor, constant: 12),

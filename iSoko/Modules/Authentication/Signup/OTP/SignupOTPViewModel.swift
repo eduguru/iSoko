@@ -14,7 +14,7 @@ final class SignupOTPViewModel: FormViewModel {
 
     // MARK: - Callbacks
     var onResendCode: (() -> Void)?
-    var onOTPVerified: (() -> Void)?  // Called after successful verification, to navigate to complete profile
+    var onOTPVerified: (() -> Void)?
     var onOTPFailure: ((String) -> Void)?
 
     // MARK: - State
@@ -29,6 +29,7 @@ final class SignupOTPViewModel: FormViewModel {
     }
 
     // MARK: - Section Builders
+
     private func makeSections() -> [FormSection] {
         [
             makeHeaderSection(),
@@ -58,6 +59,7 @@ final class SignupOTPViewModel: FormViewModel {
     }
 
     // MARK: - Row Builders
+
     private func makeHeaderTitleRow() -> FormRow {
         TitleDescriptionFormRow(
             tag: Tags.Cells.headerTitle.rawValue,
@@ -79,13 +81,16 @@ final class SignupOTPViewModel: FormViewModel {
             tag: Tags.Cells.otp.rawValue,
             config: OTPRowConfig(
                 numberOfDigits: 5,
-                sentMessage: "We’ve sent a code to \(state.type.targetValue)",
+                sentMessage: "We've sent a code to \(state.type.targetValue)",
                 showResendTimer: true,
                 resendDuration: 30,
                 keyboardType: .numberPad,
                 onOTPComplete: { [weak self] otp in
-                    self?.state.otp = otp
-                    Task { await self?.verifyOtp(otp: otp) }
+                    guard let self else { return }
+                    // Auto-submit when all digits are filled
+                    self.state.otp = otp
+                    self.updateContinueButton(enabled: true)
+                    Task { await self.verifyOtp(otp: otp) }
                 },
                 onResendTapped: { [weak self] in
                     self?.onResendCode?()
@@ -103,18 +108,41 @@ final class SignupOTPViewModel: FormViewModel {
                 size: .medium,
                 icon: nil,
                 fontStyle: .headline,
-                hapticsEnabled: true
+                hapticsEnabled: true,
+                isEnabled: false   // disabled until OTP is complete
             ) { [weak self] in
-                guard let self = self else { return }
+                guard let self else { return }
+                // Guard: only submit if OTP is fully entered
+                guard self.state.isOTPComplete else {
+                    onOTPFailure?("Please enter the complete verification code.")
+                    showError("Please enter the complete verification code.")
+                    return
+                }
+                
                 let otp = self.state.otp
                 Task { await self.verifyOtp(otp: otp) }
             }
         )
     }()
 
+    // MARK: - Button state
+
+    private func updateContinueButton(enabled: Bool) {
+        var updated = continueButtonRow.model
+        updated.isEnabled = enabled
+        continueButtonRow.model = updated
+    }
+
     // MARK: - OTP Verification
+
     @MainActor
     func verifyOtp(otp: String) async {
+        guard state.isOTPComplete else {
+            onOTPFailure?("Please enter the complete verification code.")
+            showError("Please enter the complete verification code.")
+            return
+        }
+
         showLoader()
         defer { hideLoader() }
 
@@ -129,17 +157,16 @@ final class SignupOTPViewModel: FormViewModel {
                 accessToken: state.guestToken
             )
 
-            if let dict = response.asDictionary, let message = dict["message"]?.asString {
+            if let dict = response.asDictionary,
+               let message = dict["message"]?.asString {
                 print("✅ OTP Verified: \(message)")
-                
-                // Navigate to complete profile only on "Email verified"
+
                 if message.lowercased().contains("email verified") {
                     onOTPVerified?()
                 } else {
                     onOTPFailure?("OTP verification succeeded, but unexpected message: \(message)")
                     showError("Unexpected message: \(message)")
                 }
-
             } else {
                 onOTPFailure?("Unexpected response from server.")
                 showError("Unexpected response from server.")
@@ -152,6 +179,7 @@ final class SignupOTPViewModel: FormViewModel {
     }
 
     // MARK: - Helpers
+
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
@@ -164,26 +192,31 @@ final class SignupOTPViewModel: FormViewModel {
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {}
 
-    // MARK: - Internal State
+    // MARK: - State
+
     private struct State {
         var type: OTPVerificationType
         var otp: String = ""
 
-        var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
+        /// True only when the OTP string is fully filled (matches expected digit count).
+        var isOTPComplete: Bool { otp.count == 5 && !otp.trimmingCharacters(in: .whitespaces).isEmpty }
+
+        var isLoggedIn: Bool   = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userDetail
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 
     // MARK: - Tags
+
     enum Tags {
         enum Section: Int { case header = 0, otp = 1 }
         enum Cells: Int {
-            case headerTitle = 100
-            case spacerTop = 101
-            case spacerBottom = 102
-            case otp = 103
-            case continueButton = 104
+            case headerTitle     = 100
+            case spacerTop       = 101
+            case spacerBottom    = 102
+            case otp             = 103
+            case continueButton  = 104
         }
     }
 }

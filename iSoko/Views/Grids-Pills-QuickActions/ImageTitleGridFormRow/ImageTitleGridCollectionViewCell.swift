@@ -7,6 +7,7 @@
 
 import UIKit
 import Kingfisher
+import DesignSystemKit
 
 class ImageTitleGridCollectionViewCell: UICollectionViewCell {
 
@@ -27,6 +28,18 @@ class ImageTitleGridCollectionViewCell: UICollectionViewCell {
         itemImageView.contentMode = .scaleAspectFill
         itemImageView.clipsToBounds = true
 
+        // Configure Title Label for wrapping and auto-scaling
+        titleLabel.numberOfLines = 2
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.75
+        titleLabel.lineBreakMode = .byTruncatingTail
+
+        // UPDATED: Configure Description Label for 2 lines and auto-scaling
+        descLabel.numberOfLines = 2
+        descLabel.adjustsFontSizeToFitWidth = true
+        descLabel.minimumScaleFactor = 0.75
+        descLabel.lineBreakMode = .byTruncatingTail
+
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCellTap))
         containerView.addGestureRecognizer(tapGesture)
     }
@@ -41,13 +54,21 @@ class ImageTitleGridCollectionViewCell: UICollectionViewCell {
             itemImageView.image = item.image
         }
         
-        titleLabel.text = item.title
+        // Maps to item.itemTitle and sanitizes harsh uppercase input
+        titleLabel.text = item.title.lowercased().capitalized
         descLabel.text = item.subtitle
 
         descLabel.isHidden = item.subtitle == nil
+        
+        applyStyling(to: titleLabel, style: .callout)
     }
 
     @objc private func handleCellTap() {
         item?.onTap?()
+    }
+    
+    private let styleGuide: StyleGuideProtocol = DesignSystemKit.sharedStyleGuide
+    private func applyStyling(to label: UILabel, style: FontStyle) {
+        label.font = styleGuide.font(for: style)
     }
 }

@@ -91,7 +91,7 @@ final class BasicProfileDataViewModel: FormViewModel {
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
                 titleFontStyle: .title,
-                descriptionFontStyle: .headline
+                descriptionFontStyle: .subheadline
             )
         )
     }
@@ -128,7 +128,7 @@ final class BasicProfileDataViewModel: FormViewModel {
 
     lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
         guard let self = self else { fatalError("Self is nil") }
-        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+        let iso = AppStorage.selectedRegionCode?.capitalized ?? "KE"
         let selectedCountry: Country = countryHelper.country(forISO: iso)
             ?? countryHelper.defaultCountry
             ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")

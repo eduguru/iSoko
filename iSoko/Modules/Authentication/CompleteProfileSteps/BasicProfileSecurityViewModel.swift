@@ -48,7 +48,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
-            FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]),
+            // FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]),
             FormSection(
                 id: Tags.Section.security.rawValue,
                 title: "common.basic_profile_security.set_password_title".localized,
@@ -88,7 +88,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 6,
+                minLength: 8,
                 maxLength: 20,
                 errorMessageRequired: "Password is required",
                 errorMessageLength: "Password must be 6–20 characters"
@@ -114,10 +114,10 @@ final class BasicProfileSecurityViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 6,
+                minLength: 8,
                 maxLength: 20,
                 errorMessageRequired: "Confirm password is required",
-                errorMessageLength: "Confirm password must be 6–20 characters"
+                errorMessageLength: "Confirm password must be 8–20 characters"
             ),
             useCardStyle: true,
             cardStyle: .border,

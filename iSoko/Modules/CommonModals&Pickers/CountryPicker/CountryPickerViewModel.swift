@@ -49,7 +49,7 @@ final class CountryPickerViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
         )
         )
         

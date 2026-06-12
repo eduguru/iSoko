@@ -179,7 +179,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .body,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
             )
         )
     }

@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - 1. Selectable Card Cell
 public final class SelectableCell: UITableViewCell {
     private let containerView = UIView()  // the card view
     private let titleLabel = UILabel()
@@ -39,7 +40,7 @@ public final class SelectableCell: UITableViewCell {
         containerView.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(containerView)
 
-        // Here are the key constraints for insets
+        // Key outer constraints to space cards away from each other gracefully
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
@@ -47,10 +48,13 @@ public final class SelectableCell: UITableViewCell {
             containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
         ])
 
-        // Then setup the internal layout in containerView
+        // Flexible Title layout logic
         titleLabel.font = UIFont.preferredFont(forTextStyle: .body)
         titleLabel.textColor = .label
-        titleLabel.numberOfLines = 1
+        titleLabel.numberOfLines = 2
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.75
+        titleLabel.lineBreakMode = .byTruncatingTail
 
         descriptionLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         descriptionLabel.textColor = .secondaryLabel
@@ -78,11 +82,12 @@ public final class SelectableCell: UITableViewCell {
 
         containerView.addSubview(mainStack)
 
+        // INCREASED PADDING: Raised inner padding constants from 12 to 16 for cleaner breathing room
         NSLayoutConstraint.activate([
-            mainStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 12),
-            mainStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -12),
-            mainStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 12),
-            mainStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -12),
+            mainStack.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            mainStack.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            mainStack.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
+            mainStack.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
 
             selectionIcon.widthAnchor.constraint(equalToConstant: 24),
             selectionIcon.heightAnchor.constraint(equalToConstant: 24),
@@ -96,7 +101,8 @@ public final class SelectableCell: UITableViewCell {
     }
 
     public func configure(with config: SelectableRowConfig) {
-        titleLabel.text = config.title
+        // Sanitize incoming raw string patterns to capitalized case formats gracefully
+        titleLabel.text = config.title.lowercased().capitalized
         descriptionLabel.text = config.description
         descriptionLabel.isHidden = config.description == nil
 
@@ -121,7 +127,6 @@ public final class SelectableCell: UITableViewCell {
             containerView.layer.borderColor = config.cardBorderColor?.cgColor
             containerView.layer.masksToBounds = true
         } else {
-            // if card style is off, maybe remove padding or set container invisible or flat
             containerView.layer.cornerRadius = 0
             containerView.backgroundColor = .clear
             containerView.layer.borderWidth = 0
@@ -142,8 +147,7 @@ public final class SelectableCell: UITableViewCell {
             imageName = isSelectedState ? "largecircle.fill.circle" : "circle"
         }
         selectionIcon.image = UIImage(systemName: imageName)
-        // Tint or color accordingly
-        selectionIcon.tintColor = .app(.primary) 
+        selectionIcon.tintColor = .app(.primary)
     }
 
     @objc private func toggleSelection() {

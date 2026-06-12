@@ -189,7 +189,7 @@ final class ProductDetailsViewModel: FormViewModel {
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
                 titleFontStyle: .callout,
-                descriptionFontStyle: .headline
+                descriptionFontStyle: .subheadline
             )
         )
     }
@@ -209,7 +209,7 @@ final class ProductDetailsViewModel: FormViewModel {
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
                 titleFontStyle: .body,
-                descriptionFontStyle: .headline
+                descriptionFontStyle: .subheadline
             )
         )
     }

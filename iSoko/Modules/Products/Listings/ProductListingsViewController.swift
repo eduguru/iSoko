@@ -15,7 +15,7 @@ class ProductListingsViewController: FormViewController, CloseableViewController
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        title = "My Products"
+        title = "common.label.products".localized
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
         

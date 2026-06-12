@@ -44,7 +44,8 @@ final class AuthViewModel: FormViewModel {
             title: nil,
             cells: [
                 SpacerFormRow(tag: 1001),
-//                makeHeaderImageCell(),
+                makeHeaderImageCell(),
+                SpacerFormRow(tag: 1001, height: 32),
                 makeHeaderTitleRow(),
                 SpacerFormRow(tag: 1001),
             ]
@@ -80,7 +81,7 @@ final class AuthViewModel: FormViewModel {
             tag: 1,
             config: .init(
                 image: UIImage(named: "logo"),
-                height: 120
+                height: 80
             )
         )
         return imageRow
@@ -91,16 +92,16 @@ final class AuthViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "common.auth_view.sign_in_title".localized,
-            description: "",
+            title: "Welcome to iSOKO", // "common.auth_view.sign_in_title".localized,
+            description: "Join a network of Traders and grow your business.",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
             descriptionEllipsis: .none,
             layoutStyle: .stackedVertical,
-            textAlignment: .left,
+            textAlignment: .center,
             titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
         )
         )
         
@@ -168,7 +169,12 @@ final class AuthViewModel: FormViewModel {
     private func makeGuestButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
             title: "common.auth_view.guest_mode".localized,
-            style: .secondary,
+            style: .custom(
+                backgroundColor: .clear,
+                textColor: .app(.hex("#717171")),
+                borderColor: .app(.hex("#D9D9D9")),
+                cornerRadius: 10
+            ),
             size: .medium,
             icon: nil,
             fontStyle: .headline,
@@ -176,11 +182,10 @@ final class AuthViewModel: FormViewModel {
         ) { [weak self] in
             self?.gotoGuestSession?()
         }
-        
-        let buttonRow = ButtonFormRow(tag: 1001, model: buttonModel)
-        
-        return buttonRow
+
+        return ButtonFormRow(tag: 1001, model: buttonModel)
     }
+    
     func reloadRowWithTag(_ tag: Int) {
         for (sectionIndex, section) in sections.enumerated() {
             if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {

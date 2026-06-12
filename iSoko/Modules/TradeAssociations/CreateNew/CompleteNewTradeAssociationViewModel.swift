@@ -122,7 +122,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             fatalError("Self is nil in lazy initializer")
         }
 
-        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+        let iso = AppStorage.selectedRegionCode?.capitalized ?? "KE"
 
         let selectedCountry: Country = countryHelper.country(forISO: iso)
             ?? countryHelper.defaultCountry

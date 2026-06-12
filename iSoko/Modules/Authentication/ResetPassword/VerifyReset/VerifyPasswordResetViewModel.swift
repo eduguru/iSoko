@@ -45,7 +45,7 @@ final class VerifyPasswordResetViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
             )
         )
         

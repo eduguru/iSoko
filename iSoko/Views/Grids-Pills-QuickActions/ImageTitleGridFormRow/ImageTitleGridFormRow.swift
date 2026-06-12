@@ -43,9 +43,10 @@ public final class ImageTitleGridFormRow: FormRow {
 
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
         let rows = ceil(Double(items.count) / Double(numberOfColumns))
-        let heightPerRow: CGFloat = 200
+        let heightPerRow: CGFloat = 210
         let spacing: CGFloat = 12
         let insets: CGFloat = 16
         return CGFloat(rows) * heightPerRow + CGFloat(rows - 1) * spacing + insets
     }
 }
+

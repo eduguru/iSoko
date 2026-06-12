@@ -116,7 +116,8 @@ final class SignUpOptionsViewModel: FormViewModel {
 
     lazy var phoneDropDownRow: PhoneDropDownFormRow = { [weak self] in
         guard let self = self else { fatalError("Self is nil") }
-        let iso = AppStorage.selectedRegion?.capitalized ?? "KE"
+        let iso = AppStorage.selectedRegionCode?.capitalized ?? "KE"
+       
         let selectedCountry: Country = countryHelper.country(forISO: iso)
             ?? countryHelper.defaultCountry
             ?? Country(id: "KE", name: "Kenya", phoneCode: "+254", continentCode: "AF")
@@ -164,7 +165,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             tag: Tags.Cells.headerTitle.rawValue,
             model: TitleDescriptionModel(
                 title: "common.auth_view.create_account".localized,
-                description: "Join a network of Traders and grow your network.",
+                description: "Join a network of Traders and grow your business.",
                 maxTitleLines: 2,
                 maxDescriptionLines: 0,
                 titleEllipsis: .none,

@@ -39,8 +39,12 @@ final class QuickActionItemCell: UICollectionViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        titleLabel.numberOfLines = 0
+        // Let the title wrap up to 2 lines and shrink if needed for small screens
+        titleLabel.numberOfLines = 2
         titleLabel.textAlignment = .center
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.75
+        titleLabel.lineBreakMode = .byTruncatingTail
 
         contentView.addSubview(imageView)
         contentView.addSubview(titleLabel)
@@ -66,14 +70,19 @@ final class QuickActionItemCell: UICollectionViewCell {
         print("🧩 Configuring cell for:", item.title)
         print("🔗 URL:", item.imageUrl ?? "nil")
 
-        // Always set placeholder first
         imageView.image = item.image
+
+        // Format the string to lowercase first, then capitalize each word to handle harsh ALL CAPS data safely
+        let presentableTitle = item.title.lowercased().capitalized
 
         guard let urlString = item.imageUrl,
               !urlString.isEmpty,
               let url = URL(string: urlString) else {
             
             print("Invalid or empty URL → using placeholder")
+            titleLabel.text = presentableTitle
+            titleLabel.font = item.titleFont
+            titleLabel.textColor = item.titleColor
             return
         }
 
@@ -95,7 +104,7 @@ final class QuickActionItemCell: UICollectionViewCell {
             }
         }
 
-        titleLabel.text = item.title
+        titleLabel.text = presentableTitle
         titleLabel.font = item.titleFont
         titleLabel.textColor = item.titleColor
 

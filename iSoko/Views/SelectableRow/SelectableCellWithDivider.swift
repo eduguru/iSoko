@@ -7,6 +7,7 @@
 
 import UIKit
 
+// MARK: - 2. Selectable Inline Divider Cell
 public final class SelectableCellWithDivider: UITableViewCell {
     private let titleLabel = UILabel()
     private let descriptionLabel = UILabel()
@@ -33,9 +34,13 @@ public final class SelectableCellWithDivider: UITableViewCell {
         backgroundColor = .clear
         selectionStyle = .none
 
+        // Flexible Title layout logic
         titleLabel.font = UIFont.preferredFont(forTextStyle: .body)
         titleLabel.textColor = .label
-        titleLabel.numberOfLines = 1
+        titleLabel.numberOfLines = 2
+        titleLabel.adjustsFontSizeToFitWidth = true
+        titleLabel.minimumScaleFactor = 0.75
+        titleLabel.lineBreakMode = .byTruncatingTail
 
         descriptionLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
         descriptionLabel.textColor = .secondaryLabel
@@ -67,11 +72,12 @@ public final class SelectableCellWithDivider: UITableViewCell {
         contentView.addSubview(mainStack)
         contentView.addSubview(divider)
 
+        // INCREASED PADDING: Raised top/bottom constraint offsets from 12 to 16 for crisp separation layout
         NSLayoutConstraint.activate([
-            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            mainStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            mainStack.bottomAnchor.constraint(equalTo: divider.topAnchor, constant: -12),
+            mainStack.bottomAnchor.constraint(equalTo: divider.topAnchor, constant: -16),
 
             divider.heightAnchor.constraint(equalToConstant: 1),
             divider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
@@ -92,7 +98,8 @@ public final class SelectableCellWithDivider: UITableViewCell {
     }
 
     public func configure(with config: SelectableRowConfig) {
-        titleLabel.text = config.title
+        // Sanitize incoming raw string patterns to capitalized case formats gracefully
+        titleLabel.text = config.title.lowercased().capitalized
         descriptionLabel.text = config.description
         descriptionLabel.isHidden = config.description == nil
 

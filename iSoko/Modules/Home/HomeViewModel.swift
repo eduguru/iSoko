@@ -45,6 +45,7 @@ final class HomeViewModel: FormViewModel {
 
     override init() {
         super.init()
+        
         Task { @MainActor in
             sections = makeSections()
         }
@@ -160,7 +161,16 @@ final class HomeViewModel: FormViewModel {
 
     private func makeSections() -> [FormSection] {
         Tags.Section.canonicalOrder.map { tag in
-            FormSection(id: tag.rawValue, title: nil, cells: [])
+            switch tag {
+            case .search:
+                // Static row — no data dependency.
+                return FormSection(id: tag.rawValue, title: nil, cells: [makeSearchRow()])
+            case .banner:
+                // Always has local fallback images — no need to wait for network.
+                return FormSection(id: tag.rawValue, title: nil, cells: [makeBannerRow()])
+            default:
+                return FormSection(id: tag.rawValue, title: nil, cells: [])
+            }
         }
     }
 
@@ -375,7 +385,7 @@ final class HomeViewModel: FormViewModel {
                 image: UIImage(named: "blank_rectangle"),
                 badgeText: nil,
                 title: product.name ?? "Unnamed Product",
-                subtitle: product.description ?? "",
+                subtitle: product.categoryName ?? "",
                 priceText: product.price != nil
                     ? "\(currency) \(String(format: "%.2f", product.price!))"
                     : "Price on request",

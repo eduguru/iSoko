@@ -25,7 +25,6 @@ final class SimpleInputFormCell: UITableViewCell {
     private var model: SimpleInputModel?
     private var isPasswordVisible = false
 
-    // Public callback
     var onTextChanged: ((String) -> Void)?
 
     // MARK: - Init
@@ -43,7 +42,10 @@ final class SimpleInputFormCell: UITableViewCell {
     private func setupUI() {
         selectionStyle = .none
 
-        // Main vertical stack
+        // 🔥 FIX: remove full-width white background
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
         containerStackView.axis = .vertical
         containerStackView.spacing = 4
         containerStackView.translatesAutoresizingMaskIntoConstraints = false
@@ -56,48 +58,39 @@ final class SimpleInputFormCell: UITableViewCell {
             containerStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
 
-        // Title Label — always added, initially hidden
         titleLabel.font = .systemFont(ofSize: 14, weight: .medium)
         titleLabel.textColor = .label
         titleLabel.isHidden = true
         containerStackView.addArrangedSubview(titleLabel)
 
-        // Card Container
         cardContainerView.translatesAutoresizingMaskIntoConstraints = false
         cardContainerView.clipsToBounds = false
         containerStackView.addArrangedSubview(cardContainerView)
 
-        // Inner horizontal stack
         stackView.axis = .horizontal
         stackView.spacing = 8
         stackView.alignment = .center
         stackView.translatesAutoresizingMaskIntoConstraints = false
         cardContainerView.addSubview(stackView)
 
-        // Prefix
         prefixLabel.font = .systemFont(ofSize: 16)
         prefixLabel.textColor = .darkGray
         prefixLabel.setContentHuggingPriority(.required, for: .horizontal)
 
-        // TextField
         textField.borderStyle = .none
         textField.font = .systemFont(ofSize: 16)
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.addTarget(self, action: #selector(textDidChange), for: .editingChanged)
 
-        // Accessory Image
         accessoryImageView.contentMode = .scaleAspectFit
         accessoryImageView.tintColor = .gray
         accessoryImageView.widthAnchor.constraint(equalToConstant: 24).isActive = true
         accessoryImageView.heightAnchor.constraint(equalToConstant: 24).isActive = true
-        accessoryImageView.setContentHuggingPriority(.required, for: .horizontal)
 
-        // Toggle button
         toggleButton.setImage(UIImage(systemName: "eye.fill"), for: .normal)
         toggleButton.tintColor = .gray
         toggleButton.addTarget(self, action: #selector(togglePasswordVisibility), for: .touchUpInside)
         toggleButton.isHidden = true
-        toggleButton.setContentHuggingPriority(.required, for: .horizontal)
 
         stackView.addArrangedSubview(prefixLabel)
         stackView.addArrangedSubview(textField)
@@ -112,7 +105,6 @@ final class SimpleInputFormCell: UITableViewCell {
             cardContainerView.heightAnchor.constraint(greaterThanOrEqualToConstant: 44)
         ])
 
-        // Error Label
         errorLabel.font = .systemFont(ofSize: 12)
         errorLabel.textColor = .systemRed
         errorLabel.numberOfLines = 0
@@ -126,11 +118,9 @@ final class SimpleInputFormCell: UITableViewCell {
         self.model = model
         let config = model.config
 
-        // Title — hide if empty
         titleLabel.text = model.titleText
         titleLabel.isHidden = model.titleText?.isEmpty ?? true
 
-        // TextField
         textField.text = model.text
         textField.placeholder = config.placeholder
         textField.keyboardType = config.keyboardType
@@ -139,16 +129,15 @@ final class SimpleInputFormCell: UITableViewCell {
         textField.textContentType = config.textContentType
         textField.isUserInteractionEnabled = !config.isReadOnly
         textField.textAlignment = config.textAlignment
+
         if let font = config.textFont { textField.font = font }
         if let color = config.textColor { textField.textColor = color }
 
-        // Secure entry
         isPasswordVisible = false
         textField.isSecureTextEntry = config.isSecureTextEntry
         toggleButton.isHidden = !config.isSecureTextEntry
         updateToggleButtonIcon()
 
-        // Prefix & accessory
         prefixLabel.text = config.prefixText
         prefixLabel.isHidden = config.prefixText == nil
 
@@ -159,7 +148,6 @@ final class SimpleInputFormCell: UITableViewCell {
             accessoryImageView.isHidden = true
         }
 
-        // Card style
         applyCardStyle(
             enabled: model.useCardStyle,
             style: model.cardStyle,
@@ -168,7 +156,6 @@ final class SimpleInputFormCell: UITableViewCell {
             shadowColor: model.cardShadowColor
         )
 
-        // Error
         setError(model.validationError)
     }
 
@@ -177,7 +164,6 @@ final class SimpleInputFormCell: UITableViewCell {
         errorLabel.isHidden = error == nil
     }
 
-    // MARK: - Actions
     @objc private func textDidChange() {
         guard var model = model else { return }
         let text = textField.text ?? ""
@@ -195,7 +181,6 @@ final class SimpleInputFormCell: UITableViewCell {
         textField.isSecureTextEntry = !isPasswordVisible
         updateToggleButtonIcon()
 
-        // Fix caret bug
         let temp = textField.text
         textField.text = nil
         textField.text = temp
@@ -222,13 +207,14 @@ final class SimpleInputFormCell: UITableViewCell {
             cardContainerView.layer.borderWidth = 1
             cardContainerView.layer.borderColor = borderColor.cgColor
             cardContainerView.layer.shadowOpacity = 0
+
         case .shadow:
-            cardContainerView.layer.borderWidth = 0
             cardContainerView.layer.shadowColor = shadowColor.cgColor
             cardContainerView.layer.shadowOpacity = 0.1
             cardContainerView.layer.shadowOffset = CGSize(width: 0, height: 2)
             cardContainerView.layer.shadowRadius = 4
             cardContainerView.layer.masksToBounds = false
+
         case .borderAndShadow:
             cardContainerView.layer.borderWidth = 1
             cardContainerView.layer.borderColor = borderColor.cgColor
@@ -237,6 +223,7 @@ final class SimpleInputFormCell: UITableViewCell {
             cardContainerView.layer.shadowOffset = CGSize(width: 0, height: 2)
             cardContainerView.layer.shadowRadius = 4
             cardContainerView.layer.masksToBounds = false
+
         case .none:
             cardContainerView.layer.borderWidth = 0
             cardContainerView.layer.shadowOpacity = 0

@@ -117,7 +117,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .title,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
             )
         )
     }
@@ -137,7 +137,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             layoutStyle: .stackedVertical,
             textAlignment: .left,
             titleFontStyle: .body,
-            descriptionFontStyle: .headline
+            descriptionFontStyle: .subheadline
             )
         )
     }
