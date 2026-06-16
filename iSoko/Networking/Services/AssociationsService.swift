@@ -11,8 +11,8 @@ import UtilsKit
 public protocol AssociationsService {
     //MARK: -
     func getAllAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
-    func getAllPendingAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
-    func getApprovedssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
+    func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
+    func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
     
     func enrollIntoAssociation(associationId: Int, accessToken: String) async throws -> AssociationMemberResponse?
     func cancelMembership(memberId: Int, comment: String, accessToken: String) async throws -> AssociationMemberResponse?
@@ -54,13 +54,13 @@ public final class AssociationsServiceImpl: AssociationsService {
         return response.data
     }
     
-    public func getAllPendingAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
-        let response = try await manager.request(AssociationsApi.getAllPendingAssociations(page: page, count: count, accessToken: accessToken))
+    public func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
+        let response = try await manager.request(AssociationsApi.getAllPendingAssociations(id: id, page: page, count: count, accessToken: accessToken))
         return response.data
     }
     
-    public func getApprovedssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
-        let response = try await manager.request(AssociationsApi.getApprovedssociations(page: page, count: count, accessToken: accessToken))
+    public func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
+        let response = try await manager.request(AssociationsApi.getApprovedssociations(id: id, page: page, count: count, accessToken: accessToken))
         return response.data
     }
     

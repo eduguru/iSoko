@@ -6,7 +6,7 @@
 //
 
 public struct SupplierResponse: Codable {
-    public let id: Int
+    public let id: Int?
     public let name: String?
     public let phoneNumber: String?
     public let email: String?
@@ -14,8 +14,7 @@ public struct SupplierResponse: Codable {
     public let country: IDNamePairInt?
     public let category: IDNamePairInt?
     public let town: String?
-    
-    /// Optional backend-calculated fields
+
     public let totalAmountSupplied: Double?
     public let suppliesCount: Int?
 }

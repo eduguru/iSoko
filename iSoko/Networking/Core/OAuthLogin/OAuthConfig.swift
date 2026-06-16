@@ -29,47 +29,57 @@ enum PKCE {
 }
 
 
+// MARK: - OAuthConfig
+
 struct OAuthConfig {
-    // to be moved to a separate file
-    static let userInfoEndpoint = "https://api.dev.isoko.africa/v1/oauth2/user-info"
 
     static let clientId = "Mobile"
-    static let scope = "openid"
+    static let scope    = "openid"
 
-    static let authorizationEndpoint =
-        "https://api.dev.isoko.africa/v1/oauth2/authorize"
+    // MARK: - Endpoints (derived from ApiEnvironment so country/env switching is automatic)
 
-    static let tokenEndpoint =
-        "https://api.dev.isoko.africa/v1/oauth2/token"
+    static var userInfoEndpoint: String {
+        ApiEnvironment.apiBaseURL.appendingPathComponent("oauth2/user-info").absoluteString
+    }
 
-    // Primary (Universal Link)
-    static let redirectURI =
-        "https://api.dev.isoko.africa/v1/oauth2/authorized"
+    static var authorizationEndpoint: String {
+        ApiEnvironment.apiBaseURL.appendingPathComponent("oauth2/authorize").absoluteString
+    }
 
-    // Fallback (Custom Scheme)
-    static let fallbackRedirectURI =
-        "app://oauth2.isoko.authorized/callback"
+    static var tokenEndpoint: String {
+        ApiEnvironment.apiBaseURL.appendingPathComponent("oauth2/token").absoluteString
+    }
 
-    // SCHEME ONLY
+    static var loginEndpoint: String {
+        ApiEnvironment.apiBaseURL.appendingPathComponent("oauth2/login").absoluteString
+    }
+
+    /// Primary redirect — universal link
+    static var redirectURI: String {
+        ApiEnvironment.apiBaseURL.appendingPathComponent("oauth2/authorized").absoluteString
+    }
+
+    /// Fallback redirect — custom scheme (unchanged, not region-specific)
+    static let fallbackRedirectURI = "app://oauth2.isoko.authorized/callback"
+
+    /// Custom scheme for AppDelegate / SceneDelegate to intercept the callback
     static let callbackScheme = "app"
+
+    // MARK: - Authorization URL Builder
 
     static func authorizationURL(
         codeChallenge: String,
         state: String
     ) -> URL? {
-
         var components = URLComponents(string: authorizationEndpoint)
         components?.queryItems = [
-            .init(name: "response_type", value: "code"),
-            .init(name: "client_id", value: clientId),
-            .init(name: "scope", value: scope),
-
-            // Server should prefer universal link
-            .init(name: "redirect_uri", value: redirectURI),
-
-            .init(name: "state", value: state),
-            .init(name: "code_challenge", value: codeChallenge),
-            .init(name: "code_challenge_method", value: "S256")
+            .init(name: "response_type",          value: "code"),
+            .init(name: "client_id",              value: clientId),
+            .init(name: "scope",                  value: scope),
+            .init(name: "redirect_uri",           value: redirectURI),
+            .init(name: "state",                  value: state),
+            .init(name: "code_challenge",         value: codeChallenge),
+            .init(name: "code_challenge_method",  value: "S256")
         ]
         return components?.url
     }

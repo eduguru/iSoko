@@ -246,7 +246,7 @@ final class ProductListingsViewModel: FormViewModel {
     }
     
     private func makeProductListSection() -> FormSection {
-        let title = state.category?.name ?? "All Products"
+        let title = state.category?.name?.lowercased().capitalized ?? "All Products"
         
         return FormSection(
             id: SectionTag.productList.rawValue,

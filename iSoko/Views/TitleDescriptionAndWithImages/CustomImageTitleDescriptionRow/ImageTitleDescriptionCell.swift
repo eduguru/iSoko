@@ -49,11 +49,11 @@ public final class ImageTitleDescriptionCell: UITableViewCell {
         iconImageView.translatesAutoresizingMaskIntoConstraints = false
         iconContainerView.addSubview(iconImageView)
 
-        titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
+        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
 
-        descriptionLabel.font = .systemFont(ofSize: 14, weight: .regular)
+        descriptionLabel.font = .systemFont(ofSize: 13, weight: .regular)
         descriptionLabel.textColor = .secondaryLabel
         descriptionLabel.numberOfLines = 2
 

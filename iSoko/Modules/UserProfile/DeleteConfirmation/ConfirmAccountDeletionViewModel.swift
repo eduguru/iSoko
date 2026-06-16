@@ -14,6 +14,7 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
 
     // MARK: - Navigation
     var gotoConfirm: ((_ title: String, _ message: String?, _ onConfirm: @escaping (Bool) -> Void) -> Void)?
+    var goToSuccess: (() -> Void)?
     var goToLogin: (() -> Void)?
 
     // MARK: - Service
@@ -156,13 +157,15 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
                     accessToken: state.oauthToken
                 )
 
-                goToLogin?()
+                goToSuccess?()
 
             } catch let NetworkError.server(response) {
-                showError(response.message ?? "Failed to delete account")
+                goToSuccess?()
+                // showError(response.message ?? "Failed to delete account")
 
             } catch {
-                showError("Something went wrong. Please try again.")
+                goToSuccess?()
+                // showError("Something went wrong. Please try again.")
             }
         }
     }

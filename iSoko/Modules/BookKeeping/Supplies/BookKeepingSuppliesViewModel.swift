@@ -194,7 +194,7 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
             )
 
             return TransactionActionsRow(
-                tag: supplier.id,
+                tag: supplier.id ?? 0,
                 config: config
             )
         }

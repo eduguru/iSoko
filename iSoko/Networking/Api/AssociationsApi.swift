@@ -35,7 +35,7 @@ public struct AssociationsApi {
     }
     
     
-    public static func getAllPendingAssociations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
+    public static func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
 
         let parameters: [String: Any] = ["page": page, "size": count, "status": "Pending"]
         let headers = [
@@ -46,7 +46,7 @@ public struct AssociationsApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "users/7/associations",
+            path: "users/\(id)/associations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers
@@ -55,7 +55,7 @@ public struct AssociationsApi {
         return NewPagedResponseTarget(target: target)
     }
     
-    public static func getApprovedssociations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
+    public static func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
 
         let parameters: [String: Any] = ["page": page, "size": count, "status": "Approved"]
         let headers = [
@@ -66,7 +66,7 @@ public struct AssociationsApi {
                 
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "users/7/associations",
+            path: "users/\(id)/associations",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers
@@ -118,8 +118,8 @@ public struct AssociationsApi {
         }
 
         let target = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/associations",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations",
             method: .post,
             jsonPartName: "association",
             jsonData: associationJSON,
@@ -137,8 +137,8 @@ public struct AssociationsApi {
         let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
 
         let t = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/associations/\(associationId)",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations/\(associationId)",
             jsonPartName: "uslogoer",
             jsonData: userJSON,
             files: [],
@@ -153,8 +153,8 @@ public struct AssociationsApi {
         let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
 
         let t = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/associations/\(associationId)",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations/\(associationId)",
             jsonPartName: "uslogoer",
             jsonData: userJSON,
             files: [],
@@ -198,7 +198,7 @@ public extension AssociationsApi {
                 
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "v1/associations/\(associationId)/members",
+            path: "associations/\(associationId)/members",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -213,8 +213,8 @@ public extension AssociationsApi {
         let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
 
         let t = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/associations/\(associationId)/members",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations/\(associationId)/members",
             jsonPartName: "uslogoer",
             jsonData: userJSON,
             files: [],
@@ -229,8 +229,8 @@ public extension AssociationsApi {
         let userJSON = try? JSONSerialization.data(withJSONObject: userDict)
 
         let t = MultipartUploadTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
-            path: "v1/members/\(memberId)",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "members/\(memberId)",
             jsonPartName: "uslogoer",
             jsonData: userJSON,
             files: [],
@@ -250,7 +250,7 @@ public extension AssociationsApi {
                 
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "v1/members/\(memberId)",
+            path: "members/\(memberId)",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
@@ -274,7 +274,7 @@ public extension AssociationsApi {
         ]
         
         let target = AnyTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "associations/\(associationId)/members",
             method: .post,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
@@ -296,7 +296,7 @@ public extension AssociationsApi {
         ]
         
         let target = AnyTarget(
-            baseURL: URL(string: "https://api.dev.isoko.africa/")!,
+            baseURL: ApiEnvironment.apiBaseURL,
             path: "members/\(memberId)",
             method: .patch,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),

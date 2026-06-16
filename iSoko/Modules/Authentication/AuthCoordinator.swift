@@ -65,9 +65,9 @@ class AuthCoordinator: BaseCoordinator {
             await MainActor.run {
                 AppStorage.hasLoggedIn = true
                 RuntimeSession.authState = .authenticated
+                
+                goToMainTabs()
             }
-
-            goToMainTabs()
 
         } catch {
             print("❌ OAuth flow failed:", error)

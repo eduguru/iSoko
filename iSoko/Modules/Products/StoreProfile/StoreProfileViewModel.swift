@@ -187,11 +187,11 @@ final class StoreProfileViewModel: FormViewModel {
         let rating = stats?.averageRating ?? 0
         
         let fullName = (state.data.firstName ?? "") + " " + (state.data.lastName ?? "")
-
+        
         return StoreHeaderCardFormRow(
             tag: Tags.Cells.header.rawValue,
             config: .init(
-                image: .blankRectangle,
+                image: nil,
                 name: fullName,
                 location: "Nairobi, Kenya",
                 verifiedTitle: "Verified",

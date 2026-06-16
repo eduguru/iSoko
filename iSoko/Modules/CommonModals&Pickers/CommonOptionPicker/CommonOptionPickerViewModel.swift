@@ -281,7 +281,7 @@ extension CommonOptionPickerViewModel {
             state.rawSuppliersResponse = items
             
             return items.compactMap {
-                return CommonIdNameModel(id: $0.id, name: $0.name ?? "", description: $0.phoneNumber)
+                return CommonIdNameModel(id: $0.id ?? 0, name: $0.name ?? "", description: $0.phoneNumber)
             }
             
         case .organisationSize:

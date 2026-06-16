@@ -341,11 +341,21 @@ public final class StoreHeaderCardCell: UITableViewCell {
 
     // MARK: - Configure
 
-    public func configure(
-        with config: StoreHeaderCardConfig
-    ) {
+    public func configure(with config: StoreHeaderCardConfig) {
 
-        avatarImageView.image = config.image
+        let initials = config.name ?? ""
+        let defaultImage = UIImage.fromInitials(
+            initials,
+            size: CGSize(width: 50, height: 50),
+            textColor: .app(.primary),
+            backgroundColor: .lightGray,
+            borderColor: .app(.primary),
+            borderWidth: 1,
+            shape: .circle
+        )
+        
+        let image = config.image ?? defaultImage
+        avatarImageView.image = image
 
         // Name
         if let name = config.name,

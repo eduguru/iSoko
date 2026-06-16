@@ -40,10 +40,8 @@ public struct ImageTitleDescriptionConfig {
         image: UIImage? = nil,
         imageSize: CGSize = CGSize(width: 44, height: 44),
         imageStyle: AppImageStyle = .rounded,
-
         title: String,
         description: String? = nil,
-
         accessoryType: AppAccessoryType = .chevron,
 
         spacing: CGFloat = 12,

@@ -6,23 +6,38 @@
 //
 
 public struct ProductResponseV1: Decodable {
+
     let id: Int?
     let name: String?
     let description: String?
-    
+
     let category: CategoryV1?
     let commodity: CommodityV1?
     let measurementUnit: MeasurementUnitV1?
-    
+
     let price: Double?
+    let stockPrice: Double?
+
+    let quantity: Int?
+    let lowStockThreshold: Int?
+
     let minimumOrderQuantity: Int?
-    
+
     let inStock: Bool?
+    let bookkeepingStock: Bool?
+
     let published: Bool?
     let featured: Bool?
     let active: Bool?
-    
+    let approved: Bool?
+
+    let datetimeCreated: String?
+    let lastModified: String?
+    let date: String?
+
     let trader: TraderV1?
+    let supplier: SupplierResponse?
+
     let images: [ProductImageV1]?
 }
 

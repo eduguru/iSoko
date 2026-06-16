@@ -297,7 +297,7 @@ final class EditBookKeepingSuppliesViewModel: FormViewModel {
 
         do {
             _ = try await bookKeepingService.updateSupplier(
-                itemId: state.supplier.id,
+                itemId: state.supplier.id ?? 0,
                 parameters: payload,
                 accessToken: state.oauthToken
             )

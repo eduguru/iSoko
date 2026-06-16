@@ -72,6 +72,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
             switch segment {
             case .approved:
                 response = try await associationsService.getApprovedssociations(
+                    id: state.userProfile?.id ?? 0,
                     page: feed.currentPage,
                     count: state.itemsPerPage,
                     accessToken: state.oauthToken
@@ -79,6 +80,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
 
             case .pending:
                 response = try await associationsService.getAllPendingAssociations(
+                    id: state.userProfile?.id ?? 0,
                     page: feed.currentPage,
                     count: state.itemsPerPage,
                     accessToken: state.oauthToken
@@ -277,6 +279,9 @@ final class TradeAssociationListingsViewModel: FormViewModel {
         var hasLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+      
+        var userDetail: UserDetails? = AppStorage.userDetail
+        var userProfile: UserProfileResponse? = AppStorage.userProfile
         
         let itemsPerPage: Int = 20
 

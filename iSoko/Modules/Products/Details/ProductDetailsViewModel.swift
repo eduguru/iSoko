@@ -72,14 +72,19 @@ final class ProductDetailsViewModel: FormViewModel {
                             fallbackImage: UIImage(named: "blank_rectangle")
                         )
                     ),
-
+                    SpacerFormRow(tag: -0001, height: 16),
                     categotyTitleRow,
-                    priceRow,
+                    SpacerFormRow(tag: -0001, height: 16),
+                    // priceRow,
                     minimumQuantityRow,
-                    descriptionRow,
+                    SpacerFormRow(tag: -0001, height: 16),
                     quantityRow,
+                    SpacerFormRow(tag: -0001, height: 16),
                     makeConfirmButtonRow(),
-                    storeProfileRow
+                    SpacerFormRow(tag: -0001, height: 16),
+                    storeProfileRow,
+                    SpacerFormRow(tag: -0001, height: 16),
+                    descriptionRow
                 ]
             ),
 
@@ -151,17 +156,18 @@ final class ProductDetailsViewModel: FormViewModel {
     private func makeCategotyTitleRow() -> FormRow {
 
         let name = state.product.name ?? "Unnamed Product"
+        let category = state.product.categoryName?.lowercased().capitalized ?? "Uncategorized"
 
         return TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
                 title: name,
-                description: "",
+                description: category,
                 maxTitleLines: 2,
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
                 titleFontStyle: .headline,
-                descriptionFontStyle: .subheadline
+                descriptionFontStyle: .callout
             )
         )
     }
@@ -231,9 +237,11 @@ final class ProductDetailsViewModel: FormViewModel {
 
         let unit = product.measurementUnit?.name ?? "unit"
         let minQty = product.minimumOrderQuantity ?? 1
+        
+        // let rating = product.rating ?? 0
 
         let model = ProductSummaryModel(
-            title: product.categoryName ?? "Unnamed Category",
+            title: "",//product.categoryName ?? "Unnamed Category",
             rating: 0,
             reviewCount: 0,
             location: "",

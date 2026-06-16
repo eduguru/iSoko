@@ -96,6 +96,16 @@ public class MoreCoordinator: BaseCoordinator {
     private func goToDeleteAccount() {
         let viewModel = ConfirmAccountDeletionViewModel()
         viewModel.gotoConfirm = presentConfirmaionAlert
+        viewModel.goToSuccess = { [weak self] in
+            self?.goToShowSuccessScreen(title: "Success", message: "Account has been deleted successfully, we're sorry to see you go!") {
+                // self?.router.pop(animated: true)
+                AppStorage.hasLoggedIn = false
+                RuntimeSession.authState = .guest
+                
+                self?.goToMainTabs()
+                
+            }
+        }
 
         let vc = ConfirmAccountDeletionViewController()
         vc.viewModel = viewModel
