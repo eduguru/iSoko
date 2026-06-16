@@ -227,7 +227,9 @@ final class HomeViewModel: FormViewModel {
             }
             updated.title = "home.featured_associations.title".localized
             updated.actionTitle = nil
-            updated.cells = [ExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
+            
+            updated.cells = [CompactExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
+            // updated.cells = [ExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
 
         case .trendingProducts:
             let items = makeTrendingProductItems()

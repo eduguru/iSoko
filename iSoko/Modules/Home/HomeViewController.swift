@@ -9,7 +9,7 @@ import UIKit
 import DesignSystemKit
 import StorageKit
 
-class HomeViewController: FormViewController, CloseableViewController {
+final class HomeViewController: FormViewController, CloseableViewController {
 
     var makeRoot: Bool = false
 
@@ -26,6 +26,8 @@ class HomeViewController: FormViewController, CloseableViewController {
                 action: #selector(close),
                 image: "backArrow"
             )
+        } else {
+            setupLogoButton()
         }
 
         setupNavigationCountryButton()
@@ -35,6 +37,29 @@ class HomeViewController: FormViewController, CloseableViewController {
         super.viewWillAppear(animated)
         refreshCountryButton()
     }
+
+
+    // MARK: - Left Nav Logo
+
+    private func setupLogoButton() {
+
+        let imageView = UIImageView(
+            image: UIImage(named: "logo")
+        )
+
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 32),
+            imageView.heightAnchor.constraint(equalToConstant: 32)
+        ])
+
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            customView: imageView
+        )
+    }
+
 
     // MARK: - Setup Nav Button
 
@@ -55,7 +80,8 @@ class HomeViewController: FormViewController, CloseableViewController {
         ]
     }
 
-    // MARK: - Button UI (iOS 14 safe)
+
+    // MARK: - Button UI
 
     private func makeCountryButton() -> UIButton {
 
@@ -65,11 +91,14 @@ class HomeViewController: FormViewController, CloseableViewController {
         flagLabel.text = currentFlag
         flagLabel.font = .systemFont(ofSize: 20)
 
+
         let chevron = UIImageView(
             image: UIImage(systemName: "chevron.down")
         )
+
         chevron.tintColor = .label
         chevron.contentMode = .scaleAspectFit
+
 
         let stack = UIStackView(arrangedSubviews: [
             flagLabel,
@@ -81,22 +110,42 @@ class HomeViewController: FormViewController, CloseableViewController {
         stack.alignment = .center
         stack.isUserInteractionEnabled = false
 
+
         button.addSubview(stack)
 
         stack.translatesAutoresizingMaskIntoConstraints = false
 
+
         NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: button.leadingAnchor, constant: 10),
-            stack.trailingAnchor.constraint(equalTo: button.trailingAnchor, constant: -10),
-            stack.topAnchor.constraint(equalTo: button.topAnchor, constant: 6),
-            stack.bottomAnchor.constraint(equalTo: button.bottomAnchor, constant: -6)
+            stack.leadingAnchor.constraint(
+                equalTo: button.leadingAnchor,
+                constant: 10
+            ),
+
+            stack.trailingAnchor.constraint(
+                equalTo: button.trailingAnchor,
+                constant: -10
+            ),
+
+            stack.topAnchor.constraint(
+                equalTo: button.topAnchor,
+                constant: 6
+            ),
+
+            stack.bottomAnchor.constraint(
+                equalTo: button.bottomAnchor,
+                constant: -6
+            )
         ])
 
-        button.backgroundColor = UIColor.secondarySystemBackground
+
+        button.backgroundColor = .secondarySystemBackground
         button.layer.cornerRadius = 16
+
 
         return button
     }
+
 
     // MARK: - Actions
 
@@ -104,35 +153,49 @@ class HomeViewController: FormViewController, CloseableViewController {
         onCountryTapped?()
     }
 
+
     @objc func close() {
         closeAction?()
     }
 
+
     // MARK: - Refresh UI
 
     private func refreshCountryButton() {
+
         guard
             let button = countryButton,
             let stack = button.subviews.first as? UIStackView,
             let flagLabel = stack.arrangedSubviews.first as? UILabel
-        else { return }
+        else {
+            return
+        }
 
         flagLabel.text = currentFlag
     }
 
+
     // MARK: - Flag
 
     private var currentFlag: String {
-        let code = (AppStorage.selectedRegionCode ?? "rw").uppercased()
+
+        let code = (
+            AppStorage.selectedRegionCode ?? "rw"
+        ).uppercased()
+
         return Locale.flagEmoji(for: code)
     }
 
-    deinit { }
+
+    deinit {}
 }
+
+
 
 extension Locale {
 
     static func flagEmoji(for countryCode: String) -> String {
+
         countryCode
             .unicodeScalars
             .compactMap {

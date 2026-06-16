@@ -41,6 +41,6 @@ public class SegmentedFormRow: FormRow {
     }
 
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return 80 // Or UITableView.automaticDimension
+        return UITableView.automaticDimension
     }
 }
