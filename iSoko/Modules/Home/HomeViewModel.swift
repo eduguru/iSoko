@@ -385,7 +385,7 @@ final class HomeViewModel: FormViewModel {
                 image: UIImage(named: "blank_rectangle"),
                 badgeText: nil,
                 title: product.name ?? "Unnamed Product",
-                subtitle: product.categoryName ?? "",
+                subtitle: "common.by".localized + " " + (product.traderFullName ?? ""),
                 priceText: product.price != nil
                     ? "\(currency) \(String(format: "%.2f", product.price!))"
                     : "Price on request",

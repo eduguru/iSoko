@@ -43,12 +43,19 @@ final class ExportCardCell: UICollectionViewCell {
         iconView.backgroundColor = .systemGray5
 
         titleLabel.font = .systemFont(ofSize: 16, weight: .semibold)
-        titleLabel.numberOfLines = 2     //MULTILINE
         
         subtitleLabel.font = .systemFont(ofSize: 14)
         subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.numberOfLines = 2     //MULTILINE
         subtitleLabel.lineBreakMode = .byTruncatingTail
+        
+        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        titleLabel.textColor = .label
+        titleLabel.numberOfLines = 2
+        titleLabel.lineBreakMode = .byWordWrapping
+
+        subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 2
 
         let headerStack = UIStackView(arrangedSubviews: [iconView, titleLabel])
         headerStack.axis = .horizontal

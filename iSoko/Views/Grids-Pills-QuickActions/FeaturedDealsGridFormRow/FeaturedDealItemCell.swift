@@ -132,8 +132,16 @@ final class FeaturedDealItemCell: UICollectionViewCell {
         
         updateFavoriteUI(isFavorite: item.isFavorite)
         
-        applyStyling(to: titleLabel, style: .subheadline)
-        applyStyling(to: subtitleLabel, style: .callout)
+//        applyStyling(to: titleLabel, style: .subheadline)
+//        applyStyling(to: subtitleLabel, style: .callout)
+        
+        titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
+        titleLabel.textColor = .label
+        titleLabel.numberOfLines = 1
+
+        subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
+        subtitleLabel.textColor = .secondaryLabel
+        subtitleLabel.numberOfLines = 2
     }
     
     private func updateFavoriteUI(isFavorite: Bool) {
