@@ -81,7 +81,7 @@ final class OTPFormViewModel: FormViewModel {
                 numberOfDigits: 5,
                 sentMessage: "We’ve sent a code to \(state.type.targetValue)",
                 showResendTimer: true,
-                resendDuration: 30,
+                resendDuration: 300,
                 keyboardType: .numberPad,
                 onOTPComplete: { [weak self] otp in
                     self?.state.otp = otp

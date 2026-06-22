@@ -12,23 +12,18 @@ final class CarouselItemCell: UICollectionViewCell {
 
     static let reuseIdentifier = "CarouselItemCell"
 
+    // MARK: - Constants
+
+    private let horizontalPadding: CGFloat = 12
+    private let cornerRadius: CGFloat = 16
+
     // MARK: - Views
 
     private let containerView = UIView()
     private let imageView = UIImageView()
     private let label = UILabel()
 
-    // MARK: - Constraints
-
-    private var imageLeadingConstraint: NSLayoutConstraint!
-    private var imageTrailingConstraint: NSLayoutConstraint!
-
-    // MARK: - Constants
-
-    private let horizontalPadding: CGFloat = 16
-    private let cornerRadius: CGFloat = 14
-
-    // MARK: - Init
+    // MARK: - Lifecycle
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -40,6 +35,15 @@ final class CarouselItemCell: UICollectionViewCell {
         setupUI()
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+
+        layer.shadowPath = UIBezierPath(
+            roundedRect: containerView.frame,
+            cornerRadius: cornerRadius
+        ).cgPath
+    }
+
     // MARK: - Setup
 
     private func setupUI() {
@@ -47,116 +51,170 @@ final class CarouselItemCell: UICollectionViewCell {
         backgroundColor = .clear
         contentView.backgroundColor = .clear
 
-        // MARK: Container View
+        setupContainer()
+        setupImageView()
+        setupLabel()
+        setupHierarchy()
+        setupConstraints()
+    }
+
+    private func setupContainer() {
 
         containerView.translatesAutoresizingMaskIntoConstraints = false
+
         containerView.backgroundColor = .secondarySystemBackground
+
         containerView.layer.cornerRadius = cornerRadius
         containerView.layer.cornerCurve = .continuous
-        containerView.layer.masksToBounds = true
         containerView.clipsToBounds = true
 
-        // MARK: Image View
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowOpacity = 0.08
+        layer.shadowRadius = 10
+        layer.shadowOffset = CGSize(width: 0, height: 4)
+        layer.masksToBounds = false
+    }
+
+    private func setupImageView() {
 
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFit
-        imageView.clipsToBounds = true
-        imageView.backgroundColor = .clear
-        imageView.layer.cornerCurve = .continuous
 
-        // MARK: Label
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+    }
+
+    private func setupLabel() {
 
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = .systemFont(ofSize: 16, weight: .semibold)
+
+        label.font = .systemFont(
+            ofSize: 16,
+            weight: .semibold
+        )
+
         label.textAlignment = .center
         label.textColor = .white
-        label.backgroundColor = UIColor.black.withAlphaComponent(0.45)
-        label.layer.cornerRadius = 6
-        label.layer.masksToBounds = true
 
-        // MARK: Hierarchy
+        label.backgroundColor =
+            UIColor.black.withAlphaComponent(0.35)
+
+        label.layer.cornerRadius = 8
+        label.layer.cornerCurve = .continuous
+        label.clipsToBounds = true
+    }
+
+    private func setupHierarchy() {
 
         contentView.addSubview(containerView)
-        containerView.addSubview(imageView)
-        contentView.addSubview(label)
 
-        // MARK: Constraints
+        containerView.addSubview(imageView)
+        containerView.addSubview(label)
+    }
+
+    private func setupConstraints() {
 
         NSLayoutConstraint.activate([
 
             // Container
-            containerView.topAnchor.constraint(equalTo: contentView.topAnchor),
-            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
-            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+
+            containerView.topAnchor.constraint(
+                equalTo: contentView.topAnchor
+            ),
+
+            containerView.bottomAnchor.constraint(
+                equalTo: contentView.bottomAnchor
+            ),
+
+            containerView.leadingAnchor.constraint(
+                equalTo: contentView.leadingAnchor,
+                constant: horizontalPadding
+            ),
+
+            containerView.trailingAnchor.constraint(
+                equalTo: contentView.trailingAnchor,
+                constant: -horizontalPadding
+            ),
 
             // Image
-            imageView.topAnchor.constraint(equalTo: containerView.topAnchor),
-            imageView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-            imageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+
+            imageView.topAnchor.constraint(
+                equalTo: containerView.topAnchor
+            ),
+
+            imageView.bottomAnchor.constraint(
+                equalTo: containerView.bottomAnchor
+            ),
+
+            imageView.leadingAnchor.constraint(
+                equalTo: containerView.leadingAnchor
+            ),
+
+            imageView.trailingAnchor.constraint(
+                equalTo: containerView.trailingAnchor
+            ),
 
             // Label
-            label.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            label.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            label.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            label.heightAnchor.constraint(equalToConstant: 28)
-        ])
 
-        // Horizontal image padding
+            label.leadingAnchor.constraint(
+                equalTo: containerView.leadingAnchor,
+                constant: 10
+            ),
 
-        imageLeadingConstraint = imageView.leadingAnchor.constraint(
-            equalTo: containerView.leadingAnchor,
-            constant: horizontalPadding
-        )
+            label.trailingAnchor.constraint(
+                equalTo: containerView.trailingAnchor,
+                constant: -10
+            ),
 
-        imageTrailingConstraint = imageView.trailingAnchor.constraint(
-            equalTo: containerView.trailingAnchor,
-            constant: -horizontalPadding
-        )
+            label.bottomAnchor.constraint(
+                equalTo: containerView.bottomAnchor,
+                constant: -10
+            ),
 
-        NSLayoutConstraint.activate([
-            imageLeadingConstraint,
-            imageTrailingConstraint
+            label.heightAnchor.constraint(
+                equalToConstant: 30
+            )
         ])
     }
 
     // MARK: - Reuse
 
     override func prepareForReuse() {
+
         super.prepareForReuse()
 
         imageView.kf.cancelDownloadTask()
+
         imageView.image = nil
 
         label.text = nil
+        label.isHidden = false
 
-        // Reset defaults
-        imageView.contentMode = .scaleAspectFit
-
-        imageLeadingConstraint.constant = horizontalPadding
-        imageTrailingConstraint.constant = -horizontalPadding
+        accessibilityLabel = nil
     }
 
-    // MARK: - Configure
+    // MARK: - Configuration
 
-    func configure(with item: CarouselItem, hideText: Bool = false) {
-
-        // MARK: Label
+    func configure(
+        with item: CarouselItem,
+        hideText: Bool = false
+    ) {
 
         label.text = item.text
         label.textColor = item.textColor
-        label.isHidden = hideText || item.text == nil
 
-        // MARK: Downsampling
+        label.isHidden =
+            hideText || item.text == nil
 
-        let targetSize = CGSize(
-            width: UIScreen.main.bounds.width,
-            height: max(bounds.height, 180)
+        isAccessibilityElement = true
+        accessibilityLabel = item.text
+
+        let targetSize = bounds.size.width > 0
+            ? bounds.size
+            : CGSize(width: 320, height: 180)
+
+        let processor = DownsamplingImageProcessor(
+            size: targetSize
         )
-
-        let processor = DownsamplingImageProcessor(size: targetSize)
-
-        // MARK: Remote Image
 
         if let imageURL = item.imageURL,
            let url = URL(string: imageURL) {
@@ -173,78 +231,11 @@ final class CarouselItemCell: UICollectionViewCell {
                     .transition(.fade(0.25)),
                     .backgroundDecode
                 ]
-            ) { [weak self] result in
-
-                guard let self else { return }
-
-                switch result {
-
-                case .success(let value):
-
-                    self.updateLayout(for: value.image)
-
-                case .failure:
-
-                    self.imageView.contentMode = .scaleAspectFit
-                }
-            }
+            )
 
         } else if let image = item.image {
 
-            // MARK: Local Image
-
-            updateLayout(for: image)
             imageView.image = image
         }
-    }
-
-    // MARK: - Adaptive Layout
-
-    private func updateLayout(for image: UIImage) {
-
-        let ratio = image.size.width / image.size.height
-
-        switch ratio {
-
-        // MARK: Ultra-wide banners
-        // Example: 1710x362 (~4.7)
-
-        case 3.0...:
-
-            imageView.contentMode = .scaleAspectFit
-
-            imageLeadingConstraint.constant = 4
-            imageTrailingConstraint.constant = -4
-
-        // MARK: Wide banners
-        // Example: 2117x742 (~2.8)
-
-        case 2.0..<3.0:
-
-            imageView.contentMode = .scaleAspectFit
-
-            imageLeadingConstraint.constant = 8
-            imageTrailingConstraint.constant = -8
-
-        // MARK: Standard landscape
-
-        case 1.2..<2.0:
-
-            imageView.contentMode = .scaleAspectFill
-
-            imageLeadingConstraint.constant = horizontalPadding
-            imageTrailingConstraint.constant = -horizontalPadding
-
-        // MARK: Square / Portrait
-
-        default:
-
-            imageView.contentMode = .scaleAspectFill
-
-            imageLeadingConstraint.constant = horizontalPadding
-            imageTrailingConstraint.constant = -horizontalPadding
-        }
-
-        layoutIfNeeded()
     }
 }

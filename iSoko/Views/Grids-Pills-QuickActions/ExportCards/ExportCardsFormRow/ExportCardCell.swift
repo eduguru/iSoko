@@ -28,10 +28,19 @@ final class ExportCardCell: UICollectionViewCell {
     }
 
     private func setupUI() {
-        contentView.backgroundColor = .systemBackground
-        contentView.layer.cornerRadius = 16
-        contentView.layer.masksToBounds = true
+        backgroundColor = .clear
 
+            contentView.backgroundColor = .systemBackground
+            contentView.layer.cornerRadius = 16
+            contentView.layer.masksToBounds = true
+
+            layer.backgroundColor = UIColor.clear.cgColor
+            layer.shadowColor = UIColor.black.cgColor
+            layer.shadowOpacity = 0.08
+            layer.shadowRadius = 8
+            layer.shadowOffset = CGSize(width: 0, height: 4)
+            layer.masksToBounds = false
+        
         layer.shadowColor = UIColor.black.cgColor
         layer.shadowOpacity = 0.08
         layer.shadowRadius = 8
@@ -138,6 +147,9 @@ final class ExportCardCell: UICollectionViewCell {
         for i in 0..<4 {
             let imageView = imageViews[i]
             imageView.image = placeholder  // reset first
+            
+            imageView.kf.cancelDownloadTask()
+            imageView.image = placeholder
 
             if i < item.imageUrls.count, let url = URL(string: item.imageUrls[i]) {
                 // Remote image using Kingfisher
@@ -156,7 +168,11 @@ final class ExportCardCell: UICollectionViewCell {
     override func prepareForReuse() {
         super.prepareForReuse()
 
+        iconView.kf.cancelDownloadTask()
+        iconView.image = nil
+
         imageViews.forEach {
+            $0.kf.cancelDownloadTask()
             $0.image = UIImage.blankRectangle
         }
     }

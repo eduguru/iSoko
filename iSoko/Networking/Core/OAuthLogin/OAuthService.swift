@@ -100,14 +100,24 @@ public final class OAuthService: NSObject {
     }
 
     // MARK: - Fetch User Details (Step 3)
+//    public func fetchUserAndUpdateStorage() async throws -> UserDetails {
+//        let accessToken = try await refreshTokenIfNeeded()
+//        let userDetails = try await getUserDetails(accessToken: accessToken)
+//
+//        // Fetch full profile asynchronously in background
+//        Task(priority: .background) {
+//            await self.fetchFullUserProfileAsync(userId: userDetails.sub, accessToken: accessToken)
+//        }
+//
+//        return userDetails
+//    }
+    
     public func fetchUserAndUpdateStorage() async throws -> UserDetails {
         let accessToken = try await refreshTokenIfNeeded()
         let userDetails = try await getUserDetails(accessToken: accessToken)
 
-        // Fetch full profile asynchronously in background
-        Task(priority: .background) {
-            await self.fetchFullUserProfileAsync(userId: userDetails.sub, accessToken: accessToken)
-        }
+        // Await full profile so AppStorage is populated before tabs load
+        await fetchFullUserProfileAsync(userId: userDetails.sub, accessToken: accessToken)
 
         return userDetails
     }
@@ -193,14 +203,18 @@ public final class OAuthService: NSObject {
     }
 
     private func scheduleTokenRefresh() {
-        refreshTimer?.invalidate()
-
-        guard let expiry = AppStorage.oauthToken?.expiryDate else { return }
-        let interval = max(expiry.timeIntervalSinceNow - 60, 0)
-
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            self.refreshTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
+
+            self.refreshTimer?.invalidate()
+            self.refreshTimer = nil
+
+            guard let expiry = AppStorage.oauthToken?.expiryDate else { return }
+            let interval = max(expiry.timeIntervalSinceNow - 60, 0)
+
+            let timer = Timer(timeInterval: interval, repeats: false) { [weak self] _ in
+                guard let self else { return }
+
                 Task {
                     do {
                         guard let refreshToken = AppStorage.oauthToken?.refreshToken else { return }
@@ -211,6 +225,9 @@ public final class OAuthService: NSObject {
                     }
                 }
             }
+
+            RunLoop.main.add(timer, forMode: .common)
+            self.refreshTimer = timer
         }
     }
 }

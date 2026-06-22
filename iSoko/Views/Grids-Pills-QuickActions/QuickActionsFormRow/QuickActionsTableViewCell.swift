@@ -14,12 +14,21 @@ final class QuickActionsTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupBaseAppearance()
         setupCollectionView()
+    }
+
+    private func setupBaseAppearance() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+        selectedBackgroundView = UIView()
+        selectedBackgroundView?.backgroundColor = .clear
     }
 
     private func setupCollectionView() {
@@ -33,6 +42,7 @@ final class QuickActionsTableViewCell: UITableViewCell {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.backgroundColor = .clear
+        
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(QuickActionItemCell.self, forCellWithReuseIdentifier: "QuickActionItemCell")
@@ -73,8 +83,9 @@ extension QuickActionsTableViewCell: UICollectionViewDataSource, UICollectionVie
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
         let item = items[indexPath.item]
-        let width = item.imageSize.width + 16 // Add padding for text
-        return CGSize(width: max(width, 80), height: 100) // Customize as needed
+        let width = max(item.imageSize.width + 32, 96)
+        return CGSize(width: width, height: 120)
     }
 }

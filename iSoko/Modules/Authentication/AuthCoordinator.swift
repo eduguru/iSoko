@@ -493,21 +493,37 @@ class AuthCoordinator: BaseCoordinator {
         
     }
     
+//    private func goToMainTabs() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            
+//            // 1. Reuse the current root navigation controller
+//            let router = Router(navigationController: self.router.navigationControllerInstance)
+//            
+//            // 2. Create MainCoordinator using the same nav
+//            let mainCoordinator = MainCoordinator(router: router)
+//            
+//            // 3. Retain coordinator to prevent deinit
+//            self.addChild(mainCoordinator)
+//            
+//            // 4. Start flow
+//            mainCoordinator.start()
+//        }
+//    }
+    
     private func goToMainTabs() {
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // 1. Reuse the current root navigation controller
+            guard let self else { return }
             let router = Router(navigationController: self.router.navigationControllerInstance)
-            
-            // 2. Create MainCoordinator using the same nav
             let mainCoordinator = MainCoordinator(router: router)
-            
-            // 3. Retain coordinator to prevent deinit
             self.addChild(mainCoordinator)
-            
-            // 4. Start flow
             mainCoordinator.start()
+
+            // Only refresh profile for authenticated users
+            guard AppStorage.hasLoggedIn == true else { return }
+            Task(priority: .background) {
+                try? await OAuthService.shared.fetchUserAndUpdateStorage()
+            }
         }
     }
     

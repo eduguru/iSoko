@@ -13,12 +13,19 @@ final class QuickActionsCollectionViewCell: UICollectionViewCell {
 
     override init(frame: CGRect) {
         super.init(frame: frame)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupBaseAppearance()
         setupCollectionView()
+    }
+
+    private func setupBaseAppearance() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
     }
 
     private func setupCollectionView() {
@@ -32,6 +39,7 @@ final class QuickActionsCollectionViewCell: UICollectionViewCell {
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.showsHorizontalScrollIndicator = false
         collectionView.backgroundColor = .clear
+        
         collectionView.dataSource = self
         collectionView.delegate = self
         collectionView.register(QuickActionItemCell.self, forCellWithReuseIdentifier: "QuickActionItemCell")
@@ -72,7 +80,9 @@ extension QuickActionsCollectionViewCell: UICollectionViewDataSource, UICollecti
 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
+        
         let item = items[indexPath.item]
-        return CGSize(width: max(item.imageSize.width + 20, 80), height: 100)
+        let width = max(item.imageSize.width + 32, 96)
+        return CGSize(width: width, height: 120)
     }
 }

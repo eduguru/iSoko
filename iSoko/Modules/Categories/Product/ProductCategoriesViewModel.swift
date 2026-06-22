@@ -165,7 +165,7 @@ final class ProductCategoriesViewModel: FormViewModel {
         let updatedRow = ImageTitleGridFormRow(
             tag: CellTag.productList.rawValue,
             items: makeProductGridItems(),
-            numberOfColumns: 2
+            numberOfColumns: 3
         )
 
         var section = sections[sectionIndex]

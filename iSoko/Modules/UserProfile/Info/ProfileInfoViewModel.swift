@@ -222,6 +222,15 @@ final class ProfileInfoViewModel: FormViewModel {
                 placeholder: "Enter your first name"
             ),
             RowItem(
+                tag: Tags.Cells.secondName.rawValue,
+                icon: UIImage(systemName: "person.fill"),
+                title: "common.basic_profile.last_name".localized,
+                value: { [weak self] in
+                    self?.state.userProfile?.lastName ?? ""
+                },
+                placeholder: "Enter your second name"
+            ),
+            RowItem(
                 tag: Tags.Cells.gender.rawValue,
                 icon: UIImage(systemName: "person.2.fill"),
                 title: "common.label.gender".localized,
@@ -317,10 +326,11 @@ final class ProfileInfoViewModel: FormViewModel {
         enum Cells: Int {
             case headerImage = 0
             case firstName = 1
-            case gender = 2
-            case ageGroup = 3
-            case email = 4
-            case phoneNumber = 5
+            case secondName = 2
+            case gender = 3
+            case ageGroup = 4
+            case email = 5
+            case phoneNumber = 6
         }
     }
 }

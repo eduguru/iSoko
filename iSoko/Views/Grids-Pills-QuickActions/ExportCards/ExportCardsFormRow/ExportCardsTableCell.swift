@@ -14,12 +14,22 @@ final class ExportCardsTableCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupBaseAppearance()
         setupCollectionView()
+    }
+
+    private func setupBaseAppearance() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
+        selectedBackgroundView = UIView()
+        selectedBackgroundView?.backgroundColor = .clear
     }
 
     private func setupCollectionView() {

@@ -12,20 +12,27 @@ final class CompactExportCardsTableCell: UITableViewCell {
     private var items: [ExportCardItem] = []
     private var collectionView: UICollectionView!
 
-
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
+    private func setupBaseAppearance() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
+        selectedBackgroundView = UIView()
+        selectedBackgroundView?.backgroundColor = .clear
+    }
 
     private func setupCollectionView() {
-
         let layout = UICollectionViewFlowLayout()
 
         layout.scrollDirection = .horizontal
@@ -37,7 +44,6 @@ final class CompactExportCardsTableCell: UITableViewCell {
             right: 16
         )
 
-
         collectionView = UICollectionView(
             frame: .zero,
             collectionViewLayout: layout
@@ -47,47 +53,29 @@ final class CompactExportCardsTableCell: UITableViewCell {
         collectionView.backgroundColor = .clear
         collectionView.showsHorizontalScrollIndicator = false
 
-
         collectionView.dataSource = self
         collectionView.delegate = self
-
 
         collectionView.register(
             CompactExportCardCell.self,
             forCellWithReuseIdentifier: "CompactExportCardCell"
         )
 
-
         contentView.addSubview(collectionView)
 
-
         NSLayoutConstraint.activate([
-
-            collectionView.topAnchor.constraint(
-                equalTo: contentView.topAnchor
-            ),
-
-            collectionView.bottomAnchor.constraint(
-                equalTo: contentView.bottomAnchor
-            ),
-
-            collectionView.leadingAnchor.constraint(
-                equalTo: contentView.leadingAnchor
-            ),
-
-            collectionView.trailingAnchor.constraint(
-                equalTo: contentView.trailingAnchor
-            )
+            collectionView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
-
 
     func configure(with items: [ExportCardItem]) {
         self.items = items
         collectionView.reloadData()
     }
 }
-
 
 
 extension CompactExportCardsTableCell:

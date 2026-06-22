@@ -142,7 +142,7 @@ UICollectionViewDelegateFlowLayout {
         // Debugging: Print values to confirm calculations
         print("Available Width: \(availableWidth), Spacing: \(spacing), Total Spacing: \(totalSpacing), Item Width: \(itemWidth), Column Count: \(columnCount)")
 
-        return CGSize(width: floor(itemWidth), height: 280)
+        return CGSize(width: floor(itemWidth), height: 300)
     }
 
 }

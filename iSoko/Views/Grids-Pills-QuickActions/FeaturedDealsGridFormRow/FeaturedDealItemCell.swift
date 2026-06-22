@@ -61,8 +61,9 @@ final class FeaturedDealItemCell: UICollectionViewCell {
         // Title text adjustments for flexibility
         titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)
         titleLabel.numberOfLines = 2
-        titleLabel.adjustsFontSizeToFitWidth = true
-        titleLabel.minimumScaleFactor = 0.75
+//        titleLabel.adjustsFontSizeToFitWidth = true
+//        titleLabel.minimumScaleFactor = 0.75
+        
         titleLabel.lineBreakMode = .byTruncatingTail
         
         subtitleLabel.font = .systemFont(ofSize: 14)
@@ -137,11 +138,9 @@ final class FeaturedDealItemCell: UICollectionViewCell {
         
         titleLabel.font = .systemFont(ofSize: 16, weight: .medium)
         titleLabel.textColor = .label
-        titleLabel.numberOfLines = 1
 
         subtitleLabel.font = .systemFont(ofSize: 13, weight: .regular)
         subtitleLabel.textColor = .secondaryLabel
-        subtitleLabel.numberOfLines = 2
     }
     
     private func updateFavoriteUI(isFavorite: Bool) {
