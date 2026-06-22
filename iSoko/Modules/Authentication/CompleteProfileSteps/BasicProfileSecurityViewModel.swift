@@ -28,8 +28,24 @@ final class BasicProfileSecurityViewModel: FormViewModel {
 
     // MARK: - UI Text
     private let fullText = "common.basic_profile_security.terms_text".localized
-    lazy var termsRange = (fullText as NSString).range(of: "terms of use")
-    lazy var privacyRange = (fullText as NSString).range(of: "common.help_feedback.privacy_policy".localized)
+
+    lazy var termsRange = (fullText as NSString).range(
+        of: "common.terms_of_use".localized,
+        options: [.caseInsensitive, .diacriticInsensitive]
+    )
+
+    lazy var privacyRange = (fullText as NSString).range(
+        of: "common.help_feedback.privacy_policy".localized,
+        options: [.caseInsensitive, .diacriticInsensitive]
+    )
+
+    private var safeTermsRange: NSRange? {
+        termsRange.location == NSNotFound ? nil : termsRange
+    }
+
+    private var safePrivacyRange: NSRange? {
+        privacyRange.location == NSNotFound ? nil : privacyRange
+    }
 
     // MARK: - Init
     init(builder: RegistrationBuilder, registrationType: RegistrationType) {
@@ -146,10 +162,16 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         config: TermsCheckboxRowConfig(
             isAgreed: false,
             descriptionText: fullText,
-            termsLinkRange: termsRange,
-            privacyLinkRange: privacyRange,
+            termsLinkRange: safeTermsRange,
+            privacyLinkRange: safePrivacyRange,
             onToggle: { [weak self] agreed in
                 self?.state.agreedToTerms = agreed
+            },
+            onTermsTapped: { [weak self] in
+                self?.gotoTerms?()
+            },
+            onPrivacyTapped: { [weak self] in
+                self?.gotoPrivacyPolicy?()
             },
             checkboxTintColor: .app(.primary),
             useCardStyle: true

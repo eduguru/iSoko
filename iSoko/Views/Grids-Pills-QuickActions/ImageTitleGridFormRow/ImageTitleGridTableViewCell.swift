@@ -8,12 +8,9 @@
 import UIKit
 
 final class ImageTitleGridTableViewCell: UITableViewCell {
-    
-    let cellNibName = "ImageTitleGridCollectionViewCell"
-    let cellWithReuseIdentifier = "ImageTitleGridCollectionViewCell"
 
     private var items: [ImageTitleGridItemModel] = []
-    private var numberOfColumns: Int = 2
+    private var numberOfColumns: Int = 3
     private var collectionView: UICollectionView!
 
     private let interItemSpacing: CGFloat = 8
@@ -22,12 +19,22 @@ final class ImageTitleGridTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupBaseAppearance()
         setupCollectionView()
     }
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+        setupBaseAppearance()
         setupCollectionView()
+    }
+
+    private func setupBaseAppearance() {
+        backgroundColor = .clear
+        contentView.backgroundColor = .clear
+
+        selectedBackgroundView = UIView()
+        selectedBackgroundView?.backgroundColor = .clear
     }
 
     private func setupCollectionView() {
@@ -39,13 +46,17 @@ final class ImageTitleGridTableViewCell: UITableViewCell {
 
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
-        collectionView.isScrollEnabled = false //prevent scrolling conflict
+        collectionView.isScrollEnabled = false
         collectionView.showsVerticalScrollIndicator = false
         collectionView.backgroundColor = .clear
+
         collectionView.dataSource = self
         collectionView.delegate = self
 
-        collectionView.register(UINib(nibName: cellNibName, bundle: nil), forCellWithReuseIdentifier: cellWithReuseIdentifier)
+        collectionView.register(
+            ImageTitleGridCardCell.self,
+            forCellWithReuseIdentifier: ImageTitleGridCardCell.reuseIdentifier
+        )
 
         contentView.addSubview(collectionView)
 
@@ -64,39 +75,22 @@ final class ImageTitleGridTableViewCell: UITableViewCell {
         collectionView.reloadData()
         collectionView.collectionViewLayout.invalidateLayout()
     }
-
-    // MARK: - Public Static Height Calculator
-
-    static func estimatedHeight(
-        width: CGFloat,
-        items: [GridItemModel],
-        columns: Int,
-        itemHeight: CGFloat = 200,
-        sectionInsets: UIEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16),
-        interItemSpacing: CGFloat = 8,
-        lineSpacing: CGFloat = 12
-    ) -> CGFloat {
-        guard columns > 0 else { return 0 }
-
-        let rows = ceil(CGFloat(items.count) / CGFloat(columns))
-        let verticalSpacing = CGFloat(max(0, rows - 1)) * lineSpacing
-        let totalVerticalInset = sectionInsets.top + sectionInsets.bottom
-
-        return rows * itemHeight + verticalSpacing + totalVerticalInset
-    }
 }
-
 
 extension ImageTitleGridTableViewCell: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return items.count
+        items.count
     }
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        cellForItemAt indexPath: IndexPath
+    ) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: cellWithReuseIdentifier, for: indexPath) as? ImageTitleGridCollectionViewCell else {
-            assertionFailure("❌ Could not dequeue GridViewCollectionViewCell")
+            withReuseIdentifier: ImageTitleGridCardCell.reuseIdentifier,
+            for: indexPath
+        ) as? ImageTitleGridCardCell else {
             return UICollectionViewCell()
         }
 
@@ -104,24 +98,25 @@ extension ImageTitleGridTableViewCell: UICollectionViewDataSource, UICollectionV
         return cell
     }
 
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
+    func collectionView(
+        _ collectionView: UICollectionView,
+        layout collectionViewLayout: UICollectionViewLayout,
+        sizeForItemAt indexPath: IndexPath
+    ) -> CGSize {
         let width = collectionView.bounds.width
+
         guard width > 0 else {
-            return CGSize(width: 100, height: 200)
+            return CGSize(width: 100, height: 150)
         }
 
-        let totalHorizontalSpacing = sectionInsets.left
-            + sectionInsets.right
-            + (CGFloat(numberOfColumns - 1) * interItemSpacing)
+        let totalHorizontalSpacing =
+            sectionInsets.left +
+            sectionInsets.right +
+            CGFloat(numberOfColumns - 1) * interItemSpacing
 
         let availableWidth = width - totalHorizontalSpacing
         let itemWidth = floor(availableWidth / CGFloat(numberOfColumns))
 
-        // Debug print to verify layout
-        print("📐 GridTableViewCell - width: \(width), columns: \(numberOfColumns), itemWidth: \(itemWidth)")
-
-        return CGSize(width: itemWidth, height: 200)
+        return CGSize(width: itemWidth, height: 150)
     }
 }

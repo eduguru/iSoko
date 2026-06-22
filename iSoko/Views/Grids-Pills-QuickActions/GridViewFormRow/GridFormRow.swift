@@ -27,7 +27,7 @@ public final class GridFormRow: FormRow {
     }
 
     public var reuseIdentifier: String {
-        useCollectionView ? "GridCollectionViewRowCell" : "GridTableViewCell"
+        useCollectionView ?  String(describing: GridCollectionViewRowCell.self) :  String(describing: GridTableViewCell.self)
     }
 
     public var cellTag: String { "GridFormRow_\(tag)" }

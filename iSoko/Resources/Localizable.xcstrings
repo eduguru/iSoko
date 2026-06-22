@@ -6682,6 +6682,17 @@
         }
       }
     },
+    "common.terms_of_use" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "terms of use"
+          }
+        }
+      }
+    },
     "common.verify_password_reset.confirm_button" : {
       "extractionState" : "manual",
       "localizations" : {

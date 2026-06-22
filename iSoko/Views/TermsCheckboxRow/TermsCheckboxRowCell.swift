@@ -24,33 +24,39 @@ public final class TermsCheckboxRowCell: UITableViewCell, UITextViewDelegate {
         setupUI()
     }
 
+    public override func prepareForReuse() {
+        super.prepareForReuse()
+
+        config = nil
+        checkbox.isSelected = false
+        descriptionLabel.attributedText = nil
+    }
+
     private func setupUI() {
         selectionStyle = .none
         backgroundColor = .clear
+        contentView.backgroundColor = .clear
 
-        // Configure checkbox button
         checkbox.setImage(UIImage(systemName: "square"), for: .normal)
         checkbox.setImage(UIImage(systemName: "checkmark.square.fill"), for: .selected)
-
         checkbox.adjustsImageWhenHighlighted = false
         checkbox.showsTouchWhenHighlighted = false
         checkbox.backgroundColor = .clear
         checkbox.layer.backgroundColor = UIColor.clear.cgColor
         checkbox.tintAdjustmentMode = .normal
-
         checkbox.addTarget(self, action: #selector(toggleCheckbox), for: .touchUpInside)
         checkbox.translatesAutoresizingMaskIntoConstraints = false
 
-        // Configure description text view
         descriptionLabel.isEditable = false
+        descriptionLabel.isSelectable = true
         descriptionLabel.isScrollEnabled = false
         descriptionLabel.delegate = self
         descriptionLabel.backgroundColor = .clear
         descriptionLabel.textContainerInset = .zero
         descriptionLabel.textContainer.lineFragmentPadding = 0
+        descriptionLabel.dataDetectorTypes = []
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
 
-        // Layout stack
         let stack = UIStackView(arrangedSubviews: [checkbox, descriptionLabel])
         stack.axis = .horizontal
         stack.spacing = 12
@@ -66,7 +72,7 @@ public final class TermsCheckboxRowCell: UITableViewCell, UITextViewDelegate {
             stack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
 
             checkbox.widthAnchor.constraint(equalToConstant: 24),
-            checkbox.heightAnchor.constraint(equalToConstant: 24),
+            checkbox.heightAnchor.constraint(equalToConstant: 24)
         ])
     }
 
@@ -77,18 +83,42 @@ public final class TermsCheckboxRowCell: UITableViewCell, UITextViewDelegate {
         checkbox.tintColor = config.checkboxTintColor
 
         let attributed = NSMutableAttributedString(string: config.descriptionText)
+        let fullRange = NSRange(location: 0, length: attributed.length)
+
         attributed.addAttributes([
             .font: config.font,
             .foregroundColor: config.textColor
-        ], range: NSRange(location: 0, length: attributed.length))
+        ], range: fullRange)
 
-        if let termsRange = config.termsLinkRange {
-            attributed.addAttribute(.link, value: "terms://", range: termsRange)
-        }
+        applyLocalizedLink(
+            to: attributed,
+            explicitRange: config.termsLinkRange,
+            localizedKeys: [
+                "common.terms_of_use",
+                "common.terms",
+                "terms_of_use"
+            ],
+            fallbackTexts: [
+                "terms of use",
+                "terms"
+            ],
+            url: "app://terms"
+        )
 
-        if let privacyRange = config.privacyLinkRange {
-            attributed.addAttribute(.link, value: "privacy://", range: privacyRange)
-        }
+        applyLocalizedLink(
+            to: attributed,
+            explicitRange: config.privacyLinkRange,
+            localizedKeys: [
+                "common.help_feedback.privacy_policy",
+                "common.privacy_policy",
+                "privacy_policy"
+            ],
+            fallbackTexts: [
+                "privacy policy",
+                "privacy"
+            ],
+            url: "app://privacy"
+        )
 
         descriptionLabel.attributedText = attributed
         descriptionLabel.linkTextAttributes = [
@@ -99,21 +129,78 @@ public final class TermsCheckboxRowCell: UITableViewCell, UITextViewDelegate {
         applyCardStyleIfNeeded(config)
     }
 
+    private func applyLocalizedLink(
+        to attributed: NSMutableAttributedString,
+        explicitRange: NSRange?,
+        localizedKeys: [String],
+        fallbackTexts: [String],
+        url: String
+    ) {
+        if let validRange = validRange(explicitRange, maxLength: attributed.length) {
+            attributed.addAttribute(.link, value: url, range: validRange)
+            return
+        }
+
+        let candidates = localizedKeys.map { $0.localized } + fallbackTexts
+
+        guard let range = firstMatchingRange(
+            in: attributed.string,
+            candidates: candidates
+        ) else {
+            return
+        }
+
+        attributed.addAttribute(.link, value: url, range: range)
+    }
+
+    private func firstMatchingRange(
+        in text: String,
+        candidates: [String]
+    ) -> NSRange? {
+        let nsText = text as NSString
+
+        for candidate in candidates {
+            let trimmed = candidate.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            guard !trimmed.isEmpty else { continue }
+
+            let range = nsText.range(
+                of: trimmed,
+                options: [
+                    .caseInsensitive,
+                    .diacriticInsensitive
+                ]
+            )
+
+            if range.location != NSNotFound {
+                return range
+            }
+        }
+
+        return nil
+    }
+
+    private func validRange(_ range: NSRange?, maxLength: Int) -> NSRange? {
+        guard let range,
+              range.location != NSNotFound,
+              range.location >= 0,
+              range.length > 0,
+              NSMaxRange(range) <= maxLength else {
+            return nil
+        }
+
+        return range
+    }
+
     private func applyCardStyleIfNeeded(_ config: TermsCheckboxRowConfig) {
         if config.useCardStyle {
             contentView.backgroundColor = config.cardBackgroundColor
             contentView.layer.cornerRadius = 12
-            contentView.layer.masksToBounds = false
-            contentView.layer.shadowColor = UIColor.black.cgColor
-            contentView.layer.shadowOpacity = 0.05
-            contentView.layer.shadowOffset = CGSize(width: 0, height: 2)
-            contentView.layer.shadowRadius = 4
+            contentView.layer.masksToBounds = true
         } else {
             contentView.backgroundColor = .clear
             contentView.layer.cornerRadius = 0
-            contentView.layer.shadowOpacity = 0
-            contentView.layer.shadowRadius = 0
-            contentView.layer.shadowOffset = .zero
+            contentView.layer.masksToBounds = false
         }
     }
 
@@ -122,14 +209,21 @@ public final class TermsCheckboxRowCell: UITableViewCell, UITextViewDelegate {
         config?.onToggle?(checkbox.isSelected)
     }
 
-    // MARK: - UITextViewDelegate
-
-    public func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        if URL.absoluteString == "terms://" {
+    public func textView(
+        _ textView: UITextView,
+        shouldInteractWith URL: URL,
+        in characterRange: NSRange,
+        interaction: UITextItemInteraction
+    ) -> Bool {
+        switch URL.absoluteString {
+        case "app://terms":
             config?.onTermsTapped?()
-        } else if URL.absoluteString == "privacy://" {
+        case "app://privacy":
             config?.onPrivacyTapped?()
+        default:
+            break
         }
+
         return false
     }
 }

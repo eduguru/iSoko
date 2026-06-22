@@ -194,7 +194,7 @@ final class ProductCategoriesViewModel: FormViewModel {
                 image: UIImage.blankRectangle,
                 imageUrl: product.imageUrl ?? product.url,
                 title: product.name ?? "Unnamed Product",
-                subtitle: product.description ?? "",
+                // subtitle: product.description ?? "",
                 onTap: { [weak self] in
                     self?.onTapProduct?(product)
                 }
@@ -263,7 +263,7 @@ final class ProductCategoriesViewModel: FormViewModel {
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,
-            filterIcon: UIImage(systemName: "slider.horizontal.3"),
+            //filterIcon: UIImage(systemName: "slider.horizontal.3"),
             didTapSearchIcon: { print("🔍 Search tapped") },
             didTapFilterIcon: { print("⚙️ Filter tapped") }
         )

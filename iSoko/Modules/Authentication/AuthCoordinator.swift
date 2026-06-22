@@ -187,11 +187,12 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToCompleteIndividualProfile(builder: RegistrationBuilder) {
         let viewModel = BasicProfileDataViewModel(builder: builder)
-        viewModel.gotoConfirm = goToConfirmProfile
         
+        viewModel.gotoConfirm = goToConfirmProfile
         viewModel.goToCommonSelectionOptions = goToCommonSelection
         viewModel.gotoSelectLocation = gotoSelectLocation
         viewModel.gotoSelectCountry = gotoSelectCountry
+        viewModel.showCountryPicker = gotoSelectCountry
         
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
@@ -206,48 +207,89 @@ class AuthCoordinator: BaseCoordinator {
     
     private func goToCompleteProfile(builder: RegistrationBuilder, _ selectedType: CommonIdNameModel) {
         let viewModel = BasicProfileDataViewModel(builder: builder)
+
         viewModel.gotoConfirm = goToConfirmProfile
-        
         viewModel.goToCommonSelectionOptions = goToCommonSelection
         viewModel.gotoSelectLocation = gotoSelectLocation
-        
+        viewModel.gotoSelectCountry = gotoSelectCountry
+        viewModel.showCountryPicker = gotoSelectCountry
+
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
-        
+
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
     
     private func goToConfirmProfile(builder: RegistrationBuilder) {
-        let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
+        let viewModel = BasicProfileSecurityViewModel(
+            builder: builder,
+            registrationType: .individual
+        )
+
         viewModel.gotoVerify = goToOtpVerification
+
         viewModel.goToLogin = { [weak self] in
-//            let verifier = AppStorage.verifier ?? ""
-//            self?.authenticate(verifier: verifier)
-            self?.goToAuthOptions()
+            self?.goToShowSuccessScreen(
+                title: "common.registration_success_title".localized,
+                message: "common.registration_success_message".localized
+            ) { [weak self] in
+                let verifier = AppStorage.verifier ?? ""
+
+                guard !verifier.isEmpty else {
+                    print("❌ Missing OAuth verifier")
+                    self?.goToAuthOptions()
+                    return
+                }
+
+                Task {
+                    await self?.authenticate(verifier: verifier)
+                }
+            }
         }
-        
+
+        viewModel.gotoTerms = goToTermsAndConditions
+        viewModel.gotoPrivacyPolicy = goToPrivacyPolicy
+
         let vc = BasicProfileViewController()
         vc.viewModel = viewModel
-        
+
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
     
     private func goToPrivacyPolicy() {
-        
+        let viewModel = PrivacyPolicyViewModel()
+
+        let vc = PrivacyPolicyViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
-    
+
     private func goToTermsAndConditions() {
-        
+        let viewModel = TermsConditionsViewModel()
+
+        let vc = TermsConditionsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
     }
     
     private func goToOtpVerification(_ type: OTPVerificationType, onSuccess: (() -> Void)? = nil) {
@@ -493,24 +535,6 @@ class AuthCoordinator: BaseCoordinator {
         
     }
     
-//    private func goToMainTabs() {
-//        DispatchQueue.main.async { [weak self] in
-//            guard let self = self else { return }
-//            
-//            // 1. Reuse the current root navigation controller
-//            let router = Router(navigationController: self.router.navigationControllerInstance)
-//            
-//            // 2. Create MainCoordinator using the same nav
-//            let mainCoordinator = MainCoordinator(router: router)
-//            
-//            // 3. Retain coordinator to prevent deinit
-//            self.addChild(mainCoordinator)
-//            
-//            // 4. Start flow
-//            mainCoordinator.start()
-//        }
-//    }
-    
     private func goToMainTabs() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -549,3 +573,47 @@ extension AuthCoordinator: ASWebAuthenticationPresentationContextProviding {
         return router.navigationControllerInstance?.view.window ?? ASPresentationAnchor()
     }
 }
+
+
+//    private func goToMainTabs() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//
+//            // 1. Reuse the current root navigation controller
+//            let router = Router(navigationController: self.router.navigationControllerInstance)
+//
+//            // 2. Create MainCoordinator using the same nav
+//            let mainCoordinator = MainCoordinator(router: router)
+//
+//            // 3. Retain coordinator to prevent deinit
+//            self.addChild(mainCoordinator)
+//
+//            // 4. Start flow
+//            mainCoordinator.start()
+//        }
+//    }
+
+
+
+//private func goToConfirmProfile(builder: RegistrationBuilder) {
+//    let viewModel = BasicProfileSecurityViewModel(builder: builder, registrationType: .individual)
+//    viewModel.gotoVerify = goToOtpVerification
+//    viewModel.goToLogin = { [weak self] in
+////            let verifier = AppStorage.verifier ?? ""
+////            self?.authenticate(verifier: verifier)
+//        self?.goToAuthOptions()
+//    }
+//    
+//    viewModel.gotoTerms = goToTermsAndConditions
+//    viewModel.gotoPrivacyPolicy = goToPrivacyPolicy
+//    
+//    let vc = BasicProfileViewController()
+//    vc.viewModel = viewModel
+//    
+//    vc.closeAction = { [weak self] in
+//        self?.router.pop(animated: true)
+//    }
+//    
+//    router.navigationControllerInstance?.navigationBar.isHidden = false
+//    router.push(vc, animated: true)
+//}

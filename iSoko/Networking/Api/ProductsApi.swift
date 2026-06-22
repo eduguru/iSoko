@@ -61,7 +61,7 @@ public struct ProductsApi {
     public static func getProductsByCategory(page: Int, count: Int, categoryId: String, accessToken: String) -> UnifiedPagedResponseTarget<[ProductResponseV1]> {
         let parameters: [String: Any] = [
             "page": page,
-            "count": count,
+            //"count": count,
             "size": count,
             // "commodityId": categoryId,
             "categoryId": categoryId

@@ -45,8 +45,9 @@ final class HorizontalGridTableViewCell: UITableViewCell {
         collectionView.dataSource = self
         collectionView.delegate = self
 
-        collectionView.register(UINib(nibName: "GridViewCollectionViewCell", bundle: nil),
-                                forCellWithReuseIdentifier: "GridViewCollectionViewCell")
+        collectionView.register(GridViewCollectionViewCell.self, forCellWithReuseIdentifier: "GridViewCollectionViewCell")
+        
+        // collectionView.register(UINib(nibName: "GridViewCollectionViewCell", bundle: nil), forCellWithReuseIdentifier: "GridViewCollectionViewCell")
 
         contentView.addSubview(collectionView)
 

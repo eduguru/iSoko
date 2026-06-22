@@ -57,6 +57,7 @@ final class FeaturedDealItemCell: UICollectionViewCell {
         favoriteButton.layer.cornerRadius = 18
         favoriteButton.clipsToBounds = true
         favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
+        favoriteButton.isHidden = true
         
         // Title text adjustments for flexibility
         titleLabel.font = .systemFont(ofSize: 18, weight: .semibold)

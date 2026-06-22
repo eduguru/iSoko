@@ -8,82 +8,115 @@
 import DesignSystemKit
 import UtilsKit
 import UIKit
+import StorageKit
 
 @MainActor
-final class CountryPickerViewModel: FormViewModel {
+final class CountryPickerViewModel: FormViewModel, ActionHandlingViewModel {
+
+    var hasPrimaryActionButton: Bool = true
     var confirmSelection: ((Country) -> Void)? = { _ in }
 
-    private var state: State?
+    private let commonUtilitiesService: CommonUtilitiesServiceImpl
+    private var state = State()
 
-    override init() {
-        self.state = State()
+    init(
+        commonUtilitiesService: CommonUtilitiesServiceImpl = NetworkEnvironment.shared.commonUtilitiesService
+    ) {
+        self.commonUtilitiesService = commonUtilitiesService
         super.init()
 
+        sections = makeSections()
+        fetchData()
+    }
+
+    override func fetchData() {
+        showLoader()
+
         Task { @MainActor in
-            self.sections = self.makeSections()
+            defer { hideLoader() }
+
+            do {
+                let token = AppStorage.guestToken?.accessToken ?? ""
+
+                let response = try await commonUtilitiesService.getSystemCountries(
+                    page: 1,
+                    count: 500,
+                    accessToken: token
+                ).data
+
+                state.countries = makeCountries(from: []) // use local countries
+                // state.countries = makeCountries(from: response)
+            } catch {
+                print("Failed to fetch countries:", error)
+                state.countries = makeCountries(from: [])
+            }
+
+            sections = makeSections()
         }
     }
 
-    // MARK: - Section Builders
+    // MARK: - Sections
 
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = []
-        
-        sections.append(FormSection(id: Tags.Section.header.rawValue, title: nil, cells: [makeHeaderTitleRow()]))
-        sections.append(makeSelectionSection())
-        sections.append(FormSection(id: Tags.Section.confirmation.rawValue, title: nil, cells: [confirmButtonRow]))
-
-        return sections
+        [
+            FormSection(
+                id: Tags.Section.header.rawValue,
+                title: nil,
+                cells: [makeHeaderTitleRow()]
+            ),
+            makeSelectionSection()
+        ]
     }
 
     private func makeHeaderTitleRow() -> FormRow {
-        let row = TitleDescriptionFormRow(
+        TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-                title:  "common.select_region".localized,
+                title: "common.select_region".localized,
                 description: "common.select_region_desc".localized,
-            maxTitleLines: 2,
-            maxDescriptionLines: 0,  // unlimited lines
-            titleEllipsis: .none,
-            descriptionEllipsis: .none,
-            layoutStyle: .stackedVertical,
-            textAlignment: .left,
-            titleFontStyle: .title,
-            descriptionFontStyle: .subheadline
+                maxTitleLines: 2,
+                maxDescriptionLines: 0,
+                titleEllipsis: .none,
+                descriptionEllipsis: .none,
+                layoutStyle: .stackedVertical,
+                textAlignment: .left,
+                titleFontStyle: .title,
+                descriptionFontStyle: .subheadline
+            )
         )
-        )
-        
-        return row
     }
 
     private func makeSelectionSection() -> FormSection {
-        FormSection(id: Tags.Section.transactions.rawValue, cells: makeSelectionCells())
+        FormSection(
+            id: Tags.Section.countries.rawValue,
+            cells: makeSelectionCells()
+        )
     }
-    
+
     private func updateSelectionSection() {
-        guard let sectionIndex = sections.firstIndex( where: { $0.id == Tags.Section.transactions.rawValue }) else { return }
-        let cells = makeSelectionCells()
-        
-        sections[sectionIndex].cells = cells
+        guard let sectionIndex = sections.firstIndex(where: { $0.id == Tags.Section.countries.rawValue }) else {
+            return
+        }
+
+        sections[sectionIndex].cells = makeSelectionCells()
         reloadSection(sectionIndex)
     }
 
     private func makeSelectionCells() -> [FormRow] {
-        let countries = countries()
-        return countries.map { makeCountryRow(for: $0) }
+        state.countries.map { makeCountryRow(for: $0) }
     }
 
-    // MARK: - Row Builders
+    // MARK: - Rows
 
     private func makeCountryRow(for country: Country) -> SelectableRow {
-        let tag = tag(for: country)
-        let isSelected: Bool = state?.selectedCountry?.id == country.id ? true : false
+        let tag = country.id.hashValue
+        let isSelected = state.selectedCountry?.id == country.id
 
         return SelectableRow(
             tag: tag,
             config: SelectableRowConfig(
                 title: country.name,
-                description: nil,
+                // description: country.phoneCode,
                 isSelected: isSelected,
                 selectionStyle: .radio,
                 isAccessoryVisible: true,
@@ -94,76 +127,58 @@ final class CountryPickerViewModel: FormViewModel {
                 cardBorderColor: UIColor.systemGray4,
                 cardBorderWidth: 1,
                 onToggle: { [weak self] selected in
-                    guard let self = self else { return }
+                    guard let self, selected else { return }
 
-                    if selected {
-                        self.state?.selectedCountry = country
-                        self.state?.selectedTag = tag
-                        self.updateSelectionSection()
-                    }
+                    self.state.selectedCountry = country
+                    self.state.selectedTag = tag
+                    self.updateSelectionSection()
                 }
             )
         )
     }
 
+    // MARK: - Primary Action
 
-    // MARK: - Button Row
-
-    lazy var confirmButtonRow = ButtonFormRow(
-        tag: 9999,
-        model: ButtonFormModel(
-            title: "common.button.confirm".localized,
-            style: .primary,
-            size: .medium,
-            icon: nil,
-            fontStyle: .headline,
-            hapticsEnabled: true
-        ) { [weak self] in
-            guard let self = self else { return }
-            guard let selectedCountry = self.state?.selectedCountry else { return }
-
-            self.confirmSelection?(selectedCountry)
-        }
-    )
-
-    // MARK: - Helpers
-
-    private func tag(for country: Country) -> Int {
-        return country.id.hashValue
+    func handlePrimaryAction() {
+        guard let selectedCountry = state.selectedCountry else { return }
+        confirmSelection?(selectedCountry)
     }
 
-    private var selectedCountries: [Country] {
-        let selectedCodes = state?.selectedCountryCodes ?? []
-        return countries().filter { selectedCodes.contains($0.id) }
-    }
+    // MARK: - Mapping
 
-    // MARK: - Selection Handling (optional override)
-    override func didSelectRow(at indexPath: IndexPath, row: FormRow) {
-        switch indexPath.section {
-        case Tags.Section.header.rawValue:
-            print("Header section row selected: \(row.tag)")
-        case Tags.Section.transactions.rawValue:
-            print("Credentials section row selected: \(row.tag)")
-        default:
-            break
-        }
-    }
-    
-    // MARK: - Country Data
-    private func countries() -> [Country] {
+    private func makeCountries(from responseCountries: [CountryResponse]) -> [Country] {
         let helper = CountryHelper()
+        let allLocalCountries = helper.allCountries
 
-        state?.countries = helper.countries
-        return state?.countries ?? []
+        guard !responseCountries.isEmpty else {
+            return helper.countries
+        }
+
+        let mappedCountries = responseCountries.compactMap { response -> Country? in
+            guard let rawCode = response.code?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !rawCode.isEmpty else {
+                return nil
+            }
+
+            let iso = rawCode.uppercased()
+            let localCountry = allLocalCountries.first { $0.id == iso }
+
+            return Country(
+                id: iso,
+                name: response.name ?? localCountry?.name ?? iso,
+                phoneCode: localCountry?.phoneCode ?? "",
+                continentCode: localCountry?.continentCode
+            )
+        }
+
+        return mappedCountries.isEmpty ? helper.countries : mappedCountries
     }
 
     // MARK: - State
 
     private struct State {
-        var selectedCountryCodes: Set<String> = []
         var countries: [Country] = []
         var selectedCountry: Country?
-        var searchText: String = ""
         var selectedTag: Int?
     }
 
@@ -172,14 +187,7 @@ final class CountryPickerViewModel: FormViewModel {
     enum Tags {
         enum Section: Int {
             case header = 0
-            case transactions = 1
-            case confirmation = 2
-        }
-
-        enum Cells: Int {
-            case search = 0
-            case ceountry = 1
-            case comfirm = 2
+            case countries = 1
         }
     }
 }
