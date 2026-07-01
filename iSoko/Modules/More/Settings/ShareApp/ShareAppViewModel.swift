@@ -9,6 +9,7 @@ import DesignSystemKit
 import UIKit
 import UtilsKit
 import StorageKit
+import LinkPresentation
 
 final class ShareAppViewModel: FormViewModel {
 
@@ -31,13 +32,18 @@ final class ShareAppViewModel: FormViewModel {
 
     private func makeSections() -> [FormSection] {
         var sections: [FormSection] = [
-            FormSection(id: Tags.Section.header.rawValue, cells: [imageFormRow])
+            FormSection(id: Tags.Section.header.rawValue, cells: [
+                imageFormRow,
+                SpacerFormRow(tag: -00999, height: 10)
+            ])
         ]
         
         sections.append(
             FormSection(
                 id: Tags.Section.body.rawValue,
                 cells: [
+                    referralCount,
+                    SpacerFormRow(tag: 00100, height: 10),
                     promoCodeFormRow,
                     SpacerFormRow(tag: 00100, height: 24),
                     submitButtonRow
@@ -57,7 +63,7 @@ final class ShareAppViewModel: FormViewModel {
             text: "Share the iSOKO app by inviting your friends to check it out.",
             image: .logo,
             imagePosition: .center,
-            imageHeight: 340,
+            imageHeight: 100,
             cardSettings: .default
         )
     )
@@ -75,6 +81,19 @@ final class ShareAppViewModel: FormViewModel {
             }
         )
     )
+    
+    private lazy var referralCount = ImageTitleDescriptionRow(
+            tag: -0909,
+            config: ImageTitleDescriptionConfig(
+                image: UIImage(systemName: "person.badge.plus"),
+                imageStyle: .rounded,
+                title: "People invited",
+                description: "\(state.userProfile?.referralCount ?? 0)",
+                accessoryType: .none,
+                onTap: {},
+                isCardStyleEnabled: true
+            )
+        )
 
     // MARK: - Submit Button
 
@@ -96,14 +115,24 @@ final class ShareAppViewModel: FormViewModel {
     }()
 
     // MARK: - Share Action
-
     private func shareApp() {
-        let code =  state.userProfile?.referralCode ?? "ISOKO2025"
-        
-        let message = "Check out the iSOKO app! Use my invite code: \(code)"
+        let code = state.userProfile?.referralCode ?? "ISOKO2025"
+        let urlString = "https://isoko.app/download"
 
-        // Only emit the items to share; the coordinator or VC handles presentation
-        onShareRequested?([message])
+        let message = """
+        Check out the iSOKO app!
+
+        Use my invite code: \(code)
+
+        \(urlString)
+        """
+
+        let provider = ShareAppItemSource(
+            message: message,
+            url: URL(string: urlString)!
+        )
+
+        onShareRequested?([provider])
     }
 
     // MARK: - State
@@ -127,5 +156,42 @@ final class ShareAppViewModel: FormViewModel {
             case headerTitle = 1
             case submit
         }
+    }
+}
+
+
+final class ShareAppItemSource: NSObject, UIActivityItemSource {
+
+    private let message: String
+    private let url: URL
+
+    init(message: String, url: URL) {
+        self.message = message
+        self.url = url
+    }
+
+    func activityViewControllerPlaceholderItem(
+        _ activityViewController: UIActivityViewController
+    ) -> Any {
+        return message
+    }
+
+    func activityViewController(
+        _ activityViewController: UIActivityViewController,
+        itemForActivityType activityType: UIActivity.ActivityType?
+    ) -> Any {
+        return message
+    }
+
+    func activityViewControllerLinkMetadata(
+        _ activityViewController: UIActivityViewController
+    ) -> LPLinkMetadata? {
+
+        let metadata = LPLinkMetadata()
+        metadata.title = "iSOKO App Invitation"
+        metadata.originalURL = url
+        metadata.url = url
+
+        return metadata
     }
 }

@@ -71,7 +71,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
                 cells: [
                     passwordRow,
                     confirmPasswordRow,
-                    requirementsListRow,
+                    // requirementsListRow,
                     termsRow,
                     SpacerFormRow(tag: -1),
                     continueButtonRow

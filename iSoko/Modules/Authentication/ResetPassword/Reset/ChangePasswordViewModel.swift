@@ -74,10 +74,11 @@ final class ChangePasswordViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 6,
+                minLength: 8,
                 maxLength: 50,
                 errorMessageRequired: "Current password is required"
             ),
+            titleText: "Current password",
             useCardStyle: true,
             onTextChanged: { [weak self] text in
                 self?.state.currentPassword = text
@@ -97,11 +98,12 @@ final class ChangePasswordViewModel: FormViewModel {
             ),
             validation: ValidationConfiguration(
                 isRequired: true,
-                minLength: 6,
+                minLength: 8,
                 maxLength: 50,
                 errorMessageRequired: "New password is required",
-                errorMessageLength: "Password must be at least 6 characters"
+                errorMessageLength: "Password must be at least 8 characters"
             ),
+            titleText: "New password",
             useCardStyle: true,
             onTextChanged: { [weak self] text in
                 self?.state.newPassword = text
@@ -123,11 +125,24 @@ final class ChangePasswordViewModel: FormViewModel {
     )
 
     // MARK: - Submit
+    // MARK: - Submit
     private func submit() {
 
-        guard let current = state.currentPassword,
-              let new = state.newPassword else {
-            showError("Please fill in all fields")
+        let current = state.currentPassword?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let new = state.newPassword?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+
+        guard !current.isEmpty else {
+            showError("Current password is required")
+            return
+        }
+
+        guard !new.isEmpty else {
+            showError("New password is required")
+            return
+        }
+
+        guard new.count >= 8 else {
+            showError("Password must be at least 8 characters")
             return
         }
 
@@ -141,8 +156,7 @@ final class ChangePasswordViewModel: FormViewModel {
             "Are you sure you want to change your password?"
         ) { [weak self] confirmed in
 
-            guard let self else { return }
-            guard confirmed else { return }
+            guard let self, confirmed else { return }
 
             self.performChangePassword(current: current, new: new)
         }

@@ -46,7 +46,7 @@ final class MyProductDetailsViewModel: FormViewModel {
                     tag: CellTag.productImages.rawValue,
                     config: ProductImageGalleryConfig(
                         images: images,
-                        imageHeight: 140
+                        imageHeight: 160
                     )
                 ),
                 
@@ -108,7 +108,7 @@ final class MyProductDetailsViewModel: FormViewModel {
         tag: 102,
         model: TitleDescriptionModel(
             title: "Pricing",
-            description: "Original Price \n \(state.item.price)",
+            description: "Original Price \n \(state.item.price ?? 0)",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
             titleEllipsis: .none,
@@ -148,7 +148,7 @@ final class MyProductDetailsViewModel: FormViewModel {
                 tag: 3,
                 model: KeyValueRowModel(
                     leftText: "Minimum order quantity",
-                    rightText: "\(state.item.minimumOrderQuantity)",
+                    rightText: "\(state.item.minimumOrderQuantity ?? 1)",
                     card: .default.with(borderColor: .clear),
                     showsTopDivider: true,
                     isEmphasized: true,
@@ -175,30 +175,42 @@ final class MyProductDetailsViewModel: FormViewModel {
     )
     
     private func makeTrendingServiceItemsForFeaturedGrid() -> [StatsCardItem] {
-        var items: [StatsCardItem] = []
-        
-        let values = [
-            (title: "common.label.current_stock".localized, image: UIImage(systemName: "archivebox"), value: 9),
-            (title: "Total Views", image: UIImage(systemName: "archivebox"), value: 9),
-            (title: "Total Orders", image: UIImage(systemName: "archivebox"), value: 9),
-            (title: "Total Revenue", image: UIImage(systemName: "archivebox"), value: 9)
+
+        let values: [(String, UIImage?, String)] = [
+            (
+                "common.label.current_stock".localized,
+                UIImage(systemName: "archivebox"),
+                "\(state.item.quantity ?? 0)"
+            ),
+            (
+                "Low Stock Threshold",
+                UIImage(systemName: "exclamationmark.triangle"),
+                "\(state.item.lowStockThreshold ?? 0)"
+            ),
+            (
+                "Minimum Order",
+                UIImage(systemName: "shippingbox"),
+                "\(state.item.minimumOrderQuantity ?? 0)"
+            ),
+            (
+                "Stock Value",
+                UIImage(systemName: "dollarsign.circle"),
+                "\(state.item.stockPrice ?? 0)"
+            )
         ]
-        for item in values {
-            let item = StatsCardItem.init(
+
+        return values.map { item in
+            StatsCardItem(
                 id: item.0,
-                icon: item.image,
-                title: item.title,
-                value: "\(item.value)",
+                icon: item.1,
+                title: item.0,
+                value: item.2,
                 iconBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                 onTap: {
                     print("item tapped")
                 }
             )
-            
-            items.append(item)
         }
-        
-        return items
     }
     
     // MARK: - Image Handling

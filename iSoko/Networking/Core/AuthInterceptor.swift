@@ -117,59 +117,6 @@ public final class AuthInterceptor: RequestInterceptor {
         }
     }
 
-
-
-//    public func retry(
-//        _ request: Request,
-//        for session: Session,
-//        dueTo error: Error,
-//        completion: @escaping (RetryResult) -> Void
-//    ) {
-//        guard
-//            requiresAuth,
-//            AppStorage.hasLoggedIn == true,
-//            let response = request.response,
-//            response.statusCode == 401
-//        else {
-//            completion(.doNotRetry)
-//            return
-//        }
-//
-//        if request.retryCount > 0 {
-//            forceLogout()
-//            completion(.doNotRetry)
-//            return
-//        }
-//
-//        if let task = refreshTask {
-//            Task {
-//                do {
-//                    _ = try await task.value
-//                    completion(.retry)
-//                } catch {
-//                    completion(.doNotRetry)
-//                }
-//            }
-//            return
-//        }
-//
-//        refreshTask = Task {
-//            try await tokenProvider.refreshOAuthToken()
-//        }
-//
-//        Task {
-//            do {
-//                _ = try await refreshTask!.value
-//                refreshTask = nil
-//                completion(.retry)
-//            } catch {
-//                refreshTask = nil
-//                forceLogout()
-//                completion(.doNotRetry)
-//            }
-//        }
-//    }
-
     // MARK: - Logout
     private func forceLogout() {
         print("🚪 Forcing logout (AuthInterceptor)")

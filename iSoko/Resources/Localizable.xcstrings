@@ -8178,24 +8178,24 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Since May 2026"
+            "value" : "Since"
           }
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Depuis mai 2026"
           }
         },
         "rw" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Kuva Gicurasi 2026"
           }
         },
         "sw" : {
           "stringUnit" : {
-            "state" : "translated",
+            "state" : "needs_review",
             "value" : "Tangu Mei 2026"
           }
         }

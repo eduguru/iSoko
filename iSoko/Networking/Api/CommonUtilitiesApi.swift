@@ -360,26 +360,26 @@ public extension CommonUtilitiesApi {
         subCategoryId: String,
         accessToken: String
     ) -> UnifiedPagedResponseTarget<[CommodityV1Response]> {
-        let parameters: [String: Any] = [
-            "page": page,
-            "count": count,
-            "categoryId": categoryId,
-            "subCategoryId": subCategoryId
+        let parameters: [String: Any] = [ :
+//            "page": page,
+//            "count": count,
+//            "categoryId": categoryId,
+//            "subCategoryId": subCategoryId
         ]
         
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
+            // "Authorization": "Bearer \(accessToken)"
         ]
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "common.label.commodities".localized,
+            path: "commodities",
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
-            authorizationType: .bearer
+            authorizationType: .none
         )
         
         return UnifiedPagedResponseTarget(target: target)

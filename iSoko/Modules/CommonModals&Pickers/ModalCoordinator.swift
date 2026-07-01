@@ -38,7 +38,7 @@ public class ModalCoordinator: BaseCoordinator {
     }
     
     public func goToComoditySelection( _ completion: @escaping (CommodityV1Response?) -> Void) {
-        let viewModel = CommodityPickerViewModel()
+        let viewModel = CommodityOnlyPickerViewModel()
         
         viewModel.confirmSelection = { [weak self] selection in
             switch selection {

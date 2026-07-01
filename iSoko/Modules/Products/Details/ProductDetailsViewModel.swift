@@ -80,6 +80,8 @@ final class ProductDetailsViewModel: FormViewModel {
                     SpacerFormRow(tag: -0001, height: 16),
                     quantityRow,
                     SpacerFormRow(tag: -0001, height: 16),
+                    instructionsRow,
+                    SpacerFormRow(tag: -0001, height: 16),
                     makeConfirmButtonRow(),
                     SpacerFormRow(tag: -0001, height: 16),
                     storeProfileRow,
@@ -317,6 +319,31 @@ final class ProductDetailsViewModel: FormViewModel {
             )
         )
     }
+    
+    // MARK: - Description Row
+    
+    private lazy var instructionsRow = LongInputDescriptionFormRow(
+        tag: Tags.Cells.message.rawValue,
+        model: LongInputDescriptionModel(
+            text: "",
+            config: TextViewConfig(
+                prefixText: "",
+                accessoryImage: nil,
+                isScrollable: true,
+                fixedHeight: 120
+            ),
+            validation: ValidationConfiguration(isRequired: true),
+            titleText: "Message to the seller",
+            useCardStyle: false,
+            cardStyle: .borderAndShadow,
+            cardCornerRadius: 12,
+            cardBorderColor: .app(.primary),
+            cardShadowColor: .gray,
+            onTextChanged: { [weak self] text in
+                self?.state.description = text
+            }
+        )
+    )
 
     private func makeConfirmButtonRow() -> FormRow {
         ButtonFormRow(
@@ -338,7 +365,8 @@ final class ProductDetailsViewModel: FormViewModel {
                     quantity: self.selectedQuantity,
                     minimumQuantity: product.minimumOrderQuantity ?? 1,
                     unitName: product.measurementUnit?.name,
-                    unitPrice: product.price
+                    unitPrice: product.price,
+                    message: state.description
                 )
 
                 self.onPlaceOrder?(payload)
@@ -395,6 +423,8 @@ final class ProductDetailsViewModel: FormViewModel {
     private struct State {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        var description: String = ""
 
         var product: ProductResponseV1
         var similarProduct: [ProductResponseV1] = []
@@ -415,6 +445,7 @@ final class ProductDetailsViewModel: FormViewModel {
             case titleAndDescription = 1
             case price = 2
             case categories = 3
+            case message = 4
         }
     }
 }

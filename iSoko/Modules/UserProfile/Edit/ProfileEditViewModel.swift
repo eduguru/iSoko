@@ -14,10 +14,11 @@ import StorageKit
 final class ProfileEditViewModel: FormViewModel {
     
     // MARK: - Callbacks
-    
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
-    var gotoConfirm: (() -> Void)?
+    
+    var gotoConfirm: ((_ title: String, _ message: String?, _ onConfirm: @escaping (Bool) -> Void) -> Void)?
+    var goToSuccess: (() -> Void)?
     
     var goToCommonSelectionOptions: (
         CommonUtilityOption,
@@ -122,7 +123,7 @@ final class ProfileEditViewModel: FormViewModel {
             ),
             
             trailingChip: PaddedChipView(
-                text: "user.profile.since".localized,
+                text: "\("user.profile.since".localized) \(state.userProfile?.memberSinceString ?? "")",
                 tint: .secondaryLabel
             ),
             
@@ -430,7 +431,7 @@ final class ProfileEditViewModel: FormViewModel {
     private func buildUserPayload() -> [String: Any] {
         [
             "firstName": state.firstName ?? "",
-            "middleName": "",
+            "middleName": "null",
             "lastName": state.lastName ?? "",
             
             "countryId": state.userProfile?.country?.id ?? 0,
@@ -443,10 +444,26 @@ final class ProfileEditViewModel: FormViewModel {
     }
     
     func submit() async {
+
+        gotoConfirm?(
+            "Update Profile",
+            "Are you sure you want to save these changes?"
+        ) { [weak self] confirmed in
+
+            guard let self, confirmed else { return }
+
+            Task {
+                await self.performConfirmedProfileUpdate()
+            }
+        }
+    }
+    
+    private func performConfirmedProfileUpdate() async {
+
         let success = await performProfileUpdate()
-        
+
         if success {
-            gotoConfirm?()
+            goToSuccess?()
         }
     }
     

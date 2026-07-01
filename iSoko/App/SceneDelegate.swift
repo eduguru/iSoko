@@ -15,7 +15,6 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private var appCoordinator: AppCoordinator?
 
     private let tokenProvider = AppTokenProvider()
-    private let certificateService = NetworkEnvironment.shared.certificateService
 
     func scene(
         _ scene: UIScene,
@@ -43,23 +42,12 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     private func bootstrap(window: UIWindow) async {
         print("🚀 Bootstrapping app")
 
-        // 1️⃣ Guest token is REQUIRED
-        do {
-            let guestToken = try await fetchGuestToken()
-            tokenProvider.saveGuestToken(guestToken)
-            RuntimeSession.authState = .guest
-            print("✅ Guest token ready")
-        } catch {
-            print("❌ Guest token failed — app cannot proceed")
-            // return
-        }
-
-        // 2️⃣ OAuth token is OPTIONAL
         if AppStorage.hasLoggedIn ?? false {
             await attemptOAuthRestore()
+        } else {
+            RuntimeSession.authState = .guest
         }
 
-        // 3️⃣ Launch app regardless
         await MainActor.run {
             startApp(window: window)
         }
@@ -73,7 +61,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             RuntimeSession.authState = .authenticated
             print("✅ OAuth restored:", token.accessToken.prefix(6))
         } catch {
-            print("OAuth restore failed — downgraded to guest")
+            print("OAuth restore failed")
             RuntimeSession.authState = .guest
             AppStorage.hasLoggedIn = false
         }
@@ -86,23 +74,5 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let coordinator = AppCoordinator(window: window)
         self.appCoordinator = coordinator
         coordinator.start()
-    }
-
-    // MARK: - Guest token
-
-    private func fetchGuestToken() async throws -> TokenResponse {
-        let token = try await certificateService.getToken(
-            grant_type: AppConstants.GrantType.login.rawValue,
-            client_id: ApiEnvironment.clientId,
-            client_secret: ApiEnvironment.clientSecret
-        )
-
-        return TokenResponse(
-            accessToken: token.accessToken,
-            tokenType: token.tokenType ?? "",
-            expiresIn: token.expiresIn,
-            scope: token.scope ?? "",
-            refreshToken: token.refreshToken
-        )
     }
 }

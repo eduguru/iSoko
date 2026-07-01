@@ -11,4 +11,5 @@ struct PlaceOrderPayload {
     let minimumQuantity: Int
     let unitName: String?
     let unitPrice: Double?
+    let message: String?
 }

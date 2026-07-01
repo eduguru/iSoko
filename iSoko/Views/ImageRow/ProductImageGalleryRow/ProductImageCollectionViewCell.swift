@@ -45,6 +45,7 @@ final class ProductImageCollectionViewCell: UICollectionViewCell {
         featuredFlag.layer.cornerRadius = 4
         featuredFlag.clipsToBounds = true
         featuredFlag.isHidden = true
+        
         contentView.addSubview(featuredFlag)
         featuredFlag.translatesAutoresizingMaskIntoConstraints = false
 
@@ -57,7 +58,7 @@ final class ProductImageCollectionViewCell: UICollectionViewCell {
     }
 
     func configure(with productImage: ProductImage, placeholder: UIImage? = nil) {
-        featuredFlag.isHidden = !productImage.isFeatured
+        // featuredFlag.isHidden = !productImage.isFeatured
         imageView.kf.setImage(with: productImage.url, placeholder: placeholder)
     }
 }

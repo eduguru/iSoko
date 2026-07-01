@@ -106,7 +106,7 @@ final class ProfileInfoViewModel: FormViewModel {
                 ),
 
                 trailingChip: PaddedChipView(
-                    text: "user.profile.since".localized,
+                    text: "\("user.profile.since".localized) \(state.userProfile?.memberSinceString ?? "")",
                     tint: .secondaryLabel
                 ),
 

@@ -166,16 +166,26 @@ public class MoreCoordinator: BaseCoordinator {
             presentAuthBottomSheet()
             return
         }
-        
+
         let viewModel = ProfileEditViewModel()
         viewModel.goToCommonSelectionOptions = goToCommonSelection
-        
+        viewModel.gotoConfirm = presentConfirmaionAlert
+
+        viewModel.goToSuccess = { [weak self] in
+            self?.goToShowSuccessScreen(
+                title: "Profile Updated",
+                message: "Your profile has been updated successfully."
+            ) {
+                self?.router.pop(animated: true)
+            }
+        }
+
         let vc = ProfileEditViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -283,25 +293,42 @@ public class MoreCoordinator: BaseCoordinator {
         let viewModel = ShareAppViewModel()
         
         viewModel.onShareRequested = { [weak self] items in
-            guard let self = self else { return }
-            let activityVC = UIActivityViewController(activityItems: items, applicationActivities: nil)
-            self.router.present(activityVC, animated: true)
+            guard let self else { return }
+            
+            let activityVC = UIActivityViewController(
+                activityItems: items,
+                applicationActivities: nil
+            )
+            
+            if let popover = activityVC.popoverPresentationController {
+                popover.sourceView = self.router.topViewController()?.view
+                popover.sourceRect = self.router.topViewController()?.view.bounds ?? .zero
+            }
+            
+            self.router.topViewController()?.present(
+                activityVC,
+                animated: true
+            )
         }
         
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
+        
         vc.closeAction = { [weak self] in
-            // Dismiss the modal nav instead of popping
             self?.router.dismiss(animated: true)
         }
         
-        // Wrap in its own navigation controller
         let nav = BaseNavigationController(rootViewController: vc)
         nav.modalPresentationStyle = .fullScreen
         nav.navigationBar.isHidden = false
         
-        // Present modally
-        router.present(nav, animated: true)
+        // Present from topmost view controller
+        if let top = router.topViewController() {
+            top.present(nav, animated: true)
+            
+            // Update router to point to this modal flow
+            self.router = Router(navigationController: nav)
+        }
     }
     
     private func gotoLegal() {

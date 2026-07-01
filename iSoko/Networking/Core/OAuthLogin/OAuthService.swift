@@ -138,8 +138,8 @@ public final class OAuthService: NSObject {
         await MainActor.run {
             AppStorage.userDetail = user
             
-//            AppStorage.hasLoggedIn = true
-//            RuntimeSession.authState = .authenticated
+            AppStorage.hasLoggedIn = true
+            RuntimeSession.authState = .authenticated
             
             if AppStorage.oauthToken != nil {
                 self.scheduleTokenRefresh()

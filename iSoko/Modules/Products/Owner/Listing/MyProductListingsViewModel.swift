@@ -234,7 +234,7 @@ final class MyProductListingsViewModel: FormViewModel {
             
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "name",
-                subtitle: "\(item.minimumOrderQuantity) \(unit) available",
+                subtitle: "\(item.minimumOrderQuantity ?? 1) \(unit) available",
                 amount: "\(currency) \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",
@@ -254,7 +254,7 @@ final class MyProductListingsViewModel: FormViewModel {
                     title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
                     onTap: {
-                        print("Edit tapped for \(item.name)")
+                        print("Edit tapped for \(item.name ?? "no name")")
                     }
                 )
             )

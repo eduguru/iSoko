@@ -269,7 +269,7 @@ final class AddProductViewModel: FormViewModel {
             "price": price,
             "minimumOrderQuantity": qty,
             "quantity": 100,
-            "common.label.description".localized: desc,
+            "description": desc,
             "published": true,
             "inStock": true,
             

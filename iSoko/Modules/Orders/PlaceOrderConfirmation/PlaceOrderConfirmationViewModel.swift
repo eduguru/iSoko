@@ -186,7 +186,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
     private lazy var descriptionRow = LongInputDescriptionFormRow(
         tag: CellTag.description.rawValue,
         model: LongInputDescriptionModel(
-            text: "",
+            text: state.order.message ?? "",
             config: TextViewConfig(
                 prefixText: "",
                 accessoryImage: nil,
