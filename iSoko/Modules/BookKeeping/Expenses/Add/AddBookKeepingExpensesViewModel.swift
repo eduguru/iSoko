@@ -25,6 +25,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     var goToAddSupplier: (() -> Void)? = { }
     
     var gotoConfirm: (() -> Void)? = { }
+    var goToShowSuccessScreen: (() -> Void)?
     
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
@@ -371,18 +372,15 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
   
     // MARK: - Submit
     private func submit() async {
-        Task {
-            let success = await performNetworkRequest()
-            
-            if !success {
-                print("Failed to fetch product data")
-            }
-            
-            DispatchQueue.main.async { [weak self] in  // go to success
-                self?.gotoConfirm?()
-            }
+
+        let success = await performNetworkRequest()
+
+        guard success else {
+            print("Failed to add expense")
+            return
         }
 
+        goToShowSuccessScreen?()
     }
     
     // MARK: - Network
@@ -394,8 +392,8 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         let payload: [String: Any] = [
             "categoryId": state.categories?.id ?? "",
             "amount": state.amount,
-            "common.label.description".localized: state.description,
-            "common.label.date".localized: state.date.map { $0.toISO8601String() } ?? "",
+            "description": state.description,
+            "date": state.date?.getYearMonthDay() ?? "",
             "supplierId": state.supplier?.id ?? "",
             "paymentMethodId": state.paymentMethod?.id ?? ""
         ]

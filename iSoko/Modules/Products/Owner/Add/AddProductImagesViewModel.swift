@@ -17,7 +17,8 @@ final class AddProductImagesViewModel: FormViewModel {
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
 
     // MARK: - Navigation
-    var gotoConfirm: (() -> Void)?
+    var gotoConfirm: ((_ title: String, _ message: String?, _ onConfirm: @escaping (Bool) -> Void) -> Void)?
+    var goToSuccess: (() -> Void)?
     var onPreviewImage: ((PickedFile) -> Void)?
 
     // MARK: - Services
@@ -243,30 +244,35 @@ extension AddProductImagesViewModel {
     private func submit() async {
 
         guard let params = state.params else {
-            print("❌ Missing params")
+            showError("Missing product information.")
             return
         }
 
         let files = [state.primaryImage].compactMap { $0 } + state.additionalImages
 
-        let success = await performNetworkRequest(params: params, files: files)
+        gotoConfirm?(
+            "Publish Product",
+            "Are you sure you want to publish this product?"
+        ) { [weak self] confirmed in
 
-        if success {
-            gotoConfirm?()
-        } else {
-            print("❌ Upload failed")
+            guard let self, confirmed else { return }
+
+            Task {
+                await self.performSubmit(
+                    params: params,
+                    files: files
+                )
+            }
         }
     }
 
-    private func performNetworkRequest(
+    private func performSubmit(
         params: [String: Any],
         files: [PickedFile]
-    ) async -> Bool {
+    ) async {
 
         showLoader()
         defer { hideLoader() }
-        
-        print("Payload:", params)
 
         do {
             _ = try await bookKeepingService.addProduct(
@@ -274,26 +280,20 @@ extension AddProductImagesViewModel {
                 pickedFiles: files,
                 accessToken: state.oauthToken
             )
-                        
-            return true
+
+            goToSuccess?()
+
         } catch let NetworkError.server(response) {
-            print("Add Product ERROR:", response.alertMessage)
-            
-            await MainActor.run {
-                state.errorMessage = response.message
-                state.fieldErrors = response.errors
-            }
+
+            state.errorMessage = response.message
+            state.fieldErrors = response.errors
 
             showError(response.alertMessage)
-            return false
+
         } catch {
-            await MainActor.run {
-                state.errorMessage = "Something went wrong. Please try again."
-            }
-            
-            print("Add Product ERROR:", error)
-            showError(error.localizedDescription)
-            return false
+
+            state.errorMessage = "Something went wrong. Please try again."
+            showError("Something went wrong. Please try again.")
         }
     }
 }

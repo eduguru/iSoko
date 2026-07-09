@@ -14,7 +14,7 @@ class AddBookKeepingCustomersViewController: FormViewController, CloseableViewCo
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        title = "common.button.continue".localized
+        title = "common.action.add_customer".localized
         // Do any additional setup after loading the view.
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         

@@ -117,13 +117,26 @@ extension ProductsCoordinator {
     }
     
     private func gotoCompleteCreateProduct(_ params: [String: Any]? = nil) {
+
         let viewModel = AddProductImagesViewModel(params)
+
+        viewModel.gotoConfirm = presentConfirmaionAlert
+
+        viewModel.goToSuccess = { [weak self] in
+            self?.goToShowSuccessScreen(
+                title: "Product Published",
+                message: "Your product has been published successfully."
+            ) {
+                self?.router.pop(animated: true)
+            }
+        }
+
         let vc = AddProductImagesViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
@@ -203,5 +216,26 @@ extension ProductsCoordinator {
                 AppStorage.hasLoggedIn = false
             }
         )
+    }
+    
+    func presentConfirmaionAlert(title: String, message: String?, onConfirm: @escaping (Bool) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentConfirmationBottomSheet(
+            title: title,
+            message: message,
+            onConfirm: { onConfirm(true) },
+            onCancel: { onConfirm(false)}
+        )
+    }
+    
+    func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
+            onDismiss?()
+        }
     }
 }

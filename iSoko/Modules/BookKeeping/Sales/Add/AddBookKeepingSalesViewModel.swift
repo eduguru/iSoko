@@ -375,7 +375,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let items = state.selectedProducts.map { product in
             [
                 "productId": product.id ?? 0,
-                "quantity": state.quantities[product.id ?? -1] ?? 1
+                "quantity": state.quantities[product.id ?? -1] ?? 1,
+                "unitPrice": product.price ?? 0
             ]
         }
 
@@ -383,10 +384,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             "saleTypeId": state.saleTypeId,
             "customerId": state.customer?.id ?? 0,
             "paymentMethodId": state.paymentMethod?.id ?? 0,
-            "common.label.description".localized: state.description,
+            "description": state.description,
             "items": items,
             "amount": state.amount,
-            "common.label.date".localized: state.date?.toISO8601String() ?? ""
+            "date": state.date?.getYearMonthDay() ?? ""
         ]
     }
     

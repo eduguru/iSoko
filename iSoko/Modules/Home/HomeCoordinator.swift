@@ -77,14 +77,32 @@ public class HomeCoordinator: BaseCoordinator {
     private func goToPlaceOrder(with order: PlaceOrderPayload) {
 
         let viewModel = PlaceOrderConfirmationViewModel(order)
+
+        viewModel.gotoConfirm = presentConfirmaionAlert
+
+        viewModel.goToSuccess = { [weak self] response in
+            guard let self else { return }
+
+            self.goToShowSuccessScreen(
+                title: "Order Placed",
+                message: "Order \(response.orderNumber) created successfully"
+            ) {
+                self.router.pop(animated: true)
+            }
+        }
+
+        viewModel.onFailure = { [weak self] message in
+            self?.goToShowError(message: message)
+        }
+
         let vc = PlaceOrderConfirmationViewController()
         vc.viewModel = viewModel
+
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
 
         router.push(vc, animated: true)
-        
     }
     
     func goToViewStoreTap(_ data: TraderV1) {
@@ -283,6 +301,39 @@ extension HomeCoordinator {
             // 4. Start flow
             mainCoordinator.start()
         }
+    }
+    
+    func presentConfirmaionAlert(title: String, message: String?, onConfirm: @escaping (Bool) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentConfirmationBottomSheet(
+            title: title,
+            message: message,
+            onConfirm: { onConfirm(true) },
+            onCancel: { onConfirm(false)}
+        )
+    }
+    
+    func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert(title: title, message: message) { [weak self] in
+            onDismiss?()
+        }
+    }
+    
+    func goToShowError(message: String) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentErrorAlert(
+            title: "Error",
+            message: message,
+            onPrimaryAction: { },
+            onSecondaryAction: { }
+        )
     }
 }
 

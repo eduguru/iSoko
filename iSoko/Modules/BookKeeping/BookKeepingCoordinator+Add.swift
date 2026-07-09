@@ -113,18 +113,24 @@ public extension BookKeepingCoordinator {
     
     func goToAddBookKeepingExpense() {
         let model = AddBookKeepingExpensesViewModel()
+
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         
         model.goToAddSupplier = goToAddBookKeepingSupplier
         model.goToAddExpenseCategory = goToAddExpenseCategory
-        
+
+        model.goToShowSuccessScreen = { [weak self] in
+            self?.goToShowSuccessScreen()
+        }
+
         let vc = AddBookKeepingExpensesViewController()
         vc.viewModel = model
+
         vc.closeAction = { [weak self] in
             self?.router.pop()
         }
-        
+
         router.push(vc)
     }
     

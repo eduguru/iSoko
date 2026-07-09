@@ -298,32 +298,26 @@ extension TradeAssociationFlowCoordinator {
             presentAuthBottomSheet()
             return
         }
-        
+
         guard let router = modalRouter else { return }
 
         let viewModel = PlaceOrderConfirmationViewModel(order)
 
-        viewModel.onSuccess = { [weak self] response in
+        viewModel.gotoConfirm = presentConfirmaionAlert
+
+        viewModel.goToSuccess = { [weak self] response in
             guard let self else { return }
 
             self.goToShowSuccessScreen(
                 title: "Order Placed",
-                message: "Order \(response.orderNumber) created successfully",
-                onDismiss: {
-                    self.modalRouter?.pop(animated: true)
-                }
-            )
+                message: "Order \(response.orderNumber) created successfully"
+            ) {
+                self.modalRouter?.pop(animated: true)
+            }
         }
 
         viewModel.onFailure = { [weak self] message in
             self?.goToShowError(message: message)
-        }
-
-        viewModel.gotoConfirm = { [weak self] in
-            guard let self else { return }
-
-            // optional: analytics / navigation hook
-            print("Order confirmed flow completed")
         }
 
         let vc = PlaceOrderConfirmationViewController()
@@ -349,6 +343,18 @@ extension TradeAssociationFlowCoordinator {
         }
 
         router.push(vc, animated: true)
+    }
+    
+    func presentConfirmaionAlert(title: String, message: String?, onConfirm: @escaping (Bool) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        coordinator.presentConfirmationBottomSheet(
+            title: title,
+            message: message,
+            onConfirm: { onConfirm(true) },
+            onCancel: { onConfirm(false)}
+        )
     }
     
     func goToShowSuccessScreen(title: String, message: String, onDismiss: (() -> Void)?) {

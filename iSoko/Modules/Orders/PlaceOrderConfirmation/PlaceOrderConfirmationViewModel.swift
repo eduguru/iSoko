@@ -15,7 +15,12 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
     // MARK: - Callbacks
     var onSuccess: ((OrderResponse) -> Void)?
     var onFailure: ((String) -> Void)?
-    var gotoConfirm: (() -> Void)? = { }
+    
+    var gotoConfirm: ((_ title: String,
+                       _ message: String?,
+                       _ onConfirm: @escaping (Bool) -> Void) -> Void)?
+    
+    var goToSuccess: ((_ response: OrderResponse) -> Void)?
     
     private let countryHelper = CountryHelper()
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
@@ -256,14 +261,28 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
     
     // MARK: - Submit
     private func submit() async {
-        let success = await performOrderRequest()
-        
-        guard success, let response = state.lastResponse else {
-            return
+
+        gotoConfirm?(
+            "Place Order",
+            "Are you sure you want to place this order?"
+        ) { [weak self] confirmed in
+
+            guard let self, confirmed else { return }
+
+            Task {
+
+                let success = await self.performOrderRequest()
+
+                guard
+                    success,
+                    let response = self.state.lastResponse
+                else {
+                    return
+                }
+
+                self.goToSuccess?(response)
+            }
         }
-        
-        onSuccess?(response)
-        gotoConfirm?()
     }
     
     @discardableResult
