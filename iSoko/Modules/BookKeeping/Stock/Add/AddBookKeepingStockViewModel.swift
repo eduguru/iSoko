@@ -58,6 +58,9 @@ final class AddBookKeepingStockViewModel: FormViewModel {
                     measurementUnitRow,
                     quantityInputRow,
                     lowStockLevelInputRow,
+                    descriptionRow,
+                    inStockRow,
+                    publishedRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
                 ]
@@ -175,6 +178,39 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             }
         )
     )
+    
+    private lazy var publishedRow = CheckRow(
+        tag: CellTag.published.rawValue,
+        config: .init(
+            isChecked: state.published,
+            title: "Published",
+            onToggle: { [weak self] checked in
+                self?.state.published = checked
+            }
+        )
+    )
+    
+    private lazy var inStockRow = CheckRow(
+        tag: CellTag.inStock.rawValue,
+        config: .init(
+            isChecked: state.inStock,
+            title: "In Stock",
+            onToggle: { [weak self] checked in
+                self?.state.inStock = checked
+            }
+        )
+    )
+    
+    private lazy var descriptionRow = LongInputDescriptionFormRow(
+        tag: CellTag.description.rawValue,
+        model: LongInputDescriptionModel(
+            text: "",
+            config: TextViewConfig(fixedHeight: 120),
+            validation: ValidationConfiguration(isRequired: true),
+            titleText: "",
+            onTextChanged: { [weak self] text in self?.state.description = text }
+        )
+    )
 
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
@@ -256,7 +292,10 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             "measurementUnitId": measurementUnitId,
             "common.label.description".localized: state.description.isEmpty ? "n/a" : state.description,
             "minimumOrderQuantity": quantity,
-            "stockAlertThreshold": Int(state.lowStockLevel) ?? 0
+            "stockAlertThreshold": Int(state.lowStockLevel) ?? 0,
+            "inStock": state.inStock,
+            "published": state.published,
+            "description": state.description ?? ""
         ]
         
         // Submit
@@ -314,6 +353,8 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         var lowStockLevel: String = ""
         var supplierName: String = ""
         var description: String = ""
+        var inStock: Bool = false
+        var published: Bool = false
 
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
 
@@ -335,6 +376,9 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         case lowStockLevel = 11
         case continueButton = 12
         case measurementUnit
+        case inStock
+        case published
+        case description
     }
     
 }
