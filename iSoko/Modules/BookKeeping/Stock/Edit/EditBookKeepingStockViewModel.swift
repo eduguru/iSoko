@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class EditBookKeepingStockViewModel: FormViewModel {
 
     var pickFile: ((_ completion: @escaping (PickedFile?) -> Void) -> Void)?
@@ -22,15 +23,18 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         _ staticOptions: [CommonIdNameModel]?,
         _ completion: @escaping (CommonIdNameModel?) -> Void
     ) -> Void = { _, _, _ in }
+    
+    var showCountryPicker: ((@escaping (Country) -> Void) -> Void) -> Void = { _ in }
 
     var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
-
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
-
     var goToShowSuccessScreen: (() -> Void)?
 
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    @MainActor
+    private let countryHelper = CountryHelper()
 
     // MARK: - State
     private var state: State
@@ -55,6 +59,9 @@ final class EditBookKeepingStockViewModel: FormViewModel {
                     measurementUnitRow,
                     quantityInputRow,
                     lowStockLevelInputRow,
+                    descriptionRow,
+                    inStockRow,
+                    publishedRow,
                     SpacerFormRow(tag: 20),
                     continueButtonRow
                 ]
@@ -106,14 +113,18 @@ final class EditBookKeepingStockViewModel: FormViewModel {
                 onTextChanged: { [weak self] newText in
                     guard let self else { return }
                     switch tag {
-                    case CellTag.unitCost.rawValue:
-                        self.state.unitCost = Double(newText) ?? 0
-                    case CellTag.quantity.rawValue:
-                        self.state.quantity = Double(newText) ?? 0
                     case CellTag.lowStockLevel.rawValue:
-                        self.state.lowStockLevel = Double(newText) ?? 0
+                        self.state.lowStockLevel = newText
+
+                    case CellTag.unitCost.rawValue:
+                        self.state.unitCost = newText
+
+                    case CellTag.quantity.rawValue:
+                        self.state.quantity = newText
+
                     case CellTag.productName.rawValue:
                         self.state.productName = newText
+
                     default:
                         break
                     }
@@ -165,6 +176,41 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         )
     )
     
+    private lazy var inStockRow = CheckRow(
+        tag: CellTag.inStock.rawValue,
+        config: .init(
+            isChecked: state.inStock,
+            title: "In Stock",
+            onToggle: { [weak self] checked in
+                self?.state.inStock = checked
+            }
+        )
+    )
+
+    private lazy var publishedRow = CheckRow(
+        tag: CellTag.published.rawValue,
+        config: .init(
+            isChecked: state.published,
+            title: "Published",
+            onToggle: { [weak self] checked in
+                self?.state.published = checked
+            }
+        )
+    )
+
+    private lazy var descriptionRow = LongInputDescriptionFormRow(
+        tag: CellTag.description.rawValue,
+        model: LongInputDescriptionModel(
+            text: state.description,
+            config: TextViewConfig(fixedHeight: 120),
+            validation: ValidationConfiguration(isRequired: true),
+            titleText: "",
+            onTextChanged: { [weak self] text in
+                self?.state.description = text
+            }
+        )
+    )
+    
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
@@ -212,15 +258,36 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
+        
+        guard
+            let supplierId = state.supplier?.id,
+            let measurementUnitId = state.measurementUnit?.id,
+            let price = Double(state.unitCost),
+            let quantity = Int(state.quantity)
+        else {
+            showError("Please fill all required fields correctly")
+            return
+        }
+        
         let params: [String: Any] = [
             "id": state.stockId,
             "name": state.productName,
-            "price": state.unitCost,
-            "quantity": state.quantity,
-            "supplierId": state.supplier?.id ?? 0,
-            "measurementUnitId": state.measurementUnit?.id ?? 0,
-            "lowStockLevel": state.lowStockLevel,
-            "common.label.date".localized: state.date?.toISO8601String() ?? ""
+            "description": state.description,
+
+            "price": price,
+            "quantity": quantity,
+            "minimumOrderQuantity": quantity,
+
+            "lowStockThreshold": Int(state.lowStockLevel) ?? 0,
+
+            "supplierId": supplierId,
+            "measurementUnitId": measurementUnitId,
+
+            "inStock": state.inStock,
+            "published": state.published,
+            "active": state.active,
+            "approved": state.approved,
+            "featured": state.featured
         ]
 
         let success = await updateStock(parameters: params)
@@ -248,23 +315,46 @@ final class EditBookKeepingStockViewModel: FormViewModel {
     private struct State {
         var stockId: Int
         var productName: String
-        var quantity: Double
-        var unitCost: Double
-        var lowStockLevel: Double
+
+        var quantity: String
+        var unitCost: String
+        var lowStockLevel: String
+
+        var description: String
+
+        var inStock: Bool
+        var published: Bool
+        var active: Bool
+        var approved: Bool
+        var featured: Bool
+
         var supplier: CommonIdNameModel?
         var measurementUnit: CommonIdNameModel?
+
         var date: Date?
         var dateString: String = ""
+
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
-        
+
         init(stock: StockResponse) {
             self.stockId = stock.id ?? -1
             self.productName = stock.name ?? ""
-            self.quantity = Double(stock.minimumOrderQuantity ?? 0)
-            self.unitCost = stock.price ?? 0
-            self.lowStockLevel = Double(stock.minimumOrderQuantity ?? 0)
-            self.supplier = CommonIdNameModel(id: stockId, name: productName)
+
+            self.quantity = "\(stock.quantity ?? 0)"
+            self.unitCost = "\(stock.price ?? 0)"
+            self.lowStockLevel = "\(stock.lowStockThreshold ?? 0)"
+
+            self.description = stock.description ?? ""
+
+            self.inStock = stock.inStock ?? false
+            self.published = stock.published ?? false
+            self.active = stock.active ?? false
+            self.approved = stock.approved ?? false
+            self.featured = stock.featured ?? false
+
+            self.supplier = CommonIdNameModel(from: stock.supplier)
             self.measurementUnit = CommonIdNameModel(from: stock.measurementUnit)
+
             self.date = Date()
             self.dateString = Helpers.format(Date())
         }
@@ -280,8 +370,11 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         case supplierName = 8
         case unitCost = 6
         case quantity = 7
-        case lowStockLevel = 11
         case measurementUnit = 9
+        case lowStockLevel = 11
         case continueButton = 12
+        case inStock
+        case published
+        case description
     }
 }

@@ -31,6 +31,7 @@ public struct StockResponse: Codable {
     public let category: IDNamePairInt?
     public let commodity: IDNamePairInt?
     public let measurementUnit: IDNamePairInt?
+    public let supplier: IDNamePairInt?
 
     public let trader: TraderResponse?
 
@@ -56,6 +57,7 @@ public struct StockResponse: Codable {
         case category
         case commodity
         case measurementUnit
+        case supplier     
         case trader
         case images
     }
@@ -87,6 +89,7 @@ public struct StockResponse: Codable {
         category = try container.decodeIfPresent(IDNamePairInt.self, forKey: .category)
         commodity = try container.decodeIfPresent(IDNamePairInt.self, forKey: .commodity)
         measurementUnit = try container.decodeIfPresent(IDNamePairInt.self, forKey: .measurementUnit)
+        supplier = try container.decodeIfPresent(IDNamePairInt.self, forKey: .supplier) // <-- Added
 
         trader = try container.decodeIfPresent(TraderResponse.self, forKey: .trader)
 

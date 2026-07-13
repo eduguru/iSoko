@@ -165,7 +165,10 @@ final class BookKeepingDashboardViewModel: FormViewModel {
     }
 
     private func makeRecentActivitiesSection() -> FormSection {
-        FormSection(id: Tags.Section.recentActivities.rawValue, cells: makeRecentActivitiesRows())
+        FormSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeRecentActivitiesRows()
+        )
     }
 
     // MARK: - Financial Mapping
@@ -378,7 +381,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
 
     private func makeQuickNoTitleActionsRow() -> FormRow {
         let stock = StatusCardViewModel(
-            title: "common.action.manage_stock".localized,
+            title: "common.label.stock".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#3B82F6")),
             iconTintColor: .white,

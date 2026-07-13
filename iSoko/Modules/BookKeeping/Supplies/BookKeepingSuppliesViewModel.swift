@@ -10,6 +10,7 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+@MainActor
 final class BookKeepingSuppliesViewModel: FormViewModel {
    var goToDetails: ((SupplierResponse) -> Void)? = { _ in }
     
@@ -17,25 +18,32 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
+    
+    @MainActor
+    private let countryHelper = CountryHelper()
 
     override init() {
         super.init()
-        self.sections = makeSections()
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
     }
     
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
-        defer { hideLoader() }
-        
+
         Task {
             let success = await performNetworkRequest()
 
-            if !success {
-                print("Failed to fetch suppliers")
-            }
-
             await MainActor.run {
+                self.hideLoader()
+
+                if !success {
+                    print("Failed to fetch suppliers")
+                }
+
+                self.updateFinancialSummarySection()
                 self.updateRecentActivitiesSection()
             }
         }
@@ -69,6 +77,15 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
         
         sections[index].cells = makeTransactionActionRows()
         
+        reloadSection(index)
+    }
+    
+    private func updateFinancialSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.financialSummary.rawValue
+        }) else { return }
+
+        sections[index].cells = [makeFinancialSummaryRow()]
         reloadSection(index)
     }
 
@@ -125,37 +142,50 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+
+        let totalSuppliers = state.suppliers.count
+
+        let totalAmount = state.suppliers.reduce(0.0) {
+            $0 + ($1.totalAmountSupplied ?? 0)
+        }
+
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
                 title: "Total Suppliers",
                 titleIcon: nil,
-                subtitle: "36",
+                subtitle: "\(totalSuppliers)",
                 status: CardStatusStyle(
-                    text: "24% since last week",
-                    textColor: .systemGreen,
-                    backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
-                    icon: .stockmarketArrowUp
+                    text: "All suppliers",
+                    textColor: .systemBlue,
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    icon: UIImage(systemName: "person.3")
                 )
             ),
+
             right: DualCardItemConfig(
-                title: "Active Suppliers",
+                title: "Total Supplied",
                 titleIcon: nil,
-                subtitle: "2",
+                subtitle: "\(currency). \(Int(totalAmount))",
                 status: CardStatusStyle(
-                    text: "24% since last week",
-                    textColor: .systemOrange,
-                    backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
-                    icon: .stockmarketArrowDown
+                    text: totalAmount >= 0 ? "Positive" : "Negative",
+                    textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
+                    backgroundColor: (
+                        totalAmount >= 0
+                            ? UIColor.systemGreen
+                            : UIColor.systemRed
+                    ).withAlphaComponent(0.15),
+                    icon: UIImage(systemName: totalAmount >= 0 ? "arrow.up" : "arrow.down")
                 )
             )
         )
 
-        let row = DualCardFormRow(
-            tag: 100,
+        return DualCardFormRow(
+            tag: Tags.Cells.financialSummary.rawValue,
             config: config
         )
-
-        return row
     }
     
     // Lazy factory that creates rows

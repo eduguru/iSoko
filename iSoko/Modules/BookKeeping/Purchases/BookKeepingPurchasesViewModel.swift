@@ -85,7 +85,7 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     // MARK: - Sections -
     private func makeSections() -> [FormSection] {
         [
-            makeFinancialSummarySection(),
+            // makeFinancialSummarySection(),
             makeRecentActivitiesSection()
         ]
     }

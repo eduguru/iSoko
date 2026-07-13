@@ -193,7 +193,7 @@ public struct ServicesApi {
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/edit/\(productId)",
-            method: .get,
+            method: .patch,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer
@@ -277,7 +277,7 @@ public struct ServicesApi {
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
             path: "api/market-service/update-status/\(status)/\(productId)",
-            method: .put,
+            method: .patch,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
             headers: headers,
             authorizationType: .bearer

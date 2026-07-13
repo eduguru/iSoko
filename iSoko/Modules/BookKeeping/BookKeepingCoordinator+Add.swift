@@ -181,7 +181,11 @@ public extension BookKeepingCoordinator {
     
     func goToEditBookKeepingStock(stock: StockResponse) {
         let model = EditBookKeepingStockViewModel(stock: stock)
+        
         model.goToShowSuccessScreen = goToShowSuccessScreen
+        model.goToDateSelection = gotoSelectDate
+        model.goToCommonSelectionOptions = goToCommonSelection
+        model.goToAddSupplier = goToAddBookKeepingSupplier
         
         let vc = EditBookKeepingStockViewComtroller()
         

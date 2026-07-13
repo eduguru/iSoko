@@ -167,7 +167,7 @@ public extension BookKeepingApi {
 
         let target = MultipartUploadTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/expenses",
+            path: "bookkeeping/expenses/\(itemId)",
             method: .patch,
             jsonPartName: "expense",
             jsonData: paramsJson,
@@ -269,32 +269,23 @@ public extension BookKeepingApi {
 
 // MARK: - Stock
 public extension BookKeepingApi {
-    
-    static func updateProduct(
-        itemId: Int,
-        parameters: [String: Any],
-        accessToken: String
-    ) -> ValueResponseTarget<StockResponse> {
-        
-        let headers: [String: String] = [
+    static func updateProduct(itemId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<StockResponse> {
+        let headers = [
+            "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": "Bearer \(accessToken)"
         ]
         
-        let paramsJson = try? JSONSerialization.data(withJSONObject: parameters)
-
-        let target = MultipartUploadTarget(
+        let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "products\(itemId)",
-            method: .post,
-            jsonPartName: "product",
-            jsonData: paramsJson,
-            files: [],
+            path: "products/\(itemId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
-            requiresAuth: false
+            authorizationType: .bearer
         )
-
-        return ValueResponseTarget(target: target.asAnyTarget())
+        
+        return ValueResponseTarget(target: target)
     }
     
     static func addProduct(
@@ -428,8 +419,8 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/customers\(itemId)",
-            method: .post,
+            path: "bookkeeping/customers/\(itemId)",
+            method: .patch,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
             authorizationType: .bearer
@@ -515,8 +506,8 @@ public extension BookKeepingApi {
         
         let target = AnyTarget(
             baseURL: ApiEnvironment.apiBaseURL,
-            path: "bookkeeping/suppliers\(itemId)",
-            method: .post,
+            path: "bookkeeping/suppliers/\(itemId)",
+            method: .patch,
             task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
             headers: headers,
             authorizationType: .bearer
