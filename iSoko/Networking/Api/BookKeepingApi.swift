@@ -94,6 +94,27 @@ public struct BookKeepingApi {
         return UnifiedPagedResponseTarget(target: target)
     }
     
+    static func getAllSalesById(id: Int, page: Int, count: Int, accessToken: String) -> ValueResponseTarget<SalesResponse> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sales/\(id)",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
     static func getAllSalesByDate(startDate: String, endDate: String, accessToken: String) -> UnifiedPagedResponseTarget<[SalesResponse]> {
         let parameters: [String: Any] = [
             "startDate": startDate,

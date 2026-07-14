@@ -97,6 +97,43 @@ public struct StockResponse: Codable {
     }
 }
 
+extension StockResponse {
+    init(
+        id: Int,
+        name: String?,
+        price: Double?
+    ) {
+        self.id = id
+        self.name = name
+        self.description = nil
+
+        self.price = price
+        self.stockPrice = nil
+
+        self.quantity = nil
+        self.minimumOrderQuantity = nil
+        self.lowStockThreshold = nil
+
+        self.active = nil
+        self.approved = nil
+        self.published = nil
+        self.featured = nil
+        self.inStock = nil
+        self.bookkeepingStock = nil
+
+        self.datetimeCreated = nil
+        self.lastModified = nil
+
+        self.category = nil
+        self.commodity = nil
+        self.measurementUnit = nil
+        self.supplier = nil
+
+        self.trader = nil
+        self.images = []
+    }
+}
+
 public struct TraderResponse: Codable {
     public let id: Int?
     public let email: String?

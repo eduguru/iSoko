@@ -12,6 +12,7 @@ public protocol BookKeepingService {
     func addSales(parameters: [String: Any], accessToken: String) async throws -> SalesResponse
     func updateSales(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SalesResponse
     func getSalesType(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[CommonIdNameModel]>
+    func getAllSalesById(id: Int,page: Int, count: Int, accessToken: String)  async throws -> SalesResponse
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     
@@ -88,6 +89,13 @@ public extension BookKeepingServiceImpl {
         return envelope.toPagedResult()
     }
     
+    func getAllSalesById(id: Int,page: Int, count: Int, accessToken: String)  async throws -> SalesResponse {
+        let envelope = try await manager.request(
+            BookKeepingApi.getAllSalesById(id: id, page: page, count: count, accessToken: accessToken))
+        
+        return envelope
+    }
+        
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]> {
         let envelope = try await manager.request(
             BookKeepingApi.getAllSalesByDate(startDate: startDate, endDate: endDate, accessToken: accessToken)

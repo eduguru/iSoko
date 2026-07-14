@@ -189,17 +189,17 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Transactions Mapping (REAL DATA)
     private func makeTransactionActionRows() -> [FormRow] {
-        state.sales.map { sale in
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-            let amountText = sale.totalAmount.map { "\(currency). \($0)" } ?? "\(currency). 0"
+        return state.sales.map { sale in
+
+            let amount = sale.totalAmount ?? 0
+            let amountText = "\(currency). \(amount)"
 
             let customerName = sale.customer?.name ?? "Walk-in Customer"
             let saleType = sale.type?.name ?? "Sale"
 
-            let itemsCount = sale.items?.count ?? 0
-            let itemsText = "\(itemsCount) item\(itemsCount == 1 ? "" : "s")"
-
+            let paymentMethod = sale.paymentMethod?.name ?? "Unknown"
             let dateText = formatDate(sale)
 
             let config = TransactionSummaryCellConfig(
@@ -210,7 +210,10 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 saleTypeText: saleType,
                 saleTypeTextColor: .white,
                 saleTypeBackgroundColor: .systemBlue,
-                itemsCountText: itemsText,
+
+                // API no longer returns items, so show payment method instead
+                itemsCountText: paymentMethod,
+
                 primaryAction: ActionCardConfig(
                     title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
@@ -222,6 +225,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
                         self?.goToDetails?(sale)
                     }
                 ),
+
                 secondaryAction: InlineActionConfig(
                     title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
@@ -229,6 +233,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
                         print("Edit sale \(sale.id)")
                     }
                 ),
+
                 cardBackgroundColor: .white,
                 cardBorderColor: .systemGray4,
                 cardBorderWidth: 1,

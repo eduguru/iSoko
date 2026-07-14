@@ -46,45 +46,47 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         self.state = State(sale: sale)
         super.init()
         
-        // Initialize the state with the data from the existing sale
+        // 1. Setup default state values
         state.date = sale.saleDate ?? Date()
         state.dateString = Helpers.format(state.date!)
+        state.description = sale.description ?? ""
         
-        Task { @MainActor in
-            sections = makeSections()
+        // 2. Pre-select customer and payment method from sale data
+        if let customerPair = sale.customer {
+            state.customer = CommonIdNameModel(id: customerPair.id ?? 0, name: customerPair.name ?? "", description: "")
         }
-    }
-    
-    private func refreshCartUI() {
-        reloadProductSection()
-        reloadSummarySection()
-    }
-    
-    private func reloadSummarySection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == SectionTag.summary.rawValue
-        }) else { return }
-
-        sections[index].cells = makeSummaryRows()
-        reloadSection(index)
-    }
-
-    // MARK: - Prefill Data
-    private func prefill() {
-        // Prefill dropdowns with current sale data
-        customerRow.config.placeholder = state.customer?.name ?? ""
-        paymentOptionsRow.config.placeholder = state.paymentMethod?.name ?? ""
-        
-        // Set the sale type based on the existing sale
-        if let typeId = state.sale.type?.id {
+        if let paymentPair = sale.paymentMethod {
+            state.paymentMethod = CommonIdNameModel(id: paymentPair.id ?? 0, name: paymentPair.name ?? "", description: "")
+        }
+        if let typeId = sale.type?.id {
             state.saleTypeId = typeId
         }
 
-        // Prefill the description
-        descriptionRow.model.text = state.description
+        // 3. Convert sales items into stock models to pre-populate cart
+        if let saleItems = sale.items {
+            for item in saleItems {
+                if let productPair = item.product {
+                    let stockProduct = StockResponse(id: productPair.id ?? 0, name: productPair.name, price: item.unitPrice)
+                    state.selectedProducts.append(stockProduct)
+                    state.quantities[productPair.id ?? 0] = item.quantity ?? 1.0
+                }
+            }
+        }
         
-        // Prefill cart items (you might need additional logic here if needed)
-        reloadProductSection()
+        // 4. Initialize rows with correct dynamic values
+        prefill()
+
+        Task { @MainActor in
+            self.sections = makeSections()
+        }
+    }
+    
+    // MARK: - Prefill Data
+    private func prefill() {
+        // Set dropdown placeholders and texts to reflect current state
+        customerRow.config.placeholder = state.customer?.name ?? "common.label.select_option".localized
+        paymentOptionsRow.config.placeholder = state.paymentMethod?.name ?? "Method"
+        descriptionRow.model.text = state.description
     }
 
     // MARK: - Fetch Data
@@ -106,6 +108,15 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             )
 
             state.saleTypes = response.data
+            
+            // If the incoming sale has no sale type assigned, set standard fallback selection
+            if state.saleTypeId == -1 {
+                if let cashType = state.saleTypes.first(where: { $0.name.lowercased().contains("cash") }) {
+                    state.saleTypeId = cashType.id
+                } else if let firstType = state.saleTypes.first {
+                    state.saleTypeId = firstType.id
+                }
+            }
             
             reloadSegmentSection()
 
@@ -182,7 +193,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Section Reload
+    // MARK: - Section Reloads
     private func reloadProductSection(animated: Bool = true) {
         guard let index = sections.firstIndex(where: {
             $0.id == SectionTag.productDetails.rawValue
@@ -200,17 +211,31 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         sections[index].cells = [makePillsOptionsFormRow()]
         reloadSection(index)
     }
+    
+    private func refreshCartUI() {
+        reloadProductSection()
+        reloadSummarySection()
+    }
+    
+    private func reloadSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.summary.rawValue
+        }) else { return }
 
-    // MARK: - Rows
+        sections[index].cells = makeSummaryRows()
+        reloadSection(index)
+    }
+
+    // MARK: - Rows & Construction Helpers
     private lazy var pillsOptions = makePillsOptionsFormRow()
     private lazy var summaryRows = makeSummaryRows()
     
     private func makePillsOptionsFormRow() -> FormRow {
-
-        let items: [PillItem] = state.saleTypes.map {
+        let items: [PillItem] = state.saleTypes.map { saleType in
             PillItem(
-                id: String($0.id),
-                title: $0.name
+                id: String(saleType.id),
+                title: saleType.name,
+                isSelected: saleType.id == state.saleTypeId // Selected match highlighted correctly
             )
         }
 
@@ -219,19 +244,17 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             items: items,
             layoutMode: .segmentedStretch,
             selectionMode: .single
-        ) { [weak self] items in
+        ) { [weak self] selectedItems in
             guard let self else { return }
 
-            if let selected = items.first(where: { $0.isSelected }),
+            if let selected = selectedItems.first(where: { $0.isSelected }),
                let id = Int(selected.id) {
-
                 self.state.saleTypeId = id
             }
         }
     }
     
     private func makeSummaryRows() -> [FormRow] {
-
         let subtotal = state.amount
         let tax = 0.0
         let total = subtotal + tax
@@ -248,7 +271,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         tag: CellTag.customerName.rawValue,
         config: DropdownFormConfig(
             title: "common.name".localized,
-            placeholder: "common.label.select_option".localized,
+            placeholder: state.customer?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleCustomerSelection() },
             onActionTap: { [weak self] in self?.goToAddCustomer?() },
@@ -282,7 +305,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
             title: "Payment Method",
-            placeholder: "Method",
+            placeholder: state.paymentMethod?.name ?? "Method",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in self?.handlePaymentsSelection() }
@@ -313,11 +336,9 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     )
     
     private func makeCartItemsRow() -> [FormRow] {
-
         var rows: [FormRow] = []
 
         for (index, product) in state.selectedProducts.enumerated() {
-
             let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             let productId = product.id ?? index
 
@@ -326,26 +347,19 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
                 title: product.name ?? "Unknown",
                 subtitle: "Price: \(currency). \(Int(product.price ?? 0))",
                 pricePerUnit: Decimal(product.price ?? 0),
-                quantity: Int(state.quantities[productId] ?? 1), // UI expects Int
+                quantity: Int(state.quantities[productId] ?? 1),
 
                 onUpdate: { [weak self] updated in
                     guard let self else { return }
-
                     let qty = updated.quantity ?? 1
                     self.state.quantities[productId] = Double(qty)
-
                     self.refreshCartUI()
                 },
 
                 onDelete: { [weak self] item in
                     guard let self else { return }
-
-                    self.state.selectedProducts.removeAll {
-                        ($0.id ?? -1) == item.id
-                    }
-
+                    self.state.selectedProducts.removeAll { ($0.id ?? -1) == item.id }
                     self.state.quantities[item.id] = nil
-
                     self.refreshCartUI()
                 }
             )
@@ -375,9 +389,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private func handleProductSelection() {
         goToProductSelection(.products(page: 0, count: 100)) { [weak self] selected in
             guard let self, let value = selected else { return }
-
             self.state.selectedProducts.append(value)
-
             self.refreshCartUI()
         }
     }
@@ -385,7 +397,6 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private func handleCustomerSelection() {
         goToCommonSelectionOptions(.customers(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
             self.state.customer = value
             self.customerRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.customerRow.tag)
@@ -395,7 +406,6 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private func handlePaymentsSelection() {
         goToCommonSelectionOptions(.paymentOptions(page: 0, count: 10), nil) { [weak self] value in
             guard let self else { return }
-
             self.state.paymentMethod = value
             self.paymentOptionsRow.config.placeholder = value?.name ?? ""
             self.reloadRow(withTag: self.paymentOptionsRow.tag)
@@ -407,10 +417,18 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         reloadRow(withTag: CellTag.date.rawValue)
     }
 
-    // MARK: - Submit
+    private func reloadRow(withTag tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
+                break
+            }
+        }
+    }
+
+    // MARK: - Submit & Update Logic
     private func submit() async {
         let success = await performNetworkRequest()
-
         if success {
             gotoConfirm?()
             goToShowSuccessScreen?()
@@ -422,68 +440,57 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         defer { hideLoader() }
 
         let payload = buildPayload()
+        print("UPDATE SALES PAYLOAD:", payload)
 
         do {
-            // Call the update sales API here
             _ = try await bookKeepingService.updateSales(
                 itemId: state.sale.id,
                 parameters: payload,
                 accessToken: state.oauthToken
             )
-            
             return true
 
         } catch let NetworkError.server(response) {
             print("UPDATE SALES ERROR:", response.alertMessage)
-            
             await MainActor.run {
                 state.errorMessage = response.message
                 state.fieldErrors = response.errors
             }
-
             showError(response.alertMessage)
             return false
         } catch {
             await MainActor.run {
                 state.errorMessage = "Something went wrong. Please try again."
             }
-            
             print("UPDATE SALES ERROR:", error)
             showError(error.localizedDescription)
             return false
         }
     }
-
-    private func reloadRow(withTag tag: Int) {
-        for (sectionIndex, section) in sections.enumerated() {
-            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
-                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
-                break
-            }
-        }
-    }
     
     // MARK: - Payload Construction
     private func buildPayload() -> [String: Any] {
-        let items = state.selectedProducts.map {
+        let items = state.selectedProducts.map { product in
             [
-                "productId": $0.id ?? 0,
-                "quantity": state.quantities[$0.id ?? -1] ?? 1
+                "productId": product.id ?? 0,
+                "quantity": state.quantities[product.id ?? -1] ?? 1.0,
+                "unitPrice": product.price ?? 0.0
             ]
         }
 
+        // Corrected non-localized parameters keys to match your functional Add API
         return [
             "saleTypeId": state.saleTypeId,
             "customerId": state.customer?.id ?? 0,
             "paymentMethodId": state.paymentMethod?.id ?? 0,
-            "common.label.description".localized: state.description,
+            "description": state.description,
             "items": items,
             "amount": state.amount,
-            "common.label.date".localized: state.date?.toISO8601String() ?? ""
+            "date": state.date?.getYearMonthDay() ?? ""
         ]
     }
 
-    // MARK: - State
+    // MARK: - State Structure
     private struct State {
         var sale: SalesResponse
         var selectedProducts: [StockResponse] = []
@@ -528,6 +535,6 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         case paymentMethod = 6
         case continueButton = 10
         case description = 11
-        case addItemButton
+        case addItemButton = 12
     }
 }
