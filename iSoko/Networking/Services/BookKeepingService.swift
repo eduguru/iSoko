@@ -16,6 +16,11 @@ public protocol BookKeepingService {
     func getAllSales(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     func getAllSalesByDate(startDate: String, endDate: String, accessToken: String)  async throws -> PagedResult<[SalesResponse]>
     
+    func addSaleItem(saleId: Int, parameters: [String: Any], accessToken: String) async throws -> SaleItemResponse
+    func updateSaleItem(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SaleItemResponse
+    func getSaleItems(saleId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SaleItemResponse]>
+    func deleteSaleItem(itemId: Int, parameters: [String: Any], accessToken: String) async throws -> SaleItemResponse
+    
     func addExpense(parameters: [String: Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse
     func updateExpense(itemId: Int, parameters: [String : Any], pickedFiles: [PickedFile]?, accessToken: String) async throws -> ExpenseResponse
     func getAllExpenses(page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[ExpenseResponse]>
@@ -102,6 +107,28 @@ public extension BookKeepingServiceImpl {
         )
         
         return envelope.toPagedResult()
+    }
+}
+
+// MARK: - Sale Items
+public extension BookKeepingServiceImpl {
+    func addSaleItem(saleId: Int, parameters: [String: Any], accessToken: String) async throws -> SaleItemResponse {
+        try await manager.request(BookKeepingApi.addSaleItem(saleId: saleId, parameters: parameters, accessToken: accessToken))
+    }
+    
+    func updateSaleItem(itemId: Int, parameters: [String : Any], accessToken: String) async throws -> SaleItemResponse {
+        try await manager.request(BookKeepingApi.updateSaleItem(itemId: itemId, parameters: parameters, accessToken: accessToken))
+    }
+    
+    func getSaleItems(saleId: Int, page: Int, count: Int, accessToken: String)  async throws -> PagedResult<[SaleItemResponse]> {
+        let envelope = try await manager.request(
+            BookKeepingApi.getSaleItems(saleId: saleId, page: page, count: count, accessToken: accessToken))
+        
+        return envelope.toPagedResult()
+    }
+    
+    func deleteSaleItem(itemId: Int, parameters: [String: Any], accessToken: String) async throws -> SaleItemResponse {
+        try await manager.request(BookKeepingApi.deleteSaleItem(itemId: itemId, parameters: parameters, accessToken: accessToken))
     }
 }
 

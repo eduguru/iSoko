@@ -13,7 +13,6 @@ import UtilsKit
 
 // MARK: - Sales
 public struct BookKeepingApi {
-    
     static func addSales(parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SalesResponse> {
         let headers = [
             "Content-Type": "application/json",
@@ -137,6 +136,87 @@ public struct BookKeepingApi {
         )
         
         return UnifiedPagedResponseTarget(target: target)
+    }
+}
+
+// MARK: - Sale Items
+public extension BookKeepingApi {
+    static func addSaleItem(saleId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SaleItemResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sales/\(saleId)/sale-items",
+            method: .post,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+
+    static func updateSaleItem(itemId: Int, parameters: [String : Any], accessToken: String) -> ValueResponseTarget<SaleItemResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sale-items/\(itemId)",
+            method: .patch,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+
+    static func getSaleItems(saleId: Int, page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[SaleItemResponse]> {
+        let parameters: [String: Any] = ["page": page, "count": count]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "bookkeeping/sales/\(saleId)/sale-items",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return UnifiedPagedResponseTarget(target: target)
+    }
+
+    static func deleteSaleItem(itemId: Int, parameters: [String: Any], accessToken: String) -> ValueResponseTarget<SaleItemResponse> {
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "https://api.dev.isoko.africa/v1/bookkeeping/sale-items/\(itemId)",
+            method: .delete,
+            task: .requestParameters(parameters: parameters, encoding: JSONEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
     }
 }
 

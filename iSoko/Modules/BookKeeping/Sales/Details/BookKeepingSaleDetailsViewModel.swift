@@ -44,6 +44,7 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
             }
             
             DispatchQueue.main.async { [weak self] in
+                self?.updateFinancialSummarySection()
                 self?.updateRecentActivitiesSection()
             }
         }
@@ -60,19 +61,18 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
-            let response = try await bookKeepingService.getAllStock(
-                userId: state.userProfile?.sub ?? 0,
+            let response = try await bookKeepingService.getSaleItems(
+                saleId: state.item.id,
                 page: 1,
                 count: 10,
                 accessToken: state.oauthToken
             )
-            
+
             state.items = response.data
-            
+
             return true
-            
         } catch {
-            print("❌ Error: ", error)
+            print("❌ Error:", error)
             return false
         }
     }
@@ -84,6 +84,16 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
         
         sections[index].cells = makeTransactionActionRows()
         
+        reloadSection(index)
+    }
+    
+    private func updateFinancialSummarySection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.financialSummary.rawValue
+        }) else { return }
+
+        sections[index].cells = [makeFinancialSummaryRow()]
+
         reloadSection(index)
     }
     
@@ -146,61 +156,72 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
     }
     
     private func makeFinancialSummaryRow() -> FormRow {
+        let totalItems = state.items.count
+
+        let totalValue = state.items.reduce(0.0) {
+            $0 + ($1.totalPrice ?? 0)
+        }
+
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
                 title: "Total Value",
                 titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "0.00",
+                subtitle: "\(currency) \(Int(totalValue))",
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Items Supplied",
-                titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "0",
+                title: "Items",
+                titleIcon: UIImage(systemName: "shippingbox"),
+                subtitle: "\(totalItems)",
                 status: nil
             )
         )
-        
-        let row = DualCardFormRow(
+
+        return DualCardFormRow(
             tag: 100,
             config: config
         )
-        
-        return row
     }
     
     // Lazy factory that creates rows
     private func makeTransactionActionRows() -> [FormRow] {
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+
         return state.items.enumerated().map { index, item in
-            
-            let isInStock = item.inStock ?? false
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
-            
-            // Map images (optional: use first image if needed later)
+
+            let quantity = item.quantity ?? 0
+            let unitPrice = item.unitPrice ?? 0
+            let totalPrice = item.totalPrice ?? 0
+
             let items = [
                 OrderItem(
-                    quantity: item.minimumOrderQuantity ?? 1,
-                    name: item.name ?? "name",
-                    amount: "\(currency) \(Int(item.price ?? 0.0))"
+                    quantity: Int(quantity),
+                    name: item.product?.name ?? "Unknown Product",
+                    amount: "\(currency) \(unitPrice)"
                 )
             ]
-            
+
             let config = OrderSummaryCellConfig(
-                orderTitle: item.name ?? "name",
-                amount: "\(currency) \(Int(item.price ?? 0.0))",
-                dateString: item.description ?? "No description",
-                itemCountString: "\(items.count) item",
-                statusText: isInStock ? "In Stock" : "Out of Stock",
-                statusTextColor: isInStock
-                    ? UIColor.systemGreen
-                    : UIColor.systemRed,
-                statusBackgroundColor: isInStock
-                    ? UIColor.systemGreen.withAlphaComponent(0.15)
-                    : UIColor.systemRed.withAlphaComponent(0.15),
+                orderTitle: item.product?.name ?? "Unknown Product",
+                amount: "\(currency) \(Int(totalPrice))",
+                dateString: "Qty: \(quantity)",
+                itemCountString: "\(Int(quantity)) pcs",
+                statusText: "Sale Item",
+                statusTextColor: .systemBlue,
+                statusBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                 items: items
             )
-            
-            return OrderSummaryRow(tag: index, config: config)
+
+            return OrderSummaryRow(
+                tag: index,
+                config: config
+            )
         }
     }
     
@@ -213,7 +234,7 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
-        var items: [StockResponse] = []
+        var items: [SaleItemResponse] = []
     }
     
     // MARK: - Tags

@@ -61,17 +61,6 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         if let typeId = sale.type?.id {
             state.saleTypeId = typeId
         }
-
-        // 3. Convert sales items into stock models to pre-populate cart
-        if let saleItems = sale.items {
-            for item in saleItems {
-                if let productPair = item.product {
-                    let stockProduct = StockResponse(id: productPair.id ?? 0, name: productPair.name, price: item.unitPrice)
-                    state.selectedProducts.append(stockProduct)
-                    state.quantities[productPair.id ?? 0] = item.quantity ?? 1.0
-                }
-            }
-        }
         
         // 4. Initialize rows with correct dynamic values
         prefill()
@@ -92,7 +81,10 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     // MARK: - Fetch Data
     override func fetchData() {
         Task { @MainActor in
-            await fetchSalesTypes()
+            async let saleTypes = fetchSalesTypes()
+            async let saleItems = fetchSaleItems()
+
+            _ = await (saleTypes, saleItems)
         }
     }
 
@@ -122,6 +114,38 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
 
         } catch {
             print("❌ Failed to fetch sales types:", error)
+        }
+    }
+    
+    private func fetchSaleItems() async {
+        do {
+            let response = try await bookKeepingService.getSaleItems(
+                saleId: state.sale.id,
+                page: 1,
+                count: 100,
+                accessToken: state.oauthToken
+            ).data
+
+            state.selectedProducts.removeAll()
+            state.quantities.removeAll()
+
+            for item in response {
+                guard let product = item.product else { continue }
+
+                let stock = StockResponse(
+                    id: product.id ?? 0,
+                    name: product.name,
+                    price: Double(item.unitPrice ?? 0)
+                )
+
+                state.selectedProducts.append(stock)
+                state.quantities[product.id ?? 0] = item.quantity ?? 1
+            }
+
+            refreshCartUI()
+
+        } catch {
+            print("❌ Failed to fetch sale items:", error)
         }
     }
 
