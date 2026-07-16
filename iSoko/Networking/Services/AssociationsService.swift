@@ -54,6 +54,11 @@ public final class AssociationsServiceImpl: AssociationsService {
         return response.data
     }
     
+    public func getFeaturedAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
+        let response = try await manager.request(AssociationsApi.getFeaturedAssociations(page: page, count: count, accessToken: accessToken))
+        return response.data
+    }
+    
     public func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
         let response = try await manager.request(AssociationsApi.getAllPendingAssociations(id: id, page: page, count: count, accessToken: accessToken))
         return response.data

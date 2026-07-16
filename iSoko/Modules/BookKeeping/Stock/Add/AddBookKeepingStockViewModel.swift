@@ -290,7 +290,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             "quantity": quantity,
             "supplierId": supplierId,
             "measurementUnitId": measurementUnitId,
-            "common.label.description".localized: state.description.isEmpty ? "n/a" : state.description,
+            "description": state.description.isEmpty ? "n/a" : state.description,
             "minimumOrderQuantity": quantity,
             "stockAlertThreshold": Int(state.lowStockLevel) ?? 0,
             "inStock": state.inStock,

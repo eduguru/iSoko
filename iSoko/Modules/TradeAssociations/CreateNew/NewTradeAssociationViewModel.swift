@@ -113,6 +113,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.memberCount.rawValue,
         model: SimpleInputModel(
             text: "",
+            inputType: .number,
             config: TextFieldConfig(placeholder: "Number of Members"),
             validation: ValidationConfiguration(isRequired: true),
             titleText: "Number of Members",
@@ -171,8 +172,8 @@ final class NewTradeAssociationViewModel: FormViewModel {
         items: [
             RequirementItem(title: "Valid registration documents", isSatisfied: true),
             RequirementItem(title: "Minimum 5 active members", isSatisfied: true),
-            RequirementItem(title: "Established for at least 1 year", isSatisfied: true),
-            RequirementItem(title: "East African region based", isSatisfied: true)
+//            RequirementItem(title: "Established for at least 1 year", isSatisfied: true),
+//            RequirementItem(title: "East African region based", isSatisfied: true)
         ]
     )
 
@@ -207,19 +208,45 @@ final class NewTradeAssociationViewModel: FormViewModel {
     }
 
     private func completeStep1() {
-        var step1Data: [String: Any] = [:]
-        step1Data["name"] = state.name
-        step1Data["code"] = state.code
-        step1Data["common.label.description".localized] = state.description
-        step1Data["members"] = Int(memberCountRow.model.text) ?? 0
-        step1Data["countryId"] = state.selectedCountry?.id ?? 0
-
-        // Pass only the year as Int
-        if let date = state.date {
-            step1Data["foundedIn"] = date.getComponent(.year)
-        } else {
-            step1Data["foundedIn"] = 0
+        guard !state.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Please enter association name.")
+            return
         }
+
+        guard !state.code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Please enter association code.")
+            return
+        }
+
+        guard !state.description.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Please enter association description.")
+            return
+        }
+
+        guard let members = Int(memberCountRow.model.text),
+              members > 0 else {
+            showError("Please enter the number of members.")
+            return
+        }
+
+        guard let country = state.selectedCountry else {
+            showError("Please select a country.")
+            return
+        }
+
+        guard let date = state.date else {
+            showError("Please select the founded year.")
+            return
+        }
+
+        let step1Data: [String: Any] = [
+            "name": state.name,
+            "code": state.code,
+            "description": state.description,
+            "members": members,
+            "countryId": country.id ?? 0,
+            "foundedIn": date.getComponent(.year)
+        ]
 
         onStep1Complete?(step1Data)
     }

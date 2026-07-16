@@ -116,19 +116,21 @@ final class SimpleInputFormCell: UITableViewCell {
     // MARK: - Configuration
     func configure(with model: SimpleInputModel) {
         self.model = model
-        let config = model.config
+        // let config = model.config
+        let config = model.resolvedConfig
 
         titleLabel.text = model.titleText
         titleLabel.isHidden = model.titleText?.isEmpty ?? true
 
         textField.text = model.text
         textField.placeholder = config.placeholder
-        textField.keyboardType = config.keyboardType
-        textField.returnKeyType = config.returnKeyType
-        textField.autocapitalizationType = config.autoCapitalization
-        textField.textContentType = config.textContentType
         textField.isUserInteractionEnabled = !config.isReadOnly
-        textField.textAlignment = config.textAlignment
+        textField.textContentType = config.textContentType
+
+        textField.keyboardType = config.keyboardType ?? .default
+        textField.returnKeyType = config.returnKeyType ?? .default
+        textField.autocapitalizationType = config.autoCapitalization ?? .none
+        textField.textAlignment = config.textAlignment ?? .natural
 
         if let font = config.textFont { textField.font = font }
         if let color = config.textColor { textField.textColor = color }

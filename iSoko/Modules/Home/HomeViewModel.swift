@@ -108,7 +108,7 @@ final class HomeViewModel: FormViewModel {
                 DispatchQueue.main.async { [weak self] in self?.updateSection(.serviceCategories) }
 
             case .associations:
-                let result = try await associationsService.getAllAssociations(
+                let result = try await associationsService.getFeaturedAssociations(
                     page: 1, count: 10, accessToken: state.oauthToken)
                 state.associations = result
                 await fetchAssociationProducts(for: result)

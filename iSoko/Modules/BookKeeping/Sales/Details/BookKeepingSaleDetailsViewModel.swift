@@ -159,7 +159,7 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
         let totalItems = state.items.count
 
         let totalValue = state.items.reduce(0.0) {
-            $0 + ($1.totalPrice ?? 0)
+            $0 + ($1.amount ?? 0)
         }
 
         let currency = countryHelper.currencyString(
@@ -197,7 +197,7 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
 
             let quantity = item.quantity ?? 0
             let unitPrice = item.unitPrice ?? 0
-            let totalPrice = item.totalPrice ?? 0
+            let totalPrice = item.amount ?? 0
 
             let items = [
                 OrderItem(

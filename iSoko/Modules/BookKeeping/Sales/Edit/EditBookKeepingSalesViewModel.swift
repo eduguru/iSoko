@@ -29,7 +29,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
 
     var goToProductSelection: (
         CommonUtilityOption,
-        _ completion: @escaping (StockResponse?) -> Void
+        _ completion: @escaping (SaleItemResponse?) -> Void
     ) -> Void = { _, _ in }
 
     var gotoConfirm: (() -> Void)?
@@ -129,18 +129,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             state.selectedProducts.removeAll()
             state.quantities.removeAll()
 
-            for item in response {
-                guard let product = item.product else { continue }
-
-                let stock = StockResponse(
-                    id: product.id ?? 0,
-                    name: product.name,
-                    price: Double(item.unitPrice ?? 0)
-                )
-
-                state.selectedProducts.append(stock)
-                state.quantities[product.id ?? 0] = item.quantity ?? 1
-            }
+            state.selectedProducts = response
 
             refreshCartUI()
 
@@ -367,11 +356,11 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             let productId = product.id ?? index
 
             let vm = CartItemViewModel(
-                id: productId,
-                title: product.name ?? "Unknown",
-                subtitle: "Price: \(currency). \(Int(product.price ?? 0))",
-                pricePerUnit: Decimal(product.price ?? 0),
-                quantity: Int(state.quantities[productId] ?? 1),
+                id: product.id,
+                    title: product.product?.name ?? "Unknown",
+                    subtitle: "Price: \(currency) \(product.unitPrice ?? 0)",
+                    pricePerUnit: Decimal(product.unitPrice ?? 0),
+                    quantity: product.quantity ?? 1,
 
                 onUpdate: { [weak self] updated in
                     guard let self else { return }
@@ -494,11 +483,11 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     
     // MARK: - Payload Construction
     private func buildPayload() -> [String: Any] {
-        let items = state.selectedProducts.map { product in
+        let items = state.selectedProducts.map { item in
             [
-                "productId": product.id ?? 0,
-                "quantity": state.quantities[product.id ?? -1] ?? 1.0,
-                "unitPrice": product.price ?? 0.0
+                "productId": item.product?.id ?? 0,
+                "quantity": item.quantity ?? 1,
+                "unitPrice": item.unitPrice ?? 0
             ]
         }
 
@@ -517,7 +506,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     // MARK: - State Structure
     private struct State {
         var sale: SalesResponse
-        var selectedProducts: [StockResponse] = []
+        var selectedProducts: [SaleItemResponse] = []
         var quantities: [Int: Double] = [:]
         var saleTypes: [CommonIdNameModel] = []
         var customer: CommonIdNameModel?
@@ -529,9 +518,8 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
         var saleTypeId: Int = -1
         
         var amount: Double {
-            selectedProducts.reduce(0) { total, product in
-                let qty = quantities[product.id ?? -1] ?? 1
-                return total + ((product.price ?? 0) * qty)
+            selectedProducts.reduce(0) {
+                $0 + ($1.amount ?? 0)
             }
         }
         

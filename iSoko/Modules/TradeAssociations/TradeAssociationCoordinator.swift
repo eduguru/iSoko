@@ -6,7 +6,9 @@
 //
 
 import RouterKit
+import UtilsKit
 import UIKit
+import DesignSystemKit
 import StorageKit
 
 @MainActor
@@ -104,6 +106,9 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         guard let router = modalRouter else { return }
 
         let viewModel = CompleteNewTradeAssociationViewModel(data)
+        viewModel.goToShowSuccessScreen = goToShowSuccessScreen
+        viewModel.showCountryPicker = gotoSelectCountry
+        
         let vc = CompleteNewTradeAssociationViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -235,6 +240,18 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
             onConfirm: onConfirm,
             onCancel: onCancel
         )
+    }
+    
+    func gotoSelectCountry(completion: @escaping (Country) -> Void) {
+        guard let router = modalRouter else { return }
+        
+        let coordinator = ModalCoordinator(router: router)
+        // coordinator.delegate = self
+        addChild(coordinator)
+        coordinator.goToCountrySelection { [weak self] result in
+            completion(result)
+            router.pop()
+        }
     }
 }
 

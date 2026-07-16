@@ -18,6 +18,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     var gotoConfirm: (() -> Void)?
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void)?
     
+    var goToShowSuccessScreen: (() -> Void)?
+    
     private let associationsService = NetworkEnvironment.shared.associationsService
     private let countryHelper = CountryHelper()
     
@@ -53,7 +55,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
 
         // Association Description
-        if let description = data["common.label.description".localized] as? String {
+        if let description = data["description"] as? String {
             state.associationDescription = description
         }
 
@@ -146,8 +148,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                     self?.state.phoneNumber = "\(selectedCountry.phoneCode)" + text
                 },
                 onCountryTapped: { [weak self] in
-                    self?.showCountryPicker? { country in
-                        self?.state.phoneCountry = country
+                    self?.showCountryPicker? { selectedCountry in
+                        self?.updatePhoneCountry(selectedCountry)
                     }
                 },
                 onValidationError: { err in
@@ -156,6 +158,25 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             )
         )
     }()
+    
+    private func updatePhoneCountry(_ newCountry: Country) {
+        var model = phoneDropDownRow.model
+        model.selectedCountry = newCountry
+        phoneDropDownRow.model = model
+        
+        state.phoneCountry = newCountry
+        reloadRowWithTag(phoneDropDownRow.tag)
+    }
+    
+    func reloadRowWithTag(_ tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                let indexPath = IndexPath(row: rowIndex, section: sectionIndex)
+                onReloadRow?(indexPath)
+                break
+            }
+        }
+    }
     
     private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "common.label.email_address".localized)
     private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "Website URL")
@@ -283,7 +304,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             "code": state.code,
             "countryId": state.countryId,
             
-            "common.label.description".localized: state.associationDescription,
+            "description": state.associationDescription,
             "members": state.members,
             "foundedIn": state.foundedIn,
             "phoneNumber": state.phoneNumber,
@@ -292,7 +313,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
             "instagram": state.instagram,
             "linkedin": state.linkedin,
             "x": state.xURL,
-            "common.label.address_placeholder".localized: state.physicalAddress
+            "physicalAddress": state.physicalAddress
         ]
     }
 
@@ -310,23 +331,65 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
+        guard validateRequiredFields() else {
+            return
+        }
+
         showLoader()
         defer { hideLoader() }
-        
+
         do {
             let _ = try await registerAssociation()
-            gotoConfirm?() // Success
+
+            goToShowSuccessScreen?()
+
         } catch let NetworkError.server(response) {
-            await MainActor.run {
-                state.errorMessage = response.message
-                showError(state.errorMessage ?? "Unknown error")
-            }
+            state.errorMessage = response.message
+            showError(response.alertMessage)
+
         } catch {
-            await MainActor.run {
-                state.errorMessage = "Something went wrong. Please try again."
-                showError(state.errorMessage ?? "Unknown error")
-            }
+            state.errorMessage = error.localizedDescription
+            showError(error.localizedDescription)
         }
+    }
+    
+    private func validateRequiredFields() -> Bool {
+        guard !state.associationName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Association name is required.")
+            return false
+        }
+
+        guard !state.code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Association code is required.")
+            return false
+        }
+
+        guard !state.associationDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Association description is required.")
+            return false
+        }
+
+        guard state.members > 0 else {
+            showError("Number of members is required.")
+            return false
+        }
+
+        guard state.countryId > 0 else {
+            showError("Country is required.")
+            return false
+        }
+
+        guard state.foundedIn > 0 else {
+            showError("Founded year is required.")
+            return false
+        }
+
+        guard !state.phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Phone number is required.")
+            return false
+        }
+
+        return true
     }
     
     // MARK: - State

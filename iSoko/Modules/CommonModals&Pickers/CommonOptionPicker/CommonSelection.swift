@@ -14,5 +14,6 @@ enum CommonSelection {
     case commodityCategories(CommodityCategoryResponse)
     case commodities(CommodityV1Response)
     case products(StockResponse)
+    case saleItems(SaleItemResponse)
     
 }

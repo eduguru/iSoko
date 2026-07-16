@@ -331,8 +331,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             "id": state.expense.id,
             "categoryId": state.categories?.id ?? "",
             "amount": state.amount,
-            "common.label.description".localized: state.description,
-            "common.label.date".localized: state.date.map { $0.toISO8601String() } ?? "",
+            "description": state.description,
+            "date": state.date?.getYearMonthDay() ?? "",
             "supplierId": state.supplier?.id ?? "",
             "paymentMethodId": state.paymentMethod?.id ?? ""
         ]

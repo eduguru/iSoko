@@ -33,6 +33,32 @@ public struct AssociationsApi {
 
         return NewPagedResponseTarget(target: target)
     }
+    public static func getFeaturedAssociations(page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
+        let parameters: [String: Any] = [
+            "page": page,
+            "size": count,
+            "featured": true,
+            // "status": true,
+            // "registrationStatus": "Approved"
+        ]
+        
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            // "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "associations",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers
+        )
+
+        return NewPagedResponseTarget(target: target)
+    }
     
     
     public static func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {

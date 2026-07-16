@@ -9,6 +9,7 @@ import UIKit
 
 public struct SimpleInputModel {
     public var text: String
+    public var inputType: InputType
     public var config: TextFieldConfig
     public var validation: ValidationConfiguration?
 
@@ -29,11 +30,16 @@ public struct SimpleInputModel {
 
     // Internal validation result
     public var validationError: String?
+    
+    public var resolvedConfig: TextFieldConfig {
+        inputType.defaultConfig.merged(with: config)
+    }
 
     // MARK: - Init
 
     public init(
         text: String = "",
+        inputType: InputType = .normal,
         config: TextFieldConfig = TextFieldConfig(),
         validation: ValidationConfiguration? = nil,
         titleText: String? = nil,
@@ -47,6 +53,7 @@ public struct SimpleInputModel {
         onReturnKeyTapped: (() -> Void)? = nil
     ) {
         self.text = text
+        self.inputType = inputType
         self.config = config
         self.validation = validation
         self.titleText = titleText

@@ -166,7 +166,7 @@ public extension BookKeepingCoordinator {
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
-        model.goToProductSelection = goToProductSelection
+        model.goToProductSelection = goToSaleItemSelection
         
         model.goToAddCustomer = goToAddBookKeepingCustomer
         

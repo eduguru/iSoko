@@ -43,6 +43,30 @@ public extension BookKeepingCoordinator {
         router.push(vc, animated: true)
     }
     
+    func goToSaleItemSelection(_ type: CommonUtilityOption, _ completion: @escaping (SaleItemResponse?) -> Void) {
+        let viewModel = CommonOptionPickerViewModel(option: type)
+        
+        viewModel.confirmSelection = { [weak self] selection in
+            switch selection {
+            case .saleItems(let model):
+                completion(model)
+            default:
+                completion(nil)
+            }
+            
+            self?.router.pop(animated: true)
+        }
+        
+        let vc = CommonOptionPickerViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+        
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+    
     func gotoSelectSystemCountry(_ type: CommonUtilityOption, _ completion: @escaping (CountryResponse?) -> Void) {
         let viewModel = CommonOptionPickerViewModel(option: type)
         
