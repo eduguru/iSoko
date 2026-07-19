@@ -111,12 +111,30 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         FormSection(
             id: SectionTag.salesDetails.rawValue,
             title: "Sales Details",
-            cells: [
-                dateRow,
-                customerRow,
-                paymentOptionsRow
-            ]
+            cells: makeSalesRows()
         )
+    }
+
+    private func makeSalesRows() -> [FormRow] {
+        var rows: [FormRow] = [
+            dateRow,
+            customerRow,
+            paymentOptionsRow
+        ]
+
+        if isCreditSale {
+            rows.append(amountRow)
+        }
+
+        return rows
+    }
+    
+    private var isCreditSale: Bool {
+        state.saleTypes
+            .first(where: { $0.id == state.saleTypeId })?
+            .name
+            .lowercased()
+            .contains("credit") == true
     }
 
     private func makeProductSection() -> FormSection {
@@ -168,6 +186,15 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         sections[index].cells = [makePillsOptionsFormRow()]
         reloadSection(index)
     }
+    
+    private func reloadSalesSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == SectionTag.salesDetails.rawValue
+        }) else { return }
+
+        sections[index].cells = makeSalesRows()
+        reloadSection(index)
+    }
 
     // MARK: - Rows
     private lazy var pillsOptions = makePillsOptionsFormRow()
@@ -195,6 +222,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
                let id = Int(selected.id) {
 
                 self.state.saleTypeId = id
+                self.reloadSalesSection()
             }
         }
     }
@@ -256,6 +284,25 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             title: "common.button.continue".localized,
             style: .primary
         ) { [weak self] in Task { await self?.submit() } }
+    )
+    
+    
+
+    private lazy var amountRow = SimpleInputFormRow(
+        tag: CellTag.amount.rawValue,
+        model: SimpleInputModel(
+            text: "",
+            inputType: .number,
+            config: TextFieldConfig(
+                placeholder: "Amount Paid"
+            ),
+            validation: ValidationConfiguration(isRequired: true),
+            titleText: "Amount Paid",
+            useCardStyle: true,
+            onTextChanged: { [weak self] text in
+                self?.state.amountPaid = Double(text) ?? 0
+            }
+        )
     )
 
     private lazy var descriptionRow = LongInputDescriptionFormRow(
@@ -380,15 +427,21 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             ]
         }
 
-        return [
+        var payload: [String: Any] = [
             "saleTypeId": state.saleTypeId,
             "customerId": state.customer?.id ?? 0,
             "paymentMethodId": state.paymentMethod?.id ?? 0,
             "description": state.description,
             "items": items,
-            "amount": state.amount,
+            "amount": isCreditSale ? state.amountPaid : state.amount,
             "date": state.date?.getYearMonthDay() ?? ""
         ]
+
+        if isCreditSale {
+            payload["amountPaid"] = state.amountPaid
+        }
+
+        return payload
     }
     
     @discardableResult
@@ -442,6 +495,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         var description: String = ""
 
         var saleTypeId: Int = 1 // Cash = 1, Credit = 2
+        var amountPaid: Double = 0
 
         var amount: Double {
             selectedProducts.reduce(0) { total, product in
@@ -475,5 +529,6 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         case addItemButton = 9
         case continueButton = 10
         case description = 11
+        case amount
     }
 }

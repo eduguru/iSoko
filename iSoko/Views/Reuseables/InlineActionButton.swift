@@ -54,6 +54,8 @@ final class InlineActionButton: UIView {
     }
 
     func configure(with config: InlineActionConfig) {
+        print("Assigning closure:", config.onTap != nil)
+
         label.text = config.title
         iconView.image = config.icon
         iconView.isHidden = config.icon == nil
@@ -61,6 +63,7 @@ final class InlineActionButton: UIView {
     }
 
     @objc private func tap() {
+        print("InlineActionButton tapped")
         onTap?()
     }
 }

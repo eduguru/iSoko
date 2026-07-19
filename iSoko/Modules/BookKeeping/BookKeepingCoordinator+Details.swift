@@ -60,10 +60,10 @@ public extension BookKeepingCoordinator {
     
     func goToBookKeepingStockDetails(_ item: StockResponse) {
         let model = BookKeepingStockDetailsViewModel(item)
+        model.goToEdit = goToEditBookKeepingStock
+        model.goToRestock = goToRestockBookKeepingStock
         
         let vc = BookKeepingStockDetailsViewController()
-        
-        model.goToEdit = goToEditBookKeepingStock
         
         vc.viewModel = model
         vc.closeAction = { [weak self] in

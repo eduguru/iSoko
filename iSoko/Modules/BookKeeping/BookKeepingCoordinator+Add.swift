@@ -197,6 +197,22 @@ public extension BookKeepingCoordinator {
         router.push(vc)
     }
     
+    func goToRestockBookKeepingStock(stock: StockResponse) {
+        let model = StockReStockViewModel(stock)
+        
+        model.goToShowSuccessScreen = goToShowSuccessScreen
+        model.goToDateSelection = gotoSelectDate
+        
+        let vc = StockReStockViewController()
+        
+        vc.viewModel = model
+        vc.closeAction = { [weak self] in
+            self?.router.pop()
+        }
+        
+        router.push(vc)
+    }
+    
     func goToEditBookKeepingPurchases(stock: StockResponse) {
         let model = EditBookKeepingStockViewModel(stock: stock)
         model.goToShowSuccessScreen = goToShowSuccessScreen

@@ -14,8 +14,11 @@ import StorageKit
 final class BookKeepingStockDetailsViewModel: FormViewModel {
     var goToDetails: (() -> Void)? = { }
     
+    var goToRestock: ((StockResponse) -> Void)? = { _ in }
     var goToEdit: ((StockResponse) -> Void)? = { _ in }
+    
     func goToEditAction() {  goToEdit?(state.item) }
+    func goToRestockAction() {  goToRestock?(state.item) }
     
     private var state: State
     
@@ -127,19 +130,25 @@ final class BookKeepingStockDetailsViewModel: FormViewModel {
         let model = ProfileInfoCellConfig(
             name: state.item.name ?? "Name: N/A",
             infoItems: [
-                // Using appropriate SF Symbols for each piece of info
-                makeInfoItem(state.item.trader?.firstName ?? "Supplier: N/A", icon: "person.fill"), // Icon for Supplier/Trader
-                makeInfoItem(state.item.category?.name ?? "common.label.category_na".localized, icon: "tag.fill"), // Icon for Category
-                makeInfoItem("Minimum Order: \(state.item.minimumOrderQuantity ?? 0)", icon: "cart.fill"), // Icon for Order Quantity
-                makeInfoItem(state.item.measurementUnit?.name ?? "common.label.measurement_unit".localized, icon: "ruler.fill"), // Icon for Measurement Unit
+                makeInfoItem(state.item.trader?.firstName ?? "Supplier: N/A", icon: "person.fill"),
+                makeInfoItem(state.item.category?.name ?? "common.label.category_na".localized, icon: "tag.fill"),
+                makeInfoItem("Minimum Order: \(state.item.minimumOrderQuantity ?? 0)", icon: "cart.fill"),
+                makeInfoItem(state.item.measurementUnit?.name ?? "common.label.measurement_unit".localized, icon: "ruler.fill")
             ],
-            onEditTap: {
-                // Edit button action here
+            onEditTap: { [weak self] in
+                self?.editAction()
             }
         )
-        
-        let row = ProfileInfoRow(tag: Tags.Cells.filter.rawValue, config: model)
-        return row
+
+        return ProfileInfoRow(
+            tag: Tags.Cells.filter.rawValue,
+            config: model
+        )
+    }
+    
+    private func editAction() {
+        print("Edit action")
+        goToEditAction()
     }
     
     private func makeInfoItem(_ text: String?, icon: String) -> InfoItem {

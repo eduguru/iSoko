@@ -114,6 +114,13 @@ public final class ProfileInfoCell: UITableViewCell {
             )
             editButton.isHidden = false
         } else {
+            editButton.configure(
+                with: InlineActionConfig(
+                    title: "",
+                    icon: nil,
+                    onTap: nil
+                )
+            )
             editButton.isHidden = true
         }
 

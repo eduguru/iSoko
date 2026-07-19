@@ -29,7 +29,7 @@ class BookKeepingStockDetailsViewController: FormViewController, CloseableViewCo
     
     private func setupNavigationBar() {
         let createItem = UIBarButtonItem(
-            title: "common.action.edit".localized,
+            title: "Restock",// "common.action.edit".localized,
             style: .plain,
             target: self,
             action: #selector(didTapEdit)
@@ -46,9 +46,8 @@ class BookKeepingStockDetailsViewController: FormViewController, CloseableViewCo
     
     @objc private func didTapEdit() {
         guard let model = viewModel as? BookKeepingStockDetailsViewModel else { return }
-        model.goToEditAction()
-        
-        // goToEditAction?()
+       // model.goToEditAction()
+        model.goToRestockAction()
     }
     
     @objc func close() {
