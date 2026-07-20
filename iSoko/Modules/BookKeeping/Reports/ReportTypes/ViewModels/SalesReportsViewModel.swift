@@ -12,6 +12,8 @@ import StorageKit
 
 @MainActor
 final class SalesReportsViewModel: FormViewModel {
+    
+    // MARK: - Navigation
     var goToDetails: (() -> Void)?
     
     var goToCommonSelectionOptions: (
@@ -20,7 +22,10 @@ final class SalesReportsViewModel: FormViewModel {
         _ completion: @escaping (CommonIdNameModel?) -> Void
     ) -> Void = { _, _, _ in }
     
-    var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var goToDateSelection: (
+        DatePickerConfig,
+        @escaping (Date?) -> Void
+    ) -> Void = { _, _ in }
     
     var gotoSelectSystemCountry: (
         CommonUtilityOption,
@@ -29,26 +34,35 @@ final class SalesReportsViewModel: FormViewModel {
     
     var gotoConfirm: (() -> Void)?
     
-    // MARK: - Service
+    // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
     @MainActor private let countryHelper = CountryHelper()
+    
+    private var searchWorkItem: DispatchWorkItem?
     
     // MARK: - State
     private var state: State
     
+    // MARK: - Init
     init(payload: ReportSelectionPayload) {
         self.state = State(payload: payload)
+        
         super.init()
+        
         self.sections = makeSections()
     }
     
+    
     // MARK: - Fetch
+    
     override func fetchData() {
+        
         Task {
+            
             let success = await performNetworkRequest()
             
             if !success {
-                print("Failed to fetch suppliers")
+                print("Failed to fetch sales")
             }
             
             await MainActor.run {
@@ -58,41 +72,64 @@ final class SalesReportsViewModel: FormViewModel {
         }
     }
     
+    
     // MARK: - Network
     
     @discardableResult
     private func performNetworkRequest() async -> Bool {
+        
         do {
+            
             let response = try await bookKeepingService.getAllSalesReportByDate(
                 customerId: state.userProfile?.sub ?? 0,
-                startDate: state.payload.startDate?.getYearMonthDay() ?? "",
-                endDate: state.payload.endDate?.getYearMonthDay() ?? "",
+                startDate: state.startDate?.getYearMonthDay() ?? "",
+                endDate: state.endDate?.getYearMonthDay() ?? "",
                 accessToken: state.oauthToken
             )
             
-            self.state.sales = response.history ?? []
-            self.state.summary = response
+            state.sales = response.history ?? []
+            state.summary = response
+            
+            state.filteredSales = state.searchText.isEmpty
+            ? state.sales
+            : filterResults(state.sales)
             
             return true
             
         } catch {
+            
             print("❌ Error: ", error)
             return false
         }
     }
     
+    
+    // MARK: - Section Update
+    
     private func updateRecentActivitiesSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.recentActivities.rawValue
-        }) else { return }
         
-        sections[index].cells = makeTransactionActionRows()
-        
-        reloadSection(index)
+        updateSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeTransactionActionRows()
+        )
     }
     
-    // MARK: - Sections -
+    
+    private func updateFinancialSummarySection() {
+        
+        updateSection(
+            id: Tags.Section.financialSummary.rawValue,
+            cells: [
+                makeFinancialSummaryRow()
+            ]
+        )
+    }
+    
+    
+    // MARK: - Sections
+    
     private func makeSections() -> [FormSection] {
+        
         [
             makeFilterSection(),
             makeFinancialSummarySection(),
@@ -100,7 +137,9 @@ final class SalesReportsViewModel: FormViewModel {
         ]
     }
     
+    
     private func makeFilterSection() -> FormSection {
+        
         FormSection(
             id: Tags.Section.search.rawValue,
             cells: [
@@ -110,48 +149,55 @@ final class SalesReportsViewModel: FormViewModel {
         )
     }
     
+    
     private func makeFinancialSummarySection() -> FormSection {
+        
         FormSection(
             id: Tags.Section.financialSummary.rawValue,
-            cells: [financialSummaryRow]
+            cells: [
+                financialSummaryRow
+            ]
         )
     }
     
+    
     private func makeRecentActivitiesSection() -> FormSection {
+        
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
             cells: makeTransactionActionRows()
         )
     }
     
-    // MARK: - Update Sections -
-    private func updateFilterSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.search.rawValue
-        }) else { return }
+    
+    // MARK: - Rows
+    
+    private lazy var searchRow: FormRow = makeSearchRow()
+    
+    private lazy var financialSummaryRow: FormRow = makeFinancialSummaryRow()
+    
+    
+    private func makeSearchRow() -> FormRow {
         
-        sections[index].cells = [
-            searchRow,
-            makeFilterFormRow()
-        ]
-        reloadSection(index)
+        SearchFormRow(
+            tag: Tags.Cells.search.rawValue,
+            model: SearchFormModel(
+                placeholder: "common.label.search".localized,
+                keyboardType: .default,
+                searchIcon: UIImage(systemName: "magnifyingglass"),
+                searchIconPlacement: .right,
+                filterIcon: nil,
+                didTapSearchIcon: {},
+                didTapFilterIcon: {},
+                onTextChanged: { [weak self] text in
+                    self?.filterSales(text)
+                }
+            )
+        )
     }
-    
-    private func updateFinancialSummarySection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.financialSummary.rawValue
-        }) else { return }
-        
-        sections[index].cells = [makeFinancialSummaryRow()]
-        reloadSection(index)
-    }
-    
-    // MARK: - Lazy Rows
-    private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
-    
-    private lazy var searchRow = makeSearchRow()
     
     private func makeFilterFormRow() -> FormRow {
+        
         FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
@@ -162,7 +208,7 @@ final class SalesReportsViewModel: FormViewModel {
                             placeholder: "Sales Type",
                             selectedValue: nil,
                             onTap: {
-                                print("tapped")
+                                print("Sales type tapped")
                             }
                         )
                     ],
@@ -171,14 +217,14 @@ final class SalesReportsViewModel: FormViewModel {
                             placeholder: "Product",
                             selectedValue: nil,
                             onTap: {
-                                print("Sale Type tapped")
+                                print("Product tapped")
                             }
                         ),
                         FilterFieldConfig(
                             placeholder: "Payment Method",
                             selectedValue: nil,
                             onTap: {
-                                print("Time Period tapped")
+                                print("Payment method tapped")
                             }
                         )
                     ],
@@ -186,12 +232,16 @@ final class SalesReportsViewModel: FormViewModel {
                         FilterFieldConfig(
                             placeholder: "Start Date",
                             selectedValue: state.startDateString,
-                            onTap: { [weak self] in self?.handleStartDateSelection() }
+                            onTap: { [weak self] in
+                                self?.handleStartDateSelection()
+                            }
                         ),
                         FilterFieldConfig(
                             placeholder: "common.label.end_date".localized,
                             selectedValue: state.endDateString,
-                            onTap: { [weak self] in self?.handleEndDateSelection() }
+                            onTap: { [weak self] in
+                                self?.handleEndDateSelection()
+                            }
                         )
                     ]
                 ],
@@ -201,28 +251,70 @@ final class SalesReportsViewModel: FormViewModel {
         )
     }
     
-    private func makeSearchRow() -> FormRow {
-        SearchFormRow(
-            tag: Tags.Cells.search.rawValue,
-            model: SearchFormModel(
-                placeholder: "common.label.search".localized,
-                keyboardType: .default,
-                searchIcon: UIImage(systemName: "magnifyingglass"),
-                searchIconPlacement: .right,
-                filterIcon: nil,
-                didTapSearchIcon: { print("🔍 Search tapped") },
-                didTapFilterIcon: { print("⚙️ Filter tapped") }
-            )
+    
+    // MARK: - Search
+    
+    private func filterSales(_ text: String) {
+        
+        state.searchText = text
+        
+        searchWorkItem?.cancel()
+        
+        let work = DispatchWorkItem { [weak self] in
+            
+            guard let self else {
+                return
+            }
+            
+            self.state.filteredSales = text.isEmpty
+            ? self.state.sales
+            : self.filterResults(self.state.sales)
+            
+            self.updateRecentActivitiesSection()
+            self.updateFinancialSummarySection()
+        }
+        
+        searchWorkItem = work
+        
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.25,
+            execute: work
         )
     }
+    
+    
+    private func filterResults(
+        _ sales: [SalesHistoryResponse]
+    ) -> [SalesHistoryResponse] {
+        
+        let query = state.searchText.lowercased()
+        
+        return sales.filter {
+            
+            let customerName = $0.customer?.name?.lowercased() ?? ""
+            let phone = $0.customer?.phoneNumber?.lowercased() ?? ""
+            let id = String($0.customer?.id ?? 0)
+            
+            return customerName.contains(query)
+            || phone.contains(query)
+            || id.contains(query)
+        }
+    }
+    
+    
+    // MARK: - Financial Summary
     
     private func makeFinancialSummaryRow() -> FormRow {
         
         let totalSales = state.summary?.sales ?? 0
         let totalRevenue = state.summary?.revenue ?? 0
-        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+        
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
         
         let config = DualCardCellConfig(
+            
             left: DualCardItemConfig(
                 title: "Total Sales",
                 titleIcon: UIImage(systemName: "cart"),
@@ -234,6 +326,7 @@ final class SalesReportsViewModel: FormViewModel {
                     icon: UIImage(systemName: "cart.fill")
                 )
             ),
+            
             right: DualCardItemConfig(
                 title: "Total Revenue",
                 titleIcon: UIImage(systemName: "banknote"),
@@ -241,40 +334,55 @@ final class SalesReportsViewModel: FormViewModel {
                 status: CardStatusStyle(
                     text: totalRevenue >= 0 ? "Positive" : "Negative",
                     textColor: totalRevenue >= 0 ? .systemGreen : .systemRed,
-                    backgroundColor: (totalRevenue >= 0
-                                      ? UIColor.systemGreen
-                                      : UIColor.systemRed
-                                     ).withAlphaComponent(0.15),
-                    icon: UIImage(systemName: totalRevenue >= 0 ? "arrow.up" : "arrow.down")
+                    backgroundColor: (
+                        totalRevenue >= 0
+                        ? UIColor.systemGreen
+                        : UIColor.systemRed
+                    ).withAlphaComponent(0.15),
+                    icon: UIImage(
+                        systemName: totalRevenue >= 0
+                        ? "arrow.up"
+                        : "arrow.down"
+                    )
                 )
             )
         )
         
-        return DualCardFormRow(tag: 100, config: config)
+        return DualCardFormRow(
+            tag: Tags.Cells.financialSummary.rawValue,
+            config: config
+        )
     }
     
-    // Lazy factory that creates rows
+    
+    // MARK: - Sale Rows
+    
     private func makeTransactionActionRows() -> [FormRow] {
-        state.sales.map { sale in
+        
+        state.filteredSales.map { sale in
             
             let customer = sale.customer
-            let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
+            
+            let currency = countryHelper.currencyString(
+                for: AppStorage.selectedRegionCode ?? ""
+            )
             
             let name = customer?.name ?? "Walk-in Customer"
-            let phone = customer?.phoneNumber ?? ""
-            let amountText = sale.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
-            let itemsText = "\(sale.items ?? 0) items"
-            let dateText = sale.date ?? ""
+            let amount = sale.amount ?? 0
+            let items = sale.items ?? 0
+            let date = sale.date ?? ""
             
             let config = TransactionSummaryCellConfig(
+                
                 title: name,
-                amount: amountText,
+                amount: "\(currency). \(Int(amount))",
                 amountColor: .label,
-                dateText: dateText,
+                dateText: date,
                 saleTypeText: "Sale",
                 saleTypeTextColor: .white,
                 saleTypeBackgroundColor: .systemBlue,
-                itemsCountText: itemsText,
+                itemsCountText: "\(items) items",
+                
                 primaryAction: ActionCardConfig(
                     title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "eye.fill"),
@@ -286,6 +394,7 @@ final class SalesReportsViewModel: FormViewModel {
                         self?.goToDetails?()
                     }
                 ),
+                
                 secondaryAction: InlineActionConfig(
                     title: "common.action.edit".localized,
                     icon: UIImage(systemName: "pencil"),
@@ -293,6 +402,7 @@ final class SalesReportsViewModel: FormViewModel {
                         print("Edit sale for \(name)")
                     }
                 ),
+                
                 cardBackgroundColor: .white,
                 cardBorderColor: .systemGray4,
                 cardBorderWidth: 1,
@@ -306,35 +416,66 @@ final class SalesReportsViewModel: FormViewModel {
         }
     }
     
-    // MARK: - Selection Handlers
+    // MARK: - Date Selection
+    
     private func handleStartDateSelection() {
+        
         goToDateSelection(.year()) { [weak self] date in
-            guard let self, let date else { return }
+            
+            guard let self, let date else {
+                return
+            }
+            
             self.state.startDate = date
             self.state.startDateString = Helpers.format(date)
+            
             self.updateFilterSection()
             self.fetchData()
         }
     }
+    
     
     private func handleEndDateSelection() {
+        
         goToDateSelection(.year()) { [weak self] date in
-            guard let self, let date else { return }
+            
+            guard let self, let date else {
+                return
+            }
+            
             self.state.endDate = date
             self.state.endDateString = Helpers.format(date)
+            
             self.updateFilterSection()
             self.fetchData()
         }
     }
     
-    // MARK: - Helpers
+    
+    private func updateFilterSection() {
+        
+        updateSection(
+            id: Tags.Section.search.rawValue,
+            cells: [
+                searchRow,
+                makeFilterFormRow()
+            ]
+        )
+    }
+    
     
     // MARK: - State
+    
     private struct State {
+        
         var payload: ReportSelectionPayload
         
         var sales: [SalesHistoryResponse] = []
+        var filteredSales: [SalesHistoryResponse] = []
+        
         var summary: SalesReportResponse?
+        
+        var searchText = ""
         
         var startDate: Date?
         var endDate: Date?
@@ -344,12 +485,33 @@ final class SalesReportsViewModel: FormViewModel {
         
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userDetail
+        
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
+        
+        
+        init(payload: ReportSelectionPayload) {
+            
+            self.payload = payload
+            
+            self.startDate = payload.startDate
+            self.endDate = payload.endDate
+            
+            self.startDateString = payload.startDate.map {
+                Helpers.format($0)
+            }
+            
+            self.endDateString = payload.endDate.map {
+                Helpers.format($0)
+            }
+        }
     }
     
+    
     // MARK: - Tags
+    
     enum Tags {
+        
         enum Section: Int {
             case search = 0
             case financialSummary = 1
@@ -357,14 +519,14 @@ final class SalesReportsViewModel: FormViewModel {
             case businessMetrics = 3
             case recentActivities = 4
         }
+        
+        
         enum Cells: Int {
             case search = 0
             case financialSummary = 1
             case quickActions = 2
             case businessMetrics = 3
             case recentActivities = 4
-            
         }
     }
 }
-
