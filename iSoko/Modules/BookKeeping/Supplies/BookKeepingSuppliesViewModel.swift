@@ -12,23 +12,28 @@ import StorageKit
 
 @MainActor
 final class BookKeepingSuppliesViewModel: FormViewModel {
-   var goToDetails: ((SupplierResponse) -> Void)? = { _ in }
-    
+
+    // MARK: - Navigation
+    var goToDetails: ((SupplierResponse) -> Void)? = { _ in }
+
+    // MARK: - State
     private var state = State()
-    
+
     // MARK: - Services
     private let bookKeepingService = NetworkEnvironment.shared.bookKeepingService
-    
-    @MainActor
-    private let countryHelper = CountryHelper()
+    @MainActor private let countryHelper = CountryHelper()
 
+    private var searchWorkItem: DispatchWorkItem?
+
+    // MARK: - Init
     override init() {
         super.init()
+
         Task { @MainActor in
             self.sections = makeSections()
         }
     }
-    
+
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
@@ -43,14 +48,12 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                     print("Failed to fetch suppliers")
                 }
 
-                self.updateFinancialSummarySection()
                 self.updateRecentActivitiesSection()
             }
         }
     }
-    
+
     // MARK: - Network
-    
     @discardableResult
     private func performNetworkRequest() async -> Bool {
         do {
@@ -60,36 +63,26 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            // store real data
-            self.state.suppliers = response.data ?? []
+            state.suppliers = response.data ?? []
+            state.filteredSuppliers = state.suppliers
 
             return true
+
         } catch {
             print("❌ Error: ", error)
             return false
         }
     }
-    
+
+    // MARK: - Section Reload
     private func updateRecentActivitiesSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.recentActivities.rawValue
-        }) else { return }
-        
-        sections[index].cells = makeTransactionActionRows()
-        
-        reloadSection(index)
+        updateSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeTransactionActionRows()
+        )
     }
     
-    private func updateFinancialSummarySection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.financialSummary.rawValue
-        }) else { return }
-
-        sections[index].cells = [makeFinancialSummaryRow()]
-        reloadSection(index)
-    }
-
-    // MARK: - Sections -
+    // MARK: - Sections
     private func makeSections() -> [FormSection] {
         [
             makeFilterSection(),
@@ -104,28 +97,25 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
             cells: [searchRow]
         )
     }
-    
+
     private func makeFinancialSummarySection() -> FormSection {
         FormSection(
             id: Tags.Section.financialSummary.rawValue,
-            cells: [financialSummaryRow]
+            cells: [makeFinancialSummaryRow()]
         )
     }
-    
+
     private func makeRecentActivitiesSection() -> FormSection {
         FormSection(
             id: Tags.Section.recentActivities.rawValue,
             cells: makeTransactionActionRows()
         )
     }
-    
-    // MARK: - Update Sections -
 
-    // MARK: - Lazy Rows
-    private lazy var  financialSummaryRow: FormRow = makeFinancialSummaryRow()
-    
-    private lazy var searchRow = makeSearchRow()
-    
+    // MARK: - Rows
+
+    private lazy var searchRow: FormRow = makeSearchRow()
+
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
@@ -135,20 +125,61 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
                 filterIcon: nil,
-                didTapSearchIcon: { print("🔍 Search tapped") },
-                didTapFilterIcon: { print("⚙️ Filter tapped") }
+                didTapSearchIcon: {},
+                didTapFilterIcon: {},
+                onTextChanged: { [weak self] text in
+                    self?.filterSuppliers(text)
+                }
             )
         )
     }
-    
+
+    // MARK: - Search
+
+    private func filterSuppliers(_ text: String) {
+
+        state.searchText = text
+
+        searchWorkItem?.cancel()
+
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+
+            let query = text.lowercased()
+
+            self.state.filteredSuppliers = query.isEmpty
+                ? self.state.suppliers
+                : self.state.suppliers.filter {
+
+                    ($0.name?.lowercased().contains(query) ?? false)
+                    || ($0.phoneNumber?.lowercased().contains(query) ?? false)
+                    || String($0.id ?? 0).contains(query)
+                }
+
+            self.updateRecentActivitiesSection()
+        }
+
+        searchWorkItem = work
+
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.25,
+            execute: work
+        )
+    }
+
+    // MARK: - Financial Summary
+
     private func makeFinancialSummaryRow() -> FormRow {
+
         let currency = countryHelper.currencyString(
             for: AppStorage.selectedRegionCode ?? ""
         )
 
-        let totalSuppliers = state.suppliers.count
+        let suppliers = state.filteredSuppliers
 
-        let totalAmount = state.suppliers.reduce(0.0) {
+        let totalSuppliers = suppliers.count
+
+        let totalAmount = suppliers.reduce(0.0) {
             $0 + ($1.totalAmountSupplied ?? 0)
         }
 
@@ -174,10 +205,14 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
                     textColor: totalAmount >= 0 ? .systemGreen : .systemRed,
                     backgroundColor: (
                         totalAmount >= 0
-                            ? UIColor.systemGreen
-                            : UIColor.systemRed
+                        ? UIColor.systemGreen
+                        : UIColor.systemRed
                     ).withAlphaComponent(0.15),
-                    icon: UIImage(systemName: totalAmount >= 0 ? "arrow.up" : "arrow.down")
+                    icon: UIImage(
+                        systemName: totalAmount >= 0
+                        ? "arrow.up"
+                        : "arrow.down"
+                    )
                 )
             )
         )
@@ -187,40 +222,40 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
             config: config
         )
     }
-    
-    // Lazy factory that creates rows
-    private func makeTransactionActionRows() -> [FormRow] {
-        state.suppliers.map { supplier in
 
-            let hasActions = true // (supplier.id % 2 == 0)
+    // MARK: - Supplier Rows
+
+    private func makeTransactionActionRows() -> [FormRow] {
+
+        state.filteredSuppliers.map { supplier in
 
             let config = TransactionActionsCellConfig(
                 title: supplier.name ?? "Unknown Supplier",
                 subtitle: supplier.phoneNumber ?? "No phone",
-                amount: supplier.totalAmountSupplied.map { "$\($0)" } ?? "$0.00",
+                amount: supplier.totalAmountSupplied.map {
+                    "$\($0)"
+                } ?? "$0.00",
                 amountColor: .label,
                 status: "\(supplier.suppliesCount ?? 0) items supplied",
                 statusColor: .darkGray,
-                primaryAction: hasActions
-                    ? ActionCardConfig(
-                        title: "common.action.view_details".localized,
-                        icon: UIImage(systemName: "eye"),
-                        backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
-                        textColor: .app(.primary),
-                        onTap: { [weak self] in
-                            self?.goToDetails?(supplier)
-                        }
-                    )
-                    : nil,
-                secondaryAction: hasActions
-                    ? InlineActionConfig(
-                        title: "common.action.edit".localized,
-                        icon: UIImage(systemName: "pencil"),
-                        onTap: {
-                            print("Edit supplier \(supplier.id)")
-                        }
-                    )
-                    : nil
+
+                primaryAction: ActionCardConfig(
+                    title: "common.action.view_details".localized,
+                    icon: UIImage(systemName: "eye"),
+                    backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
+                    textColor: .app(.primary),
+                    onTap: { [weak self] in
+                        self?.goToDetails?(supplier)
+                    }
+                ),
+
+                secondaryAction: InlineActionConfig(
+                    title: "common.action.edit".localized,
+                    icon: UIImage(systemName: "pencil"),
+                    onTap: {
+                        print("Edit supplier \(supplier.id)")
+                    }
+                )
             )
 
             return TransactionActionsRow(
@@ -231,8 +266,13 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     }
 
     // MARK: - State
+
     private struct State {
+
         var suppliers: [SupplierResponse] = []
+        var filteredSuppliers: [SupplierResponse] = []
+
+        var searchText = ""
 
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userDetail
@@ -241,7 +281,9 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
     }
 
     // MARK: - Tags
+
     enum Tags {
+
         enum Section: Int {
             case search = 0
             case financialSummary = 1
@@ -249,14 +291,13 @@ final class BookKeepingSuppliesViewModel: FormViewModel {
             case businessMetrics = 3
             case recentActivities = 4
         }
+
         enum Cells: Int {
             case search = 0
             case financialSummary = 1
             case quickActions = 2
             case businessMetrics = 3
             case recentActivities = 4
-            
         }
     }
 }
-

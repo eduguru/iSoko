@@ -68,7 +68,8 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            self.state.sales = response.data
+            state.sales = response.data
+            state.filteredSales = response.data
 
             return true
 
@@ -80,21 +81,11 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Section Updates
     private func updateRecentActivitiesSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.recentActivities.rawValue
-        }) else { return }
-
-        sections[index].cells = makeTransactionActionRows()
-        reloadSection(index)
+        updateSection(id: Tags.Section.recentActivities.rawValue, cells: makeTransactionActionRows())
     }
 
     private func updateFinancialSummarySection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.financialSummary.rawValue
-        }) else { return }
-
-        sections[index].cells = [makeFinancialSummaryRow()]
-        reloadSection(index)
+        updateSection(id: Tags.Section.financialSummary.rawValue, cells: [makeFinancialSummaryRow()])
     }
 
     // MARK: - Sections
@@ -141,16 +132,47 @@ final class BookKeepingSalesViewModel: FormViewModel {
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
                 filterIcon: nil,
-                didTapSearchIcon: { print("🔍 Search tapped") },
-                didTapFilterIcon: { print("⚙️ Filter tapped") }
+                didTapSearchIcon: {},
+                didTapFilterIcon: {},
+                onTextChanged: { [weak self] text in
+                    self?.filterSales(text)
+                }
             )
         )
+    }
+    
+    private var searchWorkItem: DispatchWorkItem?
+
+    private func filterSales(_ text: String) {
+        state.searchText = text
+
+        searchWorkItem?.cancel()
+
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+
+            let query = text.lowercased()
+
+            self.state.filteredSales = query.isEmpty
+                ? self.state.sales
+                : self.state.sales.filter {
+                    ($0.customer?.name?.lowercased().contains(query) ?? false)
+                    || ($0.type?.name?.lowercased().contains(query) ?? false)
+                    || String($0.id ?? 0).contains(query)
+                }
+
+            self.updateRecentActivitiesSection()
+            self.updateFinancialSummarySection()
+        }
+
+        searchWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
     }
 
     // MARK: - Financial Summary
     private func makeFinancialSummaryRow() -> FormRow {
 
-        let sales = state.sales
+        let sales = state.filteredSales
 
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let totalAmount: Double = sales.compactMap { $0.totalAmount }.reduce(0, +)
@@ -191,7 +213,7 @@ final class BookKeepingSalesViewModel: FormViewModel {
     private func makeTransactionActionRows() -> [FormRow] {
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
-        return state.sales.map { sale in
+        return state.filteredSales.map { sale in
 
             let amount = sale.totalAmount ?? 0
             let amountText = "\(currency). \(amount)"
@@ -255,7 +277,10 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var sales: [SalesResponse] = []
+        var sales: [SalesResponse] = []          // Original API response
+        var filteredSales: [SalesResponse] = []  // What the UI displays
+
+        var searchText = ""
 
         var isLoggedIn: Bool = AppStorage.hasLoggedIn ?? false
         var userProfile: UserDetails? = AppStorage.userDetail

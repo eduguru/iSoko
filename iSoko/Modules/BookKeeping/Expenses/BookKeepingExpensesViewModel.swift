@@ -68,6 +68,8 @@ final class BookKeepingExpensesViewModel: FormViewModel {
             )
 
             self.state.expenses = response.data ?? []
+            self.state.filteredExpenses = response.data ?? []
+            
             return true
 
         } catch {
@@ -78,12 +80,17 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Section Updates
     private func updateRecentActivitiesSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.recentActivities.rawValue
-        }) else { return }
-        
-        sections[index].cells = makeTransactionActionRows()
-        reloadSection(index)
+        updateSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeTransactionActionRows()
+        )
+    }
+
+    private func updateFinancialSummarySection() {
+        updateSection(
+            id: Tags.Section.financialSummary.rawValue,
+            cells: [makeFinancialSummaryRow()]
+        )
     }
 
     private func updateFilterSection() {
@@ -92,16 +99,6 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         }) else { return }
         
         sections[index].cells = [searchRow, makeFilterFormRow()]
-        reloadSection(index)
-    }
-    
-    private func updateFinancialSummarySection() {
-
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.financialSummary.rawValue
-        }) else { return }
-
-        sections[index].cells = [makeFinancialSummaryRow()]
         reloadSection(index)
     }
 
@@ -141,7 +138,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     
     private func makeFinancialSummaryRow() -> FormRow {
 
-        let expenses = state.expenses
+        let expenses = state.filteredExpenses
 
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let totalAmount: Double = expenses.compactMap { $0.amount }.reduce(0, +)
@@ -193,6 +190,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
         return DateFormatters.displayRange(start: start, end: end)
     }
     
+    private var searchWorkItem: DispatchWorkItem?
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
@@ -202,9 +200,48 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
                 filterIcon: nil,
-                didTapSearchIcon: { print("🔍 Search tapped") },
-                didTapFilterIcon: { print("⚙️ Filter tapped") }
+                didTapSearchIcon: {},
+                didTapFilterIcon: {},
+                onTextChanged: { [weak self] text in
+                    self?.filterExpenses(text)
+                }
             )
+        )
+    }
+    
+    private func filterExpenses(_ text: String) {
+
+        state.searchText = text
+
+        searchWorkItem?.cancel()
+
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+
+            let query = text.lowercased()
+
+            self.state.filteredExpenses = query.isEmpty
+                ? self.state.expenses
+                : self.state.expenses.filter {
+
+                    ($0.supplier?.name?.lowercased().contains(query) ?? false)
+
+                    || ($0.category?.name?.lowercased().contains(query) ?? false)
+
+                    || ($0.paymentMethod?.name?.lowercased().contains(query) ?? false)
+
+                    || String($0.id).contains(query)
+                }
+
+            self.updateRecentActivitiesSection()
+            self.updateFinancialSummarySection()
+        }
+
+        searchWorkItem = work
+
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.25,
+            execute: work
         )
     }
     
@@ -295,13 +332,13 @@ final class BookKeepingExpensesViewModel: FormViewModel {
     
     // MARK: - Rows from API
     private func makeTransactionActionRows() -> [FormRow] {
-        state.expenses.map { expense in
+        state.filteredExpenses.map { expense in
             
             let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
             
             let amountText = expense.amount.map { "\(currency). \($0)" } ?? "\(currency). 0"
             let dateText = formatDate(expense)
-            let supplierName = expense.supplier?.name ?? "Unknown Supplier"
+            let supplierName = expense.supplier?.name ?? "Unknown"
             let categoryName = expense.category?.name ?? "common.label.expense".localized
             
             let config = TransactionSummaryCellConfig(
@@ -348,14 +385,17 @@ final class BookKeepingExpensesViewModel: FormViewModel {
 
     // MARK: - State
     private struct State {
-        var expenses: [ExpenseResponse] = []
+        var expenses: [ExpenseResponse] = []          // Original API response
+        var filteredExpenses: [ExpenseResponse] = [] // Displayed in UI
+
+        var searchText = ""
 
         var selectedCategory: CommonIdNameModel?
         var selectedPaymentMethod: CommonIdNameModel?
-        
+
         var startDate: Date?
         var endDate: Date?
-        
+
         var startDateString: String?
         var endDateString: String?
 

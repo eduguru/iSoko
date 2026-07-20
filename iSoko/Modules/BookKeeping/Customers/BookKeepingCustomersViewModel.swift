@@ -64,6 +64,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
             )
             
             state.items = response.data
+            state.filteredItems = response.data
             
             return true
             
@@ -74,13 +75,10 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     }
     
     private func updateRecentActivitiesSection() {
-        guard let index = sections.firstIndex(where: {
-            $0.id == Tags.Section.recentActivities.rawValue
-        }) else { return }
-        
-        sections[index].cells = makeTransactionActionRows()
-        
-        reloadSection(index)
+        updateSection(
+            id: Tags.Section.recentActivities.rawValue,
+            cells: makeTransactionActionRows()
+        )
     }
     
     // MARK: - Sections -
@@ -120,6 +118,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     
     private lazy var searchRow = makeSearchRow()
     
+    private var searchWorkItem: DispatchWorkItem?
     private func makeSearchRow() -> FormRow {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
@@ -129,9 +128,45 @@ final class BookKeepingCustomersViewModel: FormViewModel {
                 searchIcon: UIImage(systemName: "magnifyingglass"),
                 searchIconPlacement: .right,
                 filterIcon: nil,
-                didTapSearchIcon: { print("🔍 Search tapped") },
-                didTapFilterIcon: { print("⚙️ Filter tapped") }
+                didTapSearchIcon: {},
+                didTapFilterIcon: {},
+                onTextChanged: { [weak self] text in
+                    self?.filterCustomers(text)
+                }
             )
+        )
+    }
+    
+    private func filterCustomers(_ text: String) {
+
+        state.searchText = text
+
+        searchWorkItem?.cancel()
+
+        let work = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+
+            let query = text.lowercased()
+
+            self.state.filteredItems = query.isEmpty
+                ? self.state.items
+                : self.state.items.filter {
+
+                    ($0.name?.lowercased().contains(query) ?? false)
+
+                    || ($0.phoneNumber?.lowercased().contains(query) ?? false)
+
+                    || String($0.id ?? 0).contains(query)
+                }
+
+            self.updateRecentActivitiesSection()
+        }
+
+        searchWorkItem = work
+
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.25,
+            execute: work
         )
     }
     
@@ -171,7 +206,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     
     // Lazy factory that creates rows
     private func makeTransactionActionRows() -> [FormRow] {
-        return state.items.enumerated().map { index, customer in
+        return state.filteredItems.enumerated().map { index, customer in
             
             let name = customer.name ?? "Unnamed Customer"
             let phone = customer.phoneNumber ?? "No phone"
@@ -222,6 +257,9 @@ final class BookKeepingCustomersViewModel: FormViewModel {
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         
         var items: [CustomerResponse] = []
+        var filteredItems: [CustomerResponse] = []
+
+        var searchText = ""
     }
     
     // MARK: - Tags
