@@ -16,7 +16,7 @@ public enum EnvironmentMode {
 public enum ApiEnvironment {
     
     /// Force dev backend even in Release/TestFlight builds.,  Set to false for App Store production releases.
-    private static let forceDevelopment = false
+    private static let forceDevelopment = true
     
     // MARK: - Environment
     public static let mode: EnvironmentMode = {

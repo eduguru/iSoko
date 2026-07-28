@@ -71,7 +71,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
 
             switch segment {
             case .approved:
-                response = try await associationsService.getApprovedssociations(
+                response = try await associationsService.getApprovedAssociations(
                     id: state.userProfile?.id ?? 0,
                     page: feed.currentPage,
                     count: state.itemsPerPage,

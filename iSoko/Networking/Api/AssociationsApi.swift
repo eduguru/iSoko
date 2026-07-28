@@ -81,9 +81,35 @@ public struct AssociationsApi {
         return NewPagedResponseTarget(target: target)
     }
     
-    public static func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
+    public static func getApprovedAssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
 
         let parameters: [String: Any] = ["page": page, "size": count, "status": "Approved"]
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+                
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: "users/\(id)/associations",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers
+        )
+
+        return NewPagedResponseTarget(target: target)
+    }
+    
+    public static func getApprovedAMemberssociations(id: Int, page: Int, count: Int, accessToken: String) -> NewPagedResponseTarget<[AssociationResponse]> {
+
+        let parameters: [String: Any] = [
+            "page": page,
+            "size": count,
+            "status": "Approved",
+            "isMember": true
+        ]
+        
         let headers = [
             "Content-Type": "application/json",
             "Accept": "application/json",

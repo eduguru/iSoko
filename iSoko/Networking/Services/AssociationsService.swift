@@ -12,7 +12,9 @@ public protocol AssociationsService {
     //MARK: -
     func getAllAssociations(page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
     func getAllPendingAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
-    func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
+    
+    func getApprovedAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
+    func getApprovedAMemberssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse]
     
     func enrollIntoAssociation(associationId: Int, accessToken: String) async throws -> AssociationMemberResponse?
     func cancelMembership(memberId: Int, comment: String, accessToken: String) async throws -> AssociationMemberResponse?
@@ -64,8 +66,13 @@ public final class AssociationsServiceImpl: AssociationsService {
         return response.data
     }
     
-    public func getApprovedssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
-        let response = try await manager.request(AssociationsApi.getApprovedssociations(id: id, page: page, count: count, accessToken: accessToken))
+    public func getApprovedAssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
+        let response = try await manager.request(AssociationsApi.getApprovedAssociations(id: id, page: page, count: count, accessToken: accessToken))
+        return response.data
+    }
+    
+    public func getApprovedAMemberssociations(id: Int, page: Int, count: Int, accessToken: String) async throws -> [AssociationResponse] {
+        let response = try await manager.request(AssociationsApi.getApprovedAMemberssociations(id: id, page: page, count: count, accessToken: accessToken))
         return response.data
     }
     

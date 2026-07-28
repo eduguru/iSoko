@@ -194,6 +194,63 @@ final class DirectusTokenService {
             .data
     }
     
+    func fetchAssociationEvents(
+        associationId: String
+    ) async throws -> [AssociationEventItem] {
+
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("/items/association_events"),
+            resolvingAgainstBaseURL: false
+        )
+
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "*.*"),
+            URLQueryItem(
+                name: "filter",
+                value: "{\"association_id\":{\"_eq\":\"\(associationId)\"}}"
+            )
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+
+        return try JSONDecoder()
+            .decode(DirectusResponse<AssociationEventItem>.self, from: data)
+            .data
+    }
+
+    func fetchAssociationEvents() async throws -> [AssociationEventItem] {
+
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("/items/association_events"),
+            resolvingAgainstBaseURL: false
+        )
+
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "*.*")
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+
+        return try JSONDecoder()
+            .decode(DirectusResponse<AssociationEventItem>.self, from: data)
+            .data
+    }
+
+    
     // MARK: - Fetch Home Banners
 
     func fetchHomeBanners() async throws -> [DirectusHomeBannerItem] {

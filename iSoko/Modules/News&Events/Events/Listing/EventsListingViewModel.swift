@@ -13,6 +13,7 @@ final class EventsListingViewModel: FormViewModel {
     
     // MARK: - Navigation
     var goToEventDetails: ((EventItem) -> Void)? = { _ in }
+    var goToAssociationEventDetails: ((AssociationEventItem) -> Void)? = { _ in }
     
     // MARK: - Service
     private let directusService = DirectusTokenService()
@@ -34,36 +35,41 @@ final class EventsListingViewModel: FormViewModel {
     }
     
     override func fetchData() {
-        
         showLoader()
-        
+
         Task {
             do {
-                
-                // ensure auth (same pattern as InsightsViewModel)
+
                 try await directusService.login(
                     email: AppStorage.email,
                     password: AppStorage.password
                 )
-                
-                let events = try await directusService.fetchEvents()
-                
-                state.events = events
-                
+
+                async let publicEventsTask = directusService.fetchEvents()
+
+                async let associationEventsTask = directusService.fetchAssociationEvents()
+
+                let publicEvents = try await publicEventsTask
+                let associationEvents = try await associationEventsTask
+
+                state.events = publicEvents
+                state.associationEvents = associationEvents
+
                 await MainActor.run { [weak self] in
                     self?.hideLoader()
                     self?.reloadBodySection(animated: true)
                 }
-                
+
             } catch {
-                
+
                 await MainActor.run { [weak self] in
                     self?.hideLoader()
                 }
-                
+
                 print("❌ Events flow failed:", error)
             }
         }
+
     }
     
     private func makeSections() -> [FormSection] {
@@ -74,12 +80,16 @@ final class EventsListingViewModel: FormViewModel {
     }
     
     private func makeHeaderSection() -> FormSection {
+
         FormSection(
             id: SectionTag.header.rawValue,
             title: "Events",
-            cells: []
+            cells: [
+                segmentedOptions
+            ]
         )
     }
+
     
     private func makeBodySection() -> FormSection {
         FormSection(
@@ -89,20 +99,62 @@ final class EventsListingViewModel: FormViewModel {
     }
     
     private func reloadBodySection(animated: Bool = true) {
-        
+
         guard let index = sections.firstIndex(where: {
             $0.id == SectionTag.body.rawValue
         }) else { return }
-        
-        sections[index].cells = makeEventsCells()
+
+        switch state.selectedSegmentIndex {
+
+        case 0:
+            sections[index].cells = makePublicEventsCells()
+
+        case 1:
+            sections[index].cells = makeAssociationEventsCells()
+
+        default:
+            sections[index].cells = []
+        }
+
         sections[index].cells.append(
             SpacerFormRow(tag: 999999, height: 40)
         )
-        
+
         reloadSection(index)
     }
     
-    private func makeEventsCells() -> [FormRow] {
+    private lazy var segmentedOptions = makeOptionsSegmentFormRow()
+
+    private func makeOptionsSegmentFormRow() -> FormRow {
+
+        SegmentedFormRow(
+            model: SegmentedFormModel(
+                title: nil,
+                segments: [
+                    "Public Events",
+                    "Association Events"
+                ],
+                selectedIndex: state.selectedSegmentIndex,
+                tag: 2001,
+                tintColor: .gray,
+                selectedSegmentTintColor: .app(.primary),
+                backgroundColor: .white,
+                titleTextColor: .darkGray,
+                segmentTextColor: .lightGray,
+                selectedSegmentTextColor: .white,
+                onSelectionChanged: { [weak self] index in
+
+                    guard let self else { return }
+
+                    self.state.selectedSegmentIndex = index
+                    self.reloadBodySection(animated: true)
+                }
+            )
+        )
+    }
+
+    
+    private func makePublicEventsCells() -> [FormRow] {
         
         state.events.enumerated().map { index, item in
             
@@ -128,6 +180,35 @@ final class EventsListingViewModel: FormViewModel {
         }
     }
     
+    private func makeAssociationEventsCells() -> [FormRow] {
+
+        state.associationEvents.enumerated().map { index, item in
+
+            let startDateText: String = {
+                guard let dateString = item.startDate else {
+                    return "No Date"
+                }
+                return formatEventDate(dateString)
+            }()
+
+            return InfoListingFormRow(
+                tag: 10000 + index,
+                model: InfoListingModel(
+                    title: item.eventTitle ?? "No Title",
+                    subtitle: item.eventType ?? "",
+                    desc: startDateText,
+                    icon: .blankRectangle,
+                    cardBackgroundColor: .white,
+                    cardRadius: 0,
+                    onTap: { [weak self] in
+                        self?.handleAssociationEventTap(index: index)
+                    }
+                )
+            )
+        }
+    }
+
+    
     private func handleEventTap(index: Int) {
         
         guard state.events.indices.contains(index) else { return }
@@ -135,6 +216,17 @@ final class EventsListingViewModel: FormViewModel {
         let item = state.events[index]
         goToEventDetails?(item)
     }
+    
+    private func handleAssociationEventTap(index: Int) {
+
+        guard state.associationEvents.indices.contains(index) else {
+            return
+        }
+
+        let item = state.associationEvents[index]
+        goToAssociationEventDetails?(item)
+    }
+
     
     private func formatEventDate(_ isoString: String) -> String {
         
@@ -157,7 +249,10 @@ final class EventsListingViewModel: FormViewModel {
     }
     
     private struct State {
+        var selectedSegmentIndex: Int = 0
+
         var events: [EventItem] = []
+        var associationEvents: [AssociationEventItem] = []
     }
     
     private enum SectionTag: Int {
