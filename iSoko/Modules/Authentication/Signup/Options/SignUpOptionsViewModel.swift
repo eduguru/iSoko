@@ -298,32 +298,25 @@ final class SignUpOptionsViewModel: FormViewModel {
     }
 
     override func didSelectRow(at indexPath: IndexPath, row: FormRow) {}
+    
 
     // MARK: - Availability & OTP
+    private let availabilityChecker = UserAvailabilityChecker()
+
     private func preValidateEmail(_ email: String) async -> Bool {
         showLoader()
         defer { hideLoader() }
 
-        let parameters: [String: Any] = ["email": email]
-
         do {
-            let response = try await authenticationService.userAvailabilityCheck(
-                parameters: parameters,
-                accessToken: state.guestToken
-            )
-
-            if let dict = response.asDictionary, let available = dict["available"]?.asBool {
-                if available {
-                    showErrorMessage("Email already exists.")
-                    return false
-                } else {
-                    await initiateOtp(for: email)
-                    return true
-                }
-            } else {
-                showErrorMessage("Unexpected response from server.")
-                return false
-            }
+            try await availabilityChecker.check(.email(email), guestToken: state.guestToken)
+            await initiateOtp(for: email)
+            return true
+        } catch UserAvailabilityError.alreadyExists(let message) {
+            showErrorMessage(message)
+            return false
+        } catch UserAvailabilityError.unexpectedResponse {
+            showErrorMessage("Unexpected response from server.")
+            return false
         } catch {
             showErrorMessage("Network error: \(error.localizedDescription)")
             return false
@@ -334,26 +327,16 @@ final class SignUpOptionsViewModel: FormViewModel {
         showLoader()
         defer { hideLoader() }
 
-        let parameters: [String: Any] = ["phoneNumber": fullPhone]
-
         do {
-            let response = try await authenticationService.userAvailabilityCheck(
-                parameters: parameters,
-                accessToken: state.guestToken
-            )
-
-            if let dict = response.asDictionary, let available = dict["available"]?.asBool {
-                if available {
-                    showErrorMessage("Phone already exists.")
-                    return false
-                } else {
-                    await initiateOtp(for: fullPhone, type: "sms")
-                    return true
-                }
-            } else {
-                showErrorMessage("Unexpected response from server.")
-                return false
-            }
+            try await availabilityChecker.check(.phone(fullPhone), guestToken: state.guestToken)
+            await initiateOtp(for: fullPhone, type: "sms")
+            return true
+        } catch UserAvailabilityError.alreadyExists(let message) {
+            showErrorMessage(message)
+            return false
+        } catch UserAvailabilityError.unexpectedResponse {
+            showErrorMessage("Unexpected response from server.")
+            return false
         } catch {
             showErrorMessage("Network error: \(error.localizedDescription)")
             return false

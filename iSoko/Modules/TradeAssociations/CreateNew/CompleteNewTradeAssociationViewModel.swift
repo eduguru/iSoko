@@ -330,25 +330,40 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     }
 
     // MARK: - Submit
+    private let availabilityChecker = UserAvailabilityChecker()
+
     private func submit() async {
-        guard validateRequiredFields() else {
-            return
-        }
+        guard validateRequiredFields() else { return }
 
         showLoader()
         defer { hideLoader() }
 
         do {
-            let _ = try await registerAssociation()
+            // Check phone availability
+            try await availabilityChecker.check(
+                .phone(state.phoneNumber),
+                guestToken: state.guestToken
+            )
 
+            // Check email availability if provided
+            let email = state.email.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !email.isEmpty {
+                try await availabilityChecker.check(
+                    .email(email),
+                    guestToken: state.guestToken
+                )
+            }
+
+            let _ = try await registerAssociation()
             goToShowSuccessScreen?()
 
+        } catch UserAvailabilityError.alreadyExists(let message) {
+            showError(message)
+        } catch UserAvailabilityError.unexpectedResponse {
+            showError("Unexpected response from server.")
         } catch let NetworkError.server(response) {
-            state.errorMessage = response.message
             showError(response.alertMessage)
-
         } catch {
-            state.errorMessage = error.localizedDescription
             showError(error.localizedDescription)
         }
     }
@@ -413,6 +428,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         
         var logo: PickedFile?
         var certificate: PickedFile?
+        
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var errorMessage: String?
     }

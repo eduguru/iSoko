@@ -279,6 +279,8 @@ final class BasicProfileDataViewModel: FormViewModel {
         )
     }
 
+    private let availabilityChecker = UserAvailabilityChecker()
+
     private func makeContinueButtonRow() -> ButtonFormRow {
         ButtonFormRow(
             tag: Tags.Cells.submit.rawValue,
@@ -290,11 +292,48 @@ final class BasicProfileDataViewModel: FormViewModel {
                 fontStyle: .headline,
                 hapticsEnabled: true
             ) { [weak self] in
-                guard let builder = self?.mapToRegistrationBuilder() else { return }
-                
-                self?.gotoConfirm?(builder)
+                guard let self else { return }
+                Task {
+                    await self.validateAndProceed()
+                }
             }
         )
+    }
+
+    private func validateAndProceed() async {
+        guard let builder = mapToRegistrationBuilder() else { return }
+
+        showLoader()
+        defer { hideLoader() }
+
+        do {
+            // Check whichever contact was entered on this screen
+            if let email = state?.email,
+               !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               state?.registrationBuilder.email == nil {
+                try await availabilityChecker.check(
+                    .email(email),
+                    guestToken: state?.guestToken ?? ""
+                )
+            }
+
+            if let phone = state?.phoneNumber,
+               !phone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                try await availabilityChecker.check(
+                    .phone(phone),
+                    guestToken: state?.guestToken ?? ""
+                )
+            }
+
+            gotoConfirm?(builder)
+
+        } catch UserAvailabilityError.alreadyExists(let message) {
+            showError(message)
+        } catch UserAvailabilityError.unexpectedResponse {
+            showError("Unexpected response from server.")
+        } catch {
+            showError(error.localizedDescription)
+        }
     }
 
     // MARK: - Selection Handlers
@@ -403,5 +442,7 @@ final class BasicProfileDataViewModel: FormViewModel {
         var referralCode: String?
         var email: String?
         var phoneNumber: String?
+        
+        var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
     }
 }

@@ -62,6 +62,47 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
             self.modalRouter = Router(navigationController: nav)
         }
     }
+    
+    func gotoPublicTradeAssociations() {
+        let viewModel = AllTradeAssociationViewModel()
+        viewModel.onAssociationTapped = gotoTradeAssociationProducts
+
+        let vc = AllTradeAssociationViewController()
+        vc.viewModel = viewModel
+        vc.goToCreateAction = { [weak self] in
+            self?.gotoCreateTradeAssociations()
+        }
+        vc.closeAction = { [weak self] in
+            self?.dismiss()
+        }
+
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .fullScreen
+
+        // Present modally from top view controller in main flow
+        if let top = router.topViewController() {
+            top.present(nav, animated: true)
+            // Set modalRouter for pushes inside modal flow
+            self.modalRouter = Router(navigationController: nav)
+        }
+    }
+    
+    private func gotoTradeAssociationProducts(_ item: AssociationResponse) {
+        guard let router = modalRouter else { return }
+
+        let viewModel = AssociationPublicProductsViewModel(item)
+        viewModel.goToProductDetails = goToProduct
+        
+        let vc = AssociationPublicProductsViewController()
+        vc.viewModel = viewModel
+
+        vc.closeAction = { [weak self] in
+            self?.modalRouter?.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+    }
 
     // MARK: - Trade Association Details
     private func gotoTradeAssociationDetails(_ data: AssociationResponse) {

@@ -27,6 +27,7 @@ final class HomeViewModel: FormViewModel {
     var onTapProductCategory: ((CommodityCategoryResponse) -> Void)?
     var onTapServiceCategory: ((TradeServiceCategoryResponse) -> Void)?
 
+    var onTapMoreTradeAssociation: (() -> Void)?
     var onTapTradeAssociation: ((AssociationResponse) -> Void)?
 
     var onTapTopDeal: ((TopDealItem) -> Void)?
@@ -226,10 +227,10 @@ final class HomeViewModel: FormViewModel {
                 return
             }
             updated.title = "home.featured_associations.title".localized
-            updated.actionTitle = nil
+            updated.actionTitle = "common.action.see_all".localized
+            updated.onActionTapped = { [weak self] in self?.onTapMoreTradeAssociation?() }
             
             updated.cells = [CompactExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
-            // updated.cells = [ExportCardsFormRow(tag: Tags.Cells.exportCards.rawValue, items: items)]
 
         case .trendingProducts:
             let items = makeTrendingProductItems()
