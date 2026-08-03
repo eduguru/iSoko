@@ -184,28 +184,89 @@ final class EventsListingViewModel: FormViewModel {
 
         state.associationEvents.enumerated().map { index, item in
 
-            let startDateText: String = {
-                guard let dateString = item.startDate else {
-                    return "No Date"
-                }
-                return formatEventDate(dateString)
-            }()
+            let startDate = item.startDate.flatMap {
+                formatEventDateParts($0)
+            }
 
-            return InfoListingFormRow(
-                tag: 10000 + index,
-                model: InfoListingModel(
-                    title: item.eventTitle ?? "No Title",
-                    subtitle: item.eventType ?? "",
-                    desc: startDateText,
-                    icon: .blankRectangle,
-                    cardBackgroundColor: .white,
-                    cardRadius: 0,
+            let location = [
+                item.venue,
+                item.physicalAddress
+            ]
+            .compactMap { $0 }
+            .joined(separator: ", ")
+
+            let time = [
+                item.startTime,
+                item.endTime
+            ]
+            .compactMap { $0 }
+            .joined(separator: " - ")
+
+            let config = EventScheduleCellConfig(
+                month: startDate?.month ?? "N/A",
+                startDay: startDate?.day ?? "--",
+                endDay: startDate?.day ?? "--",
+
+                title: item.eventTitle ?? "No Title",
+
+                location: location.isEmpty
+                    ? "No Location"
+                    : location,
+
+                time: time.isEmpty
+                    ? "No Time"
+                    : time,
+
+                description: item.description ?? "",
+
+                locationIcon: UIImage(systemName: "mappin.and.ellipse"),
+                timeIcon: UIImage(systemName: "clock"),
+
+                detailsAction: InlineActionConfig(
+                    title: "View Details",
+                    icon: UIImage(systemName: "arrow.right"),
                     onTap: { [weak self] in
                         self?.handleAssociationEventTap(index: index)
                     }
-                )
+                ),
+
+                cardBackgroundColor: .white,
+                cardBorderColor: .systemGray5,
+                cardBorderWidth: 1,
+                cardCornerRadius: 12
+            )
+
+            return EventScheduleRow(
+                tag: 10000 + index,
+                config: config
             )
         }
+    }
+
+    private func formatEventDateParts(
+        _ dateString: String
+    ) -> (
+        month: String,
+        day: String
+    )? {
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        guard let date = formatter.date(from: dateString) else {
+            return nil
+        }
+
+        let monthFormatter = DateFormatter()
+        monthFormatter.dateFormat = "MMM"
+
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "dd"
+
+        return (
+            monthFormatter.string(from: date),
+            dayFormatter.string(from: date)
+        )
     }
 
     
