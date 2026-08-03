@@ -258,8 +258,9 @@ final class InsightsViewModel: FormViewModel {
                 formatNewsDate($0)
             } ?? "No Date"
 
-            let imageURL = item.featuredImage?
-                .urlString(baseURL: "https://directus.dev.isoko.africa/")
+            let imageURL = item.featuredImage?.urlString(
+                baseURL: ApiEnvironment.directusBaseURL.absoluteString
+            )
 
             return InfoListingFormRow(
                 tag: 9000 + index,
@@ -278,6 +279,7 @@ final class InsightsViewModel: FormViewModel {
             )
         }
     }
+
 
     // MARK: - Association News
 

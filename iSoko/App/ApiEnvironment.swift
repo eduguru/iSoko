@@ -14,29 +14,32 @@ public enum EnvironmentMode {
 }
 
 public enum ApiEnvironment {
-    
-    /// Force dev backend even in Release/TestFlight builds.,  Set to false for App Store production releases.
+
+    /// Force dev backend even in Release/TestFlight builds.
+    /// Set to false for App Store production releases.
     private static let forceDevelopment = false
-    
+
     // MARK: - Environment
+
     public static let mode: EnvironmentMode = {
         if forceDevelopment {
             return .development
         }
-        
+
         #if DEBUG
-                return .development
+        return .development
         #else
-                return .production
+        return .production
         #endif
     }()
-    
+
     // MARK: - Config Loading
-    
+
     private static let config: ApiConfig = {
         guard let url = Bundle.main.url(forResource: "api_config", withExtension: "json") else {
             fatalError("api_config.json not found")
         }
+
         do {
             let data = try Data(contentsOf: url)
             return try JSONDecoder().decode(ApiConfig.self, from: data)
@@ -44,22 +47,22 @@ public enum ApiEnvironment {
             fatalError("Failed to decode api_config.json: \(error)")
         }
     }()
-    
+
     // MARK: - Country
-    
+
     private static var countryCode: String {
         (AppStorage.selectedRegionCode ?? "TZ").uppercased()
     }
-    
+
     private static var countryConfig: CountryConfig {
         guard let config = config.countries[countryCode] else {
             fatalError("No configuration found for country: \(countryCode)")
         }
         return config
     }
-    
+
     // MARK: - Base URLs
-    
+
     public static var apiBaseURL: URL {
         switch mode {
         case .development:
@@ -68,7 +71,7 @@ public enum ApiEnvironment {
             return URL(string: "\(countryConfig.apiEndpoint)/v1/")!
         }
     }
-    
+
     /// Legacy BASE_URL
     public static var baseURL: URL {
         switch mode {
@@ -78,11 +81,14 @@ public enum ApiEnvironment {
             return URL(string: "\(countryConfig.websiteUrl)/wit-backend/")!
         }
     }
-    
+
     public static var imageURL: URL { baseURL }
+
     public static var certificateBaseURL: URL { baseURL }
-    
-    public static var directUsBaseURL: URL {
+
+    /// Directus server root
+    /// e.g. https://directus.ke.isoko.africa
+    public static var directusBaseURL: URL {
         switch mode {
         case .development:
             return URL(string: config.development.directusUrl)!
@@ -90,39 +96,55 @@ public enum ApiEnvironment {
             return URL(string: countryConfig.directusUrl)!
         }
     }
-    
+
+    /// Base URL used for Directus API requests.
+    /// If your Directus is mounted under `/api`, change this to:
+    /// directusBaseURL.appendingPathComponent("api")
+    public static var directusApiBaseURL: URL {
+        directusBaseURL
+    }
+
     // MARK: - Directus credentials
-    
+
     public static var directusUsername: String {
         switch mode {
-        case .development: return config.development.directusUsername
-        case .production:  return countryConfig.directusUsername
+        case .development:
+            return config.development.directusUsername
+        case .production:
+            return countryConfig.directusUsername
         }
     }
-    
+
     public static var directusPassword: String {
         switch mode {
-        case .development: return config.development.directusPassword
-        case .production:  return countryConfig.directusPassword
+        case .development:
+            return config.development.directusPassword
+        case .production:
+            return countryConfig.directusPassword
         }
     }
-    
+
     // MARK: - OAuth credentials
-    // grantType / clientId / clientSecret live in development config in the JSON.
-    // Country configs don't override these — they share the same OAuth client.
-    // If per-country OAuth clients are ever needed, add them to CountryConfig.
-    
-    public static var grantType: String     { config.development.grantType }
-    public static var clientId: String      { config.development.clientId }
-    public static var clientSecret: String  { config.development.clientSecret }
-    
+
+    public static var grantType: String {
+        config.development.grantType
+    }
+
+    public static var clientId: String {
+        config.development.clientId
+    }
+
+    public static var clientSecret: String {
+        config.development.clientSecret
+    }
+
     // MARK: - Country metadata
-    
+
     public static var countryName: String? {
         guard mode == .production else { return nil }
         return countryConfig.countryName
     }
-    
+
     public static var currency: String? {
         guard mode == .production else { return nil }
         return countryConfig.currency

@@ -346,12 +346,16 @@ final class HomeViewModel: FormViewModel {
 
     private func transformBannersToCarouselItems(banners: [DirectusHomeBannerItem]) -> [CarouselItem] {
         banners.compactMap { banner in
-            let imageURL = banner.imageLink?.urlString(baseURL: "https://directus.dev.isoko.africa/")
+            let imageURL = banner.imageLink?.urlString(
+                baseURL: ApiEnvironment.directusBaseURL.absoluteString
+            )
+
             return CarouselItem(imageURL: imageURL, text: nil, textColor: .white) {
                 print("Tapped \(banner.title ?? "Unknown")")
             }
         }
     }
+
 
     private func makeProductCategoryItems() -> [QuickActionItem] {
         state.productCategories.prefix(5).compactMap { category in

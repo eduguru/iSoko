@@ -14,7 +14,7 @@ struct DirectusResponse<T: Decodable>: Decodable {
 
 final class DirectusTokenService {
 
-    private let baseURL = ApiEnvironment.directUsBaseURL
+    private let baseURL = ApiEnvironment.directusBaseURL
     private var token: DirectusAuthToken?
 
     init() {

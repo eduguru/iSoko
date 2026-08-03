@@ -1,3 +1,4 @@
+import Foundation
 
 struct AssociationEventItem: Decodable {
 
@@ -127,5 +128,20 @@ extension BannerImage {
 
         case focalPointX = "focal_point_x"
         case focalPointY = "focal_point_y"
+    }
+}
+
+extension BannerImage {
+
+    var url: URL? {
+        guard let filenameDisk else { return nil }
+
+        return ApiEnvironment.directusBaseURL
+            .appendingPathComponent("assets")
+            .appendingPathComponent(filenameDisk)
+    }
+
+    var urlString: String? {
+        url?.absoluteString
     }
 }
