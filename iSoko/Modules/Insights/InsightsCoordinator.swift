@@ -53,6 +53,11 @@ public class InsightsCoordinator: BaseCoordinator {
     
     private func goToEvents() {
         let viewModel = EventsListingViewModel()
+
+        viewModel.goToEventDetails = { [weak self] event in
+            self?.goToEventDetail(event)
+        }
+
         let vc = EventsListingViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
@@ -62,7 +67,22 @@ public class InsightsCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
         router.navigationControllerInstance?.navigationBar.isHidden = false
     }
-    
+
+    private func goToEventDetail(_ event: UnifiedEventItem) {
+        let viewModel = EventDetailViewModel(event)
+
+        viewModel.onRegisterTapped = { url in
+            UIApplication.shared.open(url)
+        }
+
+        let vc = EventDetailsViewController()
+        vc.viewModel = viewModel
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.push(vc, animated: true)
+    }
     
     
     public override func start() {
