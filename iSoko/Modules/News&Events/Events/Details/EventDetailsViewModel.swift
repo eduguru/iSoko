@@ -28,6 +28,7 @@ final class EventDetailViewModel: FormViewModel {
             makeHeaderSection(),
             makeBodySection(),
             makeInfoSection(),
+            makeLocationSection(),
             makeContactSection()
         ]
     }
@@ -49,7 +50,14 @@ final class EventDetailViewModel: FormViewModel {
     private func makeInfoSection() -> FormSection {
         FormSection(
             id: Tags.Section.info.rawValue,
-            cells: makeInfoCells()
+            cells: makeDateCells()
+        )
+    }
+
+    private func makeLocationSection() -> FormSection {
+        FormSection(
+            id: Tags.Section.location.rawValue,
+            cells: makeLocationCells()
         )
     }
 
@@ -131,35 +139,118 @@ final class EventDetailViewModel: FormViewModel {
         )
     }
 
-    // MARK: - Info (date, time, venue)
+    // MARK: - Date & Time
 
-    private func makeInfoCells() -> [FormRow] {
+    private func makeDateCells() -> [FormRow] {
+        var items: [InfoPairItem] = []
+
+        if let start = state.event.startDate {
+            items.append(InfoPairItem(
+                icon: UIImage(systemName: "calendar"),
+                label: "Start Date",
+                value: formatDate(start, time: state.event.startTime)
+            ))
+        }
+
+        if let end = state.event.endDate {
+            items.append(InfoPairItem(
+                icon: UIImage(systemName: "calendar.badge.checkmark"),
+                label: "End Date",
+                value: formatDate(end, time: state.event.endTime)
+            ))
+        }
+
+        guard !items.isEmpty else { return [] }
+
+        return [
+            InfoPairFormRow(
+                tag: Tags.Cells.date.rawValue,
+                config: InfoPairConfig(
+                    title: "Date and Time",
+                    items: items
+                )
+            )
+        ]
+    }
+
+    // MARK: - Location
+
+    private func makeLocationCells() -> [FormRow] {
+        guard let venue = state.event.venue ?? state.event.location,
+              !venue.isEmpty else { return [] }
+
+        return [
+            InfoPairFormRow(
+                tag: Tags.Cells.venue.rawValue,
+                config: InfoPairConfig(
+                    title: "Location Information",
+                    items: [
+                        InfoPairItem(
+                            icon: UIImage(systemName: "mappin.and.ellipse"),
+                            label: venue
+                        )
+                    ]
+                )
+            )
+        ]
+    }
+
+    // MARK: - Contact
+
+    private func makeContactCells() -> [FormRow] {
+        var items: [InfoPairItem] = []
+
+        if let org = state.event.organizingInstitution, !org.isEmpty {
+            items.append(InfoPairItem(
+                icon: UIImage(systemName: "building.2"),
+                label: org,
+                value: "Organizer"
+            ))
+        }
+
+        if let email = state.event.contactEmail, !email.isEmpty {
+            items.append(InfoPairItem(
+                icon: UIImage(systemName: "envelope"),
+                label: "Email",
+                value: email,
+                valueColor: .systemBlue,
+                isLink: true,
+                onTap: {
+                    guard let url = URL(string: "mailto:\(email)") else { return }
+                    UIApplication.shared.open(url)
+                }
+            ))
+        }
+
+        if let phone = state.event.contactNumber, !phone.isEmpty {
+            items.append(InfoPairItem(
+                icon: UIImage(systemName: "phone"),
+                label: "Phone Number",
+                value: phone,
+                onTap: {
+                    guard let url = URL(string: "tel:\(phone)") else { return }
+                    UIApplication.shared.open(url)
+                }
+            ))
+        }
+
         var cells: [FormRow] = []
 
-        let dateText = formatDateRange()
-        if !dateText.isEmpty {
+        if !items.isEmpty {
             cells.append(
-                makeInfoRow(
-                    tag: Tags.Cells.date.rawValue,
-                    icon: UIImage(systemName: "calendar"),
-                    title: dateText,
-                    subtitle: formatTimeRange()
+                InfoPairFormRow(
+                    tag: Tags.Cells.contact.rawValue,
+                    config: InfoPairConfig(
+                        title: "Contact Information",
+                        items: items
+                    )
                 )
             )
         }
 
-        if let venue = state.event.venue ?? state.event.location, !venue.isEmpty {
-            cells.append(
-                makeInfoRow(
-                    tag: Tags.Cells.venue.rawValue,
-                    icon: UIImage(systemName: "mappin.and.ellipse"),
-                    title: venue,
-                    subtitle: nil
-                )
-            )
-        }
-
-        if let link = state.event.registrationLink, let url = URL(string: link) {
+        // Register button
+        if let link = state.event.registrationLink,
+           let url = URL(string: link) {
             cells.append(
                 ButtonFormRow(
                     tag: Tags.Cells.register.rawValue,
@@ -176,36 +267,6 @@ final class EventDetailViewModel: FormViewModel {
             )
         }
 
-        return cells
-    }
-
-    // MARK: - Contact
-
-    private func makeContactCells() -> [FormRow] {
-        var cells: [FormRow] = []
-
-        if let email = state.event.contactEmail, !email.isEmpty {
-            cells.append(
-                makeInfoRow(
-                    tag: Tags.Cells.email.rawValue,
-                    icon: UIImage(systemName: "envelope"),
-                    title: email,
-                    subtitle: nil
-                )
-            )
-        }
-
-        if let phone = state.event.contactNumber, !phone.isEmpty {
-            cells.append(
-                makeInfoRow(
-                    tag: Tags.Cells.phone.rawValue,
-                    icon: UIImage(systemName: "phone"),
-                    title: phone,
-                    subtitle: nil
-                )
-            )
-        }
-
         if !cells.isEmpty {
             cells.append(SpacerFormRow(tag: Tags.Cells.spacer.rawValue, height: 40))
         }
@@ -213,35 +274,21 @@ final class EventDetailViewModel: FormViewModel {
         return cells
     }
 
-    // MARK: - Shared Row Builder
-
-    private func makeInfoRow(tag: Int, icon: UIImage?, title: String, subtitle: String?) -> FormRow {
-        ImageTitleDescriptionRow(
-            tag: tag,
-            config: ImageTitleDescriptionConfig(
-                image: icon,
-                imageStyle: .rounded,
-                title: title,
-                description: subtitle ?? "",
-                accessoryType: .none,
-                onTap: nil,
-                isCardStyleEnabled: true
-            )
-        )
-    }
-
     // MARK: - Date Helpers
 
-    private func formatDateRange() -> String {
-        [state.event.startDate, state.event.endDate]
-            .compactMap { $0 }
-            .joined(separator: " – ")
-    }
+    private func formatDate(_ date: String, time: String?) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let d = formatter.date(from: date) else { return date }
 
-    private func formatTimeRange() -> String {
-        [state.event.startTime, state.event.endTime]
-            .compactMap { $0 }
-            .joined(separator: " – ")
+        let display = DateFormatter()
+        display.dateFormat = "MMM dd, yyyy"
+        var result = display.string(from: d)
+
+        if let time, !time.isEmpty {
+            result += ", \(time)"
+        }
+        return result
     }
 
     // MARK: - State
@@ -257,7 +304,8 @@ final class EventDetailViewModel: FormViewModel {
             case header = 0
             case body = 1
             case info = 2
-            case contact = 3
+            case location = 3
+            case contact = 4
         }
         enum Cells: Int {
             case image = 1
@@ -267,8 +315,7 @@ final class EventDetailViewModel: FormViewModel {
             case date = 201
             case venue = 202
             case register = 203
-            case email = 301
-            case phone = 302
+            case contact = 301
             case spacer = 999
         }
     }
