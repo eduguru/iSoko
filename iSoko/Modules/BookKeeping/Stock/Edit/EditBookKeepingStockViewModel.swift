@@ -28,6 +28,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
     var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var goToComoditySelection: (_ completion: @escaping (CommodityV1Response?) -> Void) -> Void = { _ in }
     var goToShowSuccessScreen: (() -> Void)?
 
     // MARK: - Services
@@ -42,6 +43,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
     // MARK: - Init
     init(stock: StockResponse) {
         self.state = State(stock: stock)
+        
         super.init()
         sections = makeSections()
     }
@@ -55,6 +57,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
                     dateRow,
                     productNameInputRow,
                     supplierDropdownRow,
+                    commodityTypeRow,
                     unitCostInputRow,
                     measurementUnitRow,
                     quantityInputRow,
@@ -115,16 +118,12 @@ final class EditBookKeepingStockViewModel: FormViewModel {
                     switch tag {
                     case CellTag.lowStockLevel.rawValue:
                         self.state.lowStockLevel = newText
-
                     case CellTag.unitCost.rawValue:
                         self.state.unitCost = newText
-
                     case CellTag.quantity.rawValue:
                         self.state.quantity = newText
-
                     case CellTag.productName.rawValue:
                         self.state.productName = newText
-
                     default:
                         break
                     }
@@ -143,6 +142,19 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             onActionTap: { [weak self] in self?.goToAddSupplier?() },
             actionImage: UIImage(systemName: "person.badge.plus"),
             showsActionButton: true
+        )
+    )
+
+    private lazy var commodityTypeRow = DropdownFormRow(
+        tag: CellTag.commodityType.rawValue,
+        config: DropdownFormConfig(
+            title: "Type of Commodity",
+            placeholder: state.selectedCommodity?.name ?? state.initialCommodityName ?? "Select commodity type",  // CHANGE
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleCommoditySelection()
+            }
         )
     )
     
@@ -214,7 +226,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Update Stock",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium
         ) { [weak self] in
@@ -241,6 +253,15 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         }
     }
 
+    private func handleCommoditySelection() {
+        goToComoditySelection { [weak self] value in
+            guard let self, let value else { return }
+            self.state.selectedCommodity = value
+            self.commodityTypeRow.config.placeholder = value.name ?? ""
+            self.reloadRow(withTag: self.commodityTypeRow.tag)
+        }
+    }
+
     private func handleDateSelection() {
         dateRow.config.placeholder = state.dateString
         reloadRow(withTag: CellTag.date.rawValue)
@@ -258,7 +279,6 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        
         guard
             let supplierId = state.supplier?.id,
             let measurementUnitId = state.measurementUnit?.id,
@@ -269,15 +289,16 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             return
         }
         
-        let params: [String: Any] = [
+        var params: [String: Any] = [
             "id": state.stockId,
             "name": state.productName,
-            "description": state.description,
+            "description": state.description.isEmpty ? "n/a" : state.description,
 
             "price": price,
             "quantity": quantity,
             "minimumOrderQuantity": quantity,
 
+            "stockAlertThreshold": Int(state.lowStockLevel) ?? 0,
             "lowStockThreshold": Int(state.lowStockLevel) ?? 0,
 
             "supplierId": supplierId,
@@ -287,8 +308,14 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             "published": state.published,
             "active": state.active,
             "approved": state.approved,
-            "featured": state.featured
+            "featured": state.featured,
+            "bookkeepingStock": true
         ]
+
+        let commodityId = state.selectedCommodity?.id ?? state.initialCommodityId 
+        if let commodityId {
+            params["commodityId"] = commodityId
+        }
 
         let success = await updateStock(parameters: params)
         if success {
@@ -303,7 +330,6 @@ final class EditBookKeepingStockViewModel: FormViewModel {
                 parameters: parameters,
                 accessToken: state.oauthToken
             )
-            
             return true
         } catch {
             print("❌ Error updating stock: ", error)
@@ -330,6 +356,10 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
         var supplier: CommonIdNameModel?
         var measurementUnit: CommonIdNameModel?
+        
+        var selectedCommodity: CommodityV1Response?
+        var initialCommodityName: String?
+        var initialCommodityId: Int?
 
         var date: Date?
         var dateString: String = ""
@@ -354,6 +384,9 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
             self.supplier = CommonIdNameModel(from: stock.supplier)
             self.measurementUnit = CommonIdNameModel(from: stock.measurementUnit)
+            
+            self.initialCommodityName = stock.commodity?.name
+            self.initialCommodityId = stock.commodity?.id
 
             self.date = Date()
             self.dateString = Helpers.format(Date())
@@ -376,5 +409,6 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         case inStock
         case published
         case description
+        case commodityType
     }
 }

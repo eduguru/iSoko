@@ -111,9 +111,18 @@ public extension BookKeepingCoordinator {
         }
     }
     
-    public func goToSelectExpenseCategory() {
+    func goToSelectExpenseCategory() {
         goToCommonSelection(CommonUtilityOption.ageGroups(page: 0, count: 100), nil) { [weak self]_ in
             
+        }
+    }
+    
+    func goToComoditySelection(_ completion: @escaping (CommodityV1Response?) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.goToComoditySelection() { [weak self] result in
+            completion(result)
         }
     }
     

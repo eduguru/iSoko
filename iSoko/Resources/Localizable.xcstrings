@@ -2013,6 +2013,17 @@
         }
       }
     },
+    "common.edit_customer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit Customer"
+          }
+        }
+      }
+    },
     "common.get_started" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5870,6 +5881,17 @@
         }
       }
     },
+    "common.registration_success_message" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Account has been created succesfully"
+          }
+        }
+      }
+    },
     "common.reset_password_success.header_description" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6595,6 +6617,17 @@
         }
       }
     },
+    "common.street_address" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Street Address"
+          }
+        }
+      }
+    },
     "common.success.done_button" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6689,6 +6722,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "terms of use"
+          }
+        }
+      }
+    },
+    "common.town" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Town"
           }
         }
       }
@@ -7533,6 +7577,9 @@
           }
         }
       }
+    },
+    "Key 1" : {
+      "extractionState" : "manual"
     },
     "news.latest_business_news.title" : {
       "extractionState" : "manual",

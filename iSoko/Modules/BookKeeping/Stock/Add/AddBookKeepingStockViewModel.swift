@@ -25,8 +25,8 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     var gotoSelectLocation: (CommonUtilityOption, _ completion: @escaping (LocationModel?) -> Void) -> Void = { _, _ in }
 
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
+    var goToComoditySelection: (_ completion: @escaping (CommodityV1Response?) -> Void) -> Void = { _ in }
 
-    
     var goToShowSuccessScreen: (() -> Void)?
 
     var showCountryPicker: ((@escaping (Country) -> Void) -> Void) -> Void = { _ in }
@@ -54,6 +54,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
                     dateRow,
                     productNameInputRow,
                     supplierDropdownRow,
+                    commodityTypeRow,
                     unitCostInputRow,
                     measurementUnitRow,
                     quantityInputRow,
@@ -179,6 +180,19 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         )
     )
     
+    private lazy var commodityTypeRow = DropdownFormRow(
+        tag: CellTag.commodityType.rawValue,
+        config: DropdownFormConfig(
+            title: "Type of Commodity",
+            placeholder: "Select commodity type",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in
+                self?.handleCommoditySelection()
+            }
+        )
+    )
+    
     private lazy var publishedRow = CheckRow(
         tag: CellTag.published.rawValue,
         config: .init(
@@ -208,14 +222,16 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             config: TextViewConfig(fixedHeight: 120),
             validation: ValidationConfiguration(isRequired: true),
             titleText: "",
-            onTextChanged: { [weak self] text in self?.state.description = text }
+            onTextChanged: { [weak self] text in
+                self?.state.description = text
+            }
         )
     )
 
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Add Stock",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -259,6 +275,19 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             self.reloadRow(withTag: row.tag)
         }
     }
+    
+    private func handleCommoditySelection() {
+        goToComoditySelection() { [weak self] value in
+            guard let self, let value else { return }
+            
+            self.state.selectedCommodity = value
+            
+            let row = self.commodityTypeRow
+            row.config.placeholder = value.name ?? ""
+            
+            self.reloadRow(withTag: row.tag)
+        }
+    }
 
     // MARK: - Reload
     private func reloadRow(withTag tag: Int) {
@@ -274,6 +303,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private func submit() async {
         // Make sure required fields exist
         guard
+            let commodity = state.selectedCommodity,
             let supplierId = state.supplier?.id,
             let measurementUnitId = state.selectedMeasurement?.id,
             let price = Double(state.unitCost),       // convert to number if needed
@@ -282,21 +312,23 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             showError("Please fill all required fields correctly")
             return
         }
-        
+   
         // Prepare the parameters
         let record: [String: Any] = [
             "name": state.productName,
             "price": price,
             "quantity": quantity,
             "supplierId": supplierId,
+            "commodityId": commodity.id,
             "measurementUnitId": measurementUnitId,
             "description": state.description.isEmpty ? "n/a" : state.description,
-            "minimumOrderQuantity": quantity,
+            "minimumOrderQuantity": Int(state.lowStockLevel) ?? 0,
             "stockAlertThreshold": Int(state.lowStockLevel) ?? 0,
             "inStock": state.inStock,
             "published": state.published,
-            "description": state.description ?? ""
+            "bookkeepingStock": true
         ]
+
         
         // Submit
         let success = await submitStockRecord(parameters: record)
@@ -343,6 +375,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private struct State {
         var supplier: CommonIdNameModel?
         var selectedMeasurement: CommonIdNameModel?
+        var selectedCommodity: CommodityV1Response?
 
         var date: Date?
         var dateString: String = ""
@@ -379,6 +412,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         case inStock
         case published
         case description
+        case commodityType
     }
     
 }

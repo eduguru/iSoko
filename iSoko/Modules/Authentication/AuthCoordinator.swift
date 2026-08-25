@@ -235,7 +235,7 @@ class AuthCoordinator: BaseCoordinator {
 
         viewModel.goToLogin = { [weak self] in
             self?.goToShowSuccessScreen(
-                title: "common.registration_success_title".localized,
+                title: "common.success.title".localized,
                 message: "common.registration_success_message".localized
             ) { [weak self] in
                 let verifier = AppStorage.verifier ?? ""

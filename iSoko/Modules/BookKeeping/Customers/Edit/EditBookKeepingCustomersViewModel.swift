@@ -102,22 +102,22 @@ final class EditBookKeepingCustomersViewModel: FormViewModel {
 
     private lazy var townInputRow = makeInputRow(
         tag: Tags.Cells.town.rawValue,
-        title: "Town",
-        placeholder: "Town",
+        title: "common.town".localized,
+        placeholder: "common.town".localized,
         keyboard: .default
     )
 
     private lazy var streetAddressInputRow = makeInputRow(
         tag: Tags.Cells.streetAddress.rawValue,
-        title: "Street Address",
-        placeholder: "Street Address",
+        title: "common.street_address".localized,
+        placeholder: "common.street_address".localized,
         keyboard: .default
     )
 
     private lazy var addCustomerButtonRow = ButtonFormRow(
         tag: Tags.Cells.addCustomerButton.rawValue,
         model: ButtonFormModel(
-            title: "Update Customer",
+            title: "common.button.continue".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

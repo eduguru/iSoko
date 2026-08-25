@@ -44,41 +44,53 @@
 	<string>$(LEGACY_CORE_DOMAIN)</string>
 	<key>LEGACY_CORE_PATH</key>
 	<string>$(LEGACY_CORE_PATH)</string>
+
+	<!-- Permissions: kept only where there's a clear, matching feature -->
+
 	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to allow you to upload photos.</string>
+	<string>Isoko uses your camera so you can take photos for product reviews, or scan a barcode/QR code to quickly find a product.</string>
+
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need photo library access to allow you to upload images.</string>
+	<string>Isoko accesses your photo library so you can attach photos to product reviews or set a profile picture.</string>
+
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need access to save photos to your library.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need microphone access to record audio (if needed).</string>
+	<string>Isoko saves your order receipts and confirmation images to your photo library so you can access them later.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need your location to provide better recommendations.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need your location to provide better recommendations even when the app is in background.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to provide better recommendations.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>We need access to contacts to help you connect with people.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>We need access to calendars to add events.</string>
-	<key>NSRemindersUsageDescription</key>
-	<string>We need access to reminders to add reminders.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>We need motion access to track activity.</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We need Bluetooth access to connect to nearby devices.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>We need Bluetooth access to connect to nearby devices.</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>We need Apple Music access to play music.</string>
+	<string>Isoko uses your location to show delivery availability, estimate shipping times, and find the nearest pickup point.</string>
+
 	<key>NSFaceIDUsageDescription</key>
-	<string>We need Face ID to authenticate your account securely.</string>
+	<string>Isoko uses Face ID to securely sign you in and authorize payments.</string>
+
+	<!-- Removed (no clear ecommerce use case):
+	     NSMicrophoneUsageDescription
+	     NSLocationAlwaysUsageDescription
+	     NSLocationAlwaysAndWhenInUseUsageDescription
+	     NSContactsUsageDescription
+	     NSCalendarsUsageDescription
+	     NSRemindersUsageDescription
+	     NSMotionUsageDescription
+	     NSBluetoothAlwaysUsageDescription
+	     NSBluetoothPeripheralUsageDescription
+	     NSAppleMusicUsageDescription
+	     If any of these map to a real feature (e.g. voice search, gift-to-contact,
+	     delivery-day calendar entries), add the key back with a specific string
+	     rather than a generic one. -->
+
 	<key>NSAppTransportSecurity</key>
 	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>isoko.africa</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+		</dict>
 	</dict>
+
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

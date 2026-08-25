@@ -299,8 +299,69 @@ final class BasicProfileDataViewModel: FormViewModel {
             }
         )
     }
+    
+    private func validateForm() -> Bool {
+        guard let state else { return false }
+
+        guard let firstName = state.firstName,
+              !firstName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Please enter your first name.")
+            return false
+        }
+
+        guard let lastName = state.lastName,
+              !lastName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("Please enter your last name.")
+            return false
+        }
+
+        guard state.gender != nil else {
+            showError("Please select your gender.")
+            return false
+        }
+
+        guard state.ageRange != nil else {
+            showError("Please select your age range.")
+            return false
+        }
+
+        guard state.roles != nil else {
+            showError("Please select your role.")
+            return false
+        }
+
+        guard state.registrationBuilder.country != nil else {
+            showError("Please select your country.")
+            return false
+        }
+
+        guard state.location != nil else {
+            showError("Please select your location.")
+            return false
+        }
+
+        if state.registrationBuilder.email == nil {
+            guard let email = state.email,
+                  !email.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                showError("Please enter your email address.")
+                return false
+            }
+        }
+
+        if state.registrationBuilder.phoneNumber == nil {
+            guard let phone = state.phoneNumber,
+                  !phone.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                showError("Please enter your phone number.")
+                return false
+            }
+        }
+
+        return true
+    }
 
     private func validateAndProceed() async {
+        guard validateForm() else { return }
+        
         guard let builder = mapToRegistrationBuilder() else { return }
 
         showLoader()

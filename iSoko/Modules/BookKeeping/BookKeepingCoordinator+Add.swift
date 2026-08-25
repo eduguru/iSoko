@@ -33,6 +33,8 @@ public extension BookKeepingCoordinator {
     func goToAddBookKeepingStock() {
         let model = AddBookKeepingStockViewModel()
         
+        model.goToComoditySelection = goToComoditySelection
+        
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
@@ -47,7 +49,7 @@ public extension BookKeepingCoordinator {
         
         router.push(vc)
     }
-    
+
     func goToAddBookKeepingCustomer() {
         let model = AddBookKeepingCustomersViewModel()
         model.goToShowSuccessScreen = goToShowSuccessScreen
@@ -182,6 +184,7 @@ public extension BookKeepingCoordinator {
     func goToEditBookKeepingStock(stock: StockResponse) {
         let model = EditBookKeepingStockViewModel(stock: stock)
         
+        model.goToComoditySelection = goToComoditySelection
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
