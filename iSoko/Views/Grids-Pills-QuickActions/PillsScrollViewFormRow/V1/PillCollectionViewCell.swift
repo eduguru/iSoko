@@ -9,6 +9,8 @@ import UIKit
 import UtilsKit
 
 class PillCollectionViewCell: UICollectionViewCell {
+    
+    var respectsFixedWidth: Bool = false
 
     private let pillLabel: UILabel = {
         let label = UILabel()
@@ -86,18 +88,21 @@ class PillCollectionViewCell: UICollectionViewCell {
 
     // --- This enables autosizing for dynamic collection view cells ---
     override func preferredLayoutAttributesFitting(_ layoutAttributes: UICollectionViewLayoutAttributes) -> UICollectionViewLayoutAttributes {
+        // In segmentedStretch the delegate provides exact sizes; don't override them
+        guard !respectsFixedWidth else { return layoutAttributes }
+
         setNeedsLayout()
         layoutIfNeeded()
 
-        let targetSize = CGSize(width: UIView.layoutFittingCompressedSize.width,
-                                height: UIView.layoutFittingCompressedSize.height)
-
+        let targetSize = CGSize(
+            width: UIView.layoutFittingCompressedSize.width,
+            height: UIView.layoutFittingCompressedSize.height
+        )
         let size = contentView.systemLayoutSizeFitting(
             targetSize,
             withHorizontalFittingPriority: .fittingSizeLevel,
             verticalFittingPriority: .required
         )
-
         layoutAttributes.size = size
         return layoutAttributes
     }

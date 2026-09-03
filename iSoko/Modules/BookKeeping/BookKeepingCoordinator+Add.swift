@@ -232,6 +232,7 @@ public extension BookKeepingCoordinator {
     
     func goToEditBookKeepingCustomer(customer: CustomerResponse) {
         let model = EditBookKeepingCustomersViewModel(customer: customer)
+        
         model.goToShowSuccessScreen = goToShowSuccessScreen
         model.gotoSelectSystemCountry = gotoSelectSystemCountry
         
@@ -265,6 +266,9 @@ public extension BookKeepingCoordinator {
     
     func goToEditBookKeepingExpenses(expense: ExpenseResponse) {
         let model = EditBookKeepingExpensesViewModel(expense: expense)
+        
+        model.gotoConfirm = { }
+        model.goToShowSuccessScreen = goToShowSuccessScreen
         model.goToDateSelection = gotoSelectDate
         model.goToCommonSelectionOptions = goToCommonSelection
         

@@ -27,6 +27,8 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     var goToAddSupplier: (() -> Void)? = { }
 
     var gotoConfirm: (() -> Void)? = { }
+    var goToShowSuccessScreen: (() -> Void)?
+    
     var goToDateSelection: (DatePickerConfig, @escaping (Date?) -> Void) -> Void = { _, _ in }
 
     // MARK: - Services
@@ -321,7 +323,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     // MARK: - Submit
     private func submit() async {
         let success = await performNetworkRequest()
-        if success { gotoConfirm?() }
+        if success { goToShowSuccessScreen?() }
     }
 
     private func performNetworkRequest() async -> Bool {
@@ -381,9 +383,9 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
             self.expense = expense
             self.amount = expense.amount.map { "\($0)" } ?? ""
             self.description = expense.description ?? ""
-            self.categories = CommonIdNameModel(from: expense.category) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
-            self.paymentMethod = CommonIdNameModel(from: expense.paymentMethod) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
-            self.supplier = CommonIdNameModel(from: expense.supplier) ?? CommonIdNameModel(id: -1, name: "Unknown", description: nil)
+            self.categories = CommonIdNameModel(from: expense.category)      // nil if missing
+            self.paymentMethod = CommonIdNameModel(from: expense.paymentMethod) // nil if missing
+            self.supplier = CommonIdNameModel(from: expense.supplier)        // nil if missing
             self.date = expense.expenseDate.flatMap { Helpers.parseDate($0) } ?? Date()
             self.dateString = Helpers.format(self.date!)
         }

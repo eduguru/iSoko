@@ -10,18 +10,38 @@ import UIKit
 import UtilsKit
 import StorageKit
 
+
+enum OrderType {
+    case placedByMe
+    case receivedByMe
+
+    var traderType: String {
+        switch self {
+        case .placedByMe:
+            return "buyer"
+        case .receivedByMe:
+            return "seller"
+        }
+    }
+}
+
+@MainActor
 final class MyOrdersViewModel: FormViewModel {
+
+    var goToReorder: ((CustomerOrderResponse) -> Void)?
     var goToDetails: ((CustomerOrderResponse) -> Void)?
-    
+    var goToShowSuccessScreen: (() -> Void)?
+
     private var state = State()
-    
-    // MARK: - Services
+    private let orderType: OrderType
+
     private let ordersService = NetworkEnvironment.shared.ordersService
+    @MainActor private let countryHelper = CountryHelper()
     
-    // MARK: - Search Debounce Task
     private var searchTask: Task<Void, Never>?
-    
-    override init() {
+
+    init(orderType: OrderType) {
+        self.orderType = orderType
         super.init()
         self.sections = makeSections()
     }
@@ -57,7 +77,7 @@ final class MyOrdersViewModel: FormViewModel {
             let response = try await ordersService.getAllOrders(
                 page: 1,
                 count: 10,
-                traderType: "buyer",
+                traderType: orderType.traderType,
                 accessToken: state.oauthToken
             )
             
@@ -110,7 +130,7 @@ final class MyOrdersViewModel: FormViewModel {
             ),
             FormSection(
                 id: Tags.Section.filterPills.rawValue,
-                cells: [makeFilterPillsRow()]
+                cells: [filterPillsRow]
             ),
             FormSection(
                 id: Tags.Section.recentActivities.rawValue,
@@ -119,8 +139,26 @@ final class MyOrdersViewModel: FormViewModel {
         ]
     }
     
+    private func reloadFilterPillsSection() {
+        guard let sectionIndex = sections.firstIndex(where: {
+            $0.id == Tags.Section.filterPills.rawValue
+        }) else { return }
+
+        sections[sectionIndex].cells = [filterPillsRow]
+        reloadSection(sectionIndex)
+    }
+    
     // MARK: - Filter Pills
-    private let orderStatuses = ["All", "Pending", "Completed", "Rejected"]
+    private var orderStatuses: [String] {
+        switch orderType {
+        case .placedByMe:
+            return ["All", "Pending", "Confirmed", "Cancelled", "Rejected", "Delivered"]
+        case .receivedByMe:
+            return ["All", "Pending", "Confirmed", "Rejected", "Delivered"]
+        }
+    }
+    
+    private lazy var filterPillsRow: FormRow = makeFilterPillsRow()
     
     private func makeFilterPillsRow() -> FormRow {
         let items = orderStatuses.map { status in
@@ -130,11 +168,14 @@ final class MyOrdersViewModel: FormViewModel {
                 isSelected: status == state.selectedStatus
             )
         }
-        
+
+        // segmentedStretch only works cleanly for <= 4 items; scrollable for more
+        let layout: PillsLayoutMode = items.count <= 4 ? .segmentedStretch : .scrollable
+
         return PillsFormRowV2(
             tag: 9000,
             items: items,
-            layoutMode: .segmentedStretch,
+            layoutMode: layout,
             selectionMode: .single
         ) { [weak self] selectedItems in
             guard let self else { return }
@@ -214,41 +255,16 @@ final class MyOrdersViewModel: FormViewModel {
     }()
     
     private func makeTransactionActionRows() -> [FormRow] {
-        filteredItems.enumerated().map { index, order in
+        
+        let currency = countryHelper.currencyString(
+            for: AppStorage.selectedRegionCode ?? ""
+        )
+        
+        return filteredItems.enumerated().map { index, order in
             let firstProduct = order.products?.first
             let statusStyle = makeStatusStyle(for: order.status)
             
-            let actions: [ActionButtonConfig] = {
-                switch order.status.lowercased() {
-                case "pending":
-                    return [
-                        ActionButtonConfig(
-                            title: "common.button.confirm".localized,
-                            style: .subtle,
-                            backgroundColor: UIColor.systemGreen.withAlphaComponent(0.12),
-                            textColor: .systemGreen,
-                            onTap: { [weak self] in self?.confirmOrder(order) }
-                        ),
-                        ActionButtonConfig(
-                            title: "Reject",
-                            style: .outlined,
-                            textColor: .systemOrange,
-                            borderColor: .systemOrange,
-                            onTap: { [weak self] in self?.rejectOrder(order) }
-                        )
-                    ]
-                default:
-                    return [
-                        ActionButtonConfig(
-                            title: "common.action.view_details".localized,
-                            style: .subtle,
-                            backgroundColor: UIColor.systemGray5,
-                            textColor: .systemGreen,
-                            onTap: { [weak self] in self?.goToDetails?(order) }
-                        )
-                    ]
-                }
-            }()
+            let actions: [ActionButtonConfig] = makeActions(for: order)
             
             return OrderItemFormRow(
                 tag: 5000 + index,
@@ -260,7 +276,7 @@ final class MyOrdersViewModel: FormViewModel {
                     statusTextColor: statusStyle.textColor,
                     statusBorderColor: statusStyle.borderColor,
                     statusBackgroundColor: statusStyle.backgroundColor,
-                    amount: "KES \(order.amount)",
+                    amount: "\(currency) \(order.amount)",
                     amountColor: .systemGreen,
                     productImage: UIImage(named: "placeholder-product"),
                     productName: firstProduct?.product.name ?? "Unknown Product",
@@ -269,6 +285,70 @@ final class MyOrdersViewModel: FormViewModel {
                     actions: actions
                 )
             )
+        }
+    }
+
+    private func makeActions(for order: CustomerOrderResponse) -> [ActionButtonConfig] {
+        let status = order.status.lowercased()
+        
+        let detailsAction = ActionButtonConfig(
+            title: "common.action.view_details".localized,
+            style: .subtle,
+            backgroundColor: UIColor.systemGray5,
+            textColor: .systemGreen,
+            onTap: { [weak self] in self?.goToDetails?(order) }
+        )
+        
+        let cancelAction = ActionButtonConfig(
+            title: "Cancel",
+            style: .outlined,
+            textColor: .systemRed,
+            borderColor: .systemRed,
+            onTap: { [weak self] in self?.cancelOrder(order) }
+        )
+        
+        let reorderAction = ActionButtonConfig(
+            title: "Reorder",
+            style: .subtle,
+            backgroundColor: UIColor.systemBlue.withAlphaComponent(0.12),
+            textColor: .systemBlue,
+            onTap: { [weak self] in self?.reorderOrder(order) }
+        )
+        
+        let confirmAction = ActionButtonConfig(
+            title: "common.button.confirm".localized,
+            style: .subtle,
+            backgroundColor: UIColor.systemGreen.withAlphaComponent(0.12),
+            textColor: .systemGreen,
+            onTap: { [weak self] in self?.confirmOrder(order) }
+        )
+        
+        let rejectAction = ActionButtonConfig(
+            title: "Reject",
+            style: .outlined,
+            textColor: .systemOrange,
+            borderColor: .systemOrange,
+            onTap: { [weak self] in self?.rejectOrder(order) }
+        )
+        
+        switch orderType {
+        case .placedByMe:
+            switch status {
+            case "pending", "confirmed":
+                return [cancelAction, detailsAction]
+            case "cancelled", "rejected", "delivered":
+                return [reorderAction, detailsAction]
+            default:
+                return [detailsAction]
+            }
+            
+        case .receivedByMe:
+            switch status {
+            case "pending":
+                return [confirmAction, rejectAction]
+            default:
+                return [detailsAction]
+            }
         }
     }
     
@@ -320,25 +400,7 @@ final class MyOrdersViewModel: FormViewModel {
 
 // MARK: - Order Actions
 private extension MyOrdersViewModel {
-    
-    func confirmOrder(_ order: CustomerOrderResponse) {
-        updateOrderStatus(
-            orderId: order.id,
-            status: "confirmed"
-        )
-    }
-    
-    func rejectOrder(_ order: CustomerOrderResponse) {
-        updateOrderStatus(
-            orderId: order.id,
-            status: "rejected"
-        )
-    }
-    
-    func updateOrderStatus(
-        orderId: Int,
-        status: String
-    ) {
+    func updateOrderStatus(orderId: Int, status: String) {
         showLoader()
         
         Task {
@@ -362,6 +424,7 @@ private extension MyOrdersViewModel {
                     
                     if didRefreshOrders {
                         self.updateRecentActivitiesSection()
+                        self.goToShowSuccessScreen?()   // ADD
                     }
                 }
                 
@@ -372,5 +435,26 @@ private extension MyOrdersViewModel {
                 }
             }
         }
+    }
+}
+
+
+// MARK: - Order Actions
+private extension MyOrdersViewModel {
+    func confirmOrder(_ order: CustomerOrderResponse) {
+        updateOrderStatus(orderId: order.id, status: "confirmed")
+    }
+    
+    func rejectOrder(_ order: CustomerOrderResponse) {
+        updateOrderStatus(orderId: order.id, status: "rejected")
+    }
+    
+    func cancelOrder(_ order: CustomerOrderResponse) {
+        updateOrderStatus(orderId: order.id, status: "cancelled")
+    }
+    
+    func reorderOrder(_ order: CustomerOrderResponse) {
+        // Hook up to goToReorder?(order)
+        goToReorder?(order)
     }
 }

@@ -51,30 +51,30 @@ public final class PillsFormRowV2: FormRow {
 
         return cell
     }
-
+    
     public func preferredHeight(for indexPath: IndexPath) -> CGFloat {
-        return 56
+        switch layoutMode {
+        case .scrollable:
+            return 56
+        case .segmentedStretch:
+            // Each row of pills is 40px tall + 16px insets; calculate rows needed
+            let screenWidth = UIScreen.main.bounds.width
+            let interItemSpacing: CGFloat = 12
+            let sectionInsets: CGFloat = 32 // 16 left + 16 right
+            let pillHeight: CGFloat = 40
+            let verticalInsets: CGFloat = 16 // 8 top + 8 bottom
+
+            let availableWidth = screenWidth - sectionInsets
+            let itemWidth = (availableWidth - (CGFloat(items.count - 1) * interItemSpacing)) / CGFloat(items.count)
+
+            // If any item's text doesn't fit its calculated width, it needs to scroll
+            let allFit = items.allSatisfy { item in
+                let textWidth = (item.title as NSString)
+                    .size(withAttributes: [.font: item.font]).width + item.horizontalPadding * 2
+                return textWidth <= itemWidth
+            }
+
+            return allFit ? pillHeight + verticalInsets : 56
+        }
     }
 }
-
-//
-//private func makePillsOptionsFormRow() -> FormRow {
-//    PillsFormRowV2(
-//        tag: 98,
-//        items: [
-//            PillItem(id: "1", title: "Cash"),
-//            PillItem(id: "2", title: "Credit")
-//        ],
-//        layoutMode: .segmentedStretch,
-//        selectionMode: .single
-//    ) { items in
-//        print(items.first(where: { $0.isSelected }))
-//    }
-//    
-//        PillsFormRowV2(
-//            tag: 99,
-//            items: options,
-//            layoutMode: .scrollable,
-//            selectionMode: .multiple
-//        )
-//}

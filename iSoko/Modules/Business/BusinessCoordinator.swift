@@ -76,8 +76,9 @@ public class BusinessCoordinator: BaseCoordinator {
             return
         }
         
-        let viewModel = MyOrdersViewModel()
+        let viewModel = MyOrdersViewModel(orderType: .receivedByMe)
         viewModel.goToDetails = goToOrderDetails
+        viewModel.goToShowSuccessScreen = goToShowSuccessScreen
         
         let vc = MyOrdersViewController()
         vc.viewModel = viewModel
@@ -103,6 +104,16 @@ public class BusinessCoordinator: BaseCoordinator {
         
         router.push(vc)
     }
+    
+    func goToShowSuccessScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert() { [weak self] in
+            self?.router.pop()
+        }
+    }
+
     
     private func goToAnalytics() {
         guard AppStorage.hasLoggedIn == true else {

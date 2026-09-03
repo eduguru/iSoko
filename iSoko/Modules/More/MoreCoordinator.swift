@@ -261,8 +261,9 @@ public class MoreCoordinator: BaseCoordinator {
             return
         }
         
-        let viewModel = MyOrdersViewModel()
+        let viewModel = MyOrdersViewModel(orderType: .placedByMe)
         viewModel.goToDetails = goToOrderDetails
+        viewModel.goToShowSuccessScreen = goToShowSuccessScreen
         
         let vc = MyOrdersViewController()
         vc.viewModel = viewModel
@@ -273,6 +274,16 @@ public class MoreCoordinator: BaseCoordinator {
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
     }
+    
+    func goToShowSuccessScreen() {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+        
+        coordinator.presentSuccessAlert() { [weak self] in
+            self?.router.pop()
+        }
+    }
+
     
     func goToOrderDetails(_ item: CustomerOrderResponse) {
         let model = MyOrderDetailsViewModel(item)
