@@ -16,10 +16,9 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Callbacks
     var onProductTap: ((ProductResponseV1) -> Void)?
     var onViewStoreTap: ((TraderV1) -> Void)?
-    
     var onToggleFavorite: ((ProductResponseV1, Bool) -> Void)?
-    
     var onPlaceOrder: ((PlaceOrderPayload) -> Void)?
+    
     private var selectedQuantity: Int
 
     // MARK: - State
@@ -32,9 +31,7 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Init
     init(_ product: ProductResponseV1) {
         self.state = State(product: product)
-        
         self.selectedQuantity = product.minimumOrderQuantity ?? 1
-        
         super.init()
         self.sections = makeSections()
     }
@@ -42,13 +39,16 @@ final class ProductDetailsViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         Task {
-            let success = await fetchSimilarProducts()
+            async let similarProducts = fetchSimilarProducts()
+            async let reviews = fetchReviews()
 
-            if !success {
-                print("Failed to fetch product data")
+            let (didFetchSimilar, _) = await (similarProducts, reviews)
+
+            if !didFetchSimilar {
+                print("Failed to fetch similar products")
             }
 
-            DispatchQueue.main.async { [weak self] in
+            await MainActor.run { [weak self] in
                 self?.sections = self?.makeSections() ?? []
             }
         }
@@ -56,7 +56,6 @@ final class ProductDetailsViewModel: FormViewModel {
 
     // MARK: - Sections
     private func makeSections() -> [FormSection] {
-
         let images = prepareProductImages()
 
         return [
@@ -75,7 +74,6 @@ final class ProductDetailsViewModel: FormViewModel {
                     SpacerFormRow(tag: -0001, height: 16),
                     categotyTitleRow,
                     SpacerFormRow(tag: -0001, height: 16),
-                    // priceRow,
                     minimumQuantityRow,
                     SpacerFormRow(tag: -0001, height: 16),
                     quantityRow,
@@ -86,12 +84,105 @@ final class ProductDetailsViewModel: FormViewModel {
                     SpacerFormRow(tag: -0001, height: 16),
                     storeProfileRow,
                     SpacerFormRow(tag: -0001, height: 16),
-                    descriptionRow
                 ]
             ),
 
+            makeDescriptionReviewsSection(),
             similarProductsSection()
         ]
+    }
+
+    // MARK: - Description & Reviews Section
+    private func makeDescriptionReviewsSection() -> FormSection {
+        var cells: [FormRow] = [descriptionReviewsSegmentRow]
+
+        switch state.selectedDescriptionSegment {
+        case 0:
+            cells.append(SpacerFormRow(tag: -10, height: 12))
+            cells.append(descriptionRow)
+        case 1:
+            cells.append(SpacerFormRow(tag: -11, height: 12))
+            cells.append(contentsOf: makeReviewRows())
+        default:
+            break
+        }
+
+        return FormSection(
+            id: Tags.Section.descriptionReviews.rawValue,
+            cells: cells
+        )
+    }
+
+    private func makeReviewRows() -> [FormRow] {
+        guard !state.reviews.isEmpty else {
+            return [
+                TitleDescriptionFormRow(
+                    tag: Tags.Cells.emptyReviews.rawValue,
+                    model: TitleDescriptionModel(
+                        title: "No reviews yet",
+                        description: "Be the first to review this product",
+                        layoutStyle: .stackedVertical,
+                        textAlignment: .center,
+                        titleFontStyle: .body,
+                        descriptionFontStyle: .subheadline
+                    )
+                )
+            ]
+        }
+
+        return state.reviews.enumerated().map { index, review in
+            let reviewerName = review.reviewer?.email ?? "Anonymous"
+            let rating = review.rating ?? 0
+            let stars = String(repeating: "★", count: Int(rating)) +
+                        String(repeating: "☆", count: max(0, 5 - Int(rating)))
+            let date = review.datetimeCreated.flatMap { formatReviewDate($0) } ?? ""
+
+            return TitleDescriptionFormRow(
+                tag: Tags.Cells.review.rawValue + index,
+                model: TitleDescriptionModel(
+                    title: "\(stars)  \(reviewerName)",
+                    description: "\(review.review ?? "")\n\(date)",
+                    maxTitleLines: 1,
+                    layoutStyle: .stackedVertical,
+                    textAlignment: .left,
+                    titleFontStyle: .subheadline,
+                    descriptionFontStyle: .body
+                )
+            )
+        }
+    }
+
+    private lazy var descriptionReviewsSegmentRow: FormRow = makeDescriptionReviewsSegmentRow()
+
+    private func makeDescriptionReviewsSegmentRow() -> FormRow {
+        SegmentedFormRow(
+            model: SegmentedFormModel(
+                title: nil,
+                segments: ["Description", "Reviews"],
+                selectedIndex: state.selectedDescriptionSegment,
+                tag: Tags.Cells.descriptionSegment.rawValue,
+                tintColor: .gray,
+                selectedSegmentTintColor: .app(.primary),
+                backgroundColor: .white,
+                titleTextColor: .darkGray,
+                segmentTextColor: .lightGray,
+                selectedSegmentTextColor: .white,
+                onSelectionChanged: { [weak self] index in
+                    guard let self else { return }
+                    self.state.selectedDescriptionSegment = index
+                    self.reloadDescriptionReviewsSection()
+                }
+            )
+        )
+    }
+
+    private func reloadDescriptionReviewsSection() {
+        guard let index = sections.firstIndex(where: {
+            $0.id == Tags.Section.descriptionReviews.rawValue
+        }) else { return }
+
+        sections[index].cells = makeDescriptionReviewsSection().cells
+        reloadSection(index)
     }
 
     private func similarProductsSection() -> FormSection {
@@ -120,20 +211,14 @@ final class ProductDetailsViewModel: FormViewModel {
                 let url = URL(string: urlString)
             else { return nil }
 
-            return ProductImage(
-                url: url,
-                isFeatured: image.primary ?? false
-            )
+            return ProductImage(url: url, isFeatured: image.primary ?? false)
         }
 
         let sorted = mapped.sorted { $0.isFeatured && !$1.isFeatured }
-
         return sorted.isEmpty ? placeholderImages() : sorted
     }
 
-    private func placeholderImages() -> [ProductImage] {
-        []
-    }
+    private func placeholderImages() -> [ProductImage] { [] }
 
     // MARK: - Rows
     lazy var categotyTitleRow: FormRow = makeCategotyTitleRow()
@@ -150,13 +235,10 @@ final class ProductDetailsViewModel: FormViewModel {
     ) { [weak self] value in
         guard let self else { return }
         self.selectedQuantity = value
-        print("Quantity changed: \(value)")
     }
 
     // MARK: - Row Builders
-
     private func makeCategotyTitleRow() -> FormRow {
-
         let name = state.product.name ?? "Unnamed Product"
         let category = state.product.categoryName?.lowercased().capitalized ?? "Uncategorized"
 
@@ -175,18 +257,11 @@ final class ProductDetailsViewModel: FormViewModel {
     }
 
     private func makePriceRow() -> FormRow {
-
-        let currency = countryHelper.currencyString(
-            for: AppStorage.selectedRegionCode ?? ""
-        )
-
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let priceText: String = {
-            guard let price = state.product.price else {
-                return "Price on request"
-            }
+            guard let price = state.product.price else { return "Price on request" }
             return "\(currency) \(String(format: "%.2f", price))"
         }()
-
         let unit = state.product.measurementUnit?.name ?? "unit"
 
         return TitleDescriptionFormRow(
@@ -203,7 +278,6 @@ final class ProductDetailsViewModel: FormViewModel {
     }
 
     private func makeDescriptionRow() -> FormRow {
-
         let description = state.product.description?.isEmpty == false
             ? state.product.description!
             : "No description available"
@@ -223,27 +297,17 @@ final class ProductDetailsViewModel: FormViewModel {
     }
 
     private func makeMinimumQuantityRow() -> FormRow {
-
         let product = state.product
-
-        let currency = countryHelper.currencyString(
-            for: AppStorage.selectedRegionCode ?? ""
-        )
-
+        let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
         let priceText: String = {
-            guard let price = product.price else {
-                return "Price on request"
-            }
+            guard let price = product.price else { return "Price on request" }
             return "\(currency) \(String(format: "%.2f", price))"
         }()
-
         let unit = product.measurementUnit?.name ?? "unit"
         let minQty = product.minimumOrderQuantity ?? 1
-        
-        // let rating = product.rating ?? 0
 
         let model = ProductSummaryModel(
-            title: "",//product.categoryName ?? "Unnamed Category",
+            title: "",
             rating: 0,
             reviewCount: 0,
             location: "",
@@ -256,9 +320,7 @@ final class ProductDetailsViewModel: FormViewModel {
     }
 
     private func makeStoreProfileRow() -> FormRow {
-
         let traderName = state.product.traderFullName ?? "Seller"
-
         let phoneNumber = state.product.trader?.phoneNumber
         let email = state.product.trader?.email
         let whatsappNumber = state.product.trader?.whatsappNumber
@@ -273,10 +335,8 @@ final class ProductDetailsViewModel: FormViewModel {
                 trailingButtonTitle: "View Store",
                 onTrailingButtonTap: { [weak self] in
                     guard let trader = self?.state.product.trader else { return }
-
                     self?.onViewStoreTap?(trader)
                 },
-
                 actions: [
                     .init(
                         title: "WhatsApp",
@@ -311,7 +371,6 @@ final class ProductDetailsViewModel: FormViewModel {
                         }
                     )
                 ],
-
                 cornerRadius: 20,
                 backgroundColor: .systemBackground,
                 borderColor: .systemGray5,
@@ -319,9 +378,7 @@ final class ProductDetailsViewModel: FormViewModel {
             )
         )
     }
-    
-    // MARK: - Description Row
-    
+
     private lazy var instructionsRow = LongInputDescriptionFormRow(
         tag: Tags.Cells.message.rawValue,
         model: LongInputDescriptionModel(
@@ -357,9 +414,7 @@ final class ProductDetailsViewModel: FormViewModel {
                 hapticsEnabled: true
             ) { [weak self] in
                 guard let self else { return }
-
                 let product = self.state.product
-
                 let payload = PlaceOrderPayload(
                     product: product,
                     quantity: self.selectedQuantity,
@@ -368,14 +423,12 @@ final class ProductDetailsViewModel: FormViewModel {
                     unitPrice: product.price,
                     message: state.description
                 )
-
                 self.onPlaceOrder?(payload)
             }
         )
     }
 
     // MARK: - Similar Products
-
     private func makeSimilarProductsGridItems() -> [GridItemModel] {
         state.similarProduct.map { product in
             GridItemModel(
@@ -384,59 +437,77 @@ final class ProductDetailsViewModel: FormViewModel {
                 imageUrl: product.primaryImageURL ?? "",
                 title: product.name ?? "Unnamed Product",
                 subtitle: product.traderFullName ?? "",
-                price: product.price != nil
-                    ? "KES \(String(format: "%.2f", product.price!))"
-                    : nil,
+                price: product.price != nil ? "KES \(String(format: "%.2f", product.price!))" : nil,
                 isFavorite: false,
-                onTap: { [weak self] in
-                    self?.onProductTap?(product)
-                },
-                onToggleFavorite: { [weak self] fav in
-                    self?.onToggleFavorite?(product, fav)
-                }
+                onTap: { [weak self] in self?.onProductTap?(product) },
+                onToggleFavorite: { [weak self] fav in self?.onToggleFavorite?(product, fav) }
             )
         }
     }
 
     // MARK: - Network
+    @discardableResult
     private func fetchSimilarProducts() async -> Bool {
         do {
             let categoryId = state.product.category?.id ?? 0
-
             let response = try await productsService.getProductsByCategory(
                 page: 1,
                 count: 10,
                 categoryId: "\(categoryId)",
                 accessToken: state.guestToken
             )
-
             self.state.similarProduct = response.data
             return true
-
         } catch {
             print("❌ Error fetching similar products:", error)
             return false
         }
     }
 
+    @discardableResult
+    private func fetchReviews() async -> Bool {
+        do {
+            let productId = "\(state.product.id ?? 0)"
+            let reviews = try await productsService.listProductReviews(
+                productId: productId,
+                accessToken: state.guestToken
+            )
+            await MainActor.run {
+                self.state.reviews = reviews
+            }
+            return true
+        } catch {
+            print("❌ Error fetching reviews:", error)
+            return false
+        }
+    }
+
+    // MARK: - Date Helpers
+    private func formatReviewDate(_ isoString: String) -> String? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        guard let date = formatter.date(from: isoString) else { return nil }
+        let display = DateFormatter()
+        display.dateFormat = "dd MMM yyyy"
+        return display.string(from: date)
+    }
+
     // MARK: - State
     private struct State {
         var oauthToken: String = AppStorage.oauthToken?.accessToken ?? ""
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
-        
         var description: String = ""
-
         var product: ProductResponseV1
         var similarProduct: [ProductResponseV1] = []
+        var reviews: [ProductReviewResponse] = []
+        var selectedDescriptionSegment: Int = 0
     }
 
     // MARK: - Tags
     enum Tags {
         enum Section: Int {
             case productImages = 0
-            case titleAndDescription = 1
-            case price = 2
-            case categories = 3
+            case descriptionReviews = 1
             case similarProducts = 5
         }
 
@@ -446,6 +517,9 @@ final class ProductDetailsViewModel: FormViewModel {
             case price = 2
             case categories = 3
             case message = 4
+            case descriptionSegment = 5
+            case emptyReviews = 6
+            case review = 7000
         }
     }
 }

@@ -12,9 +12,6 @@ import StorageKit
 final class EventsListingViewModel: FormViewModel {
     
     // MARK: - Navigation
-//    var goToEventDetails: ((EventItem) -> Void)? = { _ in }
-//    var goToAssociationEventDetails: ((AssociationEventItem) -> Void)? = { _ in }
-    
     var goToEventDetails: ((UnifiedEventItem) -> Void)?
     
     // MARK: - Service
@@ -229,17 +226,6 @@ final class EventsListingViewModel: FormViewModel {
     }
 
     // MARK: - Tap Handlers
-
-//    private func handleEventTap(index: Int) {
-//        guard state.events.indices.contains(index) else { return }
-//        goToEventDetails?(state.events[index])
-//    }
-//    
-//    private func handleAssociationEventTap(index: Int) {
-//        guard state.associationEvents.indices.contains(index) else { return }
-//        goToAssociationEventDetails?(state.associationEvents[index])
-//    }
-    
     private func handleEventTap(index: Int) {
         guard state.events.indices.contains(index) else { return }
         goToEventDetails?(state.events[index].toUnified())

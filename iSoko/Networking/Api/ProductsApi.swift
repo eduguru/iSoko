@@ -325,4 +325,70 @@ public struct ProductsApi {
 
         return BasicUploadResponseTarget(target: target)
     }
+    
+    
+    //MARK: reviews
+    
+    public static func listProductReviews(productId: String, accessToken: String) -> ValueResponseTarget<[ProductReviewResponse]> {
+        let parameters: [String: Any] = [:]
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "https://api.dev.isoko.africa/v1/product/\(productId)/product-reviews",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    public static func addProductReview(productId: String, params: [String: Any], accessToken: String) -> ValueResponseTarget<ProductReviewResponse> {
+        let parameters: [String: Any] = params
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/product/edit/\(productId)",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
+    
+    public static func updateProductReviews(productId: String, params: [String: Any], accessToken: String) -> ValueResponseTarget<ProductReviewResponse> {
+        let parameters: [String: Any] = params
+
+        let headers = [
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer \(accessToken)"
+        ]
+        
+        let target = AnyTarget(
+            baseURL: ApiEnvironment.baseURL,
+            path: "api/product/edit/\(productId)",
+            method: .get,
+            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
+            headers: headers,
+            authorizationType: .bearer
+        )
+        
+        return ValueResponseTarget(target: target)
+    }
 }

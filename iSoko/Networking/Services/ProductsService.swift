@@ -97,4 +97,31 @@ public final class ProductsServiceImpl: ProductsService {
     public func updateProductStatus(status: String, productId: String, accessToken: String) async throws -> ProductOwnerResponse? {
         try await manager.request(ProductsApi.updateProductStatus(status: status, productId: productId, accessToken: accessToken))
     }
+    
+    //MARK: reviews
+
+    public func listProductReviews(productId: String, accessToken: String) async throws -> [ProductReviewResponse] {
+        let response: [ProductReviewResponse] = try await manager.request(
+            ProductsApi.listProductReviews(productId: productId, accessToken: accessToken)
+        )
+        
+        return response
+    }
+
+    public func addProductReview(productId: String, params: [String: Any], accessToken: String) async throws -> ProductReviewResponse? {
+        let response: ProductReviewResponse? = try await manager.request(
+            ProductsApi.addProductReview(productId: productId, params: params, accessToken: accessToken)
+        )
+        
+        return response
+    }
+
+    public func updateProductReviews(productId: String, params: [String: Any], accessToken: String) async throws -> ProductReviewResponse? {
+        let response: ProductReviewResponse? = try await manager.request(
+            ProductsApi.updateProductReviews(productId: productId, params: params, accessToken: accessToken)
+        )
+        
+        return response
+    }
+
 }
