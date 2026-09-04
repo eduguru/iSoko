@@ -32,6 +32,8 @@ public struct AssociationResponse: Codable {
     public let registrationStatus: String?
     public let documents: [AssociationDocument]?
     public let featured: Bool?
+    
+    public let logo: String?
 }
 
 public struct Contact: Codable {

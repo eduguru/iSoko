@@ -92,9 +92,17 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
 
         let viewModel = AssociationPublicProductsViewModel(item)
         viewModel.goToProductDetails = goToProduct
-        
+
+        viewModel.goToFilters = { [weak self] currentFilters, completion in
+            self?.goToProductFilters(currentFilters: currentFilters, completion: completion)
+        }
+
         let vc = AssociationPublicProductsViewController()
         vc.viewModel = viewModel
+
+        vc.goToSortOptions = { [weak self] onSelect in
+            self?.presentSortOptions(onSelect: onSelect)
+        }
 
         vc.closeAction = { [weak self] in
             self?.modalRouter?.pop(animated: true)
@@ -102,6 +110,39 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
 
         router.push(vc, animated: true)
         router.navigationControllerInstance?.navigationBar.isHidden = false
+    }
+    
+    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
+        guard let router = modalRouter else { return }
+        let vm = ProductFiltersViewModel(currentFilters: currentFilters)
+        vm.onFiltersConfirmed = completion
+        vm.onDismiss = { [weak self] in self?.modalRouter?.dismiss(animated: true) }
+
+        let vc = ProductFiltersViewController()
+        vc.viewModel = vm
+        vc.closeAction = { [weak self] in self?.modalRouter?.dismiss(animated: true) }
+
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .pageSheet
+        router.present(nav, animated: true)
+    }
+
+    private func presentSortOptions(onSelect: @escaping (ProductSortOption) -> Void) {
+        let coordinator = ModalCoordinator(router: modalRouter ?? router)
+        addChild(coordinator)
+
+        let options = ProductSortOption.allCases.map { option in
+            BottomSheetModel.BottomSheetItem(
+                id: option.rawValue,
+                title: option.rawValue,
+                isSelected: false
+            )
+        }
+
+        coordinator.presentOptionSelection(title: "Sort By", options: options) { selected in
+            guard let match = ProductSortOption(rawValue: selected.id) else { return }
+            onSelect(match)
+        }
     }
 
     // MARK: - Trade Association Details

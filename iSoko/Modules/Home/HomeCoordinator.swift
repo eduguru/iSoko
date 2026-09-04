@@ -154,18 +154,88 @@ public class HomeCoordinator: BaseCoordinator {
     
     private func goToAllProduct() {
         let viewModel = ProductListingsViewModel()
+        
         viewModel.onTapProduct = { [weak self] in
             self?.goToProduct($0)
         }
         
+        viewModel.goToFilters = { [weak self] currentFilters, completion in
+            self?.goToProductFilters(currentFilters: currentFilters, completion: completion)
+        }
+
         let vc = ProductListingsViewController()
         vc.viewModel = viewModel
+        
+        vc.goToSortOptions = { [weak self] onSelect in
+            self?.presentSortOptions(onSelect: onSelect)
+        }
+        
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
         }
-        
+
         router.navigationControllerInstance?.navigationBar.isHidden = false
         router.push(vc, animated: true)
+    }
+    
+    private func  onTapProductCategory(_ item: CommodityCategoryResponse) {
+        let viewModel = ProductListingsViewModel(category: item)
+        viewModel.onTapProduct = { [weak self] in
+            self?.goToProduct($0)
+        }
+        
+        viewModel.goToFilters = { [weak self] currentFilters, completion in
+            self?.goToProductFilters(currentFilters: currentFilters, completion: completion)
+        }
+
+        let vc = ProductListingsViewController()
+        vc.viewModel = viewModel
+        
+        vc.goToSortOptions = { [weak self] onSelect in
+            self?.presentSortOptions(onSelect: onSelect)
+        }
+        
+        vc.closeAction = { [weak self] in
+            self?.router.pop(animated: true)
+        }
+
+        router.navigationControllerInstance?.navigationBar.isHidden = false
+        router.push(vc, animated: true)
+    }
+
+    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
+        let vm = ProductFiltersViewModel(currentFilters: currentFilters)
+        vm.onFiltersConfirmed = completion
+        vm.onDismiss = { [weak self] in self?.router.dismiss(animated: true) }
+
+        let vc = ProductFiltersViewController()
+        vc.viewModel = vm
+        vc.closeAction = { [weak self] in self?.router.dismiss(animated: true) }
+
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .pageSheet
+        router.present(nav, animated: true)
+    }
+
+    private func presentSortOptions(onSelect: @escaping (ProductSortOption) -> Void) {
+        let coordinator = ModalCoordinator(router: router)
+        addChild(coordinator)
+
+        let options = ProductSortOption.allCases.map { option in
+            BottomSheetModel.BottomSheetItem(
+                id: option.rawValue,
+                title: option.rawValue,
+                isSelected: false
+            )
+        }
+
+        coordinator.presentOptionSelection(
+            title: "Sort By",
+            options: options
+        ) { selected in
+            guard let match = ProductSortOption(rawValue: selected.id) else { return }
+            onSelect(match)
+        }
     }
     
     private func onTapMoreServices() {
@@ -175,22 +245,6 @@ public class HomeCoordinator: BaseCoordinator {
         }
         
         let vc = ServiceListingsViewController()
-        vc.viewModel = viewModel
-        vc.closeAction = { [weak self] in
-            self?.router.pop(animated: true)
-        }
-        
-        router.navigationControllerInstance?.navigationBar.isHidden = false
-        router.push(vc, animated: true)
-    }
-    
-    private func  onTapProductCategory(_ item: CommodityCategoryResponse) {        
-        let viewModel = ProductListingsViewModel(category: item)
-        viewModel.onTapProduct = { [weak self] in
-            self?.goToProduct($0)
-        }
-        
-        let vc = ProductListingsViewController()
         vc.viewModel = viewModel
         vc.closeAction = { [weak self] in
             self?.router.pop(animated: true)
