@@ -118,7 +118,9 @@ final class ProductFiltersViewModel: FormViewModel {
             placeholder: "All Categories",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
-            onTap: { [weak self] in self?.handleCategorySelection() }
+            onTap: { [weak self] in
+                self?.handleCategorySelection()
+            }
         )
     )
 
@@ -129,7 +131,9 @@ final class ProductFiltersViewModel: FormViewModel {
             placeholder: "All Associations",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
-            onTap: { [weak self] in self?.handleAssociationSelection() }
+            onTap: { [weak self] in
+                self?.handleAssociationSelection()
+            }
         )
     )
 
@@ -140,13 +144,19 @@ final class ProductFiltersViewModel: FormViewModel {
             placeholder: "All Locations",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
-            onTap: { [weak self] in self?.handleLocationSelection() }
+            onTap: { [weak self] in
+                self?.handleLocationSelection()
+            }
         )
     )
 
     // MARK: - Selection Handlers
     private func handleCategorySelection() {
+        print("🔍 handleCategorySelection fired")
+        print("🔍 goToFilterPicker is set: \(true)") // always prints
+        
         goToFilterPicker(.category) { [weak self] value in
+            print("🔍 category picker returned: \(value?.name ?? "nil")")
             guard let self else { return }
             self.state.filters.categoryId = value?.id
             self.state.filters.categoryName = value?.name

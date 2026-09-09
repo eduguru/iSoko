@@ -10,23 +10,14 @@ import DesignSystemKit
 
 class ProductFiltersViewController: FormViewController, CloseableViewController {
     var makeRoot: Bool = false
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        title = "My Product"
-        // Do any additional setup after loading the view.
+        title = "Filters"
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
-        
     }
+
+    @objc func close() { closeAction?() }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-    }
-    
-    @objc func close() {
-        closeAction?()
-    }
-    
-    deinit { }
+    deinit {}
 }

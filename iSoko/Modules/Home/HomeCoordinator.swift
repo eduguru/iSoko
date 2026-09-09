@@ -203,24 +203,6 @@ public class HomeCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
     }
 
-    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
-        let vm = ProductFiltersViewModel(currentFilters: currentFilters)
-        vm.onFiltersConfirmed = completion
-        vm.onDismiss = { [weak self] in self?.router.dismiss(animated: true) }
-        
-        vm.goToFilterPicker = { [weak self] option, completion in
-            self?.goToFilterOptionPicker(option: option, completion: completion)
-        }
-
-        let vc = ProductFiltersViewController()
-        vc.viewModel = vm
-        vc.closeAction = { [weak self] in self?.router.dismiss(animated: true) }
-
-        let nav = BaseNavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .pageSheet
-        router.present(nav, animated: true)
-    }
-
     private func presentSortOptions(onSelect: @escaping (ProductSortOption) -> Void) {
         let coordinator = ModalCoordinator(router: router)
         addChild(coordinator)
@@ -242,20 +224,11 @@ public class HomeCoordinator: BaseCoordinator {
         }
     }
     
-    private func goToFilterOptionPicker(option: FilterPickerOption, completion: @escaping (CommonIdNameModel?) -> Void) {
-        let vm = FilterOptionPickerViewModel(option: option)
-        vm.onSelected = { [weak self] value in
-            completion(value)
-            self?.router.dismiss(animated: true)
-        }
-
-        let vc = FilterOptionPickerViewController()
-        vc.viewModel = vm
-        vc.closeAction = { [weak self] in self?.router.dismiss(animated: true) }
-
-        let nav = BaseNavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .pageSheet
-        router.present(nav, animated: true)
+    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
+        let coordinator = ProductFiltersCoordinator(router: router, currentFilters: currentFilters)
+        addChild(coordinator)
+        coordinator.onFiltersConfirmed = completion
+        coordinator.start()
     }
     
     private func onTapMoreServices() {

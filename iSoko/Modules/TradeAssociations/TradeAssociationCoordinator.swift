@@ -111,25 +111,6 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         router.push(vc, animated: true)
         router.navigationControllerInstance?.navigationBar.isHidden = false
     }
-    
-    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
-        guard let router = modalRouter else { return }
-        let vm = ProductFiltersViewModel(currentFilters: currentFilters)
-        vm.onFiltersConfirmed = completion
-        vm.onDismiss = { [weak self] in self?.modalRouter?.dismiss(animated: true) }
-        
-        vm.goToFilterPicker = { [weak self] option, completion in
-            self?.goToFilterOptionPicker(option: option, completion: completion)
-        }
-
-        let vc = ProductFiltersViewController()
-        vc.viewModel = vm
-        vc.closeAction = { [weak self] in self?.modalRouter?.dismiss(animated: true) }
-
-        let nav = BaseNavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .pageSheet
-        router.present(nav, animated: true)
-    }
 
     private func presentSortOptions(onSelect: @escaping (ProductSortOption) -> Void) {
         let coordinator = ModalCoordinator(router: modalRouter ?? router)
@@ -149,22 +130,14 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         }
     }
     
-    private func goToFilterOptionPicker(option: FilterPickerOption, completion: @escaping (CommonIdNameModel?) -> Void) {
-        let vm = FilterOptionPickerViewModel(option: option)
-        vm.onSelected = { [weak self] value in
-            completion(value)
-            self?.router.dismiss(animated: true)
-        }
-
-        let vc = FilterOptionPickerViewController()
-        vc.viewModel = vm
-        vc.closeAction = { [weak self] in self?.router.dismiss(animated: true) }
-
-        let nav = BaseNavigationController(rootViewController: vc)
-        nav.modalPresentationStyle = .pageSheet
-        router.present(nav, animated: true)
+    private func goToProductFilters(currentFilters: ProductFilters, completion: @escaping (ProductFilters) -> Void) {
+        guard let modalRouter else { return }
+        let coordinator = ProductFiltersCoordinator(router: modalRouter, currentFilters: currentFilters)
+        addChild(coordinator)
+        coordinator.onFiltersConfirmed = completion
+        coordinator.start()
     }
-
+    
     // MARK: - Trade Association Details
     private func gotoTradeAssociationDetails(_ data: AssociationResponse) {
         guard let router = modalRouter else { return }
