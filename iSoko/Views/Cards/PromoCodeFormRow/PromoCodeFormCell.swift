@@ -7,8 +7,6 @@
 
 import UIKit
 
-import UIKit
-
 public final class PromoCodeFormCell: UITableViewCell {
 
     // MARK: - Views
@@ -49,6 +47,7 @@ public final class PromoCodeFormCell: UITableViewCell {
 
     required init?(coder: NSCoder) {
         super.init(coder: coder)
+
         setup()
     }
 
@@ -89,17 +88,28 @@ public final class PromoCodeFormCell: UITableViewCell {
             )
         ])
 
-        // MARK: Content Container (IMPORTANT FIX)
+        // MARK: Content Container
 
         contentViewContainer.translatesAutoresizingMaskIntoConstraints = false
         cardView.addSubview(contentViewContainer)
 
         NSLayoutConstraint.activate([
 
-            contentViewContainer.topAnchor.constraint(equalTo: cardView.topAnchor),
-            contentViewContainer.leadingAnchor.constraint(equalTo: cardView.leadingAnchor),
-            contentViewContainer.trailingAnchor.constraint(equalTo: cardView.trailingAnchor),
-            contentViewContainer.bottomAnchor.constraint(equalTo: cardView.bottomAnchor)
+            contentViewContainer.topAnchor.constraint(
+                equalTo: cardView.topAnchor
+            ),
+
+            contentViewContainer.leadingAnchor.constraint(
+                equalTo: cardView.leadingAnchor
+            ),
+
+            contentViewContainer.trailingAnchor.constraint(
+                equalTo: cardView.trailingAnchor
+            ),
+
+            contentViewContainer.bottomAnchor.constraint(
+                equalTo: cardView.bottomAnchor
+            )
         ])
 
         contentViewContainer.clipsToBounds = true
@@ -181,22 +191,31 @@ public final class PromoCodeFormCell: UITableViewCell {
         // MARK: Copy Button
 
         copyButton.titleLabel?.font =
-            .boldSystemFont(ofSize: 18)
+            .systemFont(
+                ofSize: 16,
+                weight: .semibold
+            )
 
-        copyButton.setTitleColor(
-            .white,
-            for: .normal
-        )
+        // copyButton.setTitleColor(.white, for: .normal)
+        // copyButton.backgroundColor = UIColor.app(.primary).withAlphaComponent(0.85)
+        copyButton.backgroundColor = .app(.hex("#E8F2FF"))
+        copyButton.setTitleColor(.app(.primary), for: .normal)
 
-        copyButton.backgroundColor = .app(.primary)
 
-        copyButton.layer.cornerRadius = 14
+        copyButton.layer.cornerRadius = 10
+
+        copyButton.clipsToBounds = true
+
+        // Better button height
+        copyButton.heightAnchor.constraint(
+            equalToConstant: 50
+        ).isActive = true
 
         copyButton.contentEdgeInsets =
             UIEdgeInsets(
-                top: 16,
+                top: 0,
                 left: 20,
-                bottom: 16,
+                bottom: 0,
                 right: 20
             )
 
@@ -213,7 +232,7 @@ public final class PromoCodeFormCell: UITableViewCell {
         stackView.addArrangedSubview(codeContainer)
         stackView.addArrangedSubview(copyButton)
 
-        // MARK: Stack Constraints (WITH SAFE INSETS)
+        // MARK: Stack Constraints
 
         NSLayoutConstraint.activate([
 
@@ -238,7 +257,7 @@ public final class PromoCodeFormCell: UITableViewCell {
             )
         ])
 
-        // MARK: Full width elements
+        // MARK: Full Width Elements
 
         codeContainer.widthAnchor.constraint(
             equalTo: stackView.widthAnchor

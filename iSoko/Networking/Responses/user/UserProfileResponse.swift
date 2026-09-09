@@ -21,12 +21,15 @@ public struct UserProfileResponse: Codable {
     public let referralCount: Int?
     public let location: IDNamePairInt?
     public let username: String?
-    public let role: IDNamePairInt
+    public let role: IDNamePairInt?
     public let profileImage: String?
     public let referralCode: String?
     public let email: String?
     public let phoneNumber: String?
     public let gender: IDNamePairInt?
+    
+    public let points: Int?
+
 
     public var memberSinceString: String? {
         guard
@@ -36,6 +39,6 @@ public struct UserProfileResponse: Codable {
             return nil
         }
 
-        return "\(date.getMonthOfYear())"
+        return date.getMonthOfYear()
     }
 }

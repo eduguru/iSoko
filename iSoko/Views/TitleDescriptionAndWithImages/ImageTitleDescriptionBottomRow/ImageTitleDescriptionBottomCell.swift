@@ -196,12 +196,24 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
         }
 
         // Icon
-        if let image = config.image {
+        if let urlString = config.imageUrl, let url = URL(string: urlString) {
+            iconImageView.kf.setImage(
+                with: url,
+                placeholder: UIImage.fromInitials(
+                    config.title,
+                    size: CGSize(width: 50, height: 50),
+                    textColor: .app(.primary),
+                    backgroundColor: nil,
+                    borderColor: .app(.primary),
+                    borderWidth: 2,
+                    shape: config.imageStyle == .rounded ? .circle : .square
+                )
+            )
+        } else if let image = config.image {
             iconImageView.image = image
         } else {
-            let initials = config.title
             iconImageView.image = UIImage.fromInitials(
-                initials,
+                config.title,
                 size: CGSize(width: 50, height: 50),
                 textColor: .app(.primary),
                 backgroundColor: nil,
@@ -209,8 +221,6 @@ public final class ImageTitleDescriptionBottomCell: UITableViewCell {
                 borderWidth: 2,
                 shape: config.imageStyle == .rounded ? .circle : .square
             )
-            
-            // iconImageView.image = nil
         }
         
         iconImageView.layer.cornerRadius = config.imageStyle == .rounded ? 20 : 0

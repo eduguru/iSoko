@@ -79,9 +79,10 @@ final class AllTradeAssociationViewModel: FormViewModel {
                 tag: 2000 + index,
                 config: .init(
                     image: nil,
+                    imageUrl: item.logo,
                     title: item.name ?? "",
                     description: item.description ?? "",
-                    bottomLabelText: nil,
+//                    bottomLabelText: "\(item.members ?? 0) members · Founded \(item.foundedIn ?? "")",
                     accessoryType: .chevron,
                     onTap: { [weak self] in
                         self?.onAssociationTapped?(item)

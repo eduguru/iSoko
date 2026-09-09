@@ -6,16 +6,7 @@
 //
 
 import DesignSystemKit
-
-public struct ProductFilters {
-    var minPrice: Double? = nil
-    var maxPrice: Double? = nil
-    var categoryId: Int? = nil
-
-    var isEmpty: Bool {
-        minPrice == nil && maxPrice == nil && categoryId == nil
-    }
-}
+import UIKit
 
 @MainActor
 final class ProductFiltersViewModel: FormViewModel {
@@ -24,6 +15,15 @@ final class ProductFiltersViewModel: FormViewModel {
     var onFiltersConfirmed: ((ProductFilters) -> Void)?
     var onDismiss: (() -> Void)?
 
+    // MARK: - Navigation
+    var goToFilterPicker: ((_ option: FilterPickerOption, _ completion: @escaping (CommonIdNameModel?) -> Void) -> Void) = { _, _ in }
+    
+    var goToCommonSelectionOptions: (
+        CommonUtilityOption,
+        _ staticOptions: [CommonIdNameModel]?,
+        _ completion: @escaping (CommonIdNameModel?) -> Void
+    ) -> Void = { _, _, _ in }
+
     // MARK: - State
     private var state: State
 
@@ -31,6 +31,20 @@ final class ProductFiltersViewModel: FormViewModel {
         self.state = State(filters: currentFilters)
         super.init()
         sections = makeSections()
+        prefill()
+    }
+
+    // MARK: - Prefill
+    private func prefill() {
+        if let name = state.filters.categoryName {
+            categoryRow.config.placeholder = name
+        }
+        if let name = state.filters.associationName {
+            associationRow.config.placeholder = name
+        }
+        if let name = state.filters.locationName {
+            locationRow.config.placeholder = name
+        }
     }
 
     // MARK: - Sections
@@ -39,10 +53,12 @@ final class ProductFiltersViewModel: FormViewModel {
             FormSection(
                 id: SectionTag.price.rawValue,
                 title: "Price Range",
-                cells: [
-                    minPriceRow,
-                    maxPriceRow
-                ]
+                cells: [minPriceRow, maxPriceRow]
+            ),
+            FormSection(
+                id: SectionTag.dropdowns.rawValue,
+                title: "Filter By",
+                cells: [categoryRow, associationRow, locationRow]
             ),
             FormSection(
                 id: SectionTag.actions.rawValue,
@@ -55,7 +71,7 @@ final class ProductFiltersViewModel: FormViewModel {
         ]
     }
 
-    // MARK: - Rows
+    // MARK: - Price Rows
     private lazy var minPriceRow = makeInputRow(
         tag: CellTag.minPrice.rawValue,
         title: "Min Price",
@@ -94,6 +110,82 @@ final class ProductFiltersViewModel: FormViewModel {
         )
     }
 
+    // MARK: - Dropdown Rows
+    private lazy var categoryRow = DropdownFormRow(
+        tag: CellTag.category.rawValue,
+        config: DropdownFormConfig(
+            title: "Category",
+            placeholder: "All Categories",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in self?.handleCategorySelection() }
+        )
+    )
+
+    private lazy var associationRow = DropdownFormRow(
+        tag: CellTag.association.rawValue,
+        config: DropdownFormConfig(
+            title: "Association",
+            placeholder: "All Associations",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in self?.handleAssociationSelection() }
+        )
+    )
+
+    private lazy var locationRow = DropdownFormRow(
+        tag: CellTag.location.rawValue,
+        config: DropdownFormConfig(
+            title: "Location",
+            placeholder: "All Locations",
+            rightImage: UIImage(systemName: "chevron.down"),
+            isCardStyleEnabled: true,
+            onTap: { [weak self] in self?.handleLocationSelection() }
+        )
+    )
+
+    // MARK: - Selection Handlers
+    private func handleCategorySelection() {
+        goToFilterPicker(.category) { [weak self] value in
+            guard let self else { return }
+            self.state.filters.categoryId = value?.id
+            self.state.filters.categoryName = value?.name
+            self.categoryRow.config.placeholder = value?.name ?? "All Categories"
+            self.reloadRow(withTag: CellTag.category.rawValue)
+        }
+    }
+
+    private func handleAssociationSelection() {
+        goToFilterPicker(.association) { [weak self] value in
+            guard let self else { return }
+            self.state.filters.associationId = value?.id
+            self.state.filters.associationName = value?.name
+            self.associationRow.config.placeholder = value?.name ?? "All Associations"
+            self.reloadRow(withTag: CellTag.association.rawValue)
+        }
+    }
+
+    private func handleLocationSelection() {
+        goToFilterPicker(.location) { [weak self] value in
+            guard let self else { return }
+            self.state.filters.locationId = value?.id
+            self.state.filters.locationName = value?.name
+            self.locationRow.config.placeholder = value?.name ?? "All Locations"
+            self.reloadRow(withTag: CellTag.location.rawValue)
+        }
+    }
+
+    // MARK: - Reload Row
+    private func reloadRow(withTag tag: Int) {
+        for (sectionIndex, section) in sections.enumerated() {
+            if let rowIndex = section.cells.firstIndex(where: { $0.tag == tag }) {
+                onReloadRow?(IndexPath(row: rowIndex, section: sectionIndex))
+                break
+            }
+        }
+    }
+
+    // MARK: - Action Rows
     private lazy var applyButtonRow = ButtonFormRow(
         tag: CellTag.apply.rawValue,
         model: ButtonFormModel(
@@ -116,6 +208,9 @@ final class ProductFiltersViewModel: FormViewModel {
         ) { [weak self] in
             guard let self else { return }
             self.state.filters = ProductFilters()
+            self.categoryRow.config.placeholder = "All Categories"
+            self.associationRow.config.placeholder = "All Associations"
+            self.locationRow.config.placeholder = "All Locations"
             self.onFiltersConfirmed?(self.state.filters)
             self.onDismiss?()
         }
@@ -124,7 +219,6 @@ final class ProductFiltersViewModel: FormViewModel {
     // MARK: - State
     private struct State {
         var filters: ProductFilters
-
         init(filters: ProductFilters) {
             self.filters = filters
         }
@@ -133,12 +227,16 @@ final class ProductFiltersViewModel: FormViewModel {
     // MARK: - Tags
     private enum SectionTag: Int {
         case price = 0
-        case actions = 1
+        case dropdowns = 1
+        case actions = 2
     }
 
     private enum CellTag: Int {
         case minPrice = 1
         case maxPrice = 2
+        case category = 3
+        case association = 4
+        case location = 5
         case apply = 10
         case clear = 11
     }

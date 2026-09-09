@@ -436,8 +436,9 @@ final class HomeViewModel: FormViewModel {
             return ExportCardItem(
                 id: "\(id)",
                 title: association.name ?? "Unnamed Association",
-                subtitle: managerName,
+//                subtitle: managerName,
                 icon: nil,
+                iconUrl: association.logo,
                 imageUrls: imageUrls,
                 images: images,
                 onTap: { [weak self] in self?.onTapTradeAssociation?(association) }

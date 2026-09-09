@@ -117,6 +117,10 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         let vm = ProductFiltersViewModel(currentFilters: currentFilters)
         vm.onFiltersConfirmed = completion
         vm.onDismiss = { [weak self] in self?.modalRouter?.dismiss(animated: true) }
+        
+        vm.goToFilterPicker = { [weak self] option, completion in
+            self?.goToFilterOptionPicker(option: option, completion: completion)
+        }
 
         let vc = ProductFiltersViewController()
         vc.viewModel = vm
@@ -143,6 +147,22 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
             guard let match = ProductSortOption(rawValue: selected.id) else { return }
             onSelect(match)
         }
+    }
+    
+    private func goToFilterOptionPicker(option: FilterPickerOption, completion: @escaping (CommonIdNameModel?) -> Void) {
+        let vm = FilterOptionPickerViewModel(option: option)
+        vm.onSelected = { [weak self] value in
+            completion(value)
+            self?.router.dismiss(animated: true)
+        }
+
+        let vc = FilterOptionPickerViewController()
+        vc.viewModel = vm
+        vc.closeAction = { [weak self] in self?.router.dismiss(animated: true) }
+
+        let nav = BaseNavigationController(rootViewController: vc)
+        nav.modalPresentationStyle = .pageSheet
+        router.present(nav, animated: true)
     }
 
     // MARK: - Trade Association Details

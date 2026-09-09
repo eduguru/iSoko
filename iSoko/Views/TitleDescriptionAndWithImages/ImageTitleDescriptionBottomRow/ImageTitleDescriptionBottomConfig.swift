@@ -11,6 +11,8 @@ import UIKit
 public struct ImageTitleDescriptionBottomConfig {
 
     public var image: UIImage?
+    public var imageUrl: String?
+    
     public var imageStyle: AppImageStyle
     public var title: String
     public var description: String?
@@ -39,6 +41,7 @@ public struct ImageTitleDescriptionBottomConfig {
 
     public init(
         image: UIImage? = nil,
+        imageUrl: String? = nil,
         imageStyle: AppImageStyle = .rounded,
         title: String,
         description: String? = nil,
@@ -58,6 +61,8 @@ public struct ImageTitleDescriptionBottomConfig {
         cardBorderWidth: CGFloat = 1
     ) {
         self.image = image
+        self.imageUrl = imageUrl
+        
         self.imageStyle = imageStyle
         self.title = title
         self.description = description

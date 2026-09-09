@@ -31,49 +31,90 @@ final class ShareAppViewModel: FormViewModel {
     // MARK: - Make Sections
 
     private func makeSections() -> [FormSection] {
-        var sections: [FormSection] = [
-            FormSection(id: Tags.Section.header.rawValue, cells: [
-                imageFormRow,
-                SpacerFormRow(tag: -00999, height: 10)
-            ])
-        ]
-        
-        sections.append(
+        [
+            FormSection(
+                id: Tags.Section.header.rawValue,
+                cells: [
+                    imageFormRow,
+                    SpacerFormRow(
+                        tag: -00999,
+                        height: 10
+                    )
+                ]
+            ),
+
             FormSection(
                 id: Tags.Section.body.rawValue,
                 cells: [
-                    referralCount,
-                    SpacerFormRow(tag: 00100, height: 10),
+                    referralStatsRow,
+                    SpacerFormRow(
+                        tag: 00100,
+                        height: 10
+                    ),
                     promoCodeFormRow,
-                    SpacerFormRow(tag: 00100, height: 24),
+                    SpacerFormRow(
+                        tag: 00100,
+                        height: 24
+                    ),
                     submitButtonRow
                 ]
             )
-        )
-
-        return sections
+        ]
     }
 
-    // MARK: - Lazy Rows
+    // MARK: - Header
 
     lazy var imageFormRow = ContentCardFormRow(
         tag: 1,
         config: ContentCardModel(
             title: "Share the iSOKO app invite code",
             text: "Share the iSOKO app by inviting your friends to check it out.",
-            image: .logo,
+            image: .shareReferal,
             imagePosition: .center,
             imageHeight: 100,
             cardSettings: .default
         )
     )
 
+    // MARK: - Referral Stats
+
+    private lazy var referralStatsRow: FormRow = {
+
+        let items: [SelectableCardItemConfig] = [
+            .init(
+                title: "\(state.userProfile?.referralCount ?? 0)",
+                subtitle: "Total Referrals",
+                icon: UIImage(systemName: "person.2.fill"),
+                iconTintColor: .app(.primary),
+                showsSelection: false
+            ),
+
+            .init(
+                title: "\(state.userProfile?.points ?? 0)",
+                subtitle: "Points Earned",
+                icon: UIImage(systemName: "star.fill"),
+                iconTintColor: .app(.primary),
+                showsSelection: false
+            )
+        ]
+
+        return SelectableCardGridRow(
+            tag: 100,
+            config: .init(
+                items: items,
+                allowsMultipleSelection: false
+            )
+        )
+    }()
+
+    // MARK: - Promo Code
+
     lazy var promoCodeFormRow = PromoCodeFormRow(
         tag: 101,
         config: PromoCodeModel(
-            title: "Share your invite code",
+            title: "",
             code: state.userProfile?.referralCode ?? "ISOKO2025",
-            subtitle: "Invite friends and earn rewards",
+            subtitle: "Your Referral Code",
             buttonTitle: "Copy Code",
             cardSettings: .default,
             onCopyTapped: {
@@ -81,29 +122,14 @@ final class ShareAppViewModel: FormViewModel {
             }
         )
     )
-    
-    private lazy var referralCount = ImageTitleDescriptionRow(
-            tag: -0909,
-            config: ImageTitleDescriptionConfig(
-                image: UIImage(systemName: "person.badge.plus"),
-                imageStyle: .rounded,
-                title: "People invited",
-                description: "\(state.userProfile?.referralCount ?? 0)",
-                accessoryType: .none,
-                onTap: {},
-                isCardStyleEnabled: true
-            )
-        )
 
     // MARK: - Submit Button
 
     private lazy var submitButtonRow: FormRow = {
-        let title = "Share App"
-        let style: ButtonStyleType = .outlined// state.isLoggedIn ? .primary : .outlined
 
         let buttonModel = ButtonFormModel(
-            title: title,
-            style: style,
+            title: "Share App",
+            style: .primary,
             size: .medium,
             fontStyle: .headline,
             hapticsEnabled: true
@@ -111,13 +137,21 @@ final class ShareAppViewModel: FormViewModel {
             self?.shareApp()
         }
 
-        return ButtonFormRow(tag: Tags.Cells.submit.rawValue, model: buttonModel)
+        return ButtonFormRow(
+            tag: Tags.Cells.submit.rawValue,
+            model: buttonModel
+        )
     }()
 
     // MARK: - Share Action
+
     private func shareApp() {
-        let code = state.userProfile?.referralCode ?? "ISOKO2025"
-        let urlString = "https://isoko.app/download"
+
+        let code =
+            state.userProfile?.referralCode ?? "ISOKO2025"
+
+        let urlString =
+            "https://isoko.app/download"
 
         let message = """
         Check out the iSOKO app!
@@ -138,14 +172,20 @@ final class ShareAppViewModel: FormViewModel {
     // MARK: - State
 
     private struct State {
+
         var isLoggedIn: Bool = true
-        var userDetail: UserDetails? = AppStorage.userDetail
-        var userProfile: UserProfileResponse? = AppStorage.userProfile
+
+        var userDetail: UserDetails? =
+            AppStorage.userDetail
+
+        var userProfile: UserProfileResponse? =
+            AppStorage.userProfile
     }
 
     // MARK: - Tags
 
     enum Tags {
+
         enum Section: Int {
             case header = 0
             case body = 1
@@ -159,13 +199,17 @@ final class ShareAppViewModel: FormViewModel {
     }
 }
 
+import LinkPresentation
 
 final class ShareAppItemSource: NSObject, UIActivityItemSource {
 
     private let message: String
     private let url: URL
 
-    init(message: String, url: URL) {
+    init(
+        message: String,
+        url: URL
+    ) {
         self.message = message
         self.url = url
     }
@@ -173,14 +217,14 @@ final class ShareAppItemSource: NSObject, UIActivityItemSource {
     func activityViewControllerPlaceholderItem(
         _ activityViewController: UIActivityViewController
     ) -> Any {
-        return message
+        message
     }
 
     func activityViewController(
         _ activityViewController: UIActivityViewController,
         itemForActivityType activityType: UIActivity.ActivityType?
     ) -> Any {
-        return message
+        message
     }
 
     func activityViewControllerLinkMetadata(
@@ -188,6 +232,7 @@ final class ShareAppItemSource: NSObject, UIActivityItemSource {
     ) -> LPLinkMetadata? {
 
         let metadata = LPLinkMetadata()
+
         metadata.title = "iSOKO App Invitation"
         metadata.originalURL = url
         metadata.url = url
