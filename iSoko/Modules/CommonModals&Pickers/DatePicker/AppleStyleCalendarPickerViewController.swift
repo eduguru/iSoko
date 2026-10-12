@@ -30,11 +30,11 @@ final class AppleStyleCalendarPickerViewController: UIViewController, FSCalendar
 
     // MARK: - Setup Navigation
     private func setupNavigation() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel",
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "common.action.cancel".localized,
                                                            style: .plain,
                                                            target: self,
                                                            action: #selector(cancelTapped))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done",
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "common.success.done_button".localized,
                                                             style: .done,
                                                             target: self,
                                                             action: #selector(doneTapped))
@@ -42,7 +42,7 @@ final class AppleStyleCalendarPickerViewController: UIViewController, FSCalendar
 
     // MARK: - Custom Header
     private func setupHeader() {
-        headerButton.setTitle("Select Date", for: .normal)
+        headerButton.setTitle("common.action.select_date".localized, for: .normal)
         headerButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
         headerButton.addTarget(self, action: #selector(didTapHeader), for: .touchUpInside)
         view.addSubview(headerButton)
@@ -161,9 +161,9 @@ final class YearMonthPickerModalViewController: UIViewController, UIPickerViewDe
     }
 
     private func setupNavigation() {
-        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain,
+        navigationItem.leftBarButtonItem = UIBarButtonItem(title: "common.action.cancel".localized, style: .plain,
                                                            target: self, action: #selector(cancelTapped))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Done", style: .done,
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "common.success.done_button".localized, style: .done,
                                                             target: self, action: #selector(doneTapped))
     }
 

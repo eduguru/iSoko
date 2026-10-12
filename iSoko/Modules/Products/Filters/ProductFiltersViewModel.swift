@@ -52,12 +52,12 @@ final class ProductFiltersViewModel: FormViewModel {
         [
             FormSection(
                 id: SectionTag.price.rawValue,
-                title: "Price Range",
+                title: "common.label.price_range".localized,
                 cells: [minPriceRow, maxPriceRow]
             ),
             FormSection(
                 id: SectionTag.dropdowns.rawValue,
-                title: "Filter By",
+                title: "common.action.filter_by".localized,
                 cells: [categoryRow, associationRow, locationRow]
             ),
             FormSection(
@@ -74,15 +74,15 @@ final class ProductFiltersViewModel: FormViewModel {
     // MARK: - Price Rows
     private lazy var minPriceRow = makeInputRow(
         tag: CellTag.minPrice.rawValue,
-        title: "Min Price",
+        title: "common.label.min_price".localized,
         placeholder: "0",
         initialText: state.filters.minPrice.map { "\($0)" } ?? ""
     )
 
     private lazy var maxPriceRow = makeInputRow(
         tag: CellTag.maxPrice.rawValue,
-        title: "Max Price",
-        placeholder: "Any",
+        title: "common.label.max_price".localized,
+        placeholder: "common.label.any".localized,
         initialText: state.filters.maxPrice.map { "\($0)" } ?? ""
     )
 
@@ -114,8 +114,8 @@ final class ProductFiltersViewModel: FormViewModel {
     private lazy var categoryRow = DropdownFormRow(
         tag: CellTag.category.rawValue,
         config: DropdownFormConfig(
-            title: "Category",
-            placeholder: "All Categories",
+            title: "common.label.category".localized,
+            placeholder: "common.label.all_categories".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -127,8 +127,8 @@ final class ProductFiltersViewModel: FormViewModel {
     private lazy var associationRow = DropdownFormRow(
         tag: CellTag.association.rawValue,
         config: DropdownFormConfig(
-            title: "Association",
-            placeholder: "All Associations",
+            title: "common.label.association".localized,
+            placeholder: "common.label.all_associations".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -140,8 +140,8 @@ final class ProductFiltersViewModel: FormViewModel {
     private lazy var locationRow = DropdownFormRow(
         tag: CellTag.location.rawValue,
         config: DropdownFormConfig(
-            title: "Location",
-            placeholder: "All Locations",
+            title: "common.label.location".localized,
+            placeholder: "common.label.all_locations".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -199,7 +199,7 @@ final class ProductFiltersViewModel: FormViewModel {
     private lazy var applyButtonRow = ButtonFormRow(
         tag: CellTag.apply.rawValue,
         model: ButtonFormModel(
-            title: "Apply Filters",
+            title: "common.action.apply_filters".localized,
             style: .primary,
             size: .medium
         ) { [weak self] in
@@ -212,15 +212,15 @@ final class ProductFiltersViewModel: FormViewModel {
     private lazy var clearButtonRow = ButtonFormRow(
         tag: CellTag.clear.rawValue,
         model: ButtonFormModel(
-            title: "Clear Filters",
+            title: "common.action.clear_filters".localized,
             style: .outlined,
             size: .medium
         ) { [weak self] in
             guard let self else { return }
             self.state.filters = ProductFilters()
-            self.categoryRow.config.placeholder = "All Categories"
-            self.associationRow.config.placeholder = "All Associations"
-            self.locationRow.config.placeholder = "All Locations"
+            self.categoryRow.config.placeholder = "common.label.all_categories".localized
+            self.associationRow.config.placeholder = "common.label.all_associations".localized
+            self.locationRow.config.placeholder = "common.label.all_locations".localized
             self.onFiltersConfirmed?(self.state.filters)
             self.onDismiss?()
         }

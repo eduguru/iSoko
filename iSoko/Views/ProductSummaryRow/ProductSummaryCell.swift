@@ -142,7 +142,7 @@ final class ProductSummaryCell: UITableViewCell {
         applyStyling(to: titleLabel, style: FontStyle.body)
         
         ratingLabel.text = String(format: "%.1f", model.rating)
-        reviewsLabel.text = "(\(model.reviewCount) reviews)"
+        reviewsLabel.text = "products.reviews_count".localized(with: "\(model.reviewCount)")
         locationLabel.text = model.location
 
         priceLabel.text = model.priceText

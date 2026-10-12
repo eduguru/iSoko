@@ -37,7 +37,7 @@ final class ProductImageCollectionViewCell: UICollectionViewCell {
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         ])
 
-        featuredFlag.text = "FEATURED"
+        featuredFlag.text = "common.label.featured".localized
         featuredFlag.textColor = .white
         featuredFlag.font = .boldSystemFont(ofSize: 12)
         featuredFlag.backgroundColor = UIColor.systemRed.withAlphaComponent(0.8)

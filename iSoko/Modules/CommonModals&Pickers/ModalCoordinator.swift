@@ -255,11 +255,11 @@ extension ModalCoordinator {
                 showCloseButton: true,
                 state: .error,
                 buttons: [
-                    .init(title: "Retry", style: .primary) {
+                    .init(title: "common.action.retry".localized, style: .primary) {
                         print("Retry tapped")
                         onSecondaryAction?()
                     },
-                    .init(title: "Close", style: .primary) {
+                    .init(title: "common.action.close".localized, style: .primary) {
                         print("Close tapped")
                         onPrimaryAction?()
                     }

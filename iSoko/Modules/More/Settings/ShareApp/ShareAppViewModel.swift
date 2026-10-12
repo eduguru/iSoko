@@ -67,8 +67,8 @@ final class ShareAppViewModel: FormViewModel {
     lazy var imageFormRow = ContentCardFormRow(
         tag: 1,
         config: ContentCardModel(
-            title: "Share the iSOKO app invite code",
-            text: "Share the iSOKO app by inviting your friends to check it out.",
+            title: "share.app.invite_title".localized,
+            text: "share.app.invite_text".localized,
             image: .shareReferal,
             imagePosition: .center,
             imageHeight: 100,
@@ -83,7 +83,7 @@ final class ShareAppViewModel: FormViewModel {
         let items: [SelectableCardItemConfig] = [
             .init(
                 title: "\(state.userProfile?.referralCount ?? 0)",
-                subtitle: "Total Referrals",
+                subtitle: "common.label.total_referrals".localized,
                 icon: UIImage(systemName: "person.2.fill"),
                 iconTintColor: .app(.primary),
                 showsSelection: false
@@ -91,7 +91,7 @@ final class ShareAppViewModel: FormViewModel {
 
             .init(
                 title: "\(state.userProfile?.points ?? 0)",
-                subtitle: "Points Earned",
+                subtitle: "common.label.points_earned".localized,
                 icon: UIImage(systemName: "star.fill"),
                 iconTintColor: .app(.primary),
                 showsSelection: false
@@ -114,8 +114,8 @@ final class ShareAppViewModel: FormViewModel {
         config: PromoCodeModel(
             title: "",
             code: state.userProfile?.referralCode ?? "ISOKO2025",
-            subtitle: "Your Referral Code",
-            buttonTitle: "Copy Code",
+            subtitle: "common.label.your_referral_code".localized,
+            buttonTitle: "common.action.copy_code".localized,
             cardSettings: .default,
             onCopyTapped: {
                 print("Copied!")
@@ -128,7 +128,7 @@ final class ShareAppViewModel: FormViewModel {
     private lazy var submitButtonRow: FormRow = {
 
         let buttonModel = ButtonFormModel(
-            title: "Share App",
+            title: "common.more_view.share_app".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,
@@ -233,7 +233,7 @@ final class ShareAppItemSource: NSObject, UIActivityItemSource {
 
         let metadata = LPLinkMetadata()
 
-        metadata.title = "iSOKO App Invitation"
+        metadata.title = "share.app.invitation_title".localized
         metadata.originalURL = url
         metadata.url = url
 

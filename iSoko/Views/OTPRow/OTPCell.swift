@@ -63,7 +63,7 @@ public final class OTPRowCell: UITableViewCell, UITextFieldDelegate {
         timerLabel.textAlignment = .center
         timerLabel.isHidden = true
 
-        resendButton.setTitle("Resend", for: .normal)
+        resendButton.setTitle("common.action.resend".localized, for: .normal)
         resendButton.titleLabel?.font = UIFont.preferredFont(forTextStyle: .footnote)
         resendButton.addTarget(self, action: #selector(resendTapped), for: .touchUpInside)
         resendButton.isHidden = true
@@ -202,7 +202,7 @@ public final class OTPRowCell: UITableViewCell, UITextFieldDelegate {
     }
 
     private func updateTimerLabel() {
-        timerLabel.text = "Resend in \(secondsRemaining)s"
+        timerLabel.text = "common.otp.resend_in".localized(with: "\(secondsRemaining)")
     }
 
     deinit {

@@ -152,7 +152,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
 
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Expenses",
+                title: "common.label.total_expenses".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: totalText,
                 status: CardStatusStyle(
@@ -166,11 +166,11 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                 )
             ),
             right: DualCardItemConfig(
-                title: "Number of Expenses",
+                title: "common.label.number_of_expenses".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: countText,
                 status: CardStatusStyle(
-                    text: "Total entries",
+                    text: "common.label.total_entries".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "list.number")
@@ -258,7 +258,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                             onTap: { [weak self] in self?.handleCategorySelection() }
                         ),
                         FilterFieldConfig(
-                            placeholder: "Payment Method",
+                            placeholder: "common.label.payment_method".localized,
                             selectedValue: state.selectedPaymentMethod?.name,
                             onTap: { [weak self] in
                                 self?.handlePaymentSelection()
@@ -267,7 +267,7 @@ final class BookKeepingExpensesViewModel: FormViewModel {
                     ],
                     [
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: state.startDateString,
                             onTap: { [weak self] in self?.handleStartDateSelection() }
                         ),

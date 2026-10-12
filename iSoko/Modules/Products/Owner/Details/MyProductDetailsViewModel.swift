@@ -58,7 +58,7 @@ final class MyProductDetailsViewModel: FormViewModel {
     private func makeSummarySection() -> FormSection {
         FormSection(
             id: SectionTag.summary.rawValue,
-            title: "Product Information",
+            title: "common.title.product_information".localized,
             cells: summaryRows
         )
     }
@@ -66,7 +66,7 @@ final class MyProductDetailsViewModel: FormViewModel {
     private func makeOverviewSection() -> FormSection {
         return FormSection(
             id: SectionTag.overview.rawValue,
-            title: "Overview",
+            title: "common.title.overview".localized,
             cells: [overviewFormRow, SpacerFormRow(tag: -000)]
         )
     }
@@ -92,7 +92,7 @@ final class MyProductDetailsViewModel: FormViewModel {
     private lazy var aboutProductRow = TitleDescriptionFormRow(
         tag: 101,
         model: TitleDescriptionModel(
-            title: "About the Product",
+            title: "common.title.about_the_product".localized,
             description: state.item.description ?? "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
@@ -107,8 +107,8 @@ final class MyProductDetailsViewModel: FormViewModel {
     private lazy var priceRow = TitleDescriptionFormRow(
         tag: 102,
         model: TitleDescriptionModel(
-            title: "Pricing",
-            description: "Original Price \n \(state.item.price ?? 0)",
+            title: "common.title.pricing".localized,
+            description: "common.label.original_price".localized + " \n \(state.item.price ?? 0)",
             maxTitleLines: 2,
             maxDescriptionLines: 0,
             titleEllipsis: .none,
@@ -136,7 +136,7 @@ final class MyProductDetailsViewModel: FormViewModel {
             KeyValueFormRow(
                 tag: 2,
                 model: KeyValueRowModel(
-                    leftText: "Unit",
+                    leftText: "common.label.unit".localized,
                     rightText: state.item.measurementUnit?.name ?? "",
                     card: .default.with(borderColor: .clear),
                     showsTopDivider: true,
@@ -147,7 +147,7 @@ final class MyProductDetailsViewModel: FormViewModel {
             KeyValueFormRow(
                 tag: 3,
                 model: KeyValueRowModel(
-                    leftText: "Minimum order quantity",
+                    leftText: "common.label.minimum_order_quantity".localized,
                     rightText: "\(state.item.minimumOrderQuantity ?? 1)",
                     card: .default.with(borderColor: .clear),
                     showsTopDivider: true,

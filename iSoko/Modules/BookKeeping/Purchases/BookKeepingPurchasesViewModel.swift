@@ -112,11 +112,11 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Spending",
+                title: "common.label.spending".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
-                subtitle: "This month",
+                subtitle: "common.label.this_month".localized,
                 status: CardStatusStyle(
-                    text: "On track",
+                    text: "common.status.on_track".localized,
                     textColor: .systemGreen,
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "checkmark")
@@ -125,9 +125,9 @@ final class BookKeepingPurchasesViewModel: FormViewModel {
             right: DualCardItemConfig(
                 title: "common.label.bills".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
-                subtitle: "2 due soon",
+                subtitle: "common.label.due_soon".localized,
                 status: CardStatusStyle(
-                    text: "Action needed",
+                    text: "common.status.action_needed".localized,
                     textColor: .systemOrange,
                     backgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "exclamationmark.triangle")

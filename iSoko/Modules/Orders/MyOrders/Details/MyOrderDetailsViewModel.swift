@@ -110,8 +110,8 @@ final class MyOrderDetailsViewModel: FormViewModel {
     
     private func makeStatusInfoRow() -> FormRow {
         let model = StatusCardModel(
-            title: "Order Status",
-            subtitle: "Awaiting Fulfillment",
+            title: "common.title.order_status".localized,
+            subtitle: "common.label.awaiting_fulfillment".localized,
             statusText: state.item.displayStatus,
             statusStyle: StatusStyle(
                 textColor: .offWhite,
@@ -129,17 +129,17 @@ final class MyOrderDetailsViewModel: FormViewModel {
     private func makeOrderSummaryRow() -> [FormRow] {
         let items: [KeyValueRowModel] = [
             KeyValueRowModel(
-                leftText: "Order Date",
+                leftText: "common.label.order_date".localized,
                 rightText: state.item.datetimeCreated
             ),
             KeyValueRowModel(
-                leftText: "Order Number",
+                leftText: "common.label.order_number".localized,
                 rightText: "#\(state.item.orderNumber)",
                 usesMonospacedDigits: true
             ),
             KeyValueRowModel(
-                leftText: "Payment Method",
-                rightText: "Card"
+                leftText: "common.label.payment_method".localized,
+                rightText: "common.label.card".localized
             )
         ]
         
@@ -205,7 +205,7 @@ final class MyOrderDetailsViewModel: FormViewModel {
                         }
                     ),
                     .init(
-                        title: "Call",
+                        title: "common.action.call".localized,
                         image: UIImage(systemName: "phone.fill"),
                         handler: {
                             if let url = URL(string: "tel://\(phoneNumber)") {
@@ -214,7 +214,7 @@ final class MyOrderDetailsViewModel: FormViewModel {
                         }
                     ),
                     .init(
-                        title: "Email",
+                        title: "common.label.email".localized,
                         image: UIImage(systemName: "envelope.fill"),
                         handler: {
                             if let url = URL(string: "mailto:\(email)") {

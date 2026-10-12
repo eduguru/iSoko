@@ -92,8 +92,8 @@ final class AddProductImagesViewModel: FormViewModel {
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
-            title: "Product Images",
-            description: "Upload a primary image and additional images",
+            title: "common.title.product_images".localized,
+            description: "common.message.upload_images_hint".localized,
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
@@ -108,13 +108,13 @@ final class AddProductImagesViewModel: FormViewModel {
     )
 
     private lazy var mainImageTitleFormRow = makeTitleRow(
-        title: "Primary Product Image",
-        description: "This will be the main image shown to customers"
+        title: "common.title.primary_product_image".localized,
+        description: "common.message.main_image_hint".localized
     )
 
     private lazy var otherImagesTitleFormRow = makeTitleRow(
-        title: "Additional Product Images",
-        description: "Optional extra images"
+        title: "common.title.additional_product_images".localized,
+        description: "common.message.optional_extra_images".localized
     )
 
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -135,7 +135,7 @@ final class AddProductImagesViewModel: FormViewModel {
         tag: CellTag.primaryImage.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Primary Image",
+            title: "common.title.primary_image".localized,
             subtitle: "",
             icon: UIImage(systemName: "photo"),
             borderColor: .lightGray,

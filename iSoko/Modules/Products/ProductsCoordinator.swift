@@ -124,8 +124,8 @@ extension ProductsCoordinator {
 
         viewModel.goToSuccess = { [weak self] in
             self?.goToShowSuccessScreen(
-                title: "Product Published",
-                message: "Your product has been published successfully."
+                title: "common.title.product_published".localized,
+                message: "common.message.product_published".localized
             ) {
                 self?.router.pop(animated: true)
             }

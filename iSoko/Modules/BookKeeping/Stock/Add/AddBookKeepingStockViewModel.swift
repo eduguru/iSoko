@@ -72,26 +72,26 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     // MARK: - Rows
     private lazy var productNameInputRow = makeInputRow(
         tag: CellTag.productName.rawValue,
-        title: "Product Name",
-        placeholder: "Product Name"
+        title: "common.label.product_name".localized,
+        placeholder: "common.label.product_name".localized
     )
     
     private lazy var quantityInputRow = makeInputRow(
         tag: CellTag.quantity.rawValue,
-        title: "Quantity",
-        placeholder: "Quantity"
+        title: "common.label.quantity".localized,
+        placeholder: "common.label.quantity".localized
     )
     
     private lazy var unitCostInputRow = makeInputRow(
         tag: CellTag.unitCost.rawValue,
-        title: "Unit Cost",
-        placeholder: "Enter Unit Cost"
+        title: "common.label.unit_cost".localized,
+        placeholder: "common.placeholder.unit_cost".localized
     )
     
     private lazy var lowStockLevelInputRow = makeInputRow(
         tag: CellTag.lowStockLevel.rawValue,
-        title: "Low Stock Level",
-        placeholder: "Enter Low Stock Level"
+        title: "common.label.low_stock_level".localized,
+        placeholder: "common.placeholder.low_stock_level".localized
     )
     
     private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
@@ -132,7 +132,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private lazy var supplierDropdownRow = DropdownFormRow(
         tag: CellTag.supplierName.rawValue,
         config: DropdownFormConfig(
-            title: "Supplier",
+            title: "common.label.supplier".localized,
             placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
@@ -170,8 +170,8 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private lazy var measurementUnitRow = DropdownFormRow(
         tag: CellTag.measurementUnit.rawValue,
         config: DropdownFormConfig(
-            title: "Measurement Unit",
-            placeholder: "Select unit",
+            title: "common.label.measurement_unit_title".localized,
+            placeholder: "common.placeholder.select_unit".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -183,8 +183,8 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private lazy var commodityTypeRow = DropdownFormRow(
         tag: CellTag.commodityType.rawValue,
         config: DropdownFormConfig(
-            title: "Type of Commodity",
-            placeholder: "Select commodity type",
+            title: "common.label.commodity_type".localized,
+            placeholder: "common.placeholder.commodity_type".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -197,7 +197,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.published.rawValue,
         config: .init(
             isChecked: state.published,
-            title: "Published",
+            title: "common.label.published".localized,
             onToggle: { [weak self] checked in
                 self?.state.published = checked
             }
@@ -208,7 +208,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.inStock.rawValue,
         config: .init(
             isChecked: state.inStock,
-            title: "In Stock",
+            title: "common.status.in_stock".localized,
             onToggle: { [weak self] checked in
                 self?.state.inStock = checked
             }

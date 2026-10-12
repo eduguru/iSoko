@@ -225,7 +225,7 @@ final class CustomersReportsViewModel: FormViewModel {
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: state.startDateString,
                             onTap: { [weak self] in
                                 self?.handleStartDateSelection()
@@ -306,11 +306,11 @@ final class CustomersReportsViewModel: FormViewModel {
         let config = DualCardCellConfig(
             
             left: DualCardItemConfig(
-                title: "Total Customers",
+                title: "common.label.total_customers".localized,
                 titleIcon: nil,
                 subtitle: "\(totalCustomers)",
                 status: CardStatusStyle(
-                    text: "All customers",
+                    text: "common.label.all_customers".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "person.3")
@@ -318,11 +318,11 @@ final class CustomersReportsViewModel: FormViewModel {
             ),
             
             right: DualCardItemConfig(
-                title: "New Customers",
+                title: "common.label.new_customers".localized,
                 titleIcon: nil,
                 subtitle: "\(newCustomers)",
                 status: CardStatusStyle(
-                    text: "Recently added",
+                    text: "common.label.recently_added".localized,
                     textColor: .systemGreen,
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "person.badge.plus")
@@ -366,7 +366,7 @@ final class CustomersReportsViewModel: FormViewModel {
                 statusColor: .app(.hex("#717171")),
                 
                 primaryAction: ActionCardConfig(
-                    title: "View History",
+                    title: "common.action.view_history".localized,
                     icon: UIImage(systemName: "clock"),
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),

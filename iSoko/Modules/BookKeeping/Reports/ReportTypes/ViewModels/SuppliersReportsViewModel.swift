@@ -180,7 +180,7 @@ final class SuppliersReportsViewModel: FormViewModel {
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: state.startDateString,
                             onTap: { [weak self] in
                                 self?.handleStartDateSelection()
@@ -259,11 +259,11 @@ final class SuppliersReportsViewModel: FormViewModel {
 
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Suppliers",
+                title: "common.label.total_suppliers".localized,
                 titleIcon: nil,
                 subtitle: "\(totalSuppliers)",
                 status: CardStatusStyle(
-                    text: "All suppliers",
+                    text: "common.label.all_suppliers".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "person.3")
@@ -271,7 +271,7 @@ final class SuppliersReportsViewModel: FormViewModel {
             ),
 
             right: DualCardItemConfig(
-                title: "Total Supplied",
+                title: "common.label.total_supplied".localized,
                 titleIcon: nil,
                 subtitle: "\(currency). \(Int(totalAmount))",
                 status: CardStatusStyle(

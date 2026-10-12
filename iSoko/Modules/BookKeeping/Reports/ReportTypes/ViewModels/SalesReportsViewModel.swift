@@ -205,7 +205,7 @@ final class SalesReportsViewModel: FormViewModel {
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Sales Type",
+                            placeholder: "common.label.sales_type".localized,
                             selectedValue: nil,
                             onTap: {
                                 print("Sales type tapped")
@@ -214,14 +214,14 @@ final class SalesReportsViewModel: FormViewModel {
                     ],
                     [
                         FilterFieldConfig(
-                            placeholder: "Product",
+                            placeholder: "common.label.product".localized,
                             selectedValue: nil,
                             onTap: {
                                 print("Product tapped")
                             }
                         ),
                         FilterFieldConfig(
-                            placeholder: "Payment Method",
+                            placeholder: "common.label.payment_method".localized,
                             selectedValue: nil,
                             onTap: {
                                 print("Payment method tapped")
@@ -230,7 +230,7 @@ final class SalesReportsViewModel: FormViewModel {
                     ],
                     [
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: state.startDateString,
                             onTap: { [weak self] in
                                 self?.handleStartDateSelection()
@@ -316,11 +316,11 @@ final class SalesReportsViewModel: FormViewModel {
         let config = DualCardCellConfig(
             
             left: DualCardItemConfig(
-                title: "Total Sales",
+                title: "common.label.total_sales".localized,
                 titleIcon: UIImage(systemName: "cart"),
                 subtitle: "\(totalSales)",
                 status: CardStatusStyle(
-                    text: "Transactions",
+                    text: "common.label.transactions".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "cart.fill")
@@ -328,7 +328,7 @@ final class SalesReportsViewModel: FormViewModel {
             ),
             
             right: DualCardItemConfig(
-                title: "Total Revenue",
+                title: "common.label.total_revenue".localized,
                 titleIcon: UIImage(systemName: "banknote"),
                 subtitle: "\(currency). \(Int(totalRevenue))",
                 status: CardStatusStyle(

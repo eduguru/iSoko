@@ -134,7 +134,7 @@ final class LowBookKeepingStockViewModel: FormViewModel {
             
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "name",
-                subtitle: "\(item.minimumOrderQuantity) \(unit) available",
+                subtitle: "common.label.units_available".localized(with: "\(item.minimumOrderQuantity)", "\(unit)"),
                 amount: "\(currency) \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",

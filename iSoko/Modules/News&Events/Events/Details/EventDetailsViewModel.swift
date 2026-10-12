@@ -147,7 +147,7 @@ final class EventDetailViewModel: FormViewModel {
         if let start = state.event.startDate {
             items.append(InfoPairItem(
                 icon: UIImage(systemName: "calendar"),
-                label: "Start Date",
+                label: "common.label.start_date".localized,
                 value: formatDate(start, time: state.event.startTime)
             ))
         }
@@ -155,7 +155,7 @@ final class EventDetailViewModel: FormViewModel {
         if let end = state.event.endDate {
             items.append(InfoPairItem(
                 icon: UIImage(systemName: "calendar.badge.checkmark"),
-                label: "End Date",
+                label: "common.label.end_date".localized,
                 value: formatDate(end, time: state.event.endTime)
             ))
         }
@@ -166,7 +166,7 @@ final class EventDetailViewModel: FormViewModel {
             InfoPairFormRow(
                 tag: Tags.Cells.date.rawValue,
                 config: InfoPairConfig(
-                    title: "Date and Time",
+                    title: "common.title.date_and_time".localized,
                     items: items
                 )
             )
@@ -183,7 +183,7 @@ final class EventDetailViewModel: FormViewModel {
             InfoPairFormRow(
                 tag: Tags.Cells.venue.rawValue,
                 config: InfoPairConfig(
-                    title: "Location Information",
+                    title: "common.title.location_information".localized,
                     items: [
                         InfoPairItem(
                             icon: UIImage(systemName: "mappin.and.ellipse"),
@@ -204,14 +204,14 @@ final class EventDetailViewModel: FormViewModel {
             items.append(InfoPairItem(
                 icon: UIImage(systemName: "building.2"),
                 label: org,
-                value: "Organizer"
+                value: "common.label.organizer".localized
             ))
         }
 
         if let email = state.event.contactEmail, !email.isEmpty {
             items.append(InfoPairItem(
                 icon: UIImage(systemName: "envelope"),
-                label: "Email",
+                label: "common.label.email".localized,
                 value: email,
                 valueColor: .systemBlue,
                 isLink: true,
@@ -225,7 +225,7 @@ final class EventDetailViewModel: FormViewModel {
         if let phone = state.event.contactNumber, !phone.isEmpty {
             items.append(InfoPairItem(
                 icon: UIImage(systemName: "phone"),
-                label: "Phone Number",
+                label: "common.label.phone_number".localized,
                 value: phone,
                 onTap: {
                     guard let url = URL(string: "tel:\(phone)") else { return }
@@ -241,7 +241,7 @@ final class EventDetailViewModel: FormViewModel {
                 InfoPairFormRow(
                     tag: Tags.Cells.contact.rawValue,
                     config: InfoPairConfig(
-                        title: "Contact Information",
+                        title: "common.title.contact_information".localized,
                         items: items
                     )
                 )
@@ -255,7 +255,7 @@ final class EventDetailViewModel: FormViewModel {
                 ButtonFormRow(
                     tag: Tags.Cells.register.rawValue,
                     model: ButtonFormModel(
-                        title: "Register",
+                        title: "common.action.register".localized,
                         style: .primary,
                         size: .medium,
                         fontStyle: .headline,

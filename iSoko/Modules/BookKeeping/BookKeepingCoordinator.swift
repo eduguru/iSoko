@@ -84,8 +84,8 @@ public class BookKeepingCoordinator: BaseCoordinator {
         addChild(coordinator)
         
         coordinator.presentOptionSelection(
-            title: "Choose an Option",
-            message: "Select one of the options below:",
+            title: "common.title.choose_option".localized,
+            message: "common.message.select_option_below".localized,
             options: options
         ) { selectedItem in
             completion(selectedItem) // Return selection back to caller

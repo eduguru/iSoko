@@ -97,7 +97,7 @@ public class MoreCoordinator: BaseCoordinator {
         let viewModel = ConfirmAccountDeletionViewModel()
         viewModel.gotoConfirm = presentConfirmaionAlert
         viewModel.goToSuccess = { [weak self] in
-            self?.goToShowSuccessScreen(title: "Success", message: "Account has been deleted successfully, we're sorry to see you go!") {
+            self?.goToShowSuccessScreen(title: "common.success.title".localized, message: "common.message.account_deleted".localized) {
                 // self?.router.pop(animated: true)
                 AppStorage.hasLoggedIn = false
                 RuntimeSession.authState = .guest
@@ -121,7 +121,7 @@ public class MoreCoordinator: BaseCoordinator {
         let viewModel = ChangePasswordViewModel()
         viewModel.gotoConfirm = presentConfirmaionAlert
         viewModel.goToSuccess = { [weak self] in
-            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "Password has been reset successfully") {
+            self?.goToShowSuccessScreen(title: "common.title.password_reset_success".localized, message: "common.message.password_reset_success".localized) {
                 self?.router.pop(animated: true)
             }
         }
@@ -173,8 +173,8 @@ public class MoreCoordinator: BaseCoordinator {
 
         viewModel.goToSuccess = { [weak self] in
             self?.goToShowSuccessScreen(
-                title: "Profile Updated",
-                message: "Your profile has been updated successfully."
+                title: "common.title.profile_updated".localized,
+                message: "common.message.profile_updated".localized
             ) {
                 self?.router.pop(animated: true)
             }

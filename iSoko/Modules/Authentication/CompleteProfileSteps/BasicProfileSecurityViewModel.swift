@@ -97,7 +97,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Enter password",
+                placeholder: "common.verify_password_reset.password_placeholder".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 returnKeyType: .done
@@ -123,7 +123,7 @@ final class BasicProfileSecurityViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Confirm password",
+                placeholder: "common.verify_password_reset.confirm_password_label".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 returnKeyType: .done

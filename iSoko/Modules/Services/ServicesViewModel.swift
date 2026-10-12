@@ -140,7 +140,7 @@ final class ServicesViewModel: FormViewModel {
     private lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
-            placeholder: "Search services",
+            placeholder: "common.placeholder.search_services".localized,
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,

@@ -82,8 +82,8 @@ final class BasicProfileDataViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.title.rawValue,
             model: TitleDescriptionModel(
-                title: "Create Your Profile",
-                description: "Complete your details to continue",
+                title: "common.title.create_your_profile".localized,
+                description: "common.message.complete_details".localized,
                 maxTitleLines: 2,
                 maxDescriptionLines: 0,
                 titleEllipsis: .none,

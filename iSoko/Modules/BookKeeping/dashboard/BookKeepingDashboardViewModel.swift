@@ -183,19 +183,19 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             tag: 100,
             config: DualCardCellConfig(
                 left: makeFinancialItem(
-                    title: "Total Sales",
+                    title: "common.label.total_sales".localized,
                     value: formatCurrency(revenue),
                     color: .systemGreen,
                     icon: "arrow.up",
-                    subtitle: "Revenue",
+                    subtitle: "common.label.revenue".localized,
                     action: goToTotalSales
                 ),
                 right: makeFinancialItem(
-                    title: "Total Expenses",
+                    title: "common.label.total_expenses".localized,
                     value: formatCurrency(expenses),
                     color: .systemRed,
                     icon: "arrow.down",
-                    subtitle: "Spending",
+                    subtitle: "common.label.spending".localized,
                     action: goToTotalExpense
                 )
             )
@@ -205,7 +205,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
             tag: 101,
             config: DualCardCellConfig(
                 left: makeFinancialItem(
-                    title: "Total Products",
+                    title: "common.label.total_products".localized,
                     value: "\(products)",
                     color: .systemBlue,
                     icon: "cube.box",
@@ -372,7 +372,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         return TwoCardsSummaryFormRow(
             tag: 200,
             model: TwoCardsSummaryViewModel(
-                title: "Quick Actions",
+                title: "common.label.quick_actions".localized,
                 description: "common.label.quick_actions".localized,
                 cards: TwoStatusCardsViewModel(first: sale, second: expense, layout: .horizontal)
             )
@@ -418,7 +418,7 @@ final class BookKeepingDashboardViewModel: FormViewModel {
         )
 
         let suppliers = StatusCardViewModel(
-            title: "Suppliers",
+            title: "common.label.suppliers".localized,
             image: UIImage(systemName: "bolt.fill"),
             backgroundColor: .app(.hex("#14B8A6")),
             iconTintColor: .white,

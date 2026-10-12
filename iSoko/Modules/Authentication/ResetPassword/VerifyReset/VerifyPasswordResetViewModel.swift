@@ -36,8 +36,8 @@ final class VerifyPasswordResetViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title: "Reset password",
-            description: "Please type something you’ll remember",
+            title: "common.verify_password_reset.header_title".localized,
+            description: "common.verify_password_reset.header_description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -57,7 +57,7 @@ final class VerifyPasswordResetViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Enter password",
+                placeholder: "common.verify_password_reset.password_placeholder".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 accessoryImage: nil,
@@ -89,7 +89,7 @@ final class VerifyPasswordResetViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Confirm password",
+                placeholder: "common.verify_password_reset.confirm_password_label".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 accessoryImage: nil,
@@ -124,7 +124,7 @@ final class VerifyPasswordResetViewModel: FormViewModel {
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
         model: ButtonFormModel(
-            title: "Reset password",
+            title: "common.verify_password_reset.header_title".localized,
             style: .primary,
             size: .medium,
             icon: nil,

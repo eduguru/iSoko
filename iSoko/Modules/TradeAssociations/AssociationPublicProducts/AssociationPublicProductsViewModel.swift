@@ -160,7 +160,7 @@ final class AssociationPublicProductsViewModel: FormViewModel {
     private func makeSections() -> [FormSection] {
         [
             FormSection(id: Tags.Section.search.rawValue, title: nil, cells: [searchRow]),
-            FormSection(id: Tags.Section.products.rawValue, title: "Products", cells: [productGridRow])
+            FormSection(id: Tags.Section.products.rawValue, title: "common.label.products".localized, cells: [productGridRow])
         ]
     }
 
@@ -168,7 +168,7 @@ final class AssociationPublicProductsViewModel: FormViewModel {
     private lazy var searchRow = SearchFormRow(
         tag: Tags.Cells.search.rawValue,
         model: SearchFormModel(
-            placeholder: "Search products",
+            placeholder: "common.placeholder.search_products".localized,
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,

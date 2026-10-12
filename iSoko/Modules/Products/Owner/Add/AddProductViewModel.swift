@@ -56,8 +56,8 @@ final class AddProductViewModel: FormViewModel {
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
-            title: "What are you Selling?",
-            description: "Enter your product details below",
+            title: "common.title.what_are_you_selling".localized,
+            description: "common.message.enter_product_details".localized,
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left,
@@ -75,22 +75,22 @@ final class AddProductViewModel: FormViewModel {
     
     private lazy var productNameRow = makeInputRow(
         tag: CellTag.productName.rawValue,
-        title: "Name of the Product",
-        placeholder: "Enter product name",
+        title: "common.label.name_of_product".localized,
+        placeholder: "common.placeholder.product_name".localized,
         keyboard: .default
     )
     
     private lazy var priceRow = makeInputRow(
         tag: CellTag.price.rawValue,
-        title: "Price Per Unit",
-        placeholder: "Enter price",
+        title: "common.label.price_per_unit".localized,
+        placeholder: "common.placeholder.price".localized,
         keyboard: .decimalPad
     )
     
     private lazy var minOrderQtyRow = makeInputRow(
         tag: CellTag.minOrderQty.rawValue,
-        title: "Minimum Order Qty",
-        placeholder: "Enter minimum quantity",
+        title: "common.label.minimum_order_qty".localized,
+        placeholder: "common.placeholder.minimum_quantity".localized,
         keyboard: .numberPad
     )
     
@@ -156,8 +156,8 @@ final class AddProductViewModel: FormViewModel {
     private lazy var commodityTypeRow = DropdownFormRow(
         tag: CellTag.commodityType.rawValue,
         config: DropdownFormConfig(
-            title: "Type of Commodity",
-            placeholder: "Select commodity type",
+            title: "common.label.commodity_type".localized,
+            placeholder: "common.placeholder.commodity_type".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -169,8 +169,8 @@ final class AddProductViewModel: FormViewModel {
     private lazy var measurementUnitRow = DropdownFormRow(
         tag: CellTag.measurementUnit.rawValue,
         config: DropdownFormConfig(
-            title: "Measurement Unit",
-            placeholder: "Select unit",
+            title: "common.label.measurement_unit_title".localized,
+            placeholder: "common.placeholder.select_unit".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in

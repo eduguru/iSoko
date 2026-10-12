@@ -27,7 +27,7 @@ class BookKeepingExpensesViewController: FormViewController, CloseableViewContro
     
     private func setupNavigationBar() {
         let createItem = UIBarButtonItem(
-            title: "Create",
+            title: "common.action.create".localized,
             style: .plain,
             target: self,
             action: #selector(didTapCreate)

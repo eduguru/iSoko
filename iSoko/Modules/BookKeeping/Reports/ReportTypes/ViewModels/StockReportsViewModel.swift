@@ -125,7 +125,7 @@ final class StockReportsViewModel: FormViewModel {
         }
     )
     
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Stock Report", description: "Inventory levels overview")
+    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "common.title.stock_report".localized, description: "common.message.inventory_levels_overview".localized)
     private lazy var filterFormRow: FormRow = makeFilterFormRow()
     
     private lazy var selectionInputRow: FormRow = makeSelectionGrid()
@@ -139,7 +139,7 @@ final class StockReportsViewModel: FormViewModel {
                 rows: [
                     [
                         FilterFieldConfig(
-                            placeholder: "Supplier",
+                            placeholder: "common.label.supplier".localized,
                             selectedValue: nil,
                             iconSystemName: "mappin.and.ellipse",
                             onTap: { [weak self] in
@@ -149,7 +149,7 @@ final class StockReportsViewModel: FormViewModel {
                     ],
                     [
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: self.state.startDate?.getYearMonthDay(),
                             iconSystemName: "tag",
                             onTap: { [weak self] in
@@ -180,7 +180,7 @@ final class StockReportsViewModel: FormViewModel {
 
         let items: [SelectableCardItemConfig] = [
             .init(
-                title: "Available Stock",
+                title: "common.label.available_stock".localized,
                 subtitle: "\(summary?.availableStock ?? 0)",
                 icon: UIImage(systemName:"cube.box"),
                 iconTintColor: .systemBlue,
@@ -192,7 +192,7 @@ final class StockReportsViewModel: FormViewModel {
                 }
             ),
             .init(
-                title: "Stock Value",
+                title: "common.label.stock_value".localized,
                 subtitle: "\(currency) \(summary?.value ?? 0)",
                 icon: UIImage(systemName:"banknote"),
                 iconTintColor: .systemBlue,
@@ -204,7 +204,7 @@ final class StockReportsViewModel: FormViewModel {
                 }
             ),
             .init(
-                title: "Profit",
+                title: "common.label.profit".localized,
                 subtitle: "\(currency) \(summary?.profit ?? 0)",
                 icon: UIImage(systemName:"chart.line.uptrend.xyaxis"),
                 iconTintColor: .systemBlue,
@@ -228,7 +228,7 @@ final class StockReportsViewModel: FormViewModel {
                 }
             ),
             .init(
-                title: "Stock Intake",
+                title: "common.label.stock_intake".localized,
                 subtitle: "\(summary?.stockIntake ?? 0)",
                 icon: UIImage(systemName:"arrow.down.circle"),
                 iconTintColor: .systemBlue,
@@ -240,7 +240,7 @@ final class StockReportsViewModel: FormViewModel {
                 }
             ),
             .init(
-                title: "Out of Stock",
+                title: "common.status.out_of_stock".localized,
                 subtitle: "\(summary?.outOfStock ?? 0)",
                 icon: UIImage(systemName:"xmark.octagon"),
                 iconTintColor: .systemBlue,
@@ -272,7 +272,7 @@ final class StockReportsViewModel: FormViewModel {
 
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "Item",
-                subtitle: "\(qty) units",
+                subtitle: "common.label.units_count".localized(with: "\(qty)"),
                 amount: "\(currency). \(price)",
                 amountColor: .label,
                 status: "",

@@ -57,7 +57,7 @@ final class ProfileInfoViewModel: FormViewModel {
             // ACTIONS
             FormSection(
                 id: Tags.Section.actions.rawValue,
-                title: "Account Settings",
+                title: "common.title.account_settings".localized,
                 cells: makeActionRows()
             )
         ]
@@ -219,7 +219,7 @@ final class ProfileInfoViewModel: FormViewModel {
                 icon: UIImage(systemName: "person.fill"),
                 title: "common.label.first_name".localized,
                 value: { [weak self] in self?.state.userProfile?.firstName ?? "" },
-                placeholder: "Enter your first name"
+                placeholder: "common.placeholder.your_first_name".localized
             ),
             RowItem(
                 tag: Tags.Cells.secondName.rawValue,
@@ -228,35 +228,35 @@ final class ProfileInfoViewModel: FormViewModel {
                 value: { [weak self] in
                     self?.state.userProfile?.lastName ?? ""
                 },
-                placeholder: "Enter your second name"
+                placeholder: "common.placeholder.your_second_name".localized
             ),
             RowItem(
                 tag: Tags.Cells.gender.rawValue,
                 icon: UIImage(systemName: "person.2.fill"),
                 title: "common.label.gender".localized,
                 value: { [weak self] in self?.state.userProfile?.gender?.name ?? "" },
-                placeholder: "Select your gender"
+                placeholder: "common.placeholder.gender".localized
             ),
             RowItem(
                 tag: Tags.Cells.ageGroup.rawValue,
                 icon: UIImage(systemName: "calendar"),
-                title: "Age Group",
+                title: "common.label.age_group".localized,
                 value: { [weak self] in self?.state.userProfile?.ageGroup?.name ?? "" },
-                placeholder: "Select your age group"
+                placeholder: "common.placeholder.age_group".localized
             ),
             RowItem(
                 tag: Tags.Cells.email.rawValue,
                 icon: UIImage(systemName: "envelope.fill"),
                 title: "common.label.email_address".localized,
                 value: { [weak self] in self?.state.userProfile?.email ?? "" },
-                placeholder: "Email"
+                placeholder: "common.label.email".localized
             ),
             RowItem(
                 tag: Tags.Cells.phoneNumber.rawValue,
                 icon: UIImage(systemName: "phone.fill"),
                 title: "common.label.phone_number".localized,
                 value: { [weak self] in self?.state.userProfile?.phoneNumber ?? "" },
-                placeholder: "Phone number"
+                placeholder: "common.label.phone_number".localized
             )
         ]
     }
@@ -269,8 +269,8 @@ final class ProfileInfoViewModel: FormViewModel {
                 config: ImageTitleDescriptionConfig(
                     image: UIImage(systemName: "key.fill"),
                     imageStyle: .rounded,
-                    title: "Change Password",
-                    description: "Update your account password",
+                    title: "common.action.change_password".localized,
+                    description: "common.message.update_account_password_hint".localized,
                     accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
                     onTap: {[weak self] in
                         print("Change password")
@@ -284,8 +284,8 @@ final class ProfileInfoViewModel: FormViewModel {
                 config: ImageTitleDescriptionConfig(
                     image: UIImage(systemName: "trash.fill"),
                     imageStyle: .rounded,
-                    title: "Delete Account",
-                    description: "Permanently remove your account",
+                    title: "common.action.delete_account".localized,
+                    description: "common.message.remove_account_hint".localized,
                     accessoryType: .image(image: UIImage(named: "forwardArrowRightAligned") ?? .forwardArrow),
                     onTap: { [weak self] in
                         print("Delete account")

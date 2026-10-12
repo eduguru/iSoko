@@ -68,7 +68,7 @@ public final class FormTitleDescriptionRowCell: UITableViewCell {
         containerView.addSubview(trailingImageView)
 
         // Edit button
-        editButton.setTitle("Edit", for: .normal)
+        editButton.setTitle("common.action.edit".localized, for: .normal)
         editButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         editButton.isHidden = true
         editButton.translatesAutoresizingMaskIntoConstraints = false

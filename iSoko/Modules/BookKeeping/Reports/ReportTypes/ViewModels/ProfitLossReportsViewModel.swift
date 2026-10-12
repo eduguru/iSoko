@@ -97,7 +97,7 @@ final class ProfitLossReportsViewModel: FormViewModel {
         }
     )
     
-    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "Profit & Loss", description: "View financial performance")
+    private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(title: "common.label.profit_and_loss".localized, description: "common.message.view_financial_performance".localized)
     
     // MARK: - Submit
     private func submit() async {

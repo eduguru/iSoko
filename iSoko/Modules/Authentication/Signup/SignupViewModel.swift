@@ -35,8 +35,8 @@ final class SignupViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title:  "Choose your account type",
-            description: "Select your type of account that best describe your needs",
+            title:  "common.signup.header_title".localized,
+            description: "common.signup.header_description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -134,14 +134,14 @@ final class SignupViewModel: FormViewModel {
         
         items.append(CommonIdNameModel(
             id: 0,
-            name: "Individual Account",
-            description: "Perfect for sole proprietor, freelancers, and individual business owners managing their own operations")
+            name: "common.signup.option_individual_name".localized,
+            description: "common.signup.option_individual_description".localized)
         )
         
         items.append(CommonIdNameModel(
             id: 1,
-            name: "Organisation Account",
-            description: "Ideal for companies, partnerships, cooperatives, and organisations with multiple stakeholders")
+            name: "common.signup.option_organisation_name".localized,
+            description: "common.signup.option_organisation_description".localized)
         )
 
         state?.options = items

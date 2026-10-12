@@ -75,8 +75,8 @@ final class ResetPasswordSuccessViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title: "Password changed",
-            description: "Your password has been changed succesfully",
+            title: "common.reset_password_success.header_title".localized,
+            description: "common.reset_password_success.header_description".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,
@@ -91,7 +91,7 @@ final class ResetPasswordSuccessViewModel: FormViewModel {
     
     private func makeLoginButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Back to login",
+            title: "common.reset_password_success.login_button".localized,
             style: .primary,
             size: .medium,
             icon: nil,

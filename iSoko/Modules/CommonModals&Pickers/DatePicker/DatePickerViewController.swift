@@ -31,14 +31,14 @@ final class DatePickerViewController: UIViewController {
         title = "Select Date"
 
         navigationItem.leftBarButtonItem = UIBarButtonItem(
-            title: "Cancel",
+            title: "common.action.cancel".localized,
             style: .plain,
             target: self,
             action: #selector(cancelTapped)
         )
 
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            title: "Done",
+            title: "common.success.done_button".localized,
             style: .done,
             target: self,
             action: #selector(doneTapped)

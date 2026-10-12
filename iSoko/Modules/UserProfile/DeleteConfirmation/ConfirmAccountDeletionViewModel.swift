@@ -53,8 +53,8 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
 
     // MARK: - TITLE ROW (your provided pattern adapted)
     private lazy var titleFormRow: FormRow = makeTitleRow(
-        title: "Delete Account",
-        description: "This action is permanent. Enter your password and optionally tell us why you're leaving."
+        title: "common.action.delete_account".localized,
+        description: "common.message.delete_account_warning".localized
     )
 
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -77,7 +77,7 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Enter password to confirm",
+                placeholder: "common.placeholder.password_to_confirm".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 returnKeyType: .done
@@ -113,7 +113,7 @@ final class ConfirmAccountDeletionViewModel: FormViewModel {
     private lazy var deleteButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
-            title: "Delete Account",
+            title: "common.action.delete_account".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

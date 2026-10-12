@@ -267,7 +267,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iSoko/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = iSOKO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
+				INFOPLIST_KEY_NSCameraUsageDescription = "iSOKO uses your camera so you can take photos for your profile picture and product listings.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "iSOKO accesses your photo library so you can choose photos for your profile picture and product listings.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
@@ -279,7 +282,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.isoko.africa.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -306,7 +309,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iSoko/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = iSOKO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
+				INFOPLIST_KEY_NSCameraUsageDescription = "iSOKO uses your camera so you can take photos for your profile picture and product listings.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "iSOKO accesses your photo library so you can choose photos for your profile picture and product listings.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
@@ -318,7 +324,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.isoko.africa.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -345,7 +351,10 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iSoko/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = iSOKO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.shopping";
+				INFOPLIST_KEY_NSCameraUsageDescription = "iSOKO uses your camera so you can take photos for your profile picture and product listings.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "iSOKO accesses your photo library so you can choose photos for your profile picture and product listings.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
@@ -357,7 +366,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = com.isoko.africa.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

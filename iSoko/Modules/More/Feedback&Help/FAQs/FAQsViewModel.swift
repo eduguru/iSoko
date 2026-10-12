@@ -88,7 +88,7 @@ final class FAQsViewModel: FormViewModel {
                 tag: 1000 + index,
                 model: RichDescriptionModel(
                     title: "", // title is included in HTML
-                    htmlDescription: htmlContent.isEmpty ? "No content available" : htmlContent,
+                    htmlDescription: htmlContent.isEmpty ? "common.label.no_content_available".localized : htmlContent,
                     textAlignment: .left
                 )
             )

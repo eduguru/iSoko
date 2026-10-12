@@ -58,8 +58,8 @@ final class NewTradeAssociationViewModel: FormViewModel {
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
-            title: "Register Association",
-            description: "Join the iSOKO network and expand your association's reach"
+            title: "common.action.register_association".localized,
+            description: "common.message.join_isoko_network".localized
         )
     )
     
@@ -67,7 +67,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.associationName.rawValue,
         model: SimpleInputModel(
             text: "",
-            config: TextFieldConfig(placeholder: "Association Name"),
+            config: TextFieldConfig(placeholder: "common.label.association_name".localized),
             validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
             titleText: "Association Name",
             useCardStyle: true,
@@ -81,7 +81,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.associationCode.rawValue,
         model: SimpleInputModel(
             text: "",
-            config: TextFieldConfig(placeholder: "Association Code"),
+            config: TextFieldConfig(placeholder: "common.label.association_code".localized),
             validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
             titleText: "Association Code",
             useCardStyle: true,
@@ -114,7 +114,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             inputType: .number,
-            config: TextFieldConfig(placeholder: "Number of Members"),
+            config: TextFieldConfig(placeholder: "common.label.number_of_members".localized),
             validation: ValidationConfiguration(isRequired: true),
             titleText: "Number of Members",
             useCardStyle: true
@@ -124,7 +124,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
     private lazy var foundedYearRow = DropdownFormRow(
         tag: CellTag.foundedYear.rawValue,
         config: DropdownFormConfig(
-            title: "Founded Year",
+            title: "common.label.founded_year".localized,
             placeholder: state.dateString,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
@@ -168,10 +168,10 @@ final class NewTradeAssociationViewModel: FormViewModel {
     )
 
     private let config = RequirementsListRowConfig(
-        title: "Requirements",
+        title: "common.title.requirements".localized,
         items: [
-            RequirementItem(title: "Valid registration documents", isSatisfied: true),
-            RequirementItem(title: "Minimum 5 active members", isSatisfied: true),
+            RequirementItem(title: "common.label.valid_registration_documents".localized, isSatisfied: true),
+            RequirementItem(title: "common.label.minimum_5_members".localized, isSatisfied: true),
 //            RequirementItem(title: "Established for at least 1 year", isSatisfied: true),
 //            RequirementItem(title: "East African region based", isSatisfied: true)
         ]

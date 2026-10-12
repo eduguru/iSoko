@@ -119,8 +119,8 @@ final class ProductDetailsViewModel: FormViewModel {
                 TitleDescriptionFormRow(
                     tag: Tags.Cells.emptyReviews.rawValue,
                     model: TitleDescriptionModel(
-                        title: "No reviews yet",
-                        description: "Be the first to review this product",
+                        title: "common.label.no_reviews_yet".localized,
+                        description: "common.message.be_first_review".localized,
                         layoutStyle: .stackedVertical,
                         textAlignment: .center,
                         titleFontStyle: .body,
@@ -188,7 +188,7 @@ final class ProductDetailsViewModel: FormViewModel {
     private func similarProductsSection() -> FormSection {
         FormSection(
             id: Tags.Section.similarProducts.rawValue,
-            title: "Similar Products",
+            title: "common.title.similar_products".localized,
             cells: [
                 HorizontalGridFormRow(
                     tag: Tags.Section.similarProducts.rawValue,
@@ -229,7 +229,7 @@ final class ProductDetailsViewModel: FormViewModel {
 
     lazy var quantityRow: FormRow = QuantityFormRow(
         tag: 500,
-        title: "Quantity",
+        title: "common.label.quantity".localized,
         initialValue: state.product.minimumOrderQuantity ?? 1,
         minimumValue: state.product.minimumOrderQuantity ?? 1
     ) { [weak self] value in
@@ -280,7 +280,7 @@ final class ProductDetailsViewModel: FormViewModel {
     private func makeDescriptionRow() -> FormRow {
         let description = state.product.description?.isEmpty == false
             ? state.product.description!
-            : "No description available"
+            : "common.label.no_description_available".localized
 
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
@@ -349,7 +349,7 @@ final class ProductDetailsViewModel: FormViewModel {
                         }
                     ),
                     .init(
-                        title: "Call",
+                        title: "common.action.call".localized,
                         image: UIImage(systemName: "phone.fill"),
                         handler: {
                             guard let number = phoneNumber,
@@ -360,7 +360,7 @@ final class ProductDetailsViewModel: FormViewModel {
                         }
                     ),
                     .init(
-                        title: "Email",
+                        title: "common.label.email".localized,
                         image: UIImage(systemName: "envelope.fill"),
                         handler: {
                             guard let email = email,
@@ -406,7 +406,7 @@ final class ProductDetailsViewModel: FormViewModel {
         ButtonFormRow(
             tag: 1001,
             model: ButtonFormModel(
-                title: "Place Order",
+                title: "common.action.place_order".localized,
                 style: .primary,
                 size: .large,
                 icon: nil,

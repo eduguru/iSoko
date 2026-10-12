@@ -114,8 +114,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     private lazy var headerRow = TitleDescriptionFormRow(
         tag: CellTag.header.rawValue,
         model: TitleDescriptionModel(
-            title: "Complete Association Registration",
-            description: "Add contact and location details to help members find your association."
+            title: "common.title.complete_association_registration".localized,
+            description: "common.message.association_contact_details".localized
         )
     )
 
@@ -179,12 +179,12 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     }
     
     private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "common.label.email_address".localized)
-    private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "Website URL")
-    private lazy var instagramInputRow = makeURLInputRow(tag: CellTag.instagram.rawValue, title: "Instagram URL")
-    private lazy var linkedinInputRow = makeURLInputRow(tag: CellTag.linkedin.rawValue, title: "LinkedIn URL")
-    private lazy var xInputRow = makeURLInputRow(tag: CellTag.xURL.rawValue, title: "X (Twitter) URL")
+    private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "common.label.website_url".localized)
+    private lazy var instagramInputRow = makeURLInputRow(tag: CellTag.instagram.rawValue, title: "common.label.instagram_url".localized)
+    private lazy var linkedinInputRow = makeURLInputRow(tag: CellTag.linkedin.rawValue, title: "common.label.linkedin_url".localized)
+    private lazy var xInputRow = makeURLInputRow(tag: CellTag.xURL.rawValue, title: "common.label.x_url".localized)
     
-    private lazy var locationRow = makeURLInputRow(tag: CellTag.location.rawValue, title: "Business Location")
+    private lazy var locationRow = makeURLInputRow(tag: CellTag.location.rawValue, title: "common.label.business_location".localized)
     
     private func makeURLInputRow(tag: Int, title: String) -> SimpleInputFormRow {
         SimpleInputFormRow(
@@ -217,8 +217,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.certificate.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Upload Certificate (Optional)",
-            subtitle: ".png, .jpg, .jpeg, .pdf up to 5MB",
+            title: "common.title.upload_certificate".localized,
+            subtitle: "common.label.file_types_image_pdf".localized,
             icon: UIImage(systemName: "square.and.arrow.up"),
             borderColor: .lightGray,
             backgroundColor: .clear,
@@ -231,8 +231,8 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         tag: CellTag.logo.rawValue,
         config: UploadFormRowConfig(
             style: .dashed,
-            title: "Upload Logo (Optional)",
-            subtitle: ".png, .jpg, .jpeg up to 5MB",
+            title: "common.title.upload_logo".localized,
+            subtitle: "common.label.file_types_image".localized,
             icon: UIImage(systemName: "photo"),
             borderColor: .lightGray,
             backgroundColor: .clear,
@@ -275,7 +275,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Submit",
+            title: "common.action.submit".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

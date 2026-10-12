@@ -78,7 +78,7 @@ final class SuccessViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title: "Success",
+            title: "common.success.title".localized,
             description: "",
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
@@ -96,7 +96,7 @@ final class SuccessViewModel: FormViewModel {
     
     private func makePrimaryButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Done",
+            title: "common.success.done_button".localized,
             style: .primary,
             size: .medium,
             icon: UIImage(systemName: "email.fill"),
@@ -113,7 +113,7 @@ final class SuccessViewModel: FormViewModel {
     
     private func makeSecondaryButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Share",
+            title: "common.success.share_button".localized,
             style: .custom(
                 backgroundColor: .white,
                 textColor: .app(.primary),

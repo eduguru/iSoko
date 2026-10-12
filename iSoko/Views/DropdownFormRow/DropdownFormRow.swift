@@ -42,7 +42,7 @@ public final class DropdownFormRow: FormRow {
                 return cell
             }
             if !isValid {
-                config.subtitle = "This field is required"
+                config.subtitle = "common.label.field_required".localized
             }
             cell.configure(with: config)
             return cell
@@ -52,7 +52,7 @@ public final class DropdownFormRow: FormRow {
                 return cell
             }
             if !isValid {
-                config.subtitle = "This field is required"
+                config.subtitle = "common.label.field_required".localized
             }
             cell.configure(with: config)
             return cell

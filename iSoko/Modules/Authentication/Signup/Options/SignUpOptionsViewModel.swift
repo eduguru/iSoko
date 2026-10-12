@@ -66,7 +66,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             SpacerFormRow(tag: Tags.Cells.spacer1.rawValue),
             state.isUsingPhone ? phoneDropDownRow : emailInputRow,
             continueButtonRow,
-            DividerWithTextFormRow(tag: Tags.Cells.divider.rawValue, text: "Or"),
+            DividerWithTextFormRow(tag: Tags.Cells.divider.rawValue, text: "common.label.or".localized),
             emailButtonRow,
             // googleButtonRow
         ]
@@ -165,7 +165,7 @@ final class SignUpOptionsViewModel: FormViewModel {
             tag: Tags.Cells.headerTitle.rawValue,
             model: TitleDescriptionModel(
                 title: "common.auth_view.create_account".localized,
-                description: "Join a network of Traders and grow your business.",
+                description: "common.message.join_network_traders".localized,
                 maxTitleLines: 2,
                 maxDescriptionLines: 0,
                 titleEllipsis: .none,
@@ -224,7 +224,7 @@ final class SignUpOptionsViewModel: FormViewModel {
     lazy var googleButtonRow = ButtonFormRow(
         tag: Tags.Cells.googleButton.rawValue,
         model: ButtonFormModel(
-            title: "Continue with Google",
+            title: "common.action.continue_with_google".localized,
             style: .custom(
                 backgroundColor: .white,
                 textColor: .app(.secondary),

@@ -29,7 +29,7 @@ class BookKeepingStockDetailsViewController: FormViewController, CloseableViewCo
     
     private func setupNavigationBar() {
         let createItem = UIBarButtonItem(
-            title: "Restock",// "common.action.edit".localized,
+            title: "common.action.restock".localized,// "common.action.edit".localized,
             style: .plain,
             target: self,
             action: #selector(didTapEdit)

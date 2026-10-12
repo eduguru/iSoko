@@ -449,7 +449,7 @@ class AuthCoordinator: BaseCoordinator {
         // viewModel.confirmSelection = goToResetPasswordOtpVerification
         viewModel.confirmSelection = { [weak self] value in
             // self?.goToResetPasswordSuccess()
-            self?.goToShowSuccessScreen(title: "Password Reset Success", message: "A password reset email has been sent to your email address. Please check your email and reset your password.") {
+            self?.goToShowSuccessScreen(title: "common.title.password_reset_success".localized, message: "common.message.password_reset_email_sent".localized) {
                 self?.goToAuthOptions()
             }
         }

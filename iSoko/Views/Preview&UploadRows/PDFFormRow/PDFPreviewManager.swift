@@ -86,8 +86,8 @@ final class PDFPreviewManager: NSObject, QLPreviewControllerDelegate {
     }
 
     private func presentError(_ message: String) {
-        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
-        alert.addAction(.init(title: "OK", style: .default))
+        let alert = UIAlertController(title: "common.title.error".localized, message: message, preferredStyle: .alert)
+        alert.addAction(.init(title: "common.action.ok".localized, style: .default))
         presentingController?.present(alert, animated: true)
     }
 }

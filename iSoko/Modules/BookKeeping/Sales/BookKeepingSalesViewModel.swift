@@ -183,22 +183,22 @@ final class BookKeepingSalesViewModel: FormViewModel {
 
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Sales",
+                title: "common.label.total_sales".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: totalText,
                 status: CardStatusStyle(
-                    text: "Revenue",
+                    text: "common.label.revenue".localized,
                     textColor: .systemGreen,
                     backgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "arrow.up")
                 )
             ),
             right: DualCardItemConfig(
-                title: "Transactions",
+                title: "common.label.transactions".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: countText,
                 status: CardStatusStyle(
-                    text: "Total entries",
+                    text: "common.label.total_entries".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "list.number")

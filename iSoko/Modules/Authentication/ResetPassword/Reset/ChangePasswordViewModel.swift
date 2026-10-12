@@ -36,7 +36,7 @@ final class ChangePasswordViewModel: FormViewModel {
         [
             FormSection(
                 id: Tags.Section.security.rawValue,
-                title: "Change Password",
+                title: "common.action.change_password".localized,
                 cells: [
                     headerRow,
                     currentPasswordRow,
@@ -52,8 +52,8 @@ final class ChangePasswordViewModel: FormViewModel {
     private let headerRow = TitleDescriptionFormRow(
         tag: -100,
         model: TitleDescriptionModel(
-            title: "Update your password",
-            description: "Enter your current password and choose a new one",
+            title: "common.title.update_your_password".localized,
+            description: "common.message.change_password_hint".localized,
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
             textAlignment: .left
@@ -67,7 +67,7 @@ final class ChangePasswordViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Current password",
+                placeholder: "common.label.current_password".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 returnKeyType: .done
@@ -91,7 +91,7 @@ final class ChangePasswordViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "New password",
+                placeholder: "common.verify_password_reset.password_label".localized,
                 keyboardType: .default,
                 isSecureTextEntry: true,
                 returnKeyType: .done
@@ -114,7 +114,7 @@ final class ChangePasswordViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: Tags.Cells.submit.rawValue,
         model: ButtonFormModel(
-            title: "Update Password",
+            title: "common.action.update_password".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

@@ -77,7 +77,7 @@ final class AboutUsViewModel: FormViewModel {
         for (index, item) in state.items.enumerated() {
 
             // Use body, quote, or featuredTitle HTML directly
-            let htmlContent = item.body ?? item.quote ?? item.featuredTitle ?? "No content available"
+            let htmlContent = item.body ?? item.quote ?? item.featuredTitle ?? "common.label.no_content_available".localized
 
             let row = RichDescriptionFormRow(
                 tag: 1000 + index,

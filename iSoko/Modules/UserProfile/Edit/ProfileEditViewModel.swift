@@ -196,21 +196,21 @@ final class ProfileEditViewModel: FormViewModel {
     private lazy var firstNameInputRow = makeInputRow(
         tag: Tags.Cells.firstName.rawValue,
         title: "common.label.first_name".localized,
-        placeholder: "Enter First Name",
+        placeholder: "common.placeholder.first_name".localized,
         initialText: state.firstName
     )
     
     private lazy var lastNameInputRow = makeInputRow(
         tag: Tags.Cells.lastName.rawValue,
-        title: "Last Name",
-        placeholder: "Enter Last Name",
+        title: "common.label.last_name".localized,
+        placeholder: "common.placeholder.last_name".localized,
         initialText: state.lastName
     )
     
     private lazy var emailInputRow = makeInputRow(
         tag: Tags.Cells.email.rawValue,
         title: "common.label.email_address".localized,
-        placeholder: "Enter Email Address",
+        placeholder: "common.placeholder.email_address".localized,
         initialText: state.email
     )
     

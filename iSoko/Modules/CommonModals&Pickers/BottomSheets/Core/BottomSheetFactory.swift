@@ -16,12 +16,12 @@ enum BottomSheetFactory {
     ) -> BottomSheetModel {
         BottomSheetModel(
             style: .bottomSheet,
-            title: "Login required",
-            message: "Please login to continue, or continue as guest.",
+            title: "auth.login_required.title".localized,
+            message: "auth.login_required.message".localized,
             showCloseButton: true,
             buttons: [
-                .init(title: "Continue as Guest", style: .secondary) { onGuest() },
-                .init(title: "Login", style: .primary) { onLogin() }
+                .init(title: "auth.continue_as_guest".localized, style: .secondary) { onGuest() },
+                .init(title: "auth.login".localized, style: .primary) { onLogin() }
             ]
         )
     }
@@ -32,12 +32,12 @@ enum BottomSheetFactory {
     ) -> BottomSheetModel {
         BottomSheetModel(
             style: .bottomSheet,
-            title: "Sign Out",
-            message: "Are you sure you want to sign out?",
+            title: "common.action.sign_out".localized,
+            message: "common.message.sign_out_confirm".localized,
             showCloseButton: true,
             buttons: [
-                .init(title: "Cancel", style: .secondary) { onCancel() },
-                .init(title: "Sign Out", style: .primary) { onConfirm() }
+                .init(title: "common.action.cancel".localized, style: .secondary) { onCancel() },
+                .init(title: "common.action.sign_out".localized, style: .primary) { onConfirm() }
             ]
         )
     }
@@ -74,8 +74,8 @@ enum BottomSheetFactory {
             message: message ?? "",
             showCloseButton: true,
             buttons: [
-                .init(title: "Cancel", style: .secondary) { onCancel() },
-                .init(title: "Okay", style: .primary) { onConfirm() }
+                .init(title: "common.action.cancel".localized, style: .secondary) { onCancel() },
+                .init(title: "common.action.okay".localized, style: .primary) { onConfirm() }
             ]
         )
     }
@@ -94,7 +94,7 @@ enum BottomSheetFactory {
             message: message,
             showCloseButton: true,
             buttons: [
-                .init(title: "Done", style: .primary) { }
+                .init(title: "common.success.done_button".localized, style: .primary) { }
             ], items: options,
             onItemSelected: onSelect
         )

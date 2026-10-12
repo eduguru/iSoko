@@ -53,7 +53,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
             ),
             FormSection(
                 id: Tags.Section.titleAndDescription.rawValue,
-                title: "Contacts",
+                title: "common.label.contacts".localized,
                 cells: [
                     phoneTitleRow,
                     emailTitleRow,
@@ -126,7 +126,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
         
         let description = state.item.description?.isEmpty == false
             ? state.item.description!
-            : "No description available"
+            : "common.label.no_description_available".localized
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
@@ -179,7 +179,7 @@ final class TradeServiceProviderDetailsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
-            title: "Website",
+            title: "common.label.website".localized,
             description: state.item.website ?? " N/A",
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,

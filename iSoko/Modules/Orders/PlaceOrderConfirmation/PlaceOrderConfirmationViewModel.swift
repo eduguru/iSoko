@@ -159,17 +159,17 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
         
         let rows: [OrderBreakdownRowModel] = [
             OrderBreakdownRowModel(
-                title: "Unit Price",
+                title: "common.label.unit_price".localized,
                 value: Helpers.formatCurrency(unitPrice(), currency: currency),
                 isHighlighted: false
             ),
             OrderBreakdownRowModel(
-                title: "Quantity",
+                title: "common.label.quantity".localized,
                 value: "\(state.quantity)",
                 isHighlighted: false
             ),
             OrderBreakdownRowModel(
-                title: "Subtotal",
+                title: "common.label.subtotal".localized,
                 value: Helpers.formatCurrency(subtotal, currency: currency),
                 isHighlighted: true
             )
@@ -178,7 +178,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
         return OrderBreakdownFormRow(
             tag: CellTag.summary.rawValue,
             model: OrderBreakdownModel(
-                title: "Order Summary",
+                title: "common.title.order_summary".localized,
                 rows: rows,
                 totalTitle: "Total",
                 totalValue: Helpers.formatCurrency(total, currency: currency)
@@ -214,7 +214,7 @@ final class PlaceOrderConfirmationViewModel: FormViewModel {
     // MARK: - Header Row
     
     private lazy var titleDescriptionFormRow: FormRow = makeTitleRow(
-        title: "Products",
+        title: "common.label.products".localized,
         description: ""
     )
     

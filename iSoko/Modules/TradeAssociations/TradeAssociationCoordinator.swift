@@ -124,7 +124,7 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
             )
         }
 
-        coordinator.presentOptionSelection(title: "Sort By", options: options) { selected in
+        coordinator.presentOptionSelection(title: "common.action.sort_by".localized, options: options) { selected in
             guard let match = ProductSortOption(rawValue: selected.id) else { return }
             onSelect(match)
         }
@@ -401,8 +401,8 @@ extension TradeAssociationFlowCoordinator {
             guard let self else { return }
 
             self.goToShowSuccessScreen(
-                title: "Order Placed",
-                message: "Order \(response.orderNumber) created successfully"
+                title: "common.title.order_placed".localized,
+                message: "orders.created_message".localized(with: "\(response.orderNumber)")
             ) {
                 self.modalRouter?.pop(animated: true)
             }
@@ -463,7 +463,7 @@ extension TradeAssociationFlowCoordinator {
         addChild(coordinator)
 
         coordinator.presentErrorAlert(
-            title: "Error",
+            title: "common.title.error".localized,
             message: message,
             onPrimaryAction: { },
             onSecondaryAction: { }

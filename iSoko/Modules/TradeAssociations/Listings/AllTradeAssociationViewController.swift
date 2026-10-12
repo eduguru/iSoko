@@ -21,7 +21,7 @@ class AllTradeAssociationViewController: FormViewController, CloseableViewContro
         
         
         let btn01 = UIButton(type: .system) //use .system for automatic tint/color handling
-        btn01.setTitle("Create", for: .normal)
+        btn01.setTitle("common.action.create".localized, for: .normal)
         btn01.setTitleColor(.app(.primary), for: .normal) //set an explicit color (or .label for adaptive)
         btn01.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
         btn01.addTarget(self, action: #selector(didTapButton01), for: .touchUpInside)

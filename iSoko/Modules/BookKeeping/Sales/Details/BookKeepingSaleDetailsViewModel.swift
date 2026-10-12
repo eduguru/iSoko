@@ -168,13 +168,13 @@ final class BookKeepingSaleDetailsViewModel: FormViewModel {
 
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Value",
+                title: "common.label.total_value".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "\(currency) \(Int(totalValue))",
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Items",
+                title: "common.label.items".localized,
                 titleIcon: UIImage(systemName: "shippingbox"),
                 subtitle: "\(totalItems)",
                 status: nil

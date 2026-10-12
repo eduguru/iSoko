@@ -12,6 +12,6 @@ final class OTPFormViewController: FormViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "OTP Verification"
+        self.title = "common.title.otp_verification".localized
     }
 }

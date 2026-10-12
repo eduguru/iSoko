@@ -173,22 +173,22 @@ final class BookKeepingCustomersViewModel: FormViewModel {
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Customers",
+                title: "common.label.total_customers".localized,
                 titleIcon: nil,
                 subtitle: "140",
                 status: CardStatusStyle(
-                    text: "24% since last week",
+                    text: "common.label.since_last_week".localized(with: "24%"),
                     textColor: .systemGreen,
                     backgroundColor: .app(.hex("#F0FFE5")),
                     icon: .stockmarketArrowUp
                 )
             ),
             right: DualCardItemConfig(
-                title: "Active Buyers",
+                title: "common.label.active_buyers".localized,
                 titleIcon: nil,
                 subtitle: "23",
                 status: CardStatusStyle(
-                    text: "13% since last week",
+                    text: "common.label.since_last_week".localized(with: "13%"),
                     textColor: .systemOrange,
                     backgroundColor: .app(.hex("#FFE5E6")),
                     icon: .stockmarketArrowDown
@@ -223,7 +223,7 @@ final class BookKeepingCustomersViewModel: FormViewModel {
                 statusColor: .app(.hex("#717171")),
                 
                 primaryAction: ActionCardConfig(
-                    title: "View History",
+                    title: "common.action.view_history".localized,
                     icon: UIImage(systemName: "clock"),
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     textColor: .app(.hex("#656C7A")),

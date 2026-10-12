@@ -39,8 +39,8 @@ final class ForgotPasswordViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-                title: "Forgot password?",
-                description: "Don’t worry! It happens. Please enter the email associated with your account.",
+                title: "common.reset_password.header_title".localized,
+                description: "common.reset_password.header_description".localized,
                 maxTitleLines: 2,
                 maxDescriptionLines: 0,
                 titleEllipsis: .none,
@@ -60,7 +60,7 @@ final class ForgotPasswordViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder:  "Enter email",
+                placeholder:  "common.reset_password.email_placeholder".localized,
                 keyboardType: .emailAddress,
                 accessoryImage: nil
             ),
@@ -84,7 +84,7 @@ final class ForgotPasswordViewModel: FormViewModel {
     lazy var confirmButtonRow = ButtonFormRow(
         tag: 9999,
         model: ButtonFormModel(
-            title: "Send code",
+            title: "common.reset_password.confirm_button".localized,
             style: .primary,
             size: .medium,
             icon: nil,

@@ -142,8 +142,8 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             tag: 001001,
             model: AssociationHeaderModel(
                 title: state.data.name ?? "",
-                subtitle: "Founded in " + (state.data.foundedIn ?? "00"),
-                desc: "\(state.data.members ?? 0)" + " Members",
+                subtitle: "common.label.founded_in".localized + " " + (state.data.foundedIn ?? "00"),
+                desc: "\(state.data.members ?? 0)" + " " + "common.label.members".localized,
                 icon: .blankRectangle,
                 cardBackgroundColor: .white,
                 cardRadius: 0

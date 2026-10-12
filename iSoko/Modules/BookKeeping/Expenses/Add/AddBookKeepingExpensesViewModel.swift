@@ -85,8 +85,8 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
 
     private lazy var supplierNameInputRow = makeInputRow(
         tag: CellTag.supplierName.rawValue,
-        title: "Supplier Name",
-        placeholder: "Enter Supplier Name"
+        title: "common.label.supplier_name".localized,
+        placeholder: "common.label.supplier_name_placeholder".localized
     )
 
     private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
@@ -143,7 +143,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     private lazy var supplierRow = DropdownFormRow(
         tag: CellTag.supplier.rawValue,
         config: DropdownFormConfig(
-            title: "Supplier",
+            title: "common.label.supplier".localized,
             placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in
@@ -177,8 +177,8 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     private lazy var paymentOptionsRow = DropdownFormRow(
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
-            title: "Payment Method",
-            placeholder: "Method",
+            title: "common.label.payment_method".localized,
+            placeholder: "common.label.method".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in
@@ -188,7 +188,7 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     )
     
     private lazy var otherImagesTitleFormRow: FormRow = makeTitleRow(
-        title: "Add Receipt Images",
+        title: "common.label.receipt_images".localized,
         description: ""
     )
     

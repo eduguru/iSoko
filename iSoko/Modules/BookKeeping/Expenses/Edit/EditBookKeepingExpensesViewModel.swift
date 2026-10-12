@@ -105,7 +105,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     private lazy var supplierRow = DropdownFormRow(
         tag: CellTag.supplier.rawValue,
         config: DropdownFormConfig(
-            title: "Supplier",
+            title: "common.label.supplier".localized,
             placeholder: state.supplier?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleSupplierSelection() },
@@ -131,7 +131,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     private lazy var paymentOptionsRow = DropdownFormRow(
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
-            title: "Payment Method",
+            title: "common.label.payment_method".localized,
             placeholder: state.paymentMethod?.name ?? "Method",
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
@@ -185,7 +185,7 @@ final class EditBookKeepingExpensesViewModel: FormViewModel {
     )
 
     private lazy var otherImagesTitleFormRow: FormRow = makeTitleRow(
-        title: "Add Receipt Images",
+        title: "common.label.receipt_images".localized,
         description: ""
     )
 

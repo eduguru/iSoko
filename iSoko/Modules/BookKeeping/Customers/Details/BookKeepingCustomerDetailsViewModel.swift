@@ -146,13 +146,13 @@ final class BookKeepingCustomerDetailsViewModel: FormViewModel {
     private func makeFinancialSummaryRow() -> FormRow {
         let config = DualCardCellConfig(
             left: DualCardItemConfig(
-                title: "Total Spent",
+                title: "common.label.total_spent".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "0.00",
                 status: nil
             ),
             right: DualCardItemConfig(
-                title: "Total Orders",
+                title: "common.label.total_orders".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "0",
                 status: nil

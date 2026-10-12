@@ -15,7 +15,7 @@ final class PickerHeaderView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        cancelButton.setTitle("Cancel", for: .normal)
+        cancelButton.setTitle("common.action.cancel".localized, for: .normal)
         confirmButton.setTitle("common.button.confirm".localized, for: .normal)
         confirmButton.isEnabled = false
 

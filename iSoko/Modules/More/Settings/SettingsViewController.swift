@@ -18,7 +18,7 @@ class SettingsViewController: FormViewController, CloseableViewController {
         if !makeRoot { applyCloseButtonStyling(action: #selector(close), image: "backArrow") }
         
         let btn01 = UIButton(type: .custom)
-        btn01.setTitle("Create", for: .normal)
+        btn01.setTitle("common.action.create".localized, for: .normal)
         btn01.addTarget(self, action: #selector(didTapButton01), for: .touchUpInside)
         
         let actionButton01 = UIBarButtonItem(customView: btn01)

@@ -199,15 +199,15 @@ final class StoreProfileViewModel: FormViewModel {
                 stats: [
                     .init(
                         value: "\(productCount)",
-                        title: "Products"
+                        title: "common.label.products".localized
                     ),
                     .init(
                         value: "\(orderCount)",
-                        title: "Orders"
+                        title: "business.hub.orders".localized
                     ),
                     .init(
                         value: String(format: "%.1f", rating),
-                        title: "Rating"
+                        title: "common.label.rating".localized
                     )
                 ]
             )

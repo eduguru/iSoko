@@ -55,7 +55,7 @@ public final class EditableImageFormCell: UITableViewCell {
         // Edit button
         contentView.addSubview(editButton)
         editButton.translatesAutoresizingMaskIntoConstraints = false
-        editButton.setTitle("Edit", for: .normal)
+        editButton.setTitle("common.action.edit".localized, for: .normal)
         editButton.setTitleColor(.white, for: .normal)
         editButton.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
         editButton.backgroundColor = UIColor.black.withAlphaComponent(0.4)
@@ -149,7 +149,7 @@ public final class EditableImageFormCell: UITableViewCell {
             editButton.setImage(buttonImage, for: .normal)
             editButton.setTitle(nil, for: .normal)
         } else {
-            editButton.setTitle("Edit", for: .normal)
+            editButton.setTitle("common.action.edit".localized, for: .normal)
             editButton.setImage(nil, for: .normal)
         }
     }

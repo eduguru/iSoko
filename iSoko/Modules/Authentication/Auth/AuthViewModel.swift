@@ -92,8 +92,8 @@ final class AuthViewModel: FormViewModel {
         let row = TitleDescriptionFormRow(
             tag: 101,
             model: TitleDescriptionModel(
-            title: "Welcome to iSOKO", // "common.auth_view.sign_in_title".localized,
-            description: "Join a network of Traders and grow your business.",
+            title: "common.title.welcome_to_isoko".localized, // "common.auth_view.sign_in_title".localized,
+            description: "common.message.join_network_traders".localized,
             maxTitleLines: 2,
             maxDescriptionLines: 0,  // unlimited lines
             titleEllipsis: .none,

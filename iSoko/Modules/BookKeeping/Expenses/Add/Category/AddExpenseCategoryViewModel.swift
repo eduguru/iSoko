@@ -89,14 +89,14 @@ final class AddExpenseCategoryViewModel: FormViewModel {
     // MARK: - Rows
     private lazy var nameInputRow = makeInputRow(
         tag: CellTag.supplierName.rawValue,
-        title: "Enter Category name",
-        placeholder: "Enter Category name",
+        title: "common.placeholder.category_name".localized,
+        placeholder: "common.placeholder.category_name".localized,
         keyboard: .default
     )
     
     private lazy var titleFormRow: FormRow = makeTitleRow(
-        title: "Add a new Category",
-        description: "Enter a unique name for the new category to help organize your Expense catalog"
+        title: "common.title.add_new_category".localized,
+        description: "common.message.expense_category_hint".localized
     )
     
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -153,7 +153,7 @@ final class AddExpenseCategoryViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Proceed",
+            title: "common.action.proceed".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

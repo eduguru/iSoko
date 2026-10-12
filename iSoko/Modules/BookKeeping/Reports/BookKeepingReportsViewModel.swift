@@ -62,7 +62,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
     private func makeTimeFrameSection() -> FormSection {
         FormSection(
             id: SectionTag.timeFrame.rawValue,
-            title: "Select Time Frame",
+            title: "common.title.select_time_frame".localized,
             cells: makeTimeFrameCells()
         )
     }
@@ -96,7 +96,7 @@ final class BookKeepingReportsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: CellTag.reportTitle.rawValue,
             model: TitleDescriptionModel(
-                title: "Select Report Type",
+                title: "common.label.select_report_type".localized,
                 description: "common.label.choose_report_description".localized,
                 layoutStyle: .stackedVertical,
                 textAlignment: .left,
@@ -111,12 +111,12 @@ final class BookKeepingReportsViewModel: FormViewModel {
             tag: CellTag.category.rawValue,
             config: .init(
                 items: [
-                    .init(title: "Sales", subtitle: "Track revenue", icon: UIImage(systemName:"chart.line.uptrend.xyaxis"), onTap: { [weak self] _ in self?.state.selectedReport = .sales }),
-                    .init(title: "common.label.expenses".localized, subtitle: "Monitor spending", icon: UIImage(systemName:"calendar"), onTap: { [weak self] _ in self?.state.selectedReport = .expenses }),
-                    .init(title: "Stock", subtitle: "common.label.inventory".localized, icon: UIImage(systemName:"archivebox"), onTap: { [weak self] _ in self?.state.selectedReport = .stock }),
-                    .init(title: "P&L", subtitle: "Profit & Loss", icon: UIImage(systemName:"chart.bar"), onTap: { [weak self] _ in self?.state.selectedReport = .profitLoss }),
-                    .init(title: "common.label.customers".localized, subtitle: "Top buyers", icon: UIImage(systemName:"person.2"), onTap: { [weak self] _ in self?.state.selectedReport = .customers }),
-                    .init(title: "Suppliers", subtitle: "Vendors", icon: UIImage(systemName:"truck.box"), onTap: { [weak self] _ in self?.state.selectedReport = .suppliers })
+                    .init(title: "common.label.sales".localized, subtitle: "common.label.track_revenue".localized, icon: UIImage(systemName:"chart.line.uptrend.xyaxis"), onTap: { [weak self] _ in self?.state.selectedReport = .sales }),
+                    .init(title: "common.label.expenses".localized, subtitle: "common.label.monitor_spending".localized, icon: UIImage(systemName:"calendar"), onTap: { [weak self] _ in self?.state.selectedReport = .expenses }),
+                    .init(title: "common.label.stock".localized, subtitle: "common.label.inventory".localized, icon: UIImage(systemName:"archivebox"), onTap: { [weak self] _ in self?.state.selectedReport = .stock }),
+                    .init(title: "common.label.profit_loss".localized, subtitle: "common.label.profit_and_loss".localized, icon: UIImage(systemName:"chart.bar"), onTap: { [weak self] _ in self?.state.selectedReport = .profitLoss }),
+                    .init(title: "common.label.customers".localized, subtitle: "common.label.top_buyers".localized, icon: UIImage(systemName:"person.2"), onTap: { [weak self] _ in self?.state.selectedReport = .customers }),
+                    .init(title: "common.label.suppliers".localized, subtitle: "common.label.vendors".localized, icon: UIImage(systemName:"truck.box"), onTap: { [weak self] _ in self?.state.selectedReport = .suppliers })
                 ],
                 allowsMultipleSelection: false
             )
@@ -167,10 +167,10 @@ final class BookKeepingReportsViewModel: FormViewModel {
         FiltersFormRow(
             tag: 1,
             config: FiltersCellConfig(
-                title: "Custom Range",
+                title: "common.title.custom_range".localized,
                 rows: [[
                     FilterFieldConfig(
-                        placeholder: "Start Date",
+                        placeholder: "common.label.start_date".localized,
                         selectedValue: state.startDateString,
                         onTap: { [weak self] in self?.handleStartDateSelection() }
                     ),

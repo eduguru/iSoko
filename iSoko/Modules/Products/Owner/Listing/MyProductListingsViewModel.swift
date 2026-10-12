@@ -199,7 +199,7 @@ final class MyProductListingsViewModel: FormViewModel {
                     .init(
                         id: "products",
                         icon: UIImage(systemName: "archivebox"),
-                        title: "Total Products",
+                        title: "common.label.total_products".localized,
                         value: "\(productCount)",
                         iconBackgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                         onTap: { print("Products tapped") }
@@ -207,7 +207,7 @@ final class MyProductListingsViewModel: FormViewModel {
                     .init(
                         id: "orders",
                         icon: UIImage(systemName: "bag"),
-                        title: "Total Orders",
+                        title: "common.label.total_orders".localized,
                         value: "\(orderCount)",
                         iconBackgroundColor: UIColor.systemGreen.withAlphaComponent(0.15),
                         onTap: { print("Orders tapped") }
@@ -215,7 +215,7 @@ final class MyProductListingsViewModel: FormViewModel {
                     .init(
                         id: "rating",
                         icon: UIImage(systemName: "star"),
-                        title: "Rating",
+                        title: "common.label.rating".localized,
                         value: String(format: "%.1f", rating),
                         iconBackgroundColor: UIColor.systemOrange.withAlphaComponent(0.15),
                         onTap: { print("Rating tapped") }
@@ -234,7 +234,7 @@ final class MyProductListingsViewModel: FormViewModel {
             
             let config = TransactionActionsCellConfig(
                 title: item.name ?? "name",
-                subtitle: "\(item.minimumOrderQuantity ?? 1) \(unit) available",
+                subtitle: "common.label.units_available".localized(with: "\(item.minimumOrderQuantity ?? 1)", "\(unit)"),
                 amount: "\(currency) \(Int(item.price ?? 0.0))",
                 amountColor: .label,
                 status: isInStock ? "In Stock" : "Out of Stock",

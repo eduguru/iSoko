@@ -309,7 +309,7 @@ final class ExpensesReportsViewModel: FormViewModel {
         let config = DualCardCellConfig(
 
             left: DualCardItemConfig(
-                title: "Total Expenses",
+                title: "common.label.total_expenses".localized,
                 titleIcon: UIImage(systemName: "chart.bar"),
                 subtitle: "\(currency). \(Int(totalAmount))",
                 status: CardStatusStyle(
@@ -334,11 +334,11 @@ final class ExpensesReportsViewModel: FormViewModel {
 
 
             right: DualCardItemConfig(
-                title: "Number of Expenses",
+                title: "common.label.number_of_expenses".localized,
                 titleIcon: UIImage(systemName: "doc.text"),
                 subtitle: "\(count)",
                 status: CardStatusStyle(
-                    text: "Total entries",
+                    text: "common.label.total_entries".localized,
                     textColor: .systemBlue,
                     backgroundColor: UIColor.systemBlue.withAlphaComponent(0.15),
                     icon: UIImage(systemName: "list.number")
@@ -377,7 +377,7 @@ final class ExpensesReportsViewModel: FormViewModel {
 
 
                         FilterFieldConfig(
-                            placeholder: "Payment Method",
+                            placeholder: "common.label.payment_method".localized,
                             selectedValue: state.selectedPaymentMethod?.name,
                             onTap: { [weak self] in
                                 self?.handlePaymentSelection()
@@ -389,7 +389,7 @@ final class ExpensesReportsViewModel: FormViewModel {
                     [
 
                         FilterFieldConfig(
-                            placeholder: "Start Date",
+                            placeholder: "common.label.start_date".localized,
                             selectedValue: state.startDateString,
                             onTap: { [weak self] in
                                 self?.handleStartDateSelection()

@@ -80,7 +80,7 @@ final class TermsConditionsViewModel: FormViewModel {
                 tag: 1000 + index,
                 model: RichDescriptionModel(
                     title: "",
-                    htmlDescription: item.content ?? "No content available",
+                    htmlDescription: item.content ?? "common.label.no_content_available".localized,
                     textAlignment: .left
                 )
             )

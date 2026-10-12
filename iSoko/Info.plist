@@ -2,15 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Poppins-Regular.ttf</string>
-		<string>Poppins-Medium.ttf</string>
-		<string>Poppins-SemiBold.ttf</string>
-		<string>Poppins-Bold.ttf</string>
-	</array>
 	<key>API_DOMAIN</key>
 	<string>$(API_DOMAIN)</string>
 	<key>API_PATH</key>
@@ -23,10 +14,6 @@
 				<string>app</string>
 			</array>
 		</dict>
-	</array>
-	<key>com.apple.developer.associated-domains</key>
-	<array>
-		<string>applinks:api.dev.isoko.africa</string>
 	</array>
 	<key>CLIENT_ID</key>
 	<string>$(CLIENT_ID)</string>
@@ -44,39 +31,6 @@
 	<string>$(LEGACY_CORE_DOMAIN)</string>
 	<key>LEGACY_CORE_PATH</key>
 	<string>$(LEGACY_CORE_PATH)</string>
-
-	<!-- Permissions: kept only where there's a clear, matching feature -->
-
-	<key>NSCameraUsageDescription</key>
-	<string>Isoko uses your camera so you can take photos for product reviews, or scan a barcode/QR code to quickly find a product.</string>
-
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Isoko accesses your photo library so you can attach photos to product reviews or set a profile picture.</string>
-
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Isoko saves your order receipts and confirmation images to your photo library so you can access them later.</string>
-
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Isoko uses your location to show delivery availability, estimate shipping times, and find the nearest pickup point.</string>
-
-	<key>NSFaceIDUsageDescription</key>
-	<string>Isoko uses Face ID to securely sign you in and authorize payments.</string>
-
-	<!-- Removed (no clear ecommerce use case):
-	     NSMicrophoneUsageDescription
-	     NSLocationAlwaysUsageDescription
-	     NSLocationAlwaysAndWhenInUseUsageDescription
-	     NSContactsUsageDescription
-	     NSCalendarsUsageDescription
-	     NSRemindersUsageDescription
-	     NSMotionUsageDescription
-	     NSBluetoothAlwaysUsageDescription
-	     NSBluetoothPeripheralUsageDescription
-	     NSAppleMusicUsageDescription
-	     If any of these map to a real feature (e.g. voice search, gift-to-contact,
-	     delivery-day calendar entries), add the key back with a specific string
-	     rather than a generic one. -->
-
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSExceptionDomains</key>
@@ -90,7 +44,13 @@
 			</dict>
 		</dict>
 	</dict>
-
+	<key>UIAppFonts</key>
+	<array>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+		<string>Poppins-Bold.ttf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -112,6 +72,10 @@
 	<array>
 		<string>fetch</string>
 		<string>remote-notification</string>
+	</array>
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:api.dev.isoko.africa</string>
 	</array>
 </dict>
 </plist>

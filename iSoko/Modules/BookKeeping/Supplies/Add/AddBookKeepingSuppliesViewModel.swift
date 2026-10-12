@@ -63,8 +63,8 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
 
     private lazy var supplierNameInputRow = makeInputRow(
         tag: CellTag.supplierName.rawValue,
-        title: "Supplier Name",
-        placeholder: "Supplier Name",
+        title: "common.label.supplier_name".localized,
+        placeholder: "common.label.supplier_name".localized,
         keyboard: .default
     )
 
@@ -84,15 +84,15 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
 
     private lazy var townInputRow = makeInputRow(
         tag: CellTag.town.rawValue,
-        title: "City/Town",
-        placeholder: "City/Town (optional)",
+        title: "common.label.city_town".localized,
+        placeholder: "common.label.city_town_optional".localized,
         keyboard: .default
     )
 
     private lazy var streetAddressInputRow = makeInputRow(
         tag: CellTag.streetAddress.rawValue,
-        title: "Physical Address",
-        placeholder: "Physical Address (optional)",
+        title: "common.label.physical_address".localized,
+        placeholder: "common.label.physical_address_optional".localized,
         keyboard: .default
     )
     
@@ -127,8 +127,8 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     )
     
     private lazy var titleFormRow: FormRow = makeTitleRow(
-        title: "Register Supplier",
-        description: "Enter Details Below"
+        title: "common.action.register_supplier".localized,
+        description: "common.message.enter_details_below".localized
     )
     
     private func makeTitleRow(title: String, description: String) -> FormRow {
@@ -197,7 +197,7 @@ final class AddBookKeepingSuppliesViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Add Supplier",
+            title: "common.action.add_supplier".localized,
             style: .primary,
             size: .medium,
             fontStyle: .headline,

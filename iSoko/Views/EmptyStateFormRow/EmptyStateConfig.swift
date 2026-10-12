@@ -32,24 +32,24 @@ public struct EmptyStateConfig {
 
     public static var noResults: EmptyStateConfig {
         EmptyStateConfig(
-            title: "No Results Found",
-            message: "Try adjusting your search or filters.",
+            title: "common.empty.no_results".localized,
+            message: "common.empty.adjust_search".localized,
             image: .noData        // replace with your asset name
         )
     }
 
     public static var noData: EmptyStateConfig {
         EmptyStateConfig(
-            title: "Nothing Here Yet",
-            message: "Check back later.",
+            title: "common.empty.nothing_here".localized,
+            message: "common.empty.check_back_later".localized,
             image: .noData
         )
     }
 
     public static var error: EmptyStateConfig {
         EmptyStateConfig(
-            title: "Something Went Wrong",
-            message: "Pull down to try again.",
+            title: "common.empty.something_went_wrong".localized,
+            message: "common.empty.pull_to_retry".localized,
             image: .noData
         )
     }

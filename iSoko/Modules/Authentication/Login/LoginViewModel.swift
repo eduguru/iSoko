@@ -109,7 +109,7 @@ final class LoginViewModel: FormViewModel {
     private func makeOptionsSegmentFormRow() -> FormRow {
         let styledSegmentRow = SegmentedFormRow(
             model: SegmentedFormModel(
-                title: "Login With",
+                title: "common.label.login_with".localized,
                 segments: ["Email", "common.label.phone_number".localized],
                 selectedIndex: 0,
                 tag: 2001,
@@ -146,7 +146,7 @@ final class LoginViewModel: FormViewModel {
     
     private func makeLoginButtonRow() -> FormRow {
         let buttonModel = ButtonFormModel(
-            title: "Login",
+            title: "auth.login".localized,
             style: .primary,
             size: .large,
             icon: UIImage(systemName: "email.fill"),
@@ -165,7 +165,7 @@ final class LoginViewModel: FormViewModel {
         let inputModel = SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Enter email",
+                placeholder: "common.reset_password.email_placeholder".localized,
                 keyboardType: .emailAddress,
                 accessoryImage: nil //UIImage(systemName: "envelope")
                 
@@ -191,7 +191,7 @@ final class LoginViewModel: FormViewModel {
             model: SimpleInputModel(
                 text: "",
                 config: TextFieldConfig(
-                    placeholder: "Enter password",
+                    placeholder: "common.verify_password_reset.password_placeholder".localized,
                     keyboardType: .default,
                     isSecureTextEntry: true,
                     accessoryImage: nil,

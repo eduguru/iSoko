@@ -50,7 +50,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
             ),
             FormSection(
                 id: Tags.Section.titleAndDescription.rawValue,
-                title: "Contacts",
+                title: "common.label.contacts".localized,
                 cells: [
                     phoneTitleRow,
                     emailTitleRow,
@@ -138,7 +138,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.titleAndDescription.rawValue,
             model: TitleDescriptionModel(
-            title: "Website",
+            title: "common.label.website".localized,
             description: state.item.website ?? " N/A",
             maxTitleLines: 2,
             layoutStyle: .stackedVertical,
@@ -168,7 +168,7 @@ final class LogisticsServiceProviderDetailsViewModel: FormViewModel {
         
         let description = state.item.providerName?.isEmpty == false
             ? state.item.providerName!
-            : "No description available"
+            : "common.label.no_description_available".localized
         
         return TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,

@@ -259,7 +259,7 @@ final class ProductCategoriesViewModel: FormViewModel {
     private lazy var searchRow = SearchFormRow(
         tag: CellTag.search.rawValue,
         model: SearchFormModel(
-            placeholder: "Search for products",
+            placeholder: "common.placeholder.search_for_products".localized,
             keyboardType: .default,
             searchIcon: UIImage(systemName: "magnifyingglass"),
             searchIconPlacement: .right,

@@ -47,7 +47,7 @@ final class StockReStockViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(
-                placeholder: "Quantity",
+                placeholder: "common.label.quantity".localized,
                 keyboardType: .numberPad
             ),
             validation: ValidationConfiguration(isRequired: true),
@@ -84,7 +84,7 @@ final class StockReStockViewModel: FormViewModel {
     private lazy var continueButtonRow = ButtonFormRow(
         tag: CellTag.continueButton.rawValue,
         model: ButtonFormModel(
-            title: "Restock",
+            title: "common.action.restock".localized,
             style: .primary,
             size: .medium
         ) { [weak self] in

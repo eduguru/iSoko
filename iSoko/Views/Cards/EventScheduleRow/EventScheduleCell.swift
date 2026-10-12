@@ -242,7 +242,7 @@ public final class EventScheduleCell: UITableViewCell {
         monthLabel.text = config.month.uppercased()
         startDayLabel.text = config.startDay
         endDayLabel.text = config.endDay
-        toLabel.text = "to"
+        toLabel.text = "common.label.to".localized
 
         // MARK: Content
         titleLabel.text = config.title

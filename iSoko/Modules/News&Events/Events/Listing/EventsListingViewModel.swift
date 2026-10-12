@@ -79,7 +79,7 @@ final class EventsListingViewModel: FormViewModel {
     private func makeHeaderSection() -> FormSection {
         FormSection(
             id: SectionTag.header.rawValue,
-            title: "Events",
+            title: "events.title".localized,
             cells: [segmentedOptions]
         )
     }
@@ -168,7 +168,7 @@ final class EventsListingViewModel: FormViewModel {
                 timeIcon: UIImage(systemName: "clock"),
                 bannerImageURL: nil,
                 detailsAction: InlineActionConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "arrow.right"),
                     onTap: { [weak self] in
                         self?.handleEventTap(index: index)
@@ -209,7 +209,7 @@ final class EventsListingViewModel: FormViewModel {
                 timeIcon: UIImage(systemName: "clock"),
                 bannerImageURL: item.bannerImage?.url,
                 detailsAction: InlineActionConfig(
-                    title: "View Details",
+                    title: "common.action.view_details".localized,
                     icon: UIImage(systemName: "arrow.right"),
                     onTap: { [weak self] in
                         self?.handleAssociationEventTap(index: index)

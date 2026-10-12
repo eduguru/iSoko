@@ -110,7 +110,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private func makeSalesSection() -> FormSection {
         FormSection(
             id: SectionTag.salesDetails.rawValue,
-            title: "Sales Details",
+            title: "common.label.sales_details".localized,
             cells: makeSalesRows()
         )
     }
@@ -140,7 +140,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private func makeProductSection() -> FormSection {
         FormSection(
             id: SectionTag.productDetails.rawValue,
-            title: "Products",
+            title: "common.label.products".localized,
             cells: makeCartItemsRow()
         )
     }
@@ -159,7 +159,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private func makeSummarySection() -> FormSection {
         FormSection(
             id: SectionTag.summary.rawValue,
-            title: "Summary",
+            title: "common.label.summary".localized,
             cells: summaryRows
         )
     }
@@ -262,8 +262,8 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var paymentOptionsRow = DropdownFormRow(
         tag: CellTag.paymentMethod.rawValue,
         config: DropdownFormConfig(
-            title: "Payment Method",
-            placeholder: "Method",
+            title: "common.label.payment_method".localized,
+            placeholder: "common.label.method".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             isCardStyleEnabled: true,
             onTap: { [weak self] in self?.handlePaymentsSelection() }
@@ -294,7 +294,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             text: "",
             inputType: .number,
             config: TextFieldConfig(
-                placeholder: "Amount Paid"
+                placeholder: "common.label.amount_paid".localized
             ),
             validation: ValidationConfiguration(isRequired: true),
             titleText: "Amount Paid",
@@ -327,7 +327,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
             let vm = CartItemViewModel(
                 id: productId,
                 title: product.name ?? "Unknown",
-                subtitle: "Price: \(currency). \(Int(product.price ?? 0))",
+                subtitle: "common.label.price_with_currency".localized(with: "\(currency).", "\(Int(product.price ?? 0))"),
                 pricePerUnit: Decimal(product.price ?? 0),
                 quantity: Int(state.quantities[productId] ?? 1),
                 onUpdate: { [weak self] updated in
@@ -370,9 +370,9 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         let currency = countryHelper.currencyString(for: AppStorage.selectedRegionCode ?? "")
 
         return [
-            KeyValueFormRow(tag: 1, model: .init(leftText: "Subtotal", rightText: Helpers.formatCurrency(subtotal, currency: currency))),
-            KeyValueFormRow(tag: 2, model: .init(leftText: "Tax", rightText: Helpers.formatCurrency(tax, currency: currency))),
-            KeyValueFormRow(tag: 3, model: .init(leftText: "Total", rightText: Helpers.formatCurrency(total, currency: currency), isEmphasized: true))
+            KeyValueFormRow(tag: 1, model: .init(leftText: "common.label.subtotal".localized, rightText: Helpers.formatCurrency(subtotal, currency: currency))),
+            KeyValueFormRow(tag: 2, model: .init(leftText: "common.label.tax".localized, rightText: Helpers.formatCurrency(tax, currency: currency))),
+            KeyValueFormRow(tag: 3, model: .init(leftText: "common.label.total".localized, rightText: Helpers.formatCurrency(total, currency: currency), isEmphasized: true))
         ]
     }
 

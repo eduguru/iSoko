@@ -92,7 +92,7 @@ final class ContactUsViewModel: FormViewModel {
             if let email = item.emailContact {
                 let emailRow = TitleDescriptionFormRow(
                     tag: 2000 + index,
-                    title: "Email",
+                    title: "common.label.email".localized,
                     description: email
                 )
                 cells.append(emailRow)
@@ -102,7 +102,7 @@ final class ContactUsViewModel: FormViewModel {
             if let mobile = item.mobileContact {
                 let mobileRow = TitleDescriptionFormRow(
                     tag: 3000 + index,
-                    title: "Mobile",
+                    title: "common.label.mobile".localized,
                     description: mobile
                 )
                 cells.append(mobileRow)
@@ -113,7 +113,7 @@ final class ContactUsViewModel: FormViewModel {
                 let officeRow = RichDescriptionFormRow(
                     tag: 4000 + index,
                     model: RichDescriptionModel(
-                        title: "Office Location",
+                        title: "common.label.office_location".localized,
                         htmlDescription: officeHTML,
                         maxTitleLines: 2,
                         titleFontStyle: .headline,
@@ -128,7 +128,7 @@ final class ContactUsViewModel: FormViewModel {
             if let website = item.website {
                 let websiteRow = TitleDescriptionFormRow(
                     tag: 5000 + index,
-                    title: "Website",
+                    title: "common.label.website".localized,
                     description: website
                 )
                 cells.append(websiteRow)

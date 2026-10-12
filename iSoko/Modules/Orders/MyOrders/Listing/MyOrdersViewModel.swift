@@ -235,7 +235,7 @@ final class MyOrdersViewModel: FormViewModel {
         SearchFormRow(
             tag: Tags.Cells.search.rawValue,
             model: SearchFormModel(
-                placeholder: "Search orders",
+                placeholder: "common.placeholder.search_orders".localized,
                 text: state.searchQuery,
                 keyboardType: .default,
                 searchIcon: UIImage(systemName: "magnifyingglass"),
@@ -300,7 +300,7 @@ final class MyOrdersViewModel: FormViewModel {
         )
         
         let cancelAction = ActionButtonConfig(
-            title: "Cancel",
+            title: "common.action.cancel".localized,
             style: .outlined,
             textColor: .systemRed,
             borderColor: .systemRed,
@@ -308,7 +308,7 @@ final class MyOrdersViewModel: FormViewModel {
         )
         
         let reorderAction = ActionButtonConfig(
-            title: "Reorder",
+            title: "common.action.reorder".localized,
             style: .subtle,
             backgroundColor: UIColor.systemBlue.withAlphaComponent(0.12),
             textColor: .systemBlue,
@@ -324,7 +324,7 @@ final class MyOrdersViewModel: FormViewModel {
         )
         
         let rejectAction = ActionButtonConfig(
-            title: "Reject",
+            title: "common.action.reject".localized,
             style: .outlined,
             textColor: .systemOrange,
             borderColor: .systemOrange,

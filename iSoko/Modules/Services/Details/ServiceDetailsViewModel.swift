@@ -67,7 +67,7 @@ final class ServiceDetailsViewModel: FormViewModel {
     private func similarServicesSection() -> FormSection {
         FormSection(
             id: Tags.Section.similarServices.rawValue,
-            title: "Similar Services",
+            title: "common.title.similar_services".localized,
             cells: [similarServicesFormRow]
         )
     }
@@ -111,7 +111,7 @@ final class ServiceDetailsViewModel: FormViewModel {
     lazy var storeProfileRow: FormRow = makeStoreProfileRow()
     lazy var quantityRow: FormRow = QuantityFormRow(
         tag: 500,
-        title: "Quantity",
+        title: "common.label.quantity".localized,
         initialValue: 1
     ) { value in
         print("Quantity changed: \(value)")
@@ -139,7 +139,7 @@ final class ServiceDetailsViewModel: FormViewModel {
         TitleDescriptionFormRow(
             tag: Tags.Cells.categories.rawValue,
             model: TitleDescriptionModel(
-            title: state.service.description ?? "No description available",
+            title: state.service.description ?? "common.label.no_description_available".localized,
             description: "",
             maxTitleLines: 20,
             layoutStyle: .stackedVertical,
@@ -193,7 +193,7 @@ final class ServiceDetailsViewModel: FormViewModel {
         ButtonFormRow(
             tag: 1001,
             model: ButtonFormModel(
-                title: "Place Order",
+                title: "common.action.place_order".localized,
                 style: .primary,
                 size: .large,
                 icon: nil,
