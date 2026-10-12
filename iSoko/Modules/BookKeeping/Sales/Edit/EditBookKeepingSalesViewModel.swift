@@ -244,11 +244,20 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private lazy var summaryRows = makeSummaryRows()
     
     private func makePillsOptionsFormRow() -> FormRow {
-        let items: [PillItem] = state.saleTypes.map { saleType in
-            PillItem(
+        // Cash first, Credit second; the selected Credit pill is red.
+        let ordered = state.saleTypes.sorted { lhs, rhs in
+            let l = lhs.name.lowercased().contains("cash") ? 0 : 1
+            let r = rhs.name.lowercased().contains("cash") ? 0 : 1
+            return l < r
+        }
+        let items: [PillItem] = ordered.map { saleType in
+            let isCredit = saleType.name.lowercased().contains("credit")
+            return PillItem(
                 id: String(saleType.id),
                 title: saleType.name,
-                isSelected: saleType.id == state.saleTypeId // Selected match highlighted correctly
+                isSelected: saleType.id == state.saleTypeId,
+                selectedBackgroundColor: isCredit ? .systemRed : .app(.primary),
+                selectedBorderColor: isCredit ? .systemRed : .app(.primary)
             )
         }
 
@@ -263,6 +272,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
             if let selected = selectedItems.first(where: { $0.isSelected }),
                let id = Int(selected.id) {
                 self.state.saleTypeId = id
+                DispatchQueue.main.async { self.reloadSegmentSection() } // re-tint pills (Credit = red)
             }
         }
     }
@@ -283,7 +293,7 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     private lazy var customerRow = DropdownFormRow(
         tag: CellTag.customerName.rawValue,
         config: DropdownFormConfig(
-            title: "common.name".localized,
+            title: "common.label.customer_name".localized,
             placeholder: state.customer?.name ?? "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleCustomerSelection() },
@@ -441,6 +451,10 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
 
     // MARK: - Submit & Update Logic
     private func submit() async {
+        if let message = validationError() {
+            showError(message)
+            return
+        }
         let success = await performNetworkRequest()
         if success {
             gotoConfirm?()
@@ -483,24 +497,33 @@ final class EditBookKeepingSalesViewModel: FormViewModel {
     
     // MARK: - Payload Construction
     private func buildPayload() -> [String: Any] {
-        let items = state.selectedProducts.map { item in
+        // Per API spec (SaleCreationDto): items are {productId, quantity} only.
+        let items: [[String: Any]] = state.selectedProducts.map { item in
             [
                 "productId": item.product?.id ?? 0,
-                "quantity": item.quantity ?? 1,
-                "unitPrice": item.unitPrice ?? 0
+                "quantity": item.quantity ?? 1
             ]
         }
 
-        // Corrected non-localized parameters keys to match your functional Add API
-        return [
+        var payload: [String: Any] = [
             "saleTypeId": state.saleTypeId,
-            "customerId": state.customer?.id ?? 0,
-            "paymentMethodId": state.paymentMethod?.id ?? 0,
-            "description": state.description,
             "items": items,
-            "amount": state.amount,
-            "date": state.date?.getYearMonthDay() ?? ""
+            "amount": state.amount
         ]
+        if let customerId = state.customer?.id { payload["customerId"] = customerId }
+        if let paymentMethodId = state.paymentMethod?.id { payload["paymentMethodId"] = paymentMethodId }
+        if let date = state.date { payload["date"] = date.getYearMonthDay() }
+        let note = state.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty { payload["description"] = note }
+        return payload
+    }
+
+    private func validationError() -> String? {
+        if state.date == nil { return "common.message.select_date".localized }
+        if state.customer == nil { return "common.message.select_customer".localized }
+        if state.paymentMethod == nil { return "common.message.select_payment_method".localized }
+        if state.selectedProducts.isEmpty { return "common.message.add_product".localized }
+        return nil
     }
 
     // MARK: - State Structure

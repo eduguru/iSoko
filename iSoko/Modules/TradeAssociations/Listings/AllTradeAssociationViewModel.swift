@@ -53,7 +53,12 @@ final class AllTradeAssociationViewModel: FormViewModel {
                 accessToken: state.oauthToken
             )
 
-            state.items = response
+            // Append for page 2+; it used to replace the list, so "load more" threw away page 1.
+            if state.currentPage > 1 {
+                state.items.append(contentsOf: response)
+            } else {
+                state.items = response
+            }
             state.hasMorePages = response.count == state.itemsPerPage
             state.currentPage += 1
 

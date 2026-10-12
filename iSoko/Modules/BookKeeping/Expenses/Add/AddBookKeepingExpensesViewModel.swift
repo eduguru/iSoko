@@ -80,23 +80,25 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
     private lazy var amountInputRow = makeInputRow(
         tag: CellTag.amount.rawValue,
         title: "common.label.amount".localized,
-        placeholder: "common.label.amount_placeholder".localized
+        placeholder: "common.label.amount_placeholder".localized,
+        inputType: .decimal
     )
 
     private lazy var supplierNameInputRow = makeInputRow(
         tag: CellTag.supplierName.rawValue,
         title: "common.label.supplier_name".localized,
-        placeholder: "common.label.supplier_name_placeholder".localized
+        placeholder: "common.label.supplier_name_placeholder".localized,
+        inputType: .normal
     )
 
-    private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+    private func makeInputRow(tag: Int, title: String, placeholder: String, inputType: InputType = .normal) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
                 text: "",
+                inputType: inputType,
                 config: TextFieldConfig(
-                    placeholder: placeholder,
-                    keyboardType: .URL
+                    placeholder: placeholder
                 ),
                 validation: ValidationConfiguration(isRequired: false),
                 titleText: title,
@@ -389,14 +391,36 @@ final class AddBookKeepingExpensesViewModel: FormViewModel {
         showLoader()
         defer { hideLoader() }
         
-        let payload: [String: Any] = [
-            "categoryId": state.categories?.id ?? "",
-            "amount": state.amount,
-            "description": state.description,
-            "date": state.date?.getYearMonthDay() ?? "",
-            "supplierId": state.supplier?.id ?? "",
-            "paymentMethodId": state.paymentMethod?.id ?? ""
+        guard let date = state.date else {
+            showError("common.message.select_date".localized)
+            return false
+        }
+        guard let amount = Double(state.amount.replacingOccurrences(of: ",", with: ".")), amount > 0 else {
+            showError("common.message.enter_valid_amount".localized)
+            return false
+        }
+        guard let categoryId = state.categories?.id else {
+            showError("common.message.select_category".localized)
+            return false
+        }
+        guard let paymentMethodId = state.paymentMethod?.id else {
+            showError("common.message.select_payment_method".localized)
+            return false
+        }
+        let note = state.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !note.isEmpty else {
+            showError("common.message.enter_description".localized)
+            return false
+        }
+
+        var payload: [String: Any] = [
+            "categoryId": categoryId,
+            "amount": amount,
+            "description": note,
+            "date": date.getYearMonthDay(),
+            "paymentMethodId": paymentMethodId
         ]
+        if let supplierId = state.supplier?.id { payload["supplierId"] = supplierId }
 
         print("payload:", payload)
         

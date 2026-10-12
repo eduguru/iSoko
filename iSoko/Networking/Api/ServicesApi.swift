@@ -12,88 +12,42 @@ import NetworkingKit
 public struct ServicesApi {
     
     //MARK: - listings
-    public static func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceCategoryResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
+    // MARK: - v1 endpoints (API spec): /market-service-categories and /market-services
 
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/market-service-category",
-            method: .get,
-            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return OptionalObjectResponseTarget(target: target)
+    /// GET /v1/market-service-categories
+    public static func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[TradeServiceCategoryResponse]> {
+        marketList(path: "market-service-categories", parameters: ["page": page, "size": count])
     }
-    
-    public static func getAllTradeServices(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count]
 
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/market-service",
-            method: .get,
-            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return OptionalObjectResponseTarget(target: target)
+    /// GET /v1/market-services
+    public static func getAllTradeServices(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[MarketServiceResponse]> {
+        marketList(path: "market-services", parameters: ["page": page, "size": count])
     }
-    
-    public static func getFeaturedTradeServices(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count, "isFeatured": "active"]
 
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
-        let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/market-service",
-            method: .get,
-            task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers,
-            authorizationType: .bearer
-        )
-        
-        return OptionalObjectResponseTarget(target: target)
+    /// GET /v1/market-services — featured only.
+    public static func getFeaturedTradeServices(page: Int, count: Int, accessToken: String) -> UnifiedPagedResponseTarget<[MarketServiceResponse]> {
+        marketList(path: "market-services", parameters: ["page": page, "size": count, "featured": true])
     }
-    
-    public static func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {
-        let parameters: [String: Any] = ["page": page, "count": count, "categoryId": categoryId]
 
-        let headers = [
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": "Bearer \(accessToken)"
-        ]
-        
+    /// GET /v1/market-services — the spec only documents page/size/sort/q here, so the
+    /// category filter is sent flat (like /products does) and is not yet verified server-side.
+    public static func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) -> UnifiedPagedResponseTarget<[MarketServiceResponse]> {
+        marketList(path: "market-services", parameters: ["page": page, "size": count, "categoryId": categoryId])
+    }
+
+    private static func marketList<Payload: Decodable>(path: String, parameters: [String: Any]) -> UnifiedPagedResponseTarget<Payload> {
         let target = AnyTarget(
-            baseURL: ApiEnvironment.baseURL,
-            path: "api/market-service",
+            baseURL: ApiEnvironment.apiBaseURL,
+            path: path,
             method: .get,
             task: .requestParameters(parameters: parameters, encoding: URLEncoding.default),
-            headers: headers,
+            headers: [
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            ],
             authorizationType: .bearer
         )
-        
-        return OptionalObjectResponseTarget(target: target)
+        return UnifiedPagedResponseTarget(target: target)
     }
     
     public static func getTradeServicesByCurrentUser(page: Int, count: Int, accessToken: String) -> OptionalObjectResponseTarget<[TradeServiceResponse]> {

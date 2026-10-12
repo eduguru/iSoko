@@ -92,3 +92,41 @@ public extension PersonContact {
             .joined(separator: " ")
     }
 }
+
+
+// MARK: - Tolerant decoding
+// Spec says `foundedIn` is an integer while this model keeps it as a String for display.
+// Accept either so one unexpected type never fails the whole association list.
+public extension AssociationResponse {
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(Int.self, forKey: .id)
+        name = try c.decodeIfPresent(String.self, forKey: .name)
+        code = try c.decodeIfPresent(String.self, forKey: .code)
+        description = try c.decodeIfPresent(String.self, forKey: .description)
+        manager = try c.decodeIfPresent(PersonContact.self, forKey: .manager)
+        emailAddress = try c.decodeIfPresent(String.self, forKey: .emailAddress)
+        phoneNumber = try c.decodeIfPresent(String.self, forKey: .phoneNumber)
+        physicalAddress = try c.decodeIfPresent(String.self, forKey: .physicalAddress)
+        country = try c.decodeIfPresent(IDNamePairInt.self, forKey: .country)
+        website = try c.decodeIfPresent(String.self, forKey: .website)
+        instagram = try c.decodeIfPresent(String.self, forKey: .instagram)
+        linkedin = try c.decodeIfPresent(String.self, forKey: .linkedin)
+        x = try c.decodeIfPresent(String.self, forKey: .x)
+        members = try c.decodeIfPresent(Int.self, forKey: .members)
+        if let year = try? c.decodeIfPresent(Int.self, forKey: .foundedIn) {
+            foundedIn = String(year)
+        } else {
+            foundedIn = try c.decodeIfPresent(String.self, forKey: .foundedIn)
+        }
+        reviewComment = try c.decodeIfPresent(String.self, forKey: .reviewComment)
+        reviewer = try c.decodeIfPresent(PersonContact.self, forKey: .reviewer)
+        datetimeCreated = try c.decodeIfPresent(String.self, forKey: .datetimeCreated)
+        datetimeApproved = try c.decodeIfPresent(String.self, forKey: .datetimeApproved)
+        status = try c.decodeIfPresent(String.self, forKey: .status)
+        registrationStatus = try c.decodeIfPresent(String.self, forKey: .registrationStatus)
+        documents = try c.decodeIfPresent([AssociationDocument].self, forKey: .documents)
+        featured = try c.decodeIfPresent(Bool.self, forKey: .featured)
+        logo = try c.decodeIfPresent(String.self, forKey: .logo)
+    }
+}

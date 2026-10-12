@@ -57,6 +57,7 @@ final class QuantityStepperView: UIView {
 
         valueLabel.font = .systemFont(ofSize: 16, weight: .medium)
         valueLabel.textAlignment = .center
+        valueLabel.text = "\(_value)" // never show an empty value before the first configure
 
         minusButton.addTarget(self, action: #selector(decrement), for: .touchUpInside)
         plusButton.addTarget(self, action: #selector(increment), for: .touchUpInside)

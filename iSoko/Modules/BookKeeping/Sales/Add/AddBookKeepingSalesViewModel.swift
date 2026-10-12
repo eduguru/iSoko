@@ -202,11 +202,20 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     
     private func makePillsOptionsFormRow() -> FormRow {
 
-        let items: [PillItem] = state.saleTypes.map { saleType in
-            PillItem(
+        // Cash first, Credit second; the selected Credit pill is red.
+        let ordered = state.saleTypes.sorted { lhs, rhs in
+            let l = lhs.name.lowercased().contains("cash") ? 0 : 1
+            let r = rhs.name.lowercased().contains("cash") ? 0 : 1
+            return l < r
+        }
+        let items: [PillItem] = ordered.map { saleType in
+            let isCredit = saleType.name.lowercased().contains("credit")
+            return PillItem(
                 id: String(saleType.id),
                 title: saleType.name,
-                isSelected: saleType.id == state.saleTypeId // ✅ mark selected
+                isSelected: saleType.id == state.saleTypeId,
+                selectedBackgroundColor: isCredit ? .systemRed : .app(.primary),
+                selectedBorderColor: isCredit ? .systemRed : .app(.primary)
             )
         }
 
@@ -223,6 +232,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
 
                 self.state.saleTypeId = id
                 self.reloadSalesSection()
+                DispatchQueue.main.async { self.reloadSegmentSection() } // re-tint pills (Credit = red)
             }
         }
     }
@@ -230,7 +240,7 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     private lazy var customerRow = DropdownFormRow(
         tag: CellTag.customerName.rawValue,
         config: DropdownFormConfig(
-            title: "common.name".localized,
+            title: "common.label.customer_name".localized,
             placeholder: "common.label.select_option".localized,
             rightImage: UIImage(systemName: "chevron.down"),
             onTap: { [weak self] in self?.handleCustomerSelection() },
@@ -292,15 +302,15 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
         tag: CellTag.amount.rawValue,
         model: SimpleInputModel(
             text: "",
-            inputType: .number,
+            inputType: .decimal,
             config: TextFieldConfig(
                 placeholder: "common.label.amount_paid".localized
             ),
             validation: ValidationConfiguration(isRequired: true),
-            titleText: "Amount Paid",
+            titleText: "common.label.amount_paid".localized,
             useCardStyle: true,
             onTextChanged: { [weak self] text in
-                self?.state.amountPaid = Double(text) ?? 0
+                self?.state.amountPaid = Double(text.replacingOccurrences(of: ",", with: ".")) ?? 0
             }
         )
     )
@@ -418,30 +428,39 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
     
     // MARK: - Payload & Network
+    /// Payload follows SaleCreationDto in the API spec (items are `{productId, quantity}` only).
     private func buildPayload() -> [String: Any] {
-        let items = state.selectedProducts.map { product in
+        let items: [[String: Any]] = state.selectedProducts.map { product in
             [
                 "productId": product.id ?? 0,
-                "quantity": state.quantities[product.id ?? -1] ?? 1,
-                "unitPrice": product.price ?? 0
+                "quantity": state.quantities[product.id ?? -1] ?? 1
             ]
         }
 
         var payload: [String: Any] = [
             "saleTypeId": state.saleTypeId,
-            "customerId": state.customer?.id ?? 0,
-            "paymentMethodId": state.paymentMethod?.id ?? 0,
-            "description": state.description,
             "items": items,
-            "amount": isCreditSale ? state.amountPaid : state.amount,
-            "date": state.date?.getYearMonthDay() ?? ""
+            "amount": isCreditSale ? state.amountPaid : state.amount
         ]
-
-        if isCreditSale {
-            payload["amountPaid"] = state.amountPaid
-        }
+        if let customerId = state.customer?.id { payload["customerId"] = customerId }
+        if let paymentMethodId = state.paymentMethod?.id { payload["paymentMethodId"] = paymentMethodId }
+        if let date = state.date { payload["date"] = date.getYearMonthDay() }
+        let note = state.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty { payload["description"] = note }
 
         return payload
+    }
+
+    /// Returns a localized error message, or nil when the form is valid.
+    private func validationError() -> String? {
+        if state.date == nil { return "common.message.select_date".localized }
+        if state.customer == nil { return "common.message.select_customer".localized }
+        if state.paymentMethod == nil { return "common.message.select_payment_method".localized }
+        if state.selectedProducts.isEmpty { return "common.message.add_product".localized }
+        if isCreditSale {
+            if state.amountPaid <= 0 || state.amountPaid > state.amount { return "common.message.enter_valid_amount".localized }
+        }
+        return nil
     }
     
     @discardableResult
@@ -472,6 +491,10 @@ final class AddBookKeepingSalesViewModel: FormViewModel {
     }
 
     private func submit() async {
+        if let message = validationError() {
+            showError(message)
+            return
+        }
         let success = await performNetworkRequest()
         if success {
             gotoConfirm?()

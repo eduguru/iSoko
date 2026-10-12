@@ -168,7 +168,15 @@ final class SimpleInputFormCell: UITableViewCell {
 
     @objc private func textDidChange() {
         guard var model = model else { return }
-        let text = textField.text ?? ""
+        var text = textField.text ?? ""
+
+        // Numeric keyboards still allow pasted letters/symbols; strip them.
+        let sanitized = sanitize(text, for: textField.keyboardType)
+        if sanitized != text {
+            text = sanitized
+            textField.text = sanitized
+        }
+
         model.text = text
         model.onTextChanged?(text)
         onTextChanged?(text)
@@ -176,6 +184,27 @@ final class SimpleInputFormCell: UITableViewCell {
         var updatedModel = model
         _ = updatedModel.validate()
         setError(updatedModel.validationError)
+    }
+
+    private func sanitize(_ text: String, for keyboard: UIKeyboardType) -> String {
+        switch keyboard {
+        case .numberPad:
+            return text.filter { $0.isASCII && $0.isNumber }
+        case .decimalPad:
+            var seenSeparator = false
+            var result = ""
+            for ch in text.replacingOccurrences(of: ",", with: ".") {
+                if ch.isASCII && ch.isNumber {
+                    result.append(ch)
+                } else if ch == ".", !seenSeparator {
+                    seenSeparator = true
+                    result.append(ch)
+                }
+            }
+            return result
+        default:
+            return text
+        }
     }
 
     @objc private func togglePasswordVisibility() {

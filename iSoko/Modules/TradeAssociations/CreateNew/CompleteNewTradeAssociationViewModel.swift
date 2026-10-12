@@ -178,7 +178,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
         }
     }
     
-    private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "common.label.email_address".localized)
+    private lazy var emailInputRow = makeURLInputRow(tag: CellTag.email.rawValue, title: "common.label.email_address".localized, inputType: .email)
     private lazy var websiteInputRow = makeURLInputRow(tag: CellTag.website.rawValue, title: "common.label.website_url".localized)
     private lazy var instagramInputRow = makeURLInputRow(tag: CellTag.instagram.rawValue, title: "common.label.instagram_url".localized)
     private lazy var linkedinInputRow = makeURLInputRow(tag: CellTag.linkedin.rawValue, title: "common.label.linkedin_url".localized)
@@ -186,11 +186,12 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     
     private lazy var locationRow = makeURLInputRow(tag: CellTag.location.rawValue, title: "common.label.business_location".localized)
     
-    private func makeURLInputRow(tag: Int, title: String) -> SimpleInputFormRow {
+    private func makeURLInputRow(tag: Int, title: String, inputType: InputType = .normal) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
                 text: "",
+                inputType: inputType,
                 config: TextFieldConfig(placeholder: title),
                 validation: ValidationConfiguration(isRequired: false),
                 titleText: title,
@@ -299,22 +300,31 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
     
     // MARK: - Parameter Mapping
     private func makeAssociationParams() -> [String: Any] {
-        [
-            "name": state.associationName,
-            "code": state.code,
+        func trimmed(_ text: String) -> String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+        var params: [String: Any] = [
+            "name": trimmed(state.associationName),
+            "code": trimmed(state.code),
             "countryId": state.countryId,
-            
-            "description": state.associationDescription,
+            "description": trimmed(state.associationDescription),
             "members": state.members,
             "foundedIn": state.foundedIn,
-            "phoneNumber": state.phoneNumber,
-            "emailAddress": state.email,
-            "website": state.website,
-            "instagram": state.instagram,
-            "linkedin": state.linkedin,
-            "x": state.xURL,
-            "physicalAddress": state.physicalAddress
+            "phoneNumber": trimmed(state.phoneNumber),
+            "emailAddress": trimmed(state.email),
+            "physicalAddress": trimmed(state.physicalAddress)
         ]
+
+        // Optional per API spec: leave out when empty instead of sending "".
+        let optional: [(String, String)] = [
+            ("website", state.website),
+            ("instagram", state.instagram),
+            ("linkedin", state.linkedin),
+            ("x", state.xURL)
+        ]
+        for (key, value) in optional where !trimmed(value).isEmpty {
+            params[key] = trimmed(value)
+        }
+        return params
     }
 
     // MARK: - Network Call
@@ -345,7 +355,7 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
                 guestToken: state.guestToken
             )
 
-            // Check email availability if provided
+            // Check email availability (required)
             let email = state.email.trimmingCharacters(in: .whitespacesAndNewlines)
             if !email.isEmpty {
                 try await availabilityChecker.check(
@@ -401,6 +411,28 @@ final class CompleteNewTradeAssociationViewModel: FormViewModel {
 
         guard !state.phoneNumber.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             showError("Phone number is required.")
+            return false
+        }
+
+        // Required by the API (AssociationCreationDto + multipart logo/certificate).
+        let email = state.email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard email.contains("@"), email.contains(".") else {
+            showError("common.message.enter_email".localized)
+            return false
+        }
+
+        guard !state.physicalAddress.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            showError("common.message.enter_physical_address".localized)
+            return false
+        }
+
+        guard state.logo != nil else {
+            showError("common.message.upload_logo_required".localized)
+            return false
+        }
+
+        guard state.certificate != nil else {
+            showError("common.message.upload_certificate_required".localized)
             return false
         }
 

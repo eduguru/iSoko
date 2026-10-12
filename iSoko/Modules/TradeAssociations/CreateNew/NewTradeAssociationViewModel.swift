@@ -82,7 +82,7 @@ final class NewTradeAssociationViewModel: FormViewModel {
         model: SimpleInputModel(
             text: "",
             config: TextFieldConfig(placeholder: "common.label.association_code".localized),
-            validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 50),
+            validation: ValidationConfiguration(isRequired: true, minLength: 3, maxLength: 20), // API: code 3–20
             titleText: "Association Code",
             useCardStyle: true,
             onTextChanged: { [weak self] text in

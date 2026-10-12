@@ -18,7 +18,7 @@ final class OrderConfirmItemViewModel {
         didSet { onUpdate?(self) }
     }
 
-    private let minimumQuantity: Int
+    let minimumQuantity: Int
     private let onUpdate: ((OrderConfirmItemViewModel) -> Void)?
     private let onDelete: ((OrderConfirmItemViewModel) -> Void)?
 

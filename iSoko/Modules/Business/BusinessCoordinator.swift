@@ -42,6 +42,7 @@ public class BusinessCoordinator: BaseCoordinator {
         
         let router = Router(navigationController: navigationController)
         let cordinator = BookKeepingCoordinator(router: router)
+        cordinator.parentCoordinator = self // so finish() can remove it
         addChild(cordinator)
         cordinator.start()
     }
@@ -54,6 +55,7 @@ public class BusinessCoordinator: BaseCoordinator {
         
         let router = Router(navigationController: navigationController)
         let cordinator = ProductsCoordinator(router: router)
+        cordinator.parentCoordinator = self
         addChild(cordinator)
         cordinator.start()
     }
@@ -66,6 +68,7 @@ public class BusinessCoordinator: BaseCoordinator {
         
         let router = Router(navigationController: navigationController)
         let cordinator = OwnerServicesCoordinator(router: router)
+        cordinator.parentCoordinator = self
         addChild(cordinator)
         cordinator.start()
     }

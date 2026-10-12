@@ -33,9 +33,8 @@ final class BookKeepingStockViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // loader must live as long as the async work
             let success = await fetchItems()
             
             if !success {

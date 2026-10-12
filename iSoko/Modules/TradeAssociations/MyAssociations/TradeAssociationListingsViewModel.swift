@@ -15,7 +15,8 @@ final class TradeAssociationListingsViewModel: FormViewModel {
     // MARK: - Navigation
     var goToMoreDetails: ((AssociationResponse) -> Void)? = { _ in }
     
-    var goToButtonAction: ((String, AssociationResponse, @escaping (Bool) -> Void) -> Void)?
+    /// (title, message, completion) — the coordinator only presents the confirmation sheet.
+    var goToButtonAction: ((String, String, @escaping (Bool) -> Void) -> Void)?
 
     // MARK: - Services
     private let associationsService = NetworkEnvironment.shared.associationsService
@@ -46,9 +47,8 @@ final class TradeAssociationListingsViewModel: FormViewModel {
     // MARK: - Fetch
     override func fetchData() {
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // was outside the Task, so the loader vanished immediately
             await fetchAssociations(for: .approved, reset: true)
             await fetchAssociations(for: .pending, reset: true)
             await fetchAssociations(for: .discover, reset: true)
@@ -124,7 +124,11 @@ final class TradeAssociationListingsViewModel: FormViewModel {
         SegmentedFormRow(
             model: SegmentedFormModel(
                 title: nil,
-                segments: ["Your Associations", "Requested", "Discover"],
+                segments: [
+                    "associations.segment.mine".localized,
+                    "associations.segment.requested".localized,
+                    "associations.segment.discover".localized
+                ],
                 selectedIndex: state.selectedSegment.rawValue,
                 tag: 2001,
                 tintColor: .gray,
@@ -166,10 +170,13 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 title: item.name ?? "",
                 description: item.description ?? "",
                 image: nil,
-                bottomButtonTitle: "Join",
+                bottomButtonTitle: "associations.action.join".localized,
                 bottomButtonStyle: .primary,
                 onBottomButtonTap: { [weak self] in
-                    self?.goToButtonAction?("Join", item) { confirmed in
+                    self?.goToButtonAction?(
+                        "associations.action.join".localized,
+                        "associations.message.confirm_join".localized(with: item.name ?? "")
+                    ) { confirmed in
                         if confirmed {
                             self?.enroll(into: item) { success in
                                 if success {
@@ -193,7 +200,7 @@ final class TradeAssociationListingsViewModel: FormViewModel {
                 title: item.name ?? "",
                 description: item.registrationStatus ?? "",
                 image: nil,
-                bottomLabelText: "Member since \(item.foundedIn ?? "")",
+                bottomLabelText: "associations.label.members_count".localized(with: item.members ?? 0),
                 onTap: { [weak self] in
                     self?.goToMoreDetails?(item)
                 }
@@ -205,12 +212,15 @@ final class TradeAssociationListingsViewModel: FormViewModel {
         currentItems().map { item in
             RowItemModel(
                 title: item.name ?? "",
-                description: item.status ?? "Awaiting approval",
+                description: item.status ?? "associations.status.awaiting_approval".localized,
                 image: nil,
-                bottomButtonTitle: "Cancel",
+                bottomButtonTitle: "common.action.cancel".localized,
                 bottomButtonStyle: .secondary,
                 onBottomButtonTap: { [weak self] in
-                    self?.goToButtonAction?("Cancel", item) { confirmed in
+                    self?.goToButtonAction?(
+                        "common.action.cancel".localized,
+                        "associations.message.confirm_cancel".localized(with: item.name ?? "")
+                    ) { confirmed in
                         if confirmed {
                             self?.cancelMembership(for: item) { success in
                                 if success {
@@ -334,7 +344,13 @@ extension TradeAssociationListingsViewModel {
                     associationId: associationId,
                     accessToken: state.oauthToken
                 )
-                // Optionally update local state or refresh feeds
+                // A new membership starts as Pending: drop it from Discover and refresh the
+                // Requested tab (previously only the Approved tab was refreshed, so nothing changed).
+                if var discover = state.feeds[.discover] {
+                    discover.items.removeAll { $0.id == associationId }
+                    state.feeds[.discover] = discover
+                }
+                await fetchAssociations(for: .pending, reset: true)
                 await fetchAssociations(for: .approved, reset: true)
                 completion(true)
             } catch {

@@ -32,6 +32,7 @@ final class InsightsViewModel: FormViewModel {
 
     private var state = State()
     private let directusService = DirectusTokenService()
+    private let associationsService = NetworkEnvironment.shared.associationsService
 
     override init() {
         super.init()
@@ -59,16 +60,15 @@ final class InsightsViewModel: FormViewModel {
 
                 async let publicNewsTask = directusService.fetchNews()
 
-                // HARD CODED ASSOCIATION ID FOR NOW
-                async let associationNewsTask = directusService.fetchAssociationNews(
-                    associationId: "1"
-                )
+                // Step 1 (our API): association ids (see associationNewsMode). Step 2 (Directus): news for them.
+                async let associationNewsTask = fetchAssociationNewsFeed()
 
                 let publicNews = try await publicNewsTask
-                let associationNews = try await associationNewsTask
+                let associationNews = await associationNewsTask
 
                 state.newsItems = publicNews
                 state.associationNewsItems = associationNews
+                state.hasLoaded = true
 
                 await MainActor.run { [weak self] in
                     self?.hideLoader()
@@ -78,11 +78,62 @@ final class InsightsViewModel: FormViewModel {
             } catch {
 
                 await MainActor.run { [weak self] in
+                    self?.state.hasLoaded = true
                     self?.hideLoader()
+                    self?.reloadBodySection(animated: true)
                 }
 
                 print("❌ Directus flow failed:", error)
             }
+        }
+    }
+
+    // MARK: - Association News (2-step)
+
+    /// Which associations feed the "Association News" tab. Flip this one flag to change it.
+    enum AssociationNewsMode {
+        case off        // don't load association news at all
+        case mine       // only associations the signed-in user belongs to (approved memberships)
+        case all        // every approved, active association (works for guests too)
+    }
+    static var associationNewsMode: AssociationNewsMode = .all
+
+    /// 1) our API -> association ids   2) Directus association_news filtered by those ids.
+    /// Never throws: a failure here must not hide the public news, so it returns [].
+    private func fetchAssociationNewsFeed() async -> [AssociationNewsItem] {
+        do {
+            let ids: [Int]
+
+            switch Self.associationNewsMode {
+            case .off:
+                return []
+
+            case .mine:
+                guard AppStorage.hasLoggedIn == true,
+                      let userId = AppStorage.userProfile?.id else { return [] }
+                let mine = try await associationsService.getApprovedAssociations(
+                    id: userId,
+                    page: 1,
+                    count: 100,
+                    accessToken: state.oauthToken
+                )
+                ids = mine.compactMap { $0.id }
+
+            case .all:
+                // GET /associations?registrationStatus=Approved&status=Active
+                let everyone = try await associationsService.getAllAssociations(
+                    page: 1,
+                    count: 100,
+                    accessToken: state.oauthToken
+                )
+                ids = everyone.compactMap { $0.id }
+            }
+
+            guard !ids.isEmpty else { return [] }
+            return try await directusService.fetchAssociationNews(associationIds: ids)
+        } catch {
+            print("❌ Association news failed:", error)
+            return []
         }
     }
 
@@ -133,10 +184,10 @@ final class InsightsViewModel: FormViewModel {
         switch state.selectedSegmentIndex {
 
         case 0:
-            sections[index].cells = makeNewsCells()
+            sections[index].cells = withEmptyState(makeNewsCells())
 
         case 1:
-            sections[index].cells = makeAssociationNewsCells()
+            sections[index].cells = withEmptyState(makeAssociationNewsCells())
 
         default:
             sections[index].cells = []
@@ -147,6 +198,12 @@ final class InsightsViewModel: FormViewModel {
         )
 
         reloadSection(index)
+    }
+
+    /// Shows the empty-state row when a loaded list has no items.
+    private func withEmptyState(_ cells: [FormRow]) -> [FormRow] {
+        guard state.hasLoaded, cells.isEmpty else { return cells }
+        return [EmptyStateFormRow(tag: 999998, config: .noData)]
     }
 
     // MARK: - Segments
@@ -256,7 +313,7 @@ final class InsightsViewModel: FormViewModel {
 
             let createdOnText = createdDate.map {
                 formatNewsDate($0)
-            } ?? "No Date"
+            } ?? "common.label.no_date".localized
 
             let imageURL = item.featuredImage?.urlString(
                 baseURL: ApiEnvironment.directusBaseURL.absoluteString
@@ -265,7 +322,7 @@ final class InsightsViewModel: FormViewModel {
             return InfoListingFormRow(
                 tag: 9000 + index,
                 model: InfoListingModel(
-                    title: item.title ?? "No Title",
+                    title: item.title ?? "common.label.no_title".localized,
                     subtitle: item.newsCategory?.collection ?? "",
                     desc: createdOnText,
                     icon: .blankRectangle,
@@ -294,12 +351,12 @@ final class InsightsViewModel: FormViewModel {
 
             let createdOnText = createdDate.map {
                 formatNewsDate($0)
-            } ?? "No Date"
+            } ?? "common.label.no_date".localized
 
             return InfoListingFormRow(
                 tag: 10000 + index,
                 model: InfoListingModel(
-                    title: item.newsTitle ?? "No Title",
+                    title: item.newsTitle ?? "common.label.no_title".localized,
                     subtitle: item.newsCategory ?? "",
                     desc: createdOnText,
                     icon: .blankRectangle,
@@ -365,6 +422,7 @@ final class InsightsViewModel: FormViewModel {
         var guestToken: String = AppStorage.guestToken?.accessToken ?? ""
 
         var selectedSegmentIndex: Int = 0
+        var hasLoaded: Bool = false   // avoids flashing the empty state before the first fetch finishes
 
         var selectedReport: ReportType?
 

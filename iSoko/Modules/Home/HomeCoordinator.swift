@@ -316,12 +316,14 @@ public class HomeCoordinator: BaseCoordinator {
 extension HomeCoordinator {
     private func gotoTradeAssociations(_ item: AssociationResponse) {
         let coordinator = TradeAssociationFlowCoordinator(router: router)
+        coordinator.parentCoordinator = self
         addChild(coordinator)
         coordinator.goToTradeAssociationProducs(item)
     }
     
     private func gotoTradeAllAssociations() {
         let coordinator = TradeAssociationFlowCoordinator(router: router)
+        coordinator.parentCoordinator = self
         addChild(coordinator)
         coordinator.gotoPublicTradeAssociations()
     }

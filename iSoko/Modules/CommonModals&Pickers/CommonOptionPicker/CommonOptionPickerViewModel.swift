@@ -43,9 +43,8 @@ final class CommonOptionPickerViewModel: FormViewModel, ActionHandlingViewModel 
     override func fetchData() {
         guard state.options.isEmpty else { return }
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // loader must live as long as the async work
             do {
                 let response = try await fetchCommonUtility(option: state.commonUtilityOption)
                 

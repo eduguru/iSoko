@@ -31,10 +31,9 @@ final class TradeAssociationFlowCoordinator: BaseCoordinator {
         let viewModel = TradeAssociationListingsViewModel()
         viewModel.goToMoreDetails = gotoTradeAssociationDetails
 
-        viewModel.goToButtonAction = { [weak self] actionTitle, item, completion in
+        viewModel.goToButtonAction = { [weak self] actionTitle, message, completion in
             guard let self else { return }
 
-            let message = "Are you sure you want to \(actionTitle.lowercased()) \(item.name ?? "")?"
             self.presentConfirmaionAlert(
                 title: actionTitle,
                 message: message,

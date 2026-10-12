@@ -29,9 +29,8 @@ final class PrivacyPolicyViewModel: FormViewModel {
     
     override func fetchData() {
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // loader must live as long as the async work
             do {
                 try await directusService.login(
                     email: AppStorage.email,

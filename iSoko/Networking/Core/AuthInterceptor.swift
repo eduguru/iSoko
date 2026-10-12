@@ -36,7 +36,22 @@ public final class AuthInterceptor: RequestInterceptor {
         completion: @escaping (Result<URLRequest, Error>) -> Void
     ) {
         print("🧩 AuthInterceptor.adapt called → \(urlRequest.url?.absoluteString ?? "")")
-        completion(.success(urlRequest))
+
+        var request = urlRequest
+
+        // Requests are built with the token that was current when the screen opened.
+        // Swap in the latest OAuth token (also after a refresh + retry) so a stale
+        // token never causes a 401 on the iSOKO API.
+        if requiresAuth,
+           AppStorage.hasLoggedIn == true,
+           request.url?.host == ApiEnvironment.apiBaseURL.host,
+           request.value(forHTTPHeaderField: "Authorization")?.hasPrefix("Bearer ") == true,
+           let token = AppStorage.oauthToken?.accessToken,
+           !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        completion(.success(request))
     }
 
 

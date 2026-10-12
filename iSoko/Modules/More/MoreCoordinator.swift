@@ -243,6 +243,7 @@ public class MoreCoordinator: BaseCoordinator {
 
         // Use existing router instead of creating a new one
         let coordinator = TradeAssociationFlowCoordinator(router: router)
+        coordinator.parentCoordinator = self
         addChild(coordinator)
         coordinator.start()
     }
@@ -250,6 +251,7 @@ public class MoreCoordinator: BaseCoordinator {
     private func gotoHelpFeedback() {
         // Use existing router
         let coordinator = HelpFeedbackCoordinator(router: router)
+        coordinator.parentCoordinator = self
         addChild(coordinator)
         coordinator.start()
     }
@@ -325,8 +327,11 @@ public class MoreCoordinator: BaseCoordinator {
         let vc = ShareAppViewController()
         vc.viewModel = viewModel
         
-        vc.closeAction = { [weak self] in
-            self?.router.dismiss(animated: true)
+        // Dismiss the presented nav itself. Do NOT touch `self.router`: this coordinator owns the
+        // More tab's navigation controller and all later pushes (profile, orders, sign-in...) go
+        // through it.
+        vc.closeAction = { [weak vc] in
+            vc?.dismiss(animated: true)
         }
         
         let nav = BaseNavigationController(rootViewController: vc)
@@ -334,12 +339,7 @@ public class MoreCoordinator: BaseCoordinator {
         nav.navigationBar.isHidden = false
         
         // Present from topmost view controller
-        if let top = router.topViewController() {
-            top.present(nav, animated: true)
-            
-            // Update router to point to this modal flow
-            self.router = Router(navigationController: nav)
-        }
+        router.topViewController()?.present(nav, animated: true)
     }
     
     private func gotoLegal() {

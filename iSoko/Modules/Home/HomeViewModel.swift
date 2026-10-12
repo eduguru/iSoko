@@ -62,19 +62,50 @@ final class HomeViewModel: FormViewModel {
         Task { await performNetworkCalls() }
     }
 
-    private func performNetworkCalls() async {
-        showLoader()
-        defer { hideLoader() }
+    // Loader bookkeeping for the independent home loads below.
+    private var pendingLoads = 0
+    private var loaderVisible = false
 
-        await withTaskGroup(of: Void.self) { group in
-            group.addTask { await self.fetchDataType(.featuredProducts) }
-            group.addTask { await self.fetchDataType(.featuredServices) }
-            group.addTask { await self.fetchDataType(.productCategories) }
-            group.addTask { await self.fetchDataType(.serviceCategories) }
-            group.addTask { await self.fetchDataType(.associations) }
+    /// Every home section loads independently: a slow or failing call (404, timeout, HTML error page)
+    /// only affects its own section. Nothing awaits the whole set any more, so banners no longer
+    /// wait for the slowest request and one failure can't stall the rest.
+    private func performNetworkCalls() async {
+        let types: [HomeDataType] = [
+            .featuredProducts, .featuredServices, .productCategories, .serviceCategories, .associations
+        ]
+
+        pendingLoads = types.count + 1 // + banners
+        loaderVisible = true
+        showLoader()
+
+        for type in types {
+            Task { [weak self] in
+                await self?.fetchDataType(type)
+                self?.finishLoad()
+            }
         }
 
-        await fetchBanners()
+        Task { [weak self] in
+            await self?.fetchBanners()
+            self?.finishLoad()
+        }
+
+        // Safety net: never keep the spinner up longer than 8 seconds, whatever is still loading.
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            self?.hideLoaderIfNeeded()
+        }
+    }
+
+    private func finishLoad() {
+        pendingLoads -= 1
+        if pendingLoads <= 0 { hideLoaderIfNeeded() }
+    }
+
+    private func hideLoaderIfNeeded() {
+        guard loaderVisible else { return }
+        loaderVisible = false
+        hideLoader()
     }
 
     // MARK: - Fetch helpers

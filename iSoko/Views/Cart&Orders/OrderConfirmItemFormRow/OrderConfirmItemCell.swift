@@ -163,8 +163,9 @@ final class OrderConfirmItemCell: UITableViewCell {
         subtitleLabel.text = vm.subtitle
         priceLabel.text = vm.formattedTotal
 
-        if stepperView.value != vm.quantity {
-            stepperView.value = vm.quantity
-        }
+        // Always configure: the stepper's label is only written by its `value` setter, and
+        // the default quantity (1) equals the stepper's initial value, so a "changed?" check
+        // skipped the first write and left the label empty on first load.
+        stepperView.configure(initialValue: vm.quantity, minimumValue: vm.minimumQuantity)
     }
 }

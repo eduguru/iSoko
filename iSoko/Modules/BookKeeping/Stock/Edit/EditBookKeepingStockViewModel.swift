@@ -77,40 +77,52 @@ final class EditBookKeepingStockViewModel: FormViewModel {
         tag: CellTag.productName.rawValue,
         title: "common.label.product_name".localized,
         placeholder: "common.label.product_name".localized,
-        initialText: state.productName
+        initialText: state.productName,
+        inputType: .normal
     )
     
     private lazy var quantityInputRow = makeInputRow(
         tag: CellTag.quantity.rawValue,
         title: "common.label.quantity".localized,
         placeholder: "common.label.quantity".localized,
-        initialText: "\(state.quantity)"
+        initialText: "\(state.quantity)",
+        inputType: .number
     )
     
     private lazy var unitCostInputRow = makeInputRow(
         tag: CellTag.unitCost.rawValue,
         title: "common.label.unit_cost".localized,
         placeholder: "common.placeholder.unit_cost".localized,
-        initialText: "\(state.unitCost)"
+        initialText: "\(state.unitCost)",
+        inputType: .decimal
     )
     
     private lazy var lowStockLevelInputRow = makeInputRow(
         tag: CellTag.lowStockLevel.rawValue,
         title: "common.label.low_stock_level".localized,
         placeholder: "common.placeholder.low_stock_level".localized,
-        initialText: "\(state.lowStockLevel)"
+        initialText: "\(state.lowStockLevel)",
+        inputType: .number,
+        isRequired: false
     )
     
-    private func makeInputRow(tag: Int, title: String, placeholder: String, initialText: String) -> SimpleInputFormRow {
+    private func makeInputRow(
+        tag: Int,
+        title: String,
+        placeholder: String,
+        initialText: String,
+        inputType: InputType,
+        isRequired: Bool = true
+    ) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
                 text: initialText,
+                inputType: inputType,
                 config: TextFieldConfig(
-                    placeholder: placeholder,
-                    keyboardType: .numberPad
+                    placeholder: placeholder
                 ),
-                validation: ValidationConfiguration(isRequired: true),
+                validation: ValidationConfiguration(isRequired: isRequired),
                 titleText: title,
                 useCardStyle: true,
                 onTextChanged: { [weak self] newText in
@@ -279,8 +291,10 @@ final class EditBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
+        // Mandatory: Product Name, Price per Unit, Quantity, Unit of Measure.
+        // Supplier, commodity, low stock level and description are optional.
         guard
-            let supplierId = state.supplier?.id,
+            !state.productName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             let measurementUnitId = state.measurementUnit?.id,
             let price = Double(state.unitCost),
             let quantity = Int(state.quantity)
@@ -301,7 +315,6 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             "stockAlertThreshold": Int(state.lowStockLevel) ?? 0,
             "lowStockThreshold": Int(state.lowStockLevel) ?? 0,
 
-            "supplierId": supplierId,
             "measurementUnitId": measurementUnitId,
 
             "inStock": state.inStock,
@@ -311,6 +324,10 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             "featured": state.featured,
             "bookkeepingStock": true
         ]
+
+        if let supplierId = state.supplier?.id {
+            params["supplierId"] = supplierId
+        }
 
         let commodityId = state.selectedCommodity?.id ?? state.initialCommodityId 
         if let commodityId {
@@ -333,6 +350,7 @@ final class EditBookKeepingStockViewModel: FormViewModel {
             return true
         } catch {
             print("❌ Error updating stock: ", error)
+            showError(error.localizedDescription)
             return false
         }
     }

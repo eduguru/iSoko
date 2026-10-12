@@ -160,7 +160,7 @@ final class EventsListingViewModel: FormViewModel {
                 month: startDate?.month ?? "N/A",
                 startDay: startDate?.day ?? "--",
                 endDay: startDate?.day ?? "--",
-                title: item.eventTitle ?? "No Title",
+                title: item.eventTitle ?? "common.label.no_title".localized,
                 location: location.isEmpty ? "No Location" : location,
                 time: time.isEmpty ? "No Time" : time,
                 description: item.description ?? "",
@@ -201,7 +201,7 @@ final class EventsListingViewModel: FormViewModel {
                 month: startDate?.month ?? "N/A",
                 startDay: startDate?.day ?? "--",
                 endDay: startDate?.day ?? "--",
-                title: item.eventTitle ?? "No Title",
+                title: item.eventTitle ?? "common.label.no_title".localized,
                 location: location.isEmpty ? "No Location" : location,
                 time: time.isEmpty ? "No Time" : time,
                 description: item.description ?? "",
@@ -255,7 +255,7 @@ final class EventsListingViewModel: FormViewModel {
     private func formatEventDate(_ isoString: String) -> String {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        guard let date = formatter.date(from: isoString) else { return "No Date" }
+        guard let date = formatter.date(from: isoString) else { return "common.label.no_date".localized }
 
         let display = DateFormatter()
         display.dateFormat = "dd MMM yyyy"

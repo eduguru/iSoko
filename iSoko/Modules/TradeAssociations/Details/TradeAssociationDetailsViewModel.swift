@@ -202,12 +202,12 @@ final class TradeAssociationDetailsViewModel: FormViewModel {
             }()
             
             // Format the date for display
-            let createdOnText = createdDate.map { formatNewsDate($0) } ?? "No Date"
+            let createdOnText = createdDate.map { formatNewsDate($0) } ?? "common.label.no_date".localized
 
             return InfoListingFormRow(
                 tag: 9000 + index,
                 model: InfoListingModel(
-                    title: item.newsTitle ?? "No Title",
+                    title: item.newsTitle ?? "common.label.no_title".localized,
                     subtitle: item.newsCategory ?? "",
                     desc: createdOnText,
                     icon: .blankRectangle,

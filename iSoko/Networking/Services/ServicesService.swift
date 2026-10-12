@@ -54,27 +54,19 @@ public final class ServicesServiceImpl: ServicesService {
     }
     
     public func getAllTradeServiceCategories(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceCategoryResponse] {
-        let response: [TradeServiceCategoryResponse] = try await manager.request(ServicesApi.getAllTradeServiceCategories(page: page, count: count, accessToken: accessToken)) ?? []
-        
-        return response
+        try await manager.request(ServicesApi.getAllTradeServiceCategories(page: page, count: count, accessToken: accessToken)).toPagedResult().data
     }
     
     public func getAllTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse] {
-        let response: [TradeServiceResponse] = try await manager.request(ServicesApi.getAllTradeServices(page: page, count: count, accessToken: accessToken)) ?? []
-        
-        return response
+        try await manager.request(ServicesApi.getAllTradeServices(page: page, count: count, accessToken: accessToken)).toPagedResult().data.map { $0.toTradeService() }
     }
     
     public func getFeaturedTradeServices(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse] {
-        let response: [TradeServiceResponse] = try await manager.request(ServicesApi.getFeaturedTradeServices(page: page, count: count, accessToken: accessToken)) ?? []
-        
-        return response
+        try await manager.request(ServicesApi.getFeaturedTradeServices(page: page, count: count, accessToken: accessToken)).toPagedResult().data.map { $0.toTradeService() }
     }
     
     public func getTradeServicesByCategory(page: Int, count: Int, categoryId: String, accessToken: String) async throws -> [TradeServiceResponse] {
-        let response: [TradeServiceResponse] = try await manager.request(ServicesApi.getTradeServicesByCategory(page: page, count: count, categoryId: categoryId, accessToken: accessToken)) ?? []
-        
-        return response
+        try await manager.request(ServicesApi.getTradeServicesByCategory(page: page, count: count, categoryId: categoryId, accessToken: accessToken)).toPagedResult().data.map { $0.toTradeService() }
     }
     
     public func getTradeServicesByCurrentUser(page: Int, count: Int, accessToken: String) async throws -> [TradeServiceResponse] {

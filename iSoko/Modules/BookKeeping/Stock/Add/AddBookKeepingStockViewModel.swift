@@ -73,35 +73,39 @@ final class AddBookKeepingStockViewModel: FormViewModel {
     private lazy var productNameInputRow = makeInputRow(
         tag: CellTag.productName.rawValue,
         title: "common.label.product_name".localized,
-        placeholder: "common.label.product_name".localized
+        placeholder: "common.label.product_name".localized,
+        inputType: .normal
     )
     
     private lazy var quantityInputRow = makeInputRow(
         tag: CellTag.quantity.rawValue,
         title: "common.label.quantity".localized,
-        placeholder: "common.label.quantity".localized
+        placeholder: "common.label.quantity".localized,
+        inputType: .number
     )
     
     private lazy var unitCostInputRow = makeInputRow(
         tag: CellTag.unitCost.rawValue,
         title: "common.label.unit_cost".localized,
-        placeholder: "common.placeholder.unit_cost".localized
+        placeholder: "common.placeholder.unit_cost".localized,
+        inputType: .decimal
     )
     
     private lazy var lowStockLevelInputRow = makeInputRow(
         tag: CellTag.lowStockLevel.rawValue,
         title: "common.label.low_stock_level".localized,
-        placeholder: "common.placeholder.low_stock_level".localized
+        placeholder: "common.placeholder.low_stock_level".localized,
+        inputType: .number
     )
     
-    private func makeInputRow(tag: Int, title: String, placeholder: String) -> SimpleInputFormRow {
+    private func makeInputRow(tag: Int, title: String, placeholder: String, inputType: InputType) -> SimpleInputFormRow {
         SimpleInputFormRow(
             tag: tag,
             model: SimpleInputModel(
                 text: "",
+                inputType: inputType,
                 config: TextFieldConfig(
-                    placeholder: placeholder,
-                    keyboardType: .URL
+                    placeholder: placeholder
                 ),
                 validation: ValidationConfiguration(isRequired: false),
                 titleText: title,
@@ -220,7 +224,7 @@ final class AddBookKeepingStockViewModel: FormViewModel {
         model: LongInputDescriptionModel(
             text: "",
             config: TextViewConfig(fixedHeight: 120),
-            validation: ValidationConfiguration(isRequired: true),
+            validation: ValidationConfiguration(isRequired: false),
             titleText: "",
             onTextChanged: { [weak self] text in
                 self?.state.description = text
@@ -301,25 +305,24 @@ final class AddBookKeepingStockViewModel: FormViewModel {
 
     // MARK: - Submit
     private func submit() async {
-        // Make sure required fields exist
+        // Mandatory: Date, Product Name, Price per Unit, Quantity, Unit of Measure.
+        // Everything else (supplier, commodity, low stock level, description) is optional.
         guard
-            let commodity = state.selectedCommodity,
-            let supplierId = state.supplier?.id,
+            state.date != nil,
+            !state.productName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             let measurementUnitId = state.selectedMeasurement?.id,
-            let price = Double(state.unitCost),       // convert to number if needed
-            let quantity = Int(state.quantity)        // convert to number
+            let price = Double(state.unitCost),
+            let quantity = Int(state.quantity)
         else {
             showError("Please fill all required fields correctly")
             return
         }
    
         // Prepare the parameters
-        let record: [String: Any] = [
+        var record: [String: Any] = [
             "name": state.productName,
             "price": price,
             "quantity": quantity,
-            "supplierId": supplierId,
-            "commodityId": commodity.id,
             "measurementUnitId": measurementUnitId,
             "description": state.description.isEmpty ? "n/a" : state.description,
             "minimumOrderQuantity": Int(state.lowStockLevel) ?? 0,
@@ -329,6 +332,12 @@ final class AddBookKeepingStockViewModel: FormViewModel {
             "bookkeepingStock": true
         ]
 
+        if let supplierId = state.supplier?.id {
+            record["supplierId"] = supplierId
+        }
+        if let commodityId = state.selectedCommodity?.id {
+            record["commodityId"] = commodityId
+        }
         
         // Submit
         let success = await submitStockRecord(parameters: record)

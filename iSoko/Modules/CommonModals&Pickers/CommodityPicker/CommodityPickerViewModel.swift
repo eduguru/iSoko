@@ -55,9 +55,8 @@ extension CommodityPickerViewModel {
     
     func fetchCategories() {
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // loader must live as long as the async work
             do {
                 let response = try await service.getCommodityCategory(
                     page: state.currentPage,
@@ -77,9 +76,8 @@ extension CommodityPickerViewModel {
     
     func fetchCommodities(categoryId: Int) {
         showLoader()
-        defer { hideLoader() }
-        
         Task {
+            defer { hideLoader() } // loader must live as long as the async work
             do {
                 let response = try await service.getCommoditiesV1(
                     page: 1,

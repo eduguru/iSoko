@@ -194,6 +194,38 @@ final class DirectusTokenService {
             .data
     }
     
+    /// News for several associations in ONE Directus call (`_in` filter), newest first.
+    func fetchAssociationNews(associationIds: [Int]) async throws -> [AssociationNewsItem] {
+        guard !associationIds.isEmpty else { return [] }
+
+        var components = URLComponents(
+            url: baseURL.appendingPathComponent("/items/association_news"),
+            resolvingAgainstBaseURL: false
+        )
+
+        let ids = associationIds.map(String.init).joined(separator: ",")
+        components?.queryItems = [
+            URLQueryItem(name: "fields", value: "*.*"),
+            URLQueryItem(name: "sort", value: "-created_on"),
+            URLQueryItem(
+                name: "filter",
+                value: "{\"association_id\":{\"_in\":[\(ids)]}}"
+            )
+        ]
+
+        guard let url = components?.url else {
+            throw OAuthError.invalidAuthURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        let (data, _) = try await authorizedRequest(request)
+        return try JSONDecoder()
+            .decode(DirectusResponse<AssociationNewsItem>.self, from: data)
+            .data
+    }
+    
     func fetchAssociationEvents(
         associationId: String
     ) async throws -> [AssociationEventItem] {

@@ -18,7 +18,7 @@ extension DirectusNewsItem {
     func toDomain() -> NewsDetailsItem {
         NewsDetailsItem(
             id: id,
-            title: title ?? "No Title",
+            title: title ?? "common.label.no_title".localized,
             body: body ?? "",
             category: newsCategory?.collection ?? "Uncategorized",
             createdOn: createdOn ?? "",
@@ -31,7 +31,7 @@ extension AssociationNewsItem {
     func toDomain() -> NewsDetailsItem {
         NewsDetailsItem(
             id: id,
-            title: newsTitle ?? "No Title",
+            title: newsTitle ?? "common.label.no_title".localized,
             body: newsContent ?? "",
             category: newsCategory ?? "Uncategorized",
             createdOn: createdOn ?? "",
